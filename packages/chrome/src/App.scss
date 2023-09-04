@@ -1,0 +1,22 @@
+@import "./common/styles/variables.scss";
+
+.app {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: $full-width;
+  height: $full-height;
+  overflow: hidden;
+}
+
+@media screen and (min-width: $full-width) {
+  .app {
+    margin: 0 auto;
+    height: 100vh;
+  }
+}
+
+small {
+  font-size: 100%;
+}
