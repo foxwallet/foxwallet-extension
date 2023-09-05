@@ -1,16 +1,17 @@
 import { logger } from "./logger";
+import browser from "webextension-polyfill";
 
-export type IPort = chrome.runtime.Port;
+export type IPort = browser.Runtime.Port;
 
 // content and popup use Port to commuticate with background
 export class Port implements IPort {
   private portName: string;
-  private port: chrome.runtime.Port;
+  private port: browser.Runtime.Port;
   private connected: boolean;
   private onConnect: (port: IPort) => void | Promise<void>;
 
   constructor(
-    info: chrome.runtime.ConnectInfo,
+    info: browser.Runtime.ConnectConnectInfoType,
     opts?: {
       onConnect?: (port: IPort) => void | Promise<void>;
     }
@@ -24,7 +25,7 @@ export class Port implements IPort {
   }
 
   private createPort() {
-    const newPort = chrome.runtime.connect({
+    const newPort = browser.runtime.connect({
       name: this.portName,
     });
     this.connected = true;

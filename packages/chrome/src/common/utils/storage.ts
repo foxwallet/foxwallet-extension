@@ -1,22 +1,23 @@
 import { Storage } from "redux-persist";
+import browser from "webextension-polyfill";
 
-export class ChromeStorage implements Storage {
+export class WebStorage implements Storage {
   async getItem(key: string) {
-    const results = await chrome.storage.local.get(key);
+    const results = await browser.storage.local.get(key);
     return results[key] ?? null;
   }
 
   async removeItem(key: string): Promise<void> {
-    return await chrome.storage.local.remove(key);
+    return await browser.storage.local.remove(key);
   }
 
   async setItem(key: string, item: string | null): Promise<void> {
-    return await chrome.storage.local.set({ [key]: item });
+    return await browser.storage.local.set({ [key]: item });
   }
 
   async clear() {
-    return await chrome.storage.local.clear();
+    return await browser.storage.local.clear();
   }
 }
 
-export const storageInstance = new ChromeStorage();
+export const storageInstance = new WebStorage();

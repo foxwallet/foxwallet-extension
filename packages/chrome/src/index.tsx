@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import ReactDOM from "react-dom/client";
 import "./index.scss";
 import { HashRouter } from "react-router-dom";
@@ -8,6 +8,7 @@ import { store } from "./store/store";
 import { ClientContext } from "./hooks/useClient";
 import { KeepAliveClient } from "./common/utils/client";
 import { PortName } from "./common/types/port";
+import { LoadingScreen } from "./components/Loading";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
@@ -18,7 +19,9 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
         }}
       >
         <Provider store={store}>
-          <App />
+          <Suspense fallback={<LoadingScreen />}>
+            <App />
+          </Suspense>
         </Provider>
       </ClientContext.Provider>
     </HashRouter>
