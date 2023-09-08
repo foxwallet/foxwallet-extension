@@ -35,6 +35,7 @@ export class KeepAliveClient implements IClient {
       clearTimeout(this.timer);
       this.timer = undefined;
     }
+    // @ts-ignore
     this.timer = setTimeout(() => {
       try {
         this.port.postMessage({

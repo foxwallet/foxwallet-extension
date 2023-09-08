@@ -11,7 +11,7 @@ export default defineManifest((env) => ({
     "128": "logo.png",
   },
   action: { default_popup: "index.html" },
-  permissions: ["storage", "tabs"],
+  permissions: ["storage", "tabs", "activeTab"],
   content_scripts: [
     {
       matches: ["http://*/*", "https://*/*"],

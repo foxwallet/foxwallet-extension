@@ -1,16 +1,16 @@
 import React from "react";
 import { useRoutes } from "react-router-dom";
-import "./App.scss";
 import { routesConfig } from "./routes";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { ViewPort } from "./components/ViewPort";
 
 function App() {
   const routes = useRoutes(routesConfig);
 
   return (
-    <div className="app">
+    <ViewPort>
       <ErrorBoundary>{routes}</ErrorBoundary>
-    </div>
+    </ViewPort>
   );
 }
 

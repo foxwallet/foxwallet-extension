@@ -5,6 +5,7 @@ import { crx } from "@crxjs/vite-plugin";
 import manifest from "./manifest";
 import viteSvgr from "vite-plugin-svgr";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
+import path from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -38,7 +39,13 @@ export default defineConfig(({ mode }) => ({
       mode === "production" ? ["console.log", "console.debug", "debugger"] : [],
   },
   define: {},
+  resolve: {
+    alias: [{ find: "@", replacement: path.resolve(__dirname, "src") }],
+  },
   plugins: [
+    viteSvgr({
+      exportAsDefault: true,
+    }),
     nodePolyfills({
       exclude: [],
       globals: {
@@ -51,6 +58,5 @@ export default defineConfig(({ mode }) => ({
     }),
     react(),
     crx({ manifest }),
-    viteSvgr(),
   ],
 }));
