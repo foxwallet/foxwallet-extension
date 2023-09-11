@@ -17,6 +17,7 @@ export const variantFilled = definePartsStyle((props) => {
     field: {
       bg: mode("gray.50", "gray.800")(props),
       border: "none",
+      outline: "none",
       _placeholder: {
         color: mode("gray.300", "gray.400")(props),
         fontWeight: "bold",
@@ -25,17 +26,11 @@ export const variantFilled = definePartsStyle((props) => {
         bg: mode("gray.100", "gray.700")(props),
       },
       _invalid: {
-        boxShadow: "error",
-        _focusVisible: {
-          boxShadow: mode("outlineError", "error")(props),
-        },
-      },
-      _focusVisible: {
-        bg: mode("white", "gray.700")(props),
+        border: "1px solid",
+        borderColor: "red.400",
       },
       _focus: {
-        outline: "1px solid",
-        outlineColor: "orange.500",
+        bg: mode("gray.50", "gray.800")(props),
       },
     },
   };

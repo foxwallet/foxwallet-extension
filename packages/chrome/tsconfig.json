@@ -14,7 +14,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react",
+    "jsx": "react-jsx",
     "strictPropertyInitialization": false,
     "types": ["vite/client", "@types/chrome"]
   },

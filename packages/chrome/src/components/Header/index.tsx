@@ -1,8 +1,8 @@
 import React from "react";
 import { Flex, Image, Box, Container } from "@chakra-ui/react";
-import IconLeft from "@/common/assets/image/icon_left.svg";
 import { H5 } from "../../common/theme/components/text";
 import { useNavigate } from "react-router-dom";
+import { IconLeft } from "../Icon";
 
 type HeaderProps = {
   enableBack: boolean;
@@ -16,7 +16,7 @@ export const Header = ({ enableBack, title }: HeaderProps) => {
       w={"full"}
       mt={"1"}
       py={"2"}
-      px={"2"}
+      px={"4"}
       alignItems={"center"}
       justifyContent={"space-between"}
     >
@@ -31,7 +31,7 @@ export const Header = ({ enableBack, title }: HeaderProps) => {
           cursor={"pointer"}
           onClick={() => navigate(-1)}
         >
-          <Image src={IconLeft} w={"3"} h={"3"} />
+          <IconLeft w={"3"} h={"3"} />
         </Flex>
       ) : (
         <Box w={"6"} h={"6"} />

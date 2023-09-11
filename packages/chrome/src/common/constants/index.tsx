@@ -1,1 +1,3 @@
 export const KEEP_ALIVE_INTERVAL = 30000;
+
+export const PASSWORD_MINIMUL_LENGTH = 6;

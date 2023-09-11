@@ -17,9 +17,6 @@ export const buttonTheme = defineStyleConfig({
         transform: "scale(0.975)",
       },
       cursor: "pointer",
-      _disabled: {
-        pointerEvents: "none",
-      },
       _focusVisible: {
         boxShadow: mode("outlineAccent", "outline")(props),
       },
@@ -68,7 +65,6 @@ export const buttonTheme = defineStyleConfig({
     solid: (props) => {
       const { colorScheme: c } = props;
 
-      /** same for dark or light mode */
       return {
         bg: `orange.400`,
         color: "white",
@@ -77,6 +73,10 @@ export const buttonTheme = defineStyleConfig({
         },
         _active: {
           bg: `${c}.700`,
+        },
+        _disabled: {
+          bg: "gray.300",
+          cursor: "not-allowed",
         },
       };
     },

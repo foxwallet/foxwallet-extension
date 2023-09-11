@@ -77,6 +77,11 @@ export const textStyles = {
     lineHeight: "3.5",
     fontWeight: "semibold",
   },
+  L3: {
+    fontSize: "3xs",
+    lineHeight: "2",
+    fontWeight: "semibold",
+  },
 
   FieldError: {
     color: "error.500",
@@ -173,6 +178,12 @@ export const L1 = chakra("label", {
 export const L2 = chakra("label", {
   baseStyle: {
     ...textStyles.L2,
+  },
+});
+
+export const L3 = chakra("label", {
+  baseStyle: {
+    ...textStyles.L3,
   },
 });
 
