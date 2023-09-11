@@ -15,6 +15,7 @@ import { zIndices } from "./zIndices";
 import { radii } from "./borderRadius";
 import { inputTheme } from "./components/input";
 import { checkBoxTheme } from "./components/checkbox";
+import { modalTheme } from "./components/modal";
 
 const config: ThemeConfig = {
   initialColorMode: "light",
@@ -47,5 +48,6 @@ export const theme = extendBaseTheme({
     Button: buttonTheme,
     Input: inputTheme,
     Checkbox: checkBoxTheme,
+    Modal: modalTheme,
   },
 });

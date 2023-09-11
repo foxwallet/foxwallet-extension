@@ -5,6 +5,8 @@ import {
   Image,
   InputRightElement,
   Text,
+  useDisclosure,
+  useModal,
 } from "@chakra-ui/react";
 import React, {
   useCallback,
@@ -14,7 +16,7 @@ import React, {
   useState,
 } from "react";
 import { default as logo } from "../../common/assets/image/onboard_logo.svg";
-import { B2, B3, H4, L1, P4 } from "../../common/theme/components/text";
+import { B2, B3, H4, L1, P3, P4 } from "../../common/theme/components/text";
 import { PageWithHeader } from "../../layouts/Page";
 import { Body } from "../../layouts/Body";
 import { Content } from "../../layouts/Content";
@@ -31,6 +33,7 @@ import { useDebounce } from "use-debounce";
 import { getPasswordStrength } from "../../common/utils/zxcvbn";
 import { PasswordStrengthIndicator } from "../../components/PasswordStrengthIndicator";
 import { PASSWORD_MINIMUL_LENGTH } from "../../common/constants";
+import { BasicModal } from "../../components/Modal";
 
 function OnboardCreateWalletScreen() {
   const [step, setStep] = useState(1);
@@ -86,7 +89,18 @@ function OnboardCreateWalletScreen() {
     );
   }, [walletName, password, confirmPassword]);
 
-  console.log("==> disableConfirm: ", disableConfirm);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const onConfirm = useCallback(() => {
+    if (disableConfirm) {
+      return;
+    }
+    if (!passwordScore || passwordScore < 3) {
+      onOpen();
+      return;
+    }
+    setStep((curr) => curr + 1);
+  }, [disableConfirm, passwordScore]);
 
   return (
     <PageWithHeader title="Create Wallet" enableBack>
@@ -183,8 +197,32 @@ function OnboardCreateWalletScreen() {
           bottom={"4"}
           px={4}
         >
-          <Button isDisabled={disableConfirm}>Confirm</Button>
+          <Button isDisabled={disableConfirm} onClick={onConfirm}>
+            Confirm
+          </Button>
         </Flex>
+        <BasicModal
+          isOpen={isOpen}
+          onClose={onClose}
+          title={"Warning"}
+          body={
+            <P3>
+              {
+                "The password strength is too low, the wallet assets will be insecure."
+              }
+            </P3>
+          }
+          footer={
+            <Flex flex={1}>
+              <Button flex={1} mr="2" onClick={onClose}>
+                Change
+              </Button>
+              <Button flex={1} ml="2" colorScheme="secondary">
+                Still create
+              </Button>
+            </Flex>
+          }
+        />
       </Body>
     </PageWithHeader>
   );
