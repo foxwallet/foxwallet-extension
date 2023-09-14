@@ -7,7 +7,8 @@
     "packages/chrome"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint './packages/{!(expo),}*/src/**/*.{ts,tsx}'",
+    "lint:fix": "eslint --fix './packages/{!(expo),}*/src/**/*.{ts,tsx}'"
   },
   "lint-staged": {
     "*": "prettier --write --ignore-unknown",
@@ -15,11 +16,18 @@
   },
   "author": "",
   "license": "MIT",
-  "dependencies": {
-    "@rematch/core": "^2.2.0",
-    "@rematch/loading": "^2.1.2",
-    "@rematch/persist": "^2.1.2",
-    "@rematch/select": "^3.1.2",
-    "react-redux": "^8.1.2"
+  "dependencies": {},
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.7.0",
+    "eslint": "^8.49.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-config-standard-with-typescript": "^39.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "eslint-plugin-react": "^7.31.1",
+    "husky": "^8.0.1",
+    "lint-staged": "^13.0.3",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^3.0.3",
+    "typescript": "^4.8.3"
   }
 }

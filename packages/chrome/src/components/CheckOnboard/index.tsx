@@ -3,9 +3,9 @@ import { Navigate } from "react-router-dom";
 import { useAppStatus } from "../../hooks/useAppStatus";
 
 export const CheckOnboard = (props: { children: React.ReactNode }) => {
-  const { inited } = useAppStatus();
+  const { hasWallet } = useAppStatus();
 
-  if (inited) {
+  if (hasWallet) {
     return props.children;
   }
 

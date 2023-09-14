@@ -6,16 +6,25 @@ import loadingPlugin, { ExtraModelsFromLoading } from "@rematch/loading";
 import { PersistConfig } from "redux-persist/lib/types";
 import createMigrate from "redux-persist/lib/createMigrate";
 import selectPlugin from "@rematch/select";
-import { storageInstance } from "../common/utils/storage";
+import { popupStorageInstance } from "../common/utils/storage";
+import { isDev } from "../common/utils/env";
+import { logger } from "../common/utils/logger";
 
 type FullModel = ExtraModelsFromLoading<RootModel>;
 
 const persistConfig: PersistConfig<RootState> = {
   key: "root",
-  storage: storageInstance,
+  storage: popupStorageInstance,
   stateReconciler: autoMergeLevel2,
   version: 1,
-  // debug: __DEV__,
+  debug: isDev,
+  // IndexedDB can store object directly
+  serialize: false,
+  // @ts-ignore
+  deserialize: false,
+  writeFailHandler: (err) => {
+    logger.error("redux persist write fail", err.message);
+  },
   // @ts-ignore
   // migrate: createMigrate(migrations, { debug: __DEV__ }),
 };

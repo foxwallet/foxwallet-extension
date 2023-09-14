@@ -7,22 +7,19 @@ import { HashRouter } from "react-router-dom";
 import App from "./App";
 import { Provider } from "react-redux";
 import { store } from "./store/store";
-import { ClientContext } from "./hooks/useClient";
-import { KeepAliveClient } from "./common/utils/client";
+import { ClientContext, clients } from "./hooks/useClient";
+import { KeepAliveClient, PopupServerClient } from "./common/utils/client";
 import { PortName } from "./common/types/port";
 import { LoadingScreen } from "./components/Loading";
 import { ChakraBaseProvider } from "@chakra-ui/react";
 import { theme } from "./common/theme";
+import { GlobalModal } from "./common/utils/dialog";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <HashRouter>
       <ChakraBaseProvider theme={theme}>
-        <ClientContext.Provider
-          value={{
-            keepAliveClient: new KeepAliveClient(PortName.POPUP_TO_BACKGROUND),
-          }}
-        >
+        <ClientContext.Provider value={clients}>
           <Provider store={store}>
             <Suspense fallback={<LoadingScreen />}>
               <App />
@@ -31,5 +28,13 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
         </ClientContext.Provider>
       </ChakraBaseProvider>
     </HashRouter>
+  </React.StrictMode>
+);
+
+ReactDOM.createRoot(document.getElementById("modal-root")!).render(
+  <React.StrictMode>
+    <ChakraBaseProvider theme={theme}>
+      <GlobalModal />
+    </ChakraBaseProvider>
   </React.StrictMode>
 );

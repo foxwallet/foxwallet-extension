@@ -1,24 +1,26 @@
-import { MessageType } from "../../common/types/message";
 import { PortName } from "../../common/types/port";
 import { Connection, IHandler } from "../../common/utils/connection";
-import { logger } from "../../common/utils/logger";
-import { IPort } from "../../common/utils/port";
-
-const keepAliveHandler: IHandler = {
-  handle(port: IPort) {
-    port.onMessage.addListener((msg) => {
-      if (msg.type !== MessageType.KEEP_ALIVE) {
-        return;
-      }
-      logger.log("BG keep alive message received: ", msg);
-      port.postMessage({ type: MessageType.KEEP_ALIVE });
-    });
-  },
-};
+import { contentServerHandler } from "./handlers/ContentServerHandler";
+import { keepAliveHandler } from "./handlers/KeepaliveHandler";
+import { popupServerHandler } from "./handlers/PopupServerHandler";
 
 const keepAliveConnection = new Connection(
   keepAliveHandler,
   PortName.KEEP_ALIVE
 );
 
+const popupConnection = new Connection(
+  popupServerHandler,
+  PortName.POPUP_TO_BACKGROUND
+);
+
+const contentConnection = new Connection(
+  contentServerHandler,
+  PortName.CONTENT_TO_BACKGROUND
+);
+
 keepAliveConnection.connect();
+
+popupConnection.connect();
+
+contentConnection.connect();

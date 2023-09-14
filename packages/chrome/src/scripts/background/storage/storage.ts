@@ -1,11 +1,11 @@
 import localForage from "localforage";
 import { Cache } from "swr";
-import { logger } from "./logger";
+import { logger } from "../../../common/utils/logger";
 
-export const popupStorageInstance = localForage.createInstance({
+export const bgStorageInstance = localForage.createInstance({
   driver: localForage.INDEXEDDB,
   name: "fox_wallet",
-  storeName: "app",
+  storeName: "core",
 });
 
 const swrStorageInstance = localForage.createInstance({
