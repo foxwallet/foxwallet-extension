@@ -1,9 +1,13 @@
-import { init, RematchDispatch, RematchRootState } from "@rematch/core";
-import { models, RootModel } from "./index";
+import {
+  init,
+  type RematchDispatch,
+  type RematchRootState,
+} from "@rematch/core";
+import { models, type RootModel } from "./index";
 import persistPlugin from "@rematch/persist";
 import autoMergeLevel2 from "redux-persist/lib/stateReconciler/autoMergeLevel2";
-import loadingPlugin, { ExtraModelsFromLoading } from "@rematch/loading";
-import { PersistConfig } from "redux-persist/lib/types";
+import loadingPlugin, { type ExtraModelsFromLoading } from "@rematch/loading";
+import { type PersistConfig } from "redux-persist/lib/types";
 import createMigrate from "redux-persist/lib/createMigrate";
 import selectPlugin from "@rematch/select";
 import { popupStorageInstance } from "../common/utils/storage";
@@ -20,12 +24,11 @@ const persistConfig: PersistConfig<RootState> = {
   debug: isDev,
   // IndexedDB can store object directly
   serialize: false,
-  // @ts-ignore
+  // @ts-expect-error deserialize and serialize both be false
   deserialize: false,
   writeFailHandler: (err) => {
     logger.error("redux persist write fail", err.message);
   },
-  // @ts-ignore
   // migrate: createMigrate(migrations, { debug: __DEV__ }),
 };
 

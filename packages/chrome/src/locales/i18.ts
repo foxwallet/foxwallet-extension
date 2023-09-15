@@ -1,5 +1,5 @@
-import i18n, { LanguageDetectorModule } from "i18next";
-import { initReactI18next } from "react-i18next";
+import i18n, { type LanguageDetectorModule } from "i18next";
+import { initReactI18next, type useTranslation } from "react-i18next";
 import en from "./languages/en.json";
 import zh from "./languages/zh.json";
 import es from "./languages/es.json";
@@ -14,7 +14,6 @@ import hi from "./languages/hi.json";
 import ur from "./languages/ur.json";
 import de from "./languages/de.json";
 
-import { useTranslation } from "react-i18next";
 import { isDev } from "../common/utils/env";
 
 export enum SupportLanguages {
@@ -100,7 +99,7 @@ export type WalletTFunction = ReturnType<typeof useTranslation>[0];
 export async function changeLanguage(
   language: string
 ): Promise<WalletTFunction> {
-  return i18n.changeLanguage(language);
+  return await i18n.changeLanguage(language);
 }
 
 export const getCurrLanguage = (): SupportLanguages => {

@@ -11,11 +11,11 @@ export class Logger {
     error: true,
   };
 
-  private prefix: string;
+  private readonly prefix: string;
 
   constructor(opt: { level?: Level; prefix?: string }) {
-    const optLevel = opt.level || "info";
-    const optPrefix = opt.prefix || "";
+    const optLevel = opt.level ?? "info";
+    const optPrefix = opt.prefix ?? "";
     this.prefix = optPrefix;
 
     const shouldLog = function (level: Level) {
@@ -28,28 +28,28 @@ export class Logger {
   }
 
   log(...args: any[]) {
-    if (this.shouldLogMap["info"]) {
+    if (this.shouldLogMap.info) {
       const formatArgs = [this.prefix, ...args];
       console.log(...formatArgs);
     }
   }
 
   info(...args: any[]) {
-    if (this.shouldLogMap["info"]) {
+    if (this.shouldLogMap.info) {
       const formatArgs = [this.prefix, ...args];
       console.log(...formatArgs);
     }
   }
 
   warn(...args: any) {
-    if (this.shouldLogMap["warn"]) {
+    if (this.shouldLogMap.warn) {
       const formatArgs = [this.prefix, ...args];
       console.warn(...formatArgs);
     }
   }
 
   error(...args: any) {
-    if (this.shouldLogMap["error"]) {
+    if (this.shouldLogMap.error) {
       const formatArgs = [this.prefix, ...args];
       console.error(...formatArgs);
     }

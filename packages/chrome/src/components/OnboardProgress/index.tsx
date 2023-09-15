@@ -2,9 +2,9 @@ import React from "react";
 import { Flex, Box } from "@chakra-ui/react";
 import { H6, H5 } from "../../common/theme/components/text";
 
-type ProgressProps = {
+interface ProgressProps {
   currStep: number;
-};
+}
 
 const ProgressDivider = () => {
   return <Box h={"1"} w={"10"} bg={"gray.100"} borderRadius={"2"} mt={"-5"} />;

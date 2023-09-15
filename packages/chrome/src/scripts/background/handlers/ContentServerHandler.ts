@@ -1,17 +1,19 @@
-import { Runtime } from "webextension-polyfill";
-import { IHandler } from "../../../common/utils/connection";
+import { type Runtime } from "webextension-polyfill";
+import { type IHandler } from "../../../common/utils/connection";
 import { AuthManager } from "../managers/auth/AuthManager";
 import { KeyringManager } from "../managers/keyring/KeyringManager";
 import { WalletAssetsManager } from "../managers/assets";
 import {
-  ServerMessage,
+  type ServerMessage,
   MessageType,
   WalletModule,
-  ServerPayload,
+  type ServerPayload,
 } from "../../../common/types/message";
 import { logger } from "../../../common/utils/logger";
-import { ContentWalletServer } from "../servers/ContentServer";
-import { contentWalletServer } from "../servers/ContentServer";
+import {
+  type ContentWalletServer,
+  contentWalletServer,
+} from "../servers/ContentServer";
 import { PortName } from "../../../common/types/port";
 import { executeServerMethod } from "../servers/IWalletServer";
 

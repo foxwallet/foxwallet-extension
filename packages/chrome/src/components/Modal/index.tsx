@@ -2,11 +2,11 @@ import {
   Box,
   Modal,
   ModalBody,
-  ModalBodyProps,
+  type ModalBodyProps,
   ModalCloseButton,
   ModalContent,
   ModalFooter,
-  ModalFooterProps,
+  type ModalFooterProps,
   ModalHeader,
   ModalOverlay,
   useDisclosure,
@@ -15,7 +15,7 @@ import { useState } from "react";
 import { H6 } from "../../common/theme/components/text";
 import { IconCloseLine } from "../Icon";
 
-type ModalProps = {
+interface ModalProps {
   title?: string;
   isOpen: boolean;
   onClose: () => void;
@@ -23,7 +23,7 @@ type ModalProps = {
   footer: React.ReactNode;
   bodyStyle?: ModalBodyProps;
   footerStyle?: ModalFooterProps;
-};
+}
 
 export function BasicModal(props: ModalProps) {
   const { title, isOpen, onClose, body, footer, bodyStyle, footerStyle } =

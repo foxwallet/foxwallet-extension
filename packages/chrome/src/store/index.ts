@@ -1,4 +1,4 @@
-import { Models } from "@rematch/core";
+import { type Models } from "@rematch/core";
 import { user } from "./user";
 
 export interface RootModel extends Models<RootModel> {

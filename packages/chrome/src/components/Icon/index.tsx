@@ -7,23 +7,23 @@ import Left from "@/common/assets/image/icon_left.svg";
 import Logo from "../../common/assets/image/onboard_logo.svg";
 import { chakra } from "@chakra-ui/react";
 
-// @ts-ignore
+// @ts-expect-error IconCheckCircle
 export const IconCheckCircle = chakra(CheckCircle);
 
-// @ts-ignore
+// @ts-expect-error IconCheckLine
 export const IconCheckLine = chakra(CheckLine);
 
-// @ts-ignore
+// @ts-expect-error IconCloseLine
 export const IconCloseLine = chakra(CloseLine);
 
-// @ts-ignore
+// @ts-expect-error IconEyeClose
 export const IconEyeClose = chakra(EyeClose);
 
-// @ts-ignore
+// @ts-expect-error IconEyeOn
 export const IconEyeOn = chakra(Eye);
 
-// @ts-ignore
+// @ts-expect-error IconLeft
 export const IconLeft = chakra(Left);
 
-// @ts-ignore
+// @ts-expect-error OnboardLogo
 export const OnboardLogo = chakra(Logo);

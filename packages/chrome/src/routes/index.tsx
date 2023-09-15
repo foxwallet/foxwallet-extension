@@ -1,6 +1,5 @@
-import React from "react";
-import { lazy } from "react";
-import { Navigate, Outlet, RouteObject } from "react-router-dom";
+import React, { lazy } from "react";
+import { Navigate, Outlet, type RouteObject } from "react-router-dom";
 import { CheckOnboard } from "../components/CheckOnboard";
 
 const MainPage = lazy(async () => await import("../pages/Main"));

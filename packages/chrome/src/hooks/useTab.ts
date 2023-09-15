@@ -16,7 +16,9 @@ export const getIsInTab = async () => {
 export const useIsInTab = () => {
   const [isInTab, setIsInTab] = useState(false);
   useEffect(() => {
-    getIsInTab().then((value) => setIsInTab(value));
+    getIsInTab().then((value) => {
+      setIsInTab(value);
+    });
   }, []);
   return isInTab;
 };

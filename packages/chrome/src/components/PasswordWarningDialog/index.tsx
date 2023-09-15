@@ -3,11 +3,11 @@ import { P3 } from "../../common/theme/components/text";
 import { BasicModal } from "../Modal";
 import { promisifyConfirmDialogWrapper } from "../../common/utils/dialog";
 
-type Props = {
+interface Props {
   isOpen: boolean;
   onConfirm: () => void;
   onCancel: () => void;
-};
+}
 
 const PasswordWarningDialog = (props: Props) => {
   const { isOpen, onConfirm, onCancel } = props;

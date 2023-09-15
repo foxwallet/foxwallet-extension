@@ -1,11 +1,13 @@
-import { AuthManager, authManager } from "../managers/auth/AuthManager";
+import { type AuthManager, authManager } from "../managers/auth/AuthManager";
 import {
-  KeyringManager,
+  type KeyringManager,
   keyringManager,
 } from "../managers/keyring/KeyringManager";
-import { WalletAssetsManager, walletAssetsManager } from "../managers/assets";
-import { IPopupServer } from "./IWalletServer";
-import { ServerPayload } from "../../../common/types/message";
+import {
+  type WalletAssetsManager,
+  walletAssetsManager,
+} from "../managers/assets";
+import { type IPopupServer } from "./IWalletServer";
 
 export class PopupWalletServer implements IPopupServer {
   authManager: AuthManager;

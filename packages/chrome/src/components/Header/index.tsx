@@ -4,10 +4,10 @@ import { H5 } from "../../common/theme/components/text";
 import { useNavigate } from "react-router-dom";
 import { IconLeft } from "../Icon";
 
-type HeaderProps = {
+interface HeaderProps {
   enableBack: boolean;
   title: string;
-};
+}
 
 export const Header = ({ enableBack, title }: HeaderProps) => {
   const navigate = useNavigate();
@@ -29,7 +29,9 @@ export const Header = ({ enableBack, title }: HeaderProps) => {
           alignItems={"center"}
           borderRadius={"12"}
           cursor={"pointer"}
-          onClick={() => navigate(-1)}
+          onClick={() => {
+            navigate(-1);
+          }}
         >
           <IconLeft w={"3"} h={"3"} />
         </Flex>

@@ -1,7 +1,7 @@
 import { MessageType } from "../../../common/types/message";
-import { IHandler } from "../../../common/utils/connection";
+import { type IHandler } from "../../../common/utils/connection";
 import { logger } from "../../../common/utils/logger";
-import { IPort } from "../../../common/utils/port";
+import { type IPort } from "../../../common/utils/port";
 
 export const keepAliveHandler: IHandler = {
   handle(port: IPort) {

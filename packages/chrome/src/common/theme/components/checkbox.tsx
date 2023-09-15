@@ -1,8 +1,13 @@
 import React from "react";
-import { Button, chakra, defineStyleConfig } from "@chakra-ui/react";
+import {
+  Button,
+  chakra,
+  defineStyleConfig,
+  createIcon,
+  Box,
+} from "@chakra-ui/react";
 import { mode } from "@chakra-ui/theme-tools";
 import { textStyles } from "./text";
-import { createIcon, Box } from "@chakra-ui/react";
 
 export const checkBoxTheme = defineStyleConfig({
   baseStyle: (props) => {

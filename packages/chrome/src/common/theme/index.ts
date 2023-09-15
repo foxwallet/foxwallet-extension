@@ -1,4 +1,4 @@
-import { ThemeConfig, extendBaseTheme } from "@chakra-ui/react";
+import { type ThemeConfig, extendBaseTheme } from "@chakra-ui/react";
 import { buttonTheme } from "./components/button";
 import { semanticTokens, colors } from "./color";
 import { shadows } from "./shadows";

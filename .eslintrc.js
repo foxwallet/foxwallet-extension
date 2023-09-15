@@ -10,6 +10,15 @@ module.exports = {
     sourceType: "module",
     project: [path.resolve(__dirname, "./packages/chrome/tsconfig.json")],
   },
-  rules: {},
+  rules: {
+    "@typescript-eslint/consistent-type-imports": "off",
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/strict-boolean-expressions": "warn",
+    "@typescript-eslint/no-floating-promises": "warn",
+    "@typescript-eslint/no-misused-promises": "warn",
+    "@typescript-eslint/no-extraneous-class": "warn",
+    "@typescript-eslint/no-empty-interface": "warn",
+    "@typescript-eslint/consistent-type-assertions": "warn",
+  },
   settings: {},
 };

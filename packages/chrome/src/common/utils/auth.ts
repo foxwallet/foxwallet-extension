@@ -3,7 +3,7 @@ import {
   PBKDF2_NUM_OF_ITERATIONS,
   WALLET_MASTER_SECRET,
 } from "../constants";
-import { Cipher } from "../types/keyring";
+import { type Cipher } from "../types/keyring";
 import { logger } from "./logger";
 import { getRandomBytes } from "./randombytes";
 import { Buffer } from "buffer";
@@ -57,7 +57,7 @@ export const getToken = async (password: string, salt: Buffer) => {
   const derivedBits = await crypto.subtle.deriveBits(
     {
       name: "PBKDF2",
-      salt: salt,
+      salt,
       iterations: PBKDF2_NUM_OF_ITERATIONS,
       hash: "SHA-256",
     },

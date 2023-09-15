@@ -1,12 +1,12 @@
-export type Cipher = {
+export interface Cipher {
   data: string;
   salt: string;
-};
+}
 
-export type KeyringObj = {};
+export interface KeyringObj {}
 
-export type Vault = {
+export interface Vault {
   cipher?: Cipher;
   keyring?: KeyringObj;
   version?: number;
-};
+}

@@ -1,10 +1,9 @@
-import { Box, Button, Flex, Image, Text } from "@chakra-ui/react";
+import { Box, Button, Flex, Image, Text, keyframes } from "@chakra-ui/react";
 import React, { useState, useRef } from "react";
 import { B3, H4, L1 } from "../../common/theme/components/text";
 import { useNavigate } from "react-router-dom";
 import BaseCheckbox from "../../components/Checkbox";
 import browser from "webextension-polyfill";
-import { keyframes } from "@chakra-ui/react";
 import { OnboardLogo } from "../../components/Icon";
 
 const shakeAnimation = keyframes`
@@ -40,7 +39,9 @@ function OnboardHomeScreen() {
       {/* Open new tab will dismiss the popup window, so check the policy advance */}
       {/* Make onboard progress in a new tab further(Need new design) */}
       <BaseCheckbox
-        onStatusChange={(status) => setChecked(status)}
+        onStatusChange={(status) => {
+          setChecked(status);
+        }}
         container={{
           ml: 4,
           mb: 4,
@@ -84,7 +85,9 @@ function OnboardHomeScreen() {
         onClick={() => {
           if (!checked) {
             setShowShakeAnimation(true);
-            setTimeout(() => setShowShakeAnimation(false), 820);
+            setTimeout(() => {
+              setShowShakeAnimation(false);
+            }, 820);
           } else {
             navigate("/onboard/create");
           }

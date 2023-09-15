@@ -4,7 +4,7 @@ import {
   validateToken,
 } from "../../../../common/utils/auth";
 import { logger } from "../../../../common/utils/logger";
-import { vaultStorage, VaultStorage } from "../../storage/VaultStorage";
+import { vaultStorage, type VaultStorage } from "../../storage/VaultStorage";
 
 export class AuthManager {
   #storage: VaultStorage;

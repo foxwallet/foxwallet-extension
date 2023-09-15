@@ -1,18 +1,18 @@
-import { IPopupServer } from "../../scripts/background/servers/IWalletServer";
+import { type IPopupServer } from "../../scripts/background/servers/IWalletServer";
 import { KEEP_ALIVE_INTERVAL } from "../constants";
 import {
   MessageType,
   PopupServerMethod,
-  ServerMessage,
+  type ServerMessage,
   ServerPayload,
-  ServerResp,
+  type ServerResp,
 } from "../types/message";
 import { PortName } from "../types/port";
 import { logger } from "./logger";
-import { IPort, Port } from "./port";
+import { type IPort, Port } from "./port";
 
 export interface IClient {
-  _connect(): void | Promise<void>;
+  _connect: () => void;
 }
 
 // client to connect background client
@@ -20,11 +20,11 @@ export class KeepAliveClient implements IClient {
   private port: IPort;
   private timer?: number;
 
-  constructor(private portName: PortName) {
+  constructor(private readonly portName: PortName) {
     this._connect();
   }
 
-  _connect(): void | Promise<void> {
+  _connect(): void {
     this.port = new Port({ name: PortName.KEEP_ALIVE });
     this.port.onDisconnect.addListener(() => {
       // reconnect
@@ -38,7 +38,7 @@ export class KeepAliveClient implements IClient {
       clearTimeout(this.timer);
       this.timer = undefined;
     }
-    // @ts-ignore
+    // @ts-expect-error timeout return
     this.timer = setTimeout(() => {
       try {
         this.port.postMessage({
@@ -65,12 +65,12 @@ export class PopupServerClient implements IClient, IPopupServer {
     this._connect();
   }
 
-  _connect(): void | Promise<void> {
+  _connect(): void {
     this.port = new Port({ name: PortName.POPUP_TO_BACKGROUND });
     this.port.onMessage.addListener(this.#onMessage.bind(this));
     this.port.onDisconnect.addListener(() => {
       logger.warn("PopupServerClient disconnected, try to reconnect");
-      Object.values(this.callbackMap).map((callback) => {
+      Object.values(this.callbackMap).forEach((callback) => {
         callback(new Error("PopupServerClient disconncected"));
       });
       this.callbackMap = new Map();
@@ -92,8 +92,8 @@ export class PopupServerClient implements IClient, IPopupServer {
     }
   }
 
-  #send<T, R>(method: PopupServerMethod, payload: T): Promise<R> {
-    return new Promise((resolve, reject) => {
+  async #send<T, R>(method: PopupServerMethod, payload: T): Promise<R> {
+    return await new Promise((resolve, reject) => {
       const id = Date.now();
       const message: ServerMessage = {
         type: MessageType.REQUEST,

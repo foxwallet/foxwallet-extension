@@ -1,5 +1,5 @@
 import { createModel } from "@rematch/core";
-import { RootModel } from "./index";
+import { type RootModel } from "./index";
 
 export const user = createModel<RootModel>()({
   name: "user",

@@ -5,10 +5,10 @@ export type IPort = browser.Runtime.Port;
 
 // content and popup use Port to commuticate with background
 export class Port implements IPort {
-  private portName: string;
+  private readonly portName: string;
   private port: browser.Runtime.Port;
   private connected: boolean;
-  private onConnect: (port: IPort) => void | Promise<void>;
+  private readonly onConnect: (port: IPort) => void | Promise<void>;
 
   constructor(
     info: browser.Runtime.ConnectConnectInfoType,
@@ -45,6 +45,7 @@ export class Port implements IPort {
     }
     this.port.postMessage(message);
   }
+
   get disconnect() {
     return this.port.disconnect;
   }

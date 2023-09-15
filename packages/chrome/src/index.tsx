@@ -31,7 +31,9 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   </React.StrictMode>
 );
 
-ReactDOM.createRoot(document.getElementById("modal-root")!).render(
+ReactDOM.createRoot(
+  document.getElementById("modal-root") as HTMLElement
+).render(
   <React.StrictMode>
     <ChakraBaseProvider theme={theme}>
       <GlobalModal />

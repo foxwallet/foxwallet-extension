@@ -1,20 +1,19 @@
-import { useDisclosure } from "@chakra-ui/react";
+import { useDisclosure, ChakraBaseProvider } from "@chakra-ui/react";
 import React, { useEffect, useImperativeHandle, useState } from "react";
 import ReactDOM from "react-dom/client";
-import { ChakraBaseProvider } from "@chakra-ui/react";
 import { theme } from "../theme";
 import { popupEvents } from "./event";
 import { Emitter } from "mitt";
 import { useDataRef } from "../../hooks/useDataRef";
 
-export type ModalProps = {
+export interface ModalProps {
   isOpen: boolean;
-};
+}
 
-export type RawConfirmDialogProps<T> = {
+export interface RawConfirmDialogProps<T> {
   onConfirm: (resp: T) => void | Promise<void>;
   onCancel: () => void;
-};
+}
 
 export type RawConfirmDialog<OtherProps, T> = (
   props: RawConfirmDialogProps<T> & ModalProps & OtherProps
@@ -61,7 +60,7 @@ export type RawConfirmDialog<OtherProps, T> = (
 //   };
 // }
 
-function ConfirmDialogWrapper<OtherProps = {}, T = undefined>(
+function ConfirmDialogWrapper<OtherProps = Record<string, any>, T = undefined>(
   props: RawConfirmDialogProps<T> & {
     Dialog: RawConfirmDialog<OtherProps, T>;
   }
@@ -71,7 +70,7 @@ function ConfirmDialogWrapper<OtherProps = {}, T = undefined>(
 
   useEffect(() => {
     onOpen();
-  }, []);
+  }, [onOpen]);
 
   const onConfirm = async (resp: T) => {
     props.onConfirm(resp);
@@ -94,10 +93,11 @@ function ConfirmDialogWrapper<OtherProps = {}, T = undefined>(
   );
 }
 
-export function promisifyConfirmDialogWrapper<OtherProps = {}, T = undefined>(
-  Dialog: RawConfirmDialog<OtherProps, T>
-) {
-  return (
+export function promisifyConfirmDialogWrapper<
+  OtherProps = Record<string, any>,
+  T = undefined,
+>(Dialog: RawConfirmDialog<OtherProps, T>) {
+  return async (
     props: Omit<
       OtherProps,
       keyof ModalProps | keyof RawConfirmDialogProps<T>
@@ -105,7 +105,7 @@ export function promisifyConfirmDialogWrapper<OtherProps = {}, T = undefined>(
   ) => {
     const id = Date.now();
 
-    return new Promise<{ confirmed: boolean; data: T | undefined }>(
+    return await new Promise<{ confirmed: boolean; data: T | undefined }>(
       (resolve, reject) => {
         const onConfirm = async (resp: T) => {
           resolve({ confirmed: true, data: resp });

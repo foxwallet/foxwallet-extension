@@ -1,5 +1,5 @@
 import localForage from "localforage";
-import { Cache } from "swr";
+import { type Cache } from "swr";
 import { logger } from "./logger";
 
 export const popupStorageInstance = localForage.createInstance({
@@ -22,8 +22,8 @@ swrStorageInstance.iterate((value, key) => {
 
 export const swrCache: Cache = {
   keys: function* () {
-    let keys = Object.keys(memoryCache);
-    for (let key of keys) {
+    const keys = Object.keys(memoryCache);
+    for (const key of keys) {
       yield key;
     }
   },

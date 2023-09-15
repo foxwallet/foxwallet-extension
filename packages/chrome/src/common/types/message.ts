@@ -1,4 +1,4 @@
-import { PortName } from "./port";
+import { type PortName } from "./port";
 
 export enum MessageType {
   KEEP_ALIVE = "keep_alive",
@@ -40,12 +40,12 @@ export type ServerMessage<T = any> =
       payload: T;
     };
 
-export type ServerPayload<T = any> = {
+export interface ServerPayload<T = any> {
   error: null | string;
   data: T | null;
-};
+}
 
-export type ServerResp<T = any> = {
+export interface ServerResp<T = any> {
   id: number;
   payload: ServerPayload<T>;
-};
+}

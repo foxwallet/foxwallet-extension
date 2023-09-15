@@ -1,8 +1,8 @@
 import {
   Flex,
-  FlexProps,
+  type FlexProps,
   Input,
-  InputProps,
+  type InputProps,
   Text,
   chakra,
   InputGroup,
@@ -37,14 +37,14 @@ export const BaseInput = chakra((props: BaseInputProps) => {
   );
 });
 
-type BaseInputGroupProps = {
+interface BaseInputGroupProps {
   title?: string;
   required?: boolean;
   container?: FlexProps;
   inputProps?: InputProps;
   leftElement?: React.ReactNode;
   rightElement?: React.ReactNode;
-};
+}
 
 export const BaseInputGroup = (props: BaseInputGroupProps) => {
   const { title, required, container, inputProps, leftElement, rightElement } =

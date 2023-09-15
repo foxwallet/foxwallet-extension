@@ -1,10 +1,13 @@
-import { AuthManager, authManager } from "../managers/auth/AuthManager";
+import { type AuthManager, authManager } from "../managers/auth/AuthManager";
 import {
-  KeyringManager,
+  type KeyringManager,
   keyringManager,
 } from "../managers/keyring/KeyringManager";
-import { WalletAssetsManager, walletAssetsManager } from "../managers/assets";
-import { IContentServer } from "./IWalletServer";
+import {
+  type WalletAssetsManager,
+  walletAssetsManager,
+} from "../managers/assets";
+import { type IContentServer } from "./IWalletServer";
 
 export class ContentWalletServer implements IContentServer {
   authManager: AuthManager;

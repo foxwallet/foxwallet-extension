@@ -27,12 +27,16 @@ function OnboardCreateWalletScreen() {
         );
       case 2:
         return (
-          <BackupMnemonicStep onConfirm={() => setStep((_step) => _step + 1)} />
+          <BackupMnemonicStep
+            onConfirm={() => {
+              setStep((_step) => _step + 1);
+            }}
+          />
         );
       case 3:
         return null;
     }
-  }, [step]);
+  }, [step, popupServerClient]);
 
   return (
     <PageWithHeader title="Create Wallet" enableBack>

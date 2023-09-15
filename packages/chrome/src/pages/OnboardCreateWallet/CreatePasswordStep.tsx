@@ -3,9 +3,13 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Content } from "../../layouts/Content";
 import { BaseInput, BaseInputGroup } from "../../components/Input";
 import { WarningArea } from "../../components/WarningArea";
-import { IconCheckLine, IconCloseLine, IconEyeOn } from "../../components/Icon";
-import { IconEyeClose } from "../../components/Icon";
-import { Score as PasswordScore } from "@zxcvbn-ts/core";
+import {
+  IconCheckLine,
+  IconCloseLine,
+  IconEyeOn,
+  IconEyeClose,
+} from "../../components/Icon";
+import { type Score as PasswordScore } from "@zxcvbn-ts/core";
 import { useDebounce } from "use-debounce";
 import { getPasswordStrength } from "../../common/utils/zxcvbn";
 import { PasswordStrengthIndicator } from "../../components/PasswordStrengthIndicator";
@@ -23,6 +27,7 @@ export const CreatePasswordStep = (props: {
   );
   const [debouncePassword] = useDebounce(password, 300);
   const [confirmPassword, setConfirmPassword] = useState("");
+  const { onConfirm: onSubmit } = props;
 
   const onWalletNameChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,11 +80,11 @@ export const CreatePasswordStep = (props: {
       if (!confirmed) {
         return;
       }
-      props.onConfirm(walletName, password);
+      onSubmit(walletName, password);
       return;
     }
-    props.onConfirm(walletName, password);
-  }, [disableConfirm, passwordScore, walletName, password]);
+    onSubmit(walletName, password);
+  }, [disableConfirm, passwordScore, walletName, password, onSubmit]);
 
   return (
     <Content>
@@ -110,7 +115,9 @@ export const CreatePasswordStep = (props: {
             h="full"
             mr={"2"}
             cursor={"pointer"}
-            onClick={() => setViewPass((curr) => !curr)}
+            onClick={() => {
+              setViewPass((curr) => !curr);
+            }}
           >
             {viewPass ? (
               <IconEyeClose w={"5"} h="full" />
@@ -133,7 +140,9 @@ export const CreatePasswordStep = (props: {
           isInvalid: showConfirmPasswordIndicator && !confirmPasswordCorrect,
           placeholder: "Enter password again",
           type: viewPass ? "text" : "password",
-          onChange: (event) => setConfirmPassword(event.target.value),
+          onChange: (event) => {
+            setConfirmPassword(event.target.value);
+          },
         }}
         rightElement={
           showConfirmPasswordIndicator && (
@@ -145,7 +154,9 @@ export const CreatePasswordStep = (props: {
               h="full"
               mr={"2"}
               cursor={"pointer"}
-              onClick={() => setViewPass((curr) => !curr)}
+              onClick={() => {
+                setViewPass((curr) => !curr);
+              }}
             >
               {confirmPasswordCorrect ? (
                 <IconCheckLine w={"5"} h="full" stroke="green.500" />

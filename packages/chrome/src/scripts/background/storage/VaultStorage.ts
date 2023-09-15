@@ -1,4 +1,8 @@
-import { Cipher, KeyringObj, Vault } from "../../../common/types/keyring";
+import {
+  type Cipher,
+  type KeyringObj,
+  type Vault,
+} from "../../../common/types/keyring";
 import { bgStorageInstance } from "./storage";
 
 const VAULT_KEY = "vault";

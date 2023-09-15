@@ -1,6 +1,6 @@
-import React, { PropsWithChildren, useEffect, useState } from "react";
+import React, { type PropsWithChildren, useEffect, useState } from "react";
 import { Transition } from "@headlessui/react";
-import { Box, Flex, FlexProps } from "@chakra-ui/react";
+import { Box, Flex, type FlexProps } from "@chakra-ui/react";
 import { IconCheckCircle } from "../Icon";
 
 export type CheckboxProps = {
@@ -14,13 +14,15 @@ export function BaseCheckbox(props: CheckboxProps) {
 
   useEffect(() => {
     onStatusChange(checked);
-  }, [checked]);
+  }, [checked, onStatusChange]);
 
   return (
     <Flex
       alignItems={"center"}
       {...container}
-      onClick={() => setChecked((curr) => !curr)}
+      onClick={() => {
+        setChecked((curr) => !curr);
+      }}
       cursor={"pointer"}
     >
       <Box w="4" h="4" mr="1">

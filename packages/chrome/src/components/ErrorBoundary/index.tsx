@@ -1,6 +1,6 @@
 import React from "react";
-import { INodeProps } from "../../common/types";
-import { ErrorInfo } from "react-dom/client";
+import { type INodeProps } from "../../common/types";
+import { type ErrorInfo } from "react-dom/client";
 
 export type ErrorBoundaryProps = INodeProps & {
   onError?: (error: Error, info: ErrorInfo) => void;
@@ -17,7 +17,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps> {
   componentDidCatch(error: Error, info: ErrorInfo) {
     // Display fallback UI
     this.setState({
-      error: error,
+      error,
       errorInfo: info?.componentStack ?? "",
     });
     // You can also log the error to an error reporting service
