@@ -113,11 +113,4 @@ export class PopupServerClient implements IClient, IPopupServer {
       this.port.postMessage(message);
     });
   }
-
-  async initPassword(params: { password: string }): Promise<string> {
-    return await this.#send<typeof params, string>(
-      PopupServerMethod.INIT_PASSWORD,
-      params
-    );
-  }
 }

@@ -6,11 +6,12 @@ import { ClientContext } from "../../hooks/useClient";
 import { CreatePasswordStep } from "./CreatePasswordStep";
 import { BackupMnemonicStep } from "./BackupMnemonic";
 import { logger } from "../../common/utils/logger";
+import { useManagers } from "../../hooks/useManager";
 
 function OnboardCreateWalletScreen() {
-  const { popupServerClient } = useContext(ClientContext);
   const [step, setStep] = useState(1);
   const walletNameRef = useRef("");
+  const { authManager } = useManagers();
 
   const stepContent = useMemo(() => {
     switch (step) {
@@ -19,7 +20,7 @@ function OnboardCreateWalletScreen() {
           <CreatePasswordStep
             onConfirm={async (walletName, password) => {
               walletNameRef.current = walletName;
-              const res = await popupServerClient.initPassword({ password });
+              const res = await authManager.initPassword(password);
               logger.log("=> res: ", res);
               setStep((_step) => _step + 1);
             }}
@@ -36,7 +37,7 @@ function OnboardCreateWalletScreen() {
       case 3:
         return null;
     }
-  }, [step, popupServerClient]);
+  }, [step]);
 
   return (
     <PageWithHeader title="Create Wallet" enableBack>

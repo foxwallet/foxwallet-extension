@@ -1,27 +1,20 @@
-import { type AuthManager, authManager } from "../managers/auth/AuthManager";
+import {
+  type AuthManager,
+  authManager,
+} from "../../../store/vault/managers/auth/AuthManager";
 import {
   type KeyringManager,
   keyringManager,
-} from "../managers/keyring/KeyringManager";
-import {
-  type WalletAssetsManager,
-  walletAssetsManager,
-} from "../managers/assets";
+} from "../../../store/vault/managers/keyring/KeyringManager";
 import { type IContentServer } from "./IWalletServer";
 
 export class ContentWalletServer implements IContentServer {
   authManager: AuthManager;
   keyringManager: KeyringManager;
-  walletAssetsManager: WalletAssetsManager;
 
-  constructor(
-    authManager: AuthManager,
-    keyringManager: KeyringManager,
-    walletAssetsManager: WalletAssetsManager
-  ) {
+  constructor(authManager: AuthManager, keyringManager: KeyringManager) {
     this.authManager = authManager;
     this.keyringManager = keyringManager;
-    this.walletAssetsManager = walletAssetsManager;
   }
 
   connect: (params: any) => Promise<any>;
@@ -29,6 +22,5 @@ export class ContentWalletServer implements IContentServer {
 
 export const contentWalletServer = new ContentWalletServer(
   authManager,
-  keyringManager,
-  walletAssetsManager
+  keyringManager
 );

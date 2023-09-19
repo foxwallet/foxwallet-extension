@@ -1,8 +1,5 @@
 import { type Runtime } from "webextension-polyfill";
 import { type IHandler } from "../../../common/utils/connection";
-import { AuthManager } from "../managers/auth/AuthManager";
-import { KeyringManager } from "../managers/keyring/KeyringManager";
-import { WalletAssetsManager } from "../managers/assets";
 import {
   type ServerMessage,
   MessageType,

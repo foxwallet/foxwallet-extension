@@ -10,7 +10,7 @@ import loadingPlugin, { type ExtraModelsFromLoading } from "@rematch/loading";
 import { type PersistConfig } from "redux-persist/lib/types";
 import createMigrate from "redux-persist/lib/createMigrate";
 import selectPlugin from "@rematch/select";
-import { popupStorageInstance } from "../common/utils/storage";
+import { appStorageInstance } from "../common/utils/storage";
 import { isDev } from "../common/utils/env";
 import { logger } from "../common/utils/logger";
 
@@ -18,7 +18,7 @@ type FullModel = ExtraModelsFromLoading<RootModel>;
 
 const persistConfig: PersistConfig<RootState> = {
   key: "root",
-  storage: popupStorageInstance,
+  storage: appStorageInstance,
   stateReconciler: autoMergeLevel2,
   version: 1,
   debug: isDev,

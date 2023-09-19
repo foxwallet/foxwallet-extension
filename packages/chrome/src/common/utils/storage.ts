@@ -2,10 +2,17 @@ import localForage from "localforage";
 import { type Cache } from "swr";
 import { logger } from "./logger";
 
-export const popupStorageInstance = localForage.createInstance({
+// both background service and popup run in the same extension context, so the indexedDB is the same
+export const appStorageInstance = localForage.createInstance({
   driver: localForage.INDEXEDDB,
   name: "fox_wallet",
   storeName: "app",
+});
+
+export const walletStorageInstance = localForage.createInstance({
+  driver: localForage.INDEXEDDB,
+  name: "fox_wallet",
+  storeName: "core",
 });
 
 const swrStorageInstance = localForage.createInstance({

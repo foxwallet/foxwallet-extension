@@ -14,23 +14,27 @@ import { LoadingScreen } from "./components/Loading";
 import { ChakraBaseProvider } from "@chakra-ui/react";
 import { theme } from "./common/theme";
 import { GlobalModal } from "./common/utils/dialog";
+import { ManagerContext, managers } from "./hooks/useManager";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <HashRouter>
       <ChakraBaseProvider theme={theme}>
         <ClientContext.Provider value={clients}>
-          <Provider store={store}>
-            <Suspense fallback={<LoadingScreen />}>
-              <App />
-            </Suspense>
-          </Provider>
+          <ManagerContext.Provider value={managers}>
+            <Provider store={store}>
+              <Suspense fallback={<LoadingScreen />}>
+                <App />
+              </Suspense>
+            </Provider>
+          </ManagerContext.Provider>
         </ClientContext.Provider>
       </ChakraBaseProvider>
     </HashRouter>
   </React.StrictMode>
 );
 
+// pure modal, can't access other state in the modal, provide state by props
 ReactDOM.createRoot(
   document.getElementById("modal-root") as HTMLElement
 ).render(

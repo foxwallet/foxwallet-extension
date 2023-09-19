@@ -6,7 +6,7 @@ import {
 } from "../../../common/types/message";
 
 export interface IPopupServer {
-  initPassword: (params: { password: string }) => Promise<string>;
+  // initPassword: (params: { password: string }) => Promise<string>;
 }
 
 export interface IContentServer {

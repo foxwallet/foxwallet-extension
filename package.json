@@ -4,7 +4,7 @@
   "description": "FoxWallet chrome extension (In development)",
   "main": "index.js",
   "workspaces": [
-    "packages/chrome"
+    "packages/*"
   ],
   "scripts": {
     "lint": "eslint './packages/{!(expo),}*/src/**/*.{ts,tsx}'",

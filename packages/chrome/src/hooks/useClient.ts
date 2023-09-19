@@ -13,3 +13,8 @@ export const clients = {
 };
 
 export const ClientContext = React.createContext<Client>(clients);
+
+export const useClient = () => {
+  const client = useContext(ClientContext);
+  return client;
+};
