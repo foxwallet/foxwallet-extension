@@ -17,8 +17,8 @@
     "strictPropertyInitialization": false,
     "outDir": "dist",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./*"]
     },
   },
-  "include": ["src/*"]
+  "include": ["./*"]
 }

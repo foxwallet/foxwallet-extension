@@ -36,7 +36,7 @@ export abstract class BaseHDWallet<T extends CoinType> {
     index: number,
     accountId: string,
     passwordHash: string,
-    option: AccountOption[T]
+    option?: AccountOption[T]
   ): Promise<EncryptedKeyPair>;
 
 

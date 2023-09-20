@@ -27,7 +27,7 @@ export class BLS12377HDWallet<T extends CoinType> extends BaseHDWallet<T> {
     i: number,
     accountId: string,
     passwordHash: string,
-    _option: AccountOption[T]
+    _option?: AccountOption[T]
   ): Promise<EncryptedKeyPairWithViewKey> {
     switch (this.symbol) {
       case CoinType.ALEO: {

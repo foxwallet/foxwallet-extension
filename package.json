@@ -16,7 +16,9 @@
   },
   "author": "",
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "nanoid": "^5.0.1"
+  },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^6.7.0",
     "eslint": "^8.49.0",

@@ -92,6 +92,10 @@ export class PopupServerClient implements IClient, IPopupServer {
     }
   }
 
+  async initPassword(params: { password: string; }): Promise<string> {
+    return await this.#send(PopupServerMethod.INIT_PASSWORD, params);
+  }
+
   async #send<T, R>(method: PopupServerMethod, payload: T): Promise<R> {
     return await new Promise((resolve, reject) => {
       const id = Date.now();

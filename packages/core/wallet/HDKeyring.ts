@@ -1,11 +1,12 @@
 
+import { EncryptedField } from "@/types/EncryptedField";
 import { getCoinDerivation } from "../helper/CoinBasic";
 import { AccountOption } from "../types/CoinBasic";
 import { CoinCurve } from "../types/CoinCurve";
 import { CoinType, Coins } from "../types/CoinType";
 import { NewHdKeyringProps, RestoreHdKeyringProps } from "../types/HDKeyring";
 import { EncryptedKeyPair, EncryptedKeyPairWithViewKey, RawKeyPair, RawKeyPairWithViewKey } from "../types/KeyPair";
-import { encryptStr } from "../utils/encrypt";
+import { decryptStr, encryptStr } from "../utils/encrypt";
 import { HDKey } from "./HDKey";
 import { BLS12377HDKey } from "./HDKey/BLS12377HDKey";
 import { EthHDKey } from "./HDKey/EthHDKey";
@@ -18,6 +19,7 @@ type CoinsWallets = {
 };
 
 export class HDKeyring {
+  private mnemonic?: EncryptedField;
   private secp256k1Root?: EthHDKey;
   private bls12377Root?: BLS12377HDKey;
   private coinWallets?: CoinsWallets;
@@ -28,7 +30,7 @@ export class HDKeyring {
     opts: NewHdKeyringProps
   ): Promise<HDKeyring> {
     const hdKeyring = new HDKeyring(opts.walletId);
-    await hdKeyring.createNewMnemonic();
+    await hdKeyring.createNewMnemonic(opts.hash);
     hdKeyring.initCheck();
 
     return hdKeyring;
@@ -39,7 +41,9 @@ export class HDKeyring {
     opts: RestoreHdKeyringProps
   ): Promise<HDKeyring> {
     const hdKeyring = new HDKeyring(opts.walletId);
-    await hdKeyring.initFromMnemonic(opts.mnemonic);
+    hdKeyring.mnemonic = opts.mnemonic;
+    const mnemonic = await decryptStr(opts.hash, opts.mnemonic);
+    await hdKeyring.initFromMnemonic(mnemonic);
     hdKeyring.initCheck();
 
     return hdKeyring;
@@ -57,11 +61,14 @@ export class HDKeyring {
     }
   }
 
-  public async createNewMnemonic() {
+  public async createNewMnemonic(hash: string) {
     if (!this.coinWallets) {
       let mnemonic = "";
       mnemonic = await Mnemonic.generateUnique();
+      this.mnemonic = await encryptStr(hash, mnemonic);
       await this.initFromMnemonic(mnemonic);
+    } else {
+      throw new Error("createNewMnemonic failed due to exist mnemonic");
     }
   }
 
@@ -99,7 +106,7 @@ export class HDKeyring {
     index: number,
     symbol: T,
     passwordHash: string,
-    option: AccountOption[T]
+    option?: AccountOption[T]
   ): Promise<EncryptedKeyPair> {
     this.initCheck();
     const coinWallet = this.getWallet(symbol);
@@ -110,7 +117,11 @@ export class HDKeyring {
     return encryptedKeyPair;
   }
 
-  public getWalletId() {
+  getWalletId() {
     return this.walletId;
+  }
+
+  getEncryptedMnemonic(): EncryptedField | undefined {
+    return this.mnemonic;
   }
 }

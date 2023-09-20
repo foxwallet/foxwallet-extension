@@ -24,7 +24,6 @@ export class Mnemonic {
     }
   }
 
-  //TODO I think this is anti patent
   public static async generateUnique(words: 12 | 24 = 12): Promise<string> {
     let mnemonic = "";
     while (!mnemonic) {
