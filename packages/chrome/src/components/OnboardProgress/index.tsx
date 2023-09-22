@@ -1,4 +1,4 @@
-import React from "react";
+
 import { Flex, Box } from "@chakra-ui/react";
 import { H6, H5 } from "../../common/theme/components/text";
 

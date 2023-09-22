@@ -7,7 +7,8 @@
     "dev": "vite --mode development",
     "build:dev": "vite build --mode development",
     "build:prod": "vite build",
-    "clean": "rimraf dist/"
+    "clean": "rimraf dist/",
+    "wasm": "wasm-pack build ../../aleo/aleo_sdk/wasm --target web "
   },
   "author": "",
   "license": "MIT",
@@ -15,6 +16,7 @@
     "@crxjs/vite-plugin": "1.0.13",
     "@esbuild-plugins/node-globals-polyfill": "0.2.3",
     "@esbuild-plugins/node-modules-polyfill": "0.2.2",
+    "@rollup/plugin-commonjs": "^25.0.4",
     "@rollup/plugin-wasm": "^6.1.3",
     "@types/chrome": "0.0.244",
     "@types/lodash-es": "^4.17.8",
@@ -32,10 +34,12 @@
     "sass": "^1.66.1",
     "tailwindcss": "3.3.3",
     "vite": "^4.4.9",
+    "vite-plugin-commonjs": "^0.9.0",
     "vite-plugin-node-polyfills": "^0.11.3",
     "vite-plugin-svgr": "^3.2.0",
     "vite-plugin-top-level-await": "^1.3.1",
     "vite-plugin-wasm": "^3.2.2",
+    "vite-plugin-wasm-pack": "^0.1.12",
     "vite-tsconfig-paths": "^4.2.0"
   },
   "dependencies": {

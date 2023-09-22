@@ -1,4 +1,4 @@
-import React from "react";
+
 import { useRoutes } from "react-router-dom";
 import { routesConfig } from "./routes";
 import ErrorBoundary from "./components/ErrorBoundary";

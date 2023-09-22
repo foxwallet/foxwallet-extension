@@ -21,30 +21,5 @@ export const account = createModel<RootModel>()({
     }
   },
   effects: (dispatch) => ({
-    async getAllWallet() {
-      const allWallet = await clients.popupServerClient.getAllWallet();
-      dispatch.account.init({ keyring: allWallet });
-    },
-
-    async createNewWallet(payload: { walletName: string, revealMnemonic: boolean }) {
-      const { walletName, revealMnemonic } = payload;
-      await clients.popupServerClient.createWallet({ walletName, revealMnemonic });
-      const allWallet = await clients.popupServerClient.getAllWallet();
-      dispatch.account.init({ keyring: allWallet });
-    },
-
-    async importHDWallet(payload: { walletName: string, mnemonic: string }) {
-      const { walletName, mnemonic } = payload;
-      await clients.popupServerClient.importHDWallet({ walletName, mnemonic });
-      const allWallet = await clients.popupServerClient.getAllWallet();
-      dispatch.account.init({ keyring: allWallet });
-    },
-
-    async addNewAccount(payload: { walletId: string, coinType: CoinType }) {
-      const { walletId, coinType } = payload;
-      await clients.popupServerClient.addAccount({ walletId, coin: coinType });
-      const allWallet = await clients.popupServerClient.getAllWallet();
-      dispatch.account.init({ keyring: allWallet });
-    }
   }),
 });

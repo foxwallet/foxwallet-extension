@@ -8,7 +8,8 @@
   ],
   "scripts": {
     "lint": "eslint './packages/{!(expo),}*/src/**/*.{ts,tsx}'",
-    "lint:fix": "eslint --fix './packages/{!(expo),}*/src/**/*.{ts,tsx}'"
+    "lint:fix": "eslint --fix './packages/{!(expo),}*/src/**/*.{ts,tsx}'",
+    "postinstall": "patch-package"
   },
   "lint-staged": {
     "*": "prettier --write --ignore-unknown",

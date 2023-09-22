@@ -6,7 +6,7 @@ import { nanoid } from "nanoid";
 import { AuthManager } from "../auth/AuthManager";
 import { decryptStr } from "@foxwallet/core/utils/encrypt";
 import { logger } from "../../../../../../common/utils/logger";
-import initAleoWasm from "@aleohq/wasm";
+import initAleoWasm from "wasm";
 import { AddAccountProps } from "../../../../servers/IWalletServer";
 
 export class KeyringManager {

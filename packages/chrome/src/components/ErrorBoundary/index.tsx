@@ -1,4 +1,5 @@
-import React from "react";
+
+import { Component } from "react";
 import { type INodeProps } from "../../common/types";
 import { type ErrorInfo } from "react-dom/client";
 
@@ -7,7 +8,7 @@ export type ErrorBoundaryProps = INodeProps & {
   errorElement?: React.ReactElement;
 };
 
-class ErrorBoundary extends React.Component<ErrorBoundaryProps> {
+class ErrorBoundary extends Component<ErrorBoundaryProps> {
   state: { error: Error | undefined };
   constructor(props: any) {
     super(props);

@@ -4,7 +4,6 @@ import { useWalletDispatch } from "../../hooks/useStore";
 import { clients, useClient } from "../../hooks/useClient";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Box, Flex, Grid, Text, GridItem, BoxProps, Button } from "@chakra-ui/react";
-import { PrivateKey } from "@aleohq/wasm"
 import { logger } from "../../common/utils/logger";
 import { nanoid } from "nanoid";
 import { DisplayWallet } from "../../scripts/background/store/vault/types/keyring";

@@ -11,7 +11,7 @@
     "@types/chrome": "^0.0.246"
   },
   "dependencies": {
-    "@aleohq/wasm": "^0.5.9",
+    "@aleohq/sdk": "^0.5.10",
     "@metamask/browser-passworder": "^4.1.0",
     "axios": "^1.5.0",
     "bip39": "^3.1.0",

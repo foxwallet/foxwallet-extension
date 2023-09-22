@@ -1,4 +1,4 @@
-import { PrivateKey } from "@aleohq/wasm";
+import { PrivateKey } from "@aleohq/sdk";
 import { encode as bs58Encode, decode as bs58Decode } from "bs58";
 import { CoinBasic } from "../../CoinBasic";
 import { CoinType } from "../../../types/CoinType";

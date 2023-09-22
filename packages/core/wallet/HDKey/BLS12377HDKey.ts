@@ -1,5 +1,5 @@
 import { Buffer } from "buffer";
-import { createHmac } from "crypto-browserify"
+import crypto from "crypto-browserify"
 
 const HARDENED_OFFSET = 0x80000000;
 const BLS12_377_CURVE = "bls12_377 seed";
@@ -18,7 +18,7 @@ const CKDPriv = ({ key, chainCode }: IKeys, index: number): IKeys => {
 
   const data = Buffer.concat([Buffer.alloc(1, 0), key, indexBuffer]);
 
-  const I = createHmac("sha512", chainCode).update(data).digest();
+  const I = crypto.createHmac("sha512", chainCode).update(data).digest();
   const IL = I.slice(0, 32);
   const IR = I.slice(32);
   return {
@@ -39,7 +39,7 @@ const isValidPath = (path: string): boolean => {
 };
 
 export const getMasterKeyFromSeed = (seed: string): IKeys => {
-  const hmac = createHmac("sha512", BLS12_377_CURVE);
+  const hmac = crypto.createHmac("sha512", BLS12_377_CURVE);
   const I = hmac.update(Buffer.from(seed, "hex")).digest();
   const IL = I.slice(0, 32);
   const IR = I.slice(32);

@@ -8,6 +8,9 @@ import { nodePolyfills } from "vite-plugin-node-polyfills";
 import path from "path";
 import wasm from "vite-plugin-wasm";
 import topLevelAwait from "vite-plugin-top-level-await";
+import wasmPack from 'vite-plugin-wasm-pack';
+// import commonjs from '@rollup/plugin-commonjs';
+import commonjs from 'vite-plugin-commonjs'
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -20,6 +23,9 @@ export default defineConfig(({ mode }) => ({
       transformMixedEsModules: true,
     },
     minify: mode === "production",
+    rollupOptions: {
+      // external: ["@aleohq/sdk"]
+    }
   },
   server: {
     port: 5173,
@@ -36,12 +42,14 @@ export default defineConfig(({ mode }) => ({
       },
     },
     exclude: [
-      "@aleohq/wasm"
+      // "@aleohq/sdk",
+      // '@chakra-ui/react'
     ]
   },
   esbuild: {
     pure:
       mode === "production" ? ["console.log", "console.debug", "debugger"] : [],
+    jsxInject: `import React from 'react'`,
   },
   resolve: {
     alias: [{ find: "@", replacement: path.resolve(__dirname, "src") }],
@@ -62,9 +70,11 @@ export default defineConfig(({ mode }) => ({
       // Whether to polyfill `node:` protocol imports.
       protocolImports: true,
     }),
-    react(),
-    wasm(),
     topLevelAwait(),
+    react(),
+    // commonjs(),
+    // wasm(),
+    wasmPack(["../../aleo/aleo_sdk/wasm"]),
     crx({ manifest }),
   ],
 }));

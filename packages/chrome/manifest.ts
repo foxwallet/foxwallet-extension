@@ -26,5 +26,9 @@ export default defineManifest((env) => {
     content_security_policy: {
       "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
     },
+    web_accessible_resources: [{
+      "matches": [ "http://localhost/*", "http://127.0.0.1/*", "https://*/*" ],
+      "resources": [ ]
+    }],
   }
 });

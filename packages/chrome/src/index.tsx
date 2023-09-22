@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import { Suspense, StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 import "./locales/i18";
 import "./locales/time";
@@ -14,7 +14,7 @@ import { theme } from "./common/theme";
 import { GlobalModal } from "./common/utils/dialog";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <React.StrictMode>
+  <StrictMode>
     <HashRouter>
       <ChakraBaseProvider theme={theme}>
         <ClientContext.Provider value={clients}>
@@ -26,16 +26,16 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
         </ClientContext.Provider>
       </ChakraBaseProvider>
     </HashRouter>
-  </React.StrictMode>
+  </StrictMode>
 );
 
 // pure modal, can't access other state in the modal, provide state by props
 ReactDOM.createRoot(
   document.getElementById("modal-root") as HTMLElement
 ).render(
-  <React.StrictMode>
+  <StrictMode>
     <ChakraBaseProvider theme={theme}>
       <GlobalModal />
     </ChakraBaseProvider>
-  </React.StrictMode>
+  </StrictMode>
 );

@@ -7,7 +7,7 @@ import {
   chakra,
   InputGroup,
 } from "@chakra-ui/react";
-import React from "react";
+
 import { H6 } from "../../common/theme/components/text";
 
 type BaseInputProps = {
