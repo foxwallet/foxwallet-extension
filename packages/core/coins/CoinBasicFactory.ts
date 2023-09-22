@@ -5,8 +5,8 @@ import { ethBasic } from "./ETH/account";
 
 export function coinBasicFactory<T extends CoinType>(coinType: T): CoinBasic<T> {
   switch (coinType) {
-      case CoinType.ETH:
-          return ethBasic as CoinBasic<T>;
+    //   case CoinType.ETH:
+    //       return ethBasic as CoinBasic<T>;
       case CoinType.ALEO:
           return aleoBasic as CoinBasic<T>;
       default:

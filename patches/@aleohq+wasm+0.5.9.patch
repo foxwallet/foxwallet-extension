@@ -1,0 +1,42 @@
+diff --git a/node_modules/@aleohq/wasm/aleo_wasm.js b/node_modules/@aleohq/wasm/aleo_wasm.js
+index fb6af2f..dd440de 100644
+--- a/node_modules/@aleohq/wasm/aleo_wasm.js
++++ b/node_modules/@aleohq/wasm/aleo_wasm.js
+@@ -3352,16 +3352,35 @@ function initSync(module, maybe_memory) {
+     return __wbg_finalize_init(instance, module);
+ }
+ 
++function constructURL(baseURL, relativePath) {
++    if (!baseURL.startsWith("https://") && !baseURL.startsWith("http://")) {
++        return new URL(relativePath, baseURL)
++    }
++    const match = baseURL.match(/(http[s]?:\/\/[^\/]+)\//);
++    if (!match) {
++        throw new Error('Invalid base URL');
++    }
++    const protocolAndHost = match[1];
++
++    const baseDirectory = baseURL.substring(0, baseURL.lastIndexOf('/') + 1);
++
++    const constructedURL = baseDirectory + relativePath;
++
++    return constructedURL;
++}
++
+ async function __wbg_init(input, maybe_memory) {
+     if (wasm !== undefined) return wasm;
+ 
+     if (typeof input === 'undefined') {
+-        input = new URL('aleo_wasm_bg.wasm', import.meta.url);
++        input = constructURL(import.meta.url, 'aleo_wasm_bg.wasm');
+     }
++
+     const imports = __wbg_get_imports();
+ 
+     if (typeof input === 'string' || (typeof Request === 'function' && input instanceof Request) || (typeof URL === 'function' && input instanceof URL)) {
+-        input = fetch(input);
++        console.log("===> __wbg_init: ", input);
++        input = await fetch(input);
+     }
+ 
+     __wbg_init_memory(imports, maybe_memory);

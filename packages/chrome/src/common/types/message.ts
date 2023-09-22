@@ -1,3 +1,4 @@
+import { PopupServerMethod } from "../../scripts/background/servers/IWalletServer";
 import { type PortName } from "./port";
 
 export enum MessageType {
@@ -9,10 +10,6 @@ export enum WalletModule {
   AUTH = "auth",
   KEYRING = "keyring",
   ASSETS = "assets",
-}
-
-export enum PopupServerMethod {
-  INIT_PASSWORD = "initPassword",
 }
 
 export enum ContentServerMethod {

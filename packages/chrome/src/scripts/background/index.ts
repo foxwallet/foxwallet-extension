@@ -1,26 +1,38 @@
 import { PortName } from "../../common/types/port";
-import { Connection, IHandler } from "../../common/utils/connection";
+import { Connection } from "../../common/utils/connection";
 import { contentServerHandler } from "./handlers/ContentServerHandler";
 import { keepAliveHandler } from "./handlers/KeepaliveHandler";
-import { popupServerHandler } from "./handlers/PopupServerHandler";
+import { PopupServerHandler } from "./handlers/PopupServerHandler";
+import { PopupWalletServer } from "./servers/PopupServer";
+import { AuthManager } from "./store/vault/managers/auth/AuthManager";
+import { KeyringManager } from "./store/vault/managers/keyring/KeyringManager";
 
 const keepAliveConnection = new Connection(
   keepAliveHandler,
   PortName.KEEP_ALIVE
 );
+keepAliveConnection.connect();
+
+
+const authManager = new AuthManager();
+const keyringManager = new KeyringManager(authManager);
+keyringManager.init();
+
+export const popupWalletServer = new PopupWalletServer(
+  authManager,
+  keyringManager,
+);
+
+const popupServerHandler = new PopupServerHandler(popupWalletServer);
 
 const popupConnection = new Connection(
   popupServerHandler,
   PortName.POPUP_TO_BACKGROUND
 );
+popupConnection.connect();
 
 const contentConnection = new Connection(
   contentServerHandler,
   PortName.CONTENT_TO_BACKGROUND
 );
-
-keepAliveConnection.connect();
-
-popupConnection.connect();
-
 contentConnection.connect();

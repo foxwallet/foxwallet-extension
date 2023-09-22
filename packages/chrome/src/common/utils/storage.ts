@@ -1,6 +1,7 @@
 import localForage from "localforage";
 import { type Cache } from "swr";
 import { logger } from "./logger";
+import browser from "webextension-polyfill";
 
 // both background service and popup run in the same extension context, so the indexedDB is the same
 export const appStorageInstance = localForage.createInstance({
@@ -9,11 +10,13 @@ export const appStorageInstance = localForage.createInstance({
   storeName: "app",
 });
 
-export const walletStorageInstance = localForage.createInstance({
-  driver: localForage.INDEXEDDB,
-  name: "fox_wallet",
-  storeName: "core",
-});
+// export const walletStorageInstance = localForage.createInstance({
+//   driver: localForage.INDEXEDDB,
+//   name: "fox_wallet",
+//   storeName: "core",
+// });
+
+export const walletStorageInstance = browser.storage.local;
 
 const swrStorageInstance = localForage.createInstance({
   driver: localForage.INDEXEDDB,

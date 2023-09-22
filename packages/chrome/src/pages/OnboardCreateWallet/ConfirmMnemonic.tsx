@@ -32,7 +32,7 @@ const tips = [
   "Seed phrase or private key are the only way to recover your wallet. Once lost, it cannot be retrieved. Do not save them via screenshots or social medias.",
 ];
 
-export const BackupMnemonicStep = (props: { onConfirm: () => void, walletName: string }) => {
+export const ConfirmMnemonicStep = (props: { onConfirm: () => void, walletName: string }) => {
   const { onConfirm, walletName } = props;
   const { popupServerClient } = useClient();
   const [mnemonic, setMnemonic] = useState("");

@@ -36,7 +36,7 @@ const ProgressItem = ({
       >
         <H6>{step}</H6>
       </Flex>
-      <H6>{text}</H6>
+      <H6 fontWeight={"medium"}>{text}</H6>
     </Flex>
   );
 };

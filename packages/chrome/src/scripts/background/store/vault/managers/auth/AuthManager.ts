@@ -2,8 +2,8 @@ import {
   generateToken,
   getToken,
   validateToken,
-} from "../../../../common/utils/auth";
-import { logger } from "../../../../common/utils/logger";
+} from "../../../../../../common/utils/auth";
+import { logger } from "../../../../../../common/utils/logger";
 import { vaultStorage, type VaultStorage } from "../../VaultStorage";
 
 export class AuthManager {
@@ -23,7 +23,7 @@ export class AuthManager {
     const { token, cipher } = await generateToken(password);
     this.#token = token;
     this.#loginTimestamp = Date.now();
-    this.#storage.initCipher(cipher);
+    await this.#storage.initCipher(cipher);
   }
 
   async updatePassword(password: string) {}
@@ -57,5 +57,3 @@ export class AuthManager {
     this.#loginTimestamp = undefined;
   }
 }
-
-export const authManager = new AuthManager();

@@ -1,8 +1,9 @@
-import { type IPopupServer } from "../../scripts/background/servers/IWalletServer";
+import { CoinType } from "@foxwallet/core/types";
+import { PopupServerMethod, type IPopupServer, CreateWalletProps, RegenerateWalletProps, ImportHDWalletProps, AddAccountProps } from "../../scripts/background/servers/IWalletServer";
+import { DisplayWallet, DisplayKeyring } from "../../scripts/background/store/vault/types/keyring";
 import { KEEP_ALIVE_INTERVAL } from "../constants";
 import {
   MessageType,
-  PopupServerMethod,
   type ServerMessage,
   ServerPayload,
   type ServerResp,
@@ -92,8 +93,28 @@ export class PopupServerClient implements IClient, IPopupServer {
     }
   }
 
-  async initPassword(params: { password: string; }): Promise<string> {
-    return await this.#send(PopupServerMethod.INIT_PASSWORD, params);
+  async initPassword(params: { password: string; }): Promise<boolean> {
+    return await this.#send("initPassword", params);
+  }
+
+  async createWallet(params: CreateWalletProps): Promise<DisplayWallet> {
+    return await this.#send("createWallet", params);
+  }
+
+  async regenerateWallet(params: RegenerateWalletProps): Promise<DisplayWallet> {
+    return await this.#send("regenerateWallet", params);
+  }
+
+  async importHDWallet(params: ImportHDWalletProps): Promise<DisplayWallet> {
+    return await this.#send("importHDWallet", params);
+  }
+
+  async addAccount(params: AddAccountProps): Promise<DisplayWallet> {
+    return await this.#send("addAccount", params);
+  }
+
+  async getAllWallet(): Promise<DisplayKeyring> {
+    return await this.#send("getAllWallet", {});
   }
 
   async #send<T, R>(method: PopupServerMethod, payload: T): Promise<R> {
@@ -108,6 +129,7 @@ export class PopupServerClient implements IClient, IPopupServer {
       };
       const callback = (error: Error | null, data: any) => {
         if (error) {
+          logger.error("PopupServerClient ", error.message);
           reject(error);
           return;
         }

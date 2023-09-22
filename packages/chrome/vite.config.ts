@@ -6,6 +6,8 @@ import manifest from "./manifest";
 import viteSvgr from "vite-plugin-svgr";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import path from "path";
+import wasm from "vite-plugin-wasm";
+import topLevelAwait from "vite-plugin-top-level-await";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -33,14 +35,18 @@ export default defineConfig(({ mode }) => ({
         global: "globalThis",
       },
     },
+    exclude: [
+      "@aleohq/wasm"
+    ]
   },
   esbuild: {
     pure:
       mode === "production" ? ["console.log", "console.debug", "debugger"] : [],
   },
-  define: {},
   resolve: {
     alias: [{ find: "@", replacement: path.resolve(__dirname, "src") }],
+  },
+  define: {
   },
   plugins: [
     viteSvgr({
@@ -57,6 +63,8 @@ export default defineConfig(({ mode }) => ({
       protocolImports: true,
     }),
     react(),
+    wasm(),
+    topLevelAwait(),
     crx({ manifest }),
   ],
 }));

@@ -9,7 +9,7 @@ interface Props {
   onCancel: () => void;
 }
 
-const PasswordWarningDialog = (props: Props) => {
+const MnemonicWarningDialog = (props: Props) => {
   const { isOpen, onConfirm, onCancel } = props;
 
   return (

@@ -25,7 +25,7 @@ module.exports = {
       small: ["12px", "16px"],
       medium: ["16px", "20px"],
       large: ["18px", "22px"],
-      sm: "0.8rem",
+      sm: "0.5rem",
       xl: "1.25rem",
       "2xl": "1.563rem",
       "3xl": "1.953rem",

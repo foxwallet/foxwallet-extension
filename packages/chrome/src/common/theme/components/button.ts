@@ -65,7 +65,7 @@ export const buttonTheme = defineStyleConfig({
     solid: (props) => {
       const { colorScheme: c } = props;
 
-      if (c === "secondary") {
+      if (c === "normal") {
         return {
           bg: `white`,
           color: "black",
@@ -76,6 +76,17 @@ export const buttonTheme = defineStyleConfig({
             cursor: "not-allowed",
           },
         };
+      }
+
+      if (c === "secondary") {
+        return {
+          bg: `orange.100`,
+          color: "orange.400",
+          _disabled: {
+            bg: "gray.300",
+            cursor: "not-allowed",
+          },
+        }
       }
 
       return {

@@ -56,4 +56,4 @@ export class Logger {
   }
 }
 
-export const logger = new Logger({ level: "info" });
+export const logger = console;

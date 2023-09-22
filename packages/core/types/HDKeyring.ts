@@ -1,12 +1,20 @@
 import { EncryptedField } from "./EncryptedField";
 
 export type NewHdKeyringProps = {
-  hash: string;
+  token: string;
   walletId: string;
 };
 
+
+export type ImportHdKeyringProps = {
+  token: string;
+  walletId: string;
+  mnemonic: string;
+};
+
+
 export type RestoreHdKeyringProps = {
   walletId: string;
-  hash: string;
+  token: string;
   mnemonic: EncryptedField;
 }

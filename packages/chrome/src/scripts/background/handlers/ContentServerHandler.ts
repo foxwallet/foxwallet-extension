@@ -3,7 +3,6 @@ import { type IHandler } from "../../../common/utils/connection";
 import {
   type ServerMessage,
   MessageType,
-  WalletModule,
   type ServerPayload,
 } from "../../../common/types/message";
 import { logger } from "../../../common/utils/logger";

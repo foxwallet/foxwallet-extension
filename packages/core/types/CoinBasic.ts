@@ -3,16 +3,16 @@ import { EthAccountOption, EthExportPKType, EthImportPKType } from "../coins/ETH
 import { CoinType } from "./CoinType";
 
 export interface ImportPrivateKeyTypeMap {
-  [CoinType.ETH]: EthImportPKType;
+  // [CoinType.ETH]: EthImportPKType;
   [CoinType.ALEO]: AleoImportPKType;
 }
 
 export interface ExportPrivateKeyTypeMap {
-  [CoinType.ETH]: EthExportPKType;
+  // [CoinType.ETH]: EthExportPKType;
   [CoinType.ALEO]: AleoExportPKType;
 };
 
 export interface AccountOption {
-  [CoinType.ETH]: EthAccountOption,
+  // [CoinType.ETH]: EthAccountOption,
   [CoinType.ALEO]: AleoAccountOption,
 }

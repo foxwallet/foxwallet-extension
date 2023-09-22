@@ -2,7 +2,7 @@ import { zxcvbnOptions, zxcvbn } from "@zxcvbn-ts/core";
 import { logger } from "./logger";
 
 const loadOptions = async () => {
-  logger.info("zxcvbn loadOptions");
+  logger.log("zxcvbn loadOptions");
   const zxcvbnCommonPackage = await import("@zxcvbn-ts/language-common");
   const zxcvbnEnPackage = await import("@zxcvbn-ts/language-en");
 
