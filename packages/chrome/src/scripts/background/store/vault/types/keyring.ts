@@ -55,7 +55,12 @@ export interface DisplayKeyring {
   [WalletType.SIMPLE]?: DisplayWallet[];
 }
 
+export enum VaultKeys {
+  cipher = "cipher",
+  keyring = "keyring",
+}
+
 export interface Vault {
-  cipher?: Cipher;
-  keyring?: KeyringObj;
+  [VaultKeys.cipher]?: Cipher;
+  [VaultKeys.keyring]?: KeyringObj;
 }

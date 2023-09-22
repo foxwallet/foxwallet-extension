@@ -21,9 +21,7 @@ export class KeyringManager {
   }
 
   async init() {
-    console.log("===> init initAleoWasm");
     await initAleoWasm();
-    console.log("===> end initAleoWasm");
   }
 
   #getToken() {

@@ -2,7 +2,6 @@ import { defineManifest } from "@crxjs/vite-plugin";
 import { version } from "./package.json";
 
 export default defineManifest((env) => {
-  console.log("===> env: ", env);
   return {
     manifest_version: 3,
     name: "FoxWallet",
@@ -13,7 +12,7 @@ export default defineManifest((env) => {
       "128": "logo.png",
     },
     action: { default_popup: "index.html" },
-    permissions: ["storage", "tabs", "activeTab"],
+    permissions: [ "storage", "clipboardWrite", "unlimitedStorage", "activeTab", "tabs" ],
     content_scripts: [
       {
         matches: ["http://*/*", "https://*/*"],

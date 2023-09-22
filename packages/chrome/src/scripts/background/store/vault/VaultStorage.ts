@@ -1,17 +1,17 @@
+import { EncryptedField } from "@foxwallet/core/types";
 import { walletStorageInstance } from "../../../../common/utils/storage";
-import { Cipher, HDWallet, KeyringObj, Vault, WalletType } from "./types/keyring";
-
-const VAULT_KEY = "vault";
+import { Cipher, HDWallet, KeyringObj, Vault, VaultKeys, WalletType } from "./types/keyring";
+import browser from "webextension-polyfill";
 
 export class VaultStorage {
-  #storage: LocalForage;
+  #storage: browser.Storage.LocalStorageArea;
 
   constructor() {
     this.#storage = walletStorageInstance;
   }
 
   async getCipher() {
-    const store = await this.#storage.getItem<Vault>(VAULT_KEY);
+    const store = await this.#storage.get(VaultKeys.cipher) as { cipher?: Cipher };
     return store?.cipher;
   }
 
@@ -19,12 +19,13 @@ export class VaultStorage {
   async initCipher(cipher: Cipher) {
     const store: Vault = {
       cipher,
+      keyring: undefined,
     };
-    return await this.#storage.setItem(VAULT_KEY, store);
+    return await this.setVault(store);
   }
 
   async getKeyring() {
-    const store = await this.#storage.getItem<Vault>(VAULT_KEY);
+    const store = await this.#storage.get(VaultKeys.keyring) as { keyring?: KeyringObj };
     return store?.keyring;
   }
 
@@ -34,7 +35,7 @@ export class VaultStorage {
       ...vault,
       keyring,
     };
-    return await this.#storage.setItem(VAULT_KEY, store);
+    return await this.setVault(store);
   }
 
   async getHDWallet(walletId: string) {
@@ -83,11 +84,11 @@ export class VaultStorage {
   }
 
   async getVault() {
-    return await this.#storage.getItem<Vault>(VAULT_KEY);
+    return await this.#storage.get(null) as Vault;
   }
 
   async setVault(vault: Vault) {
-    return await this.#storage.setItem(VAULT_KEY, vault);
+    return await this.#storage.set(vault);
   }
 }
 
