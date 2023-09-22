@@ -9,7 +9,12 @@
   "scripts": {
     "lint": "eslint './packages/{!(expo),}*/src/**/*.{ts,tsx}'",
     "lint:fix": "eslint --fix './packages/{!(expo),}*/src/**/*.{ts,tsx}'",
-    "postinstall": "patch-package"
+    "dev": "npm run dev --workspace packages/chrome",
+    "build:dev": "npm run build:dev --workspace packages/chrome",
+    "build:prod": "npm run build:prod --workspace packages/chrome",
+    "clean": "npm run clean --workspace packages/chrome",
+    "preinstall": "npm run wasm --workspace packages/chrome",
+    "postinstall": "npm run build:dev && shx ln -s ../packages/chrome/node_modules/wasm/ ./node_modules/wasm/"
   },
   "lint-staged": {
     "*": "prettier --write --ignore-unknown",
@@ -32,6 +37,7 @@
     "npm-run-all": "^4.1.5",
     "patch-package": "^8.0.0",
     "prettier": "^3.0.3",
+    "shx": "^0.3.4",
     "typescript": "^4.8.3"
   }
 }

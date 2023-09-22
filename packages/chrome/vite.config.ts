@@ -6,11 +6,8 @@ import manifest from "./manifest";
 import viteSvgr from "vite-plugin-svgr";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import path from "path";
-import wasm from "vite-plugin-wasm";
-import topLevelAwait from "vite-plugin-top-level-await";
 import wasmPack from 'vite-plugin-wasm-pack';
-// import commonjs from '@rollup/plugin-commonjs';
-import commonjs from 'vite-plugin-commonjs'
+import tsconfigPaths from 'vite-tsconfig-paths'
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -24,7 +21,6 @@ export default defineConfig(({ mode }) => ({
     },
     minify: mode === "production",
     rollupOptions: {
-      // external: ["@aleohq/sdk"]
     }
   },
   server: {
@@ -41,10 +37,7 @@ export default defineConfig(({ mode }) => ({
         global: "globalThis",
       },
     },
-    exclude: [
-      // "@aleohq/sdk",
-      // '@chakra-ui/react'
-    ]
+    exclude: []
   },
   esbuild: {
     pure:
@@ -57,6 +50,7 @@ export default defineConfig(({ mode }) => ({
   define: {
   },
   plugins: [
+    tsconfigPaths(),
     viteSvgr({
       exportAsDefault: true,
     }),
@@ -70,10 +64,7 @@ export default defineConfig(({ mode }) => ({
       // Whether to polyfill `node:` protocol imports.
       protocolImports: true,
     }),
-    topLevelAwait(),
     react(),
-    // commonjs(),
-    // wasm(),
     wasmPack(["../../aleo/aleo_sdk/wasm"]),
     crx({ manifest }),
   ],

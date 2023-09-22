@@ -1,5 +1,5 @@
 
-import { EncryptedField } from "@/types/EncryptedField";
+import { EncryptedField } from "../types/EncryptedField";
 import { getCoinDerivation } from "../helper/CoinBasic";
 import { AccountOption } from "../types/CoinBasic";
 import { CoinCurve } from "../types/CoinCurve";

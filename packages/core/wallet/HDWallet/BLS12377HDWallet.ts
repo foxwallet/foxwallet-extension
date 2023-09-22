@@ -9,7 +9,7 @@ import { getCoinDerivation } from "../../helper/CoinBasic";
 import { CoreError } from "../../types/Error";
 import { encryptStr } from "../../utils/encrypt";
 import { logger } from "ethers";
-import { PrivateKey } from "@aleohq/sdk";
+import { PrivateKey } from "wasm";
 
 export class BLS12377HDWallet<T extends CoinType> implements BaseHDWallet<T> {
   private coinRootPath: string;
