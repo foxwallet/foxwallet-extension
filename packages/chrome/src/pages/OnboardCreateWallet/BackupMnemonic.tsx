@@ -8,6 +8,7 @@ import { logger } from "../../common/utils/logger";
 import { nanoid } from "nanoid";
 import { DisplayWallet } from "../../scripts/background/store/vault/types/keyring";
 import { Content } from "../../layouts/Content";
+import { showMnemonicWarningDialog } from "../../components/MnemonicWarningDialog";
 
 function Dot(props: BoxProps) {
   return <Box w={2} h={2} borderRadius={4} bg={"gray.100"} {...props}/>
@@ -31,43 +32,25 @@ const tips = [
   "Seed phrase or private key are the only way to recover your wallet. Once lost, it cannot be retrieved. Do not save them via screenshots or social medias.",
 ];
 
-export const BackupMnemonicStep = (props: { onConfirm: () => void, walletName: string }) => {
-  const { onConfirm, walletName } = props;
-  const { popupServerClient } = useClient();
-  const [mnemonic, setMnemonic] = useState("");
-  const workList = useMemo(() => {
+export const BackupMnemonicStep = (props: { mnemonic?: string, onConfirm: () => void, createWallet: () => Promise<void>, regenerateWallet: () => Promise<void> }) => {
+  const { mnemonic, onConfirm, createWallet, regenerateWallet } = props;
+  const wordList = useMemo(() => {
+    if (!mnemonic) {
+      return [];
+    }
     return mnemonic.split(" ");
   }, [mnemonic]);
-  const walletIdRef = useRef("");
-  const walletRef = useRef<DisplayWallet | null>(null);
 
   useEffect(() => {
-    if (walletIdRef.current) {
-      return;
-    }
-    walletIdRef.current = nanoid();
-    const walletId = walletIdRef.current;
-    popupServerClient
-      .createWallet({ walletName, walletId, revealMnemonic: true })
-      .then((wallet) => {
-        walletRef.current = wallet;
-        setMnemonic(wallet.mnemonic || "");
-      })
-  }, []);
+    createWallet();
+  }, [createWallet]);
 
-  const regenerate = useCallback(() => {
-    const walletId = walletIdRef.current;
-    popupServerClient
-      .regenerateWallet({ walletName, walletId, revealMnemonic: true })
-      .then((wallet) => {
-        walletRef.current = wallet;
-        setMnemonic(wallet.mnemonic || "");
-      })
-  }, []);
-
+  if (!mnemonic) {
+    return null;
+  }
 
   return <Content>
-    <WordGrid words={workList}/>
+    <WordGrid words={wordList}/>
     <Flex flexDirection={"column"} bg={"gray.50"} mt={4} borderRadius={"lg"} p={2} pt={1}>
       {
         tips.map((tip, index) => (
@@ -79,8 +62,8 @@ export const BackupMnemonicStep = (props: { onConfirm: () => void, walletName: s
       }
     </Flex>
     <Flex mt={8}>
-      <Button colorScheme="secondary" flex={1} mr={4} disabled={!mnemonic} onClick={regenerate}>{"Regenerate"}</Button>
-      <Button flex={1} onClick={onConfirm}>{"Confirm"}</Button>
+      <Button colorScheme="secondary" flex={1} mr={4} isDisabled={!mnemonic} onClick={regenerateWallet}>{"Regenerate"}</Button>
+      <Button flex={1} onClick={() => onConfirm()}>{"Confirm"}</Button>
     </Flex>
   </Content>
 };

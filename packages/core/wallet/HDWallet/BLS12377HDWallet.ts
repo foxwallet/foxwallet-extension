@@ -36,7 +36,6 @@ export class BLS12377HDWallet<T extends CoinType> implements BaseHDWallet<T> {
         try {
           const wallet = this.coinRoot.deriveChild(i);
           const pk = PrivateKey.from_seed_unchecked(wallet.key);
-          console.log("===> wallet: ", pk);
 
           const viewKey = pk.to_view_key().to_string();
           const address  = pk.to_address().to_string();

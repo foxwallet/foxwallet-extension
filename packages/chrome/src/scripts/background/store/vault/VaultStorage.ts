@@ -19,7 +19,7 @@ export class VaultStorage {
   async initCipher(cipher: Cipher) {
     const store: Vault = {
       cipher,
-      keyring: undefined,
+      keyring: {},
     };
     return await this.setVault(store);
   }

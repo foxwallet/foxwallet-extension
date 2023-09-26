@@ -1,10 +1,12 @@
 import CheckCircle from "@/common/assets/image/icon_check_circle.svg";
 import CheckLine from "@/common/assets/image/icon_check_line.svg";
 import CloseLine from "@/common/assets/image/icon_close_line.svg";
+import CloseCircle from "@/common/assets/image/icon_close_circle.svg";
 import EyeClose from "@/common/assets/image/icon_eye_close.svg";
 import Eye from "@/common/assets/image/icon_eye_on.svg";
 import Left from "@/common/assets/image/icon_left.svg";
 import Logo from "../../common/assets/image/onboard_logo.svg";
+import PreventScreenshot from "@/common/assets/image/icon_prevent_screenshot.svg";
 import { chakra } from "@chakra-ui/react";
 
 // @ts-expect-error IconCheckCircle
@@ -27,3 +29,9 @@ export const IconLeft = chakra(Left);
 
 // @ts-expect-error OnboardLogo
 export const OnboardLogo = chakra(Logo);
+
+// @ts-expect-error PreventScreenshot
+export const IconPreventScreenshot = chakra(PreventScreenshot);
+
+// @ts-expect-error CloseCircle
+export const IconCloseCircle = chakra(CloseCircle);

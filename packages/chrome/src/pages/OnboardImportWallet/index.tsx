@@ -3,20 +3,16 @@ import { PageWithHeader } from "../../layouts/Page";
 import { Body } from "../../layouts/Body";
 import { OnboardProgress } from "../../components/Onboard/OnboardProgress";
 import { ClientContext, useClient } from "../../hooks/useClient";
-import { CreatePasswordStep } from "./CreatePasswordStep";
-import { BackupMnemonicStep } from "./BackupMnemonic";
 import { logger } from "../../common/utils/logger";
-import { ConfirmMnemonicStep } from "./ConfirmMnemonic";
 import { showMnemonicWarningDialog } from "../../components/MnemonicWarningDialog";
 import { nanoid } from "nanoid";
 
-const CreateWalletSteps = [
+const ImportWalletSteps = [
   "Create",
-  "Backup",
-  "Confirm"
+  "Import"
 ]
 
-function OnboardCreateWalletScreen() {
+function OnboardImportWalletScreen() {
   const [step, setStep] = useState(1);
   const walletNameRef = useRef("");
   const [mnemonic, setMnemonic] = useState("");
@@ -90,11 +86,11 @@ function OnboardCreateWalletScreen() {
       }
     }}>
       <Body>
-        <OnboardProgress currStep={step} steps={CreateWalletSteps} />
+        <OnboardProgress currStep={step} steps={ImportWalletSteps}/>
         {stepContent}
       </Body>
     </PageWithHeader>
   );
 }
 
-export default OnboardCreateWalletScreen;
+export default OnboardImportWalletScreen;

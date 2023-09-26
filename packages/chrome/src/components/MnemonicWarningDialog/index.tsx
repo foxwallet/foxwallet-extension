@@ -1,7 +1,8 @@
 import { Button, Flex } from "@chakra-ui/react";
-import { P3 } from "../../common/theme/components/text";
+import { H6, P3, P4 } from "../../common/theme/components/text";
 import { BasicModal } from "../Modal";
-import { promisifyConfirmDialogWrapper } from "../../common/utils/dialog";
+import { promisifyChooseDialogWrapper } from "../../common/utils/dialog";
+import { IconPreventScreenshot } from "../Icon";
 
 interface Props {
   isOpen: boolean;
@@ -15,29 +16,24 @@ const MnemonicWarningDialog = (props: Props) => {
   return (
     <BasicModal
       isOpen={isOpen}
+      hideClose={true}
       onClose={onCancel}
-      title={"Warning"}
       body={
-        <P3>
-          {
-            "The password strength is too low, the wallet assets will be insecure."
-          }
-        </P3>
+        <Flex flexDirection={"column"} alignItems={"center"} >
+          <IconPreventScreenshot w={"12"} h={"12"} mb={2} />
+          <H6 mb={2}>{"Don't take screenshot"}</H6>
+          <P4>{"Obtaining the mnemonic phrase is equivalent to obtaining the ownership of the asset. To prevent leakage, it is recommended not to take screenshots or record the screen, and make sure that there is no camera around. Please do not share the mnemonic phrase with others to prevent asset loss due to fraud."}</P4>
+        </Flex>
       }
       footer={
-        <Flex flex={1}>
-          <Button flex={1} mr="2" onClick={onCancel}>
-            Change
-          </Button>
-          <Button flex={1} ml="2" colorScheme="normal" onClick={onConfirm}>
-            Still create
-          </Button>
-        </Flex>
+        <Button flex={1} onClick={onConfirm} mt={2}>
+          Confirm
+        </Button>
       }
     />
   );
 };
 
-export const showPasswordWarningDialog = promisifyConfirmDialogWrapper(
-  PasswordWarningDialog
+export const showMnemonicWarningDialog = promisifyChooseDialogWrapper(
+  MnemonicWarningDialog
 );

@@ -1,7 +1,7 @@
 import { Button, Flex } from "@chakra-ui/react";
 import { P3 } from "../../common/theme/components/text";
 import { BasicModal } from "../Modal";
-import { promisifyConfirmDialogWrapper } from "../../common/utils/dialog";
+import { promisifyChooseDialogWrapper } from "../../common/utils/dialog";
 
 interface Props {
   isOpen: boolean;
@@ -38,6 +38,6 @@ const PasswordWarningDialog = (props: Props) => {
   );
 };
 
-export const showPasswordWarningDialog = promisifyConfirmDialogWrapper(
+export const showPasswordWarningDialog = promisifyChooseDialogWrapper(
   PasswordWarningDialog
 );

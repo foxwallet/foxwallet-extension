@@ -4,7 +4,8 @@
   "description": "",
   "type": "module",
   "scripts": {
-    "dev": "npm run clean && mkdir -p ./dist/assets && cp ./node_modules/wasm/wasm_bg.wasm ./dist/assets/wasm_bg.wasm && vite --mode development",
+    "dev:env": "npm run build:dev && npm run clean && mkdir -p ./dist/assets && cp ./node_modules/wasm/wasm_bg.wasm ./dist/assets/wasm_bg.wasm",
+    "dev": "vite --mode development",
     "build:dev": "npm run clean && vite build --mode development",
     "build:prod": "npm run clean && vite build",
     "clean": "rimraf dist/",

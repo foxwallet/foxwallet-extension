@@ -12,6 +12,7 @@ export const Page = (props: PropsWithChildren) => {
 
 type PageWithHeaderProps = {
   enableBack: boolean;
+  onBack?: () => boolean;
   title: string;
 } & PropsWithChildren;
 

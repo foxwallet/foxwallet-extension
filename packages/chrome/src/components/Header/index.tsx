@@ -6,10 +6,11 @@ import { IconLeft } from "../Icon";
 
 interface HeaderProps {
   enableBack: boolean;
+  onBack?: () => boolean;
   title: string;
 }
 
-export const Header = ({ enableBack, title }: HeaderProps) => {
+export const Header = ({ enableBack, onBack, title }: HeaderProps) => {
   const navigate = useNavigate();
   return (
     <Flex
@@ -30,7 +31,14 @@ export const Header = ({ enableBack, title }: HeaderProps) => {
           borderRadius={"12"}
           cursor={"pointer"}
           onClick={() => {
-            navigate(-1);
+            if (onBack) {
+              const res = onBack();
+              if (res) {
+                navigate(-1);
+              }
+            } else {
+              navigate(-1);
+            }
           }}
         >
           <IconLeft w={"3"} h={"3"} />

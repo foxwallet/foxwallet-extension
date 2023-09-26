@@ -18,6 +18,7 @@ import { IconCloseLine } from "../Icon";
 interface ModalProps {
   title?: string;
   isOpen: boolean;
+  hideClose?: boolean;
   onClose: () => void;
   body: React.ReactNode;
   footer: React.ReactNode;
@@ -26,34 +27,43 @@ interface ModalProps {
 }
 
 export function BasicModal(props: ModalProps) {
-  const { title, isOpen, onClose, body, footer, bodyStyle, footerStyle } =
+  const { title, isOpen, hideClose, onClose, body, footer, bodyStyle, footerStyle } =
     props;
 
   return (
-    <Modal onClose={onClose} isOpen={isOpen} isCentered>
-      <ModalOverlay />
+    <Modal closeOnEsc={!hideClose} closeOnOverlayClick={!hideClose} onClose={onClose} isOpen={isOpen} isCentered>
+      <ModalOverlay backdropFilter="blur(10px)" />
       <ModalContent
         alignSelf={"center"}
         bg={"white"}
         p={"4"}
         borderRadius={"md"}
       >
-        <ModalHeader
-          display={"flex"}
-          justifyContent={"space-between"}
-          alignItems={"center"}
-          mb={4}
-        >
-          <Box w={5} h={5} />
-          <H6>{title}</H6>
-          <IconCloseLine
-            w={5}
-            h={5}
-            cursor={"pointer"}
-            fill={"black"}
-            onClick={onClose}
-          />
-        </ModalHeader>
+        {
+          (!!title || !hideClose) &&
+            <ModalHeader
+              display={"flex"}
+              justifyContent={"space-between"}
+              alignItems={"center"}
+              mb={4}
+            >
+              <Box w={5} h={5} />
+              {
+                !!title && <H6>{title}</H6>
+              }
+              {
+                hideClose ?
+                  <Box w={5} h={5} /> :
+                  <IconCloseLine
+                    w={5}
+                    h={5}
+                    cursor={"pointer"}
+                    fill={"black"}
+                    onClick={onClose}
+                  />
+              }
+            </ModalHeader>
+        }
 
         <ModalBody {...bodyStyle}>{body}</ModalBody>
         <ModalFooter justifyContent={"center"} mt={4} {...footerStyle}>
