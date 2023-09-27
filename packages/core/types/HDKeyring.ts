@@ -5,16 +5,14 @@ export type NewHdKeyringProps = {
   walletId: string;
 };
 
-
 export type ImportHdKeyringProps = {
   token: string;
   walletId: string;
   mnemonic: string;
 };
 
-
 export type RestoreHdKeyringProps = {
   walletId: string;
   token: string;
   mnemonic: EncryptedField;
-}
+};

@@ -6,8 +6,8 @@ import manifest from "./manifest";
 import viteSvgr from "vite-plugin-svgr";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import path from "path";
-import wasmPack from 'vite-plugin-wasm-pack';
-import tsconfigPaths from 'vite-tsconfig-paths'
+import wasmPack from "vite-plugin-wasm-pack";
+import tsconfigPaths from "vite-tsconfig-paths";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -20,8 +20,7 @@ export default defineConfig(({ mode }) => ({
       transformMixedEsModules: true,
     },
     minify: mode === "production",
-    rollupOptions: {
-    }
+    rollupOptions: {},
   },
   server: {
     port: 5173,
@@ -37,7 +36,7 @@ export default defineConfig(({ mode }) => ({
         global: "globalThis",
       },
     },
-    exclude: []
+    exclude: [],
   },
   esbuild: {
     pure:
@@ -47,8 +46,7 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: [{ find: "@", replacement: path.resolve(__dirname, "src") }],
   },
-  define: {
-  },
+  define: {},
   plugins: [
     tsconfigPaths(),
     viteSvgr({

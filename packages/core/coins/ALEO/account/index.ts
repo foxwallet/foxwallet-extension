@@ -3,9 +3,12 @@ import { encode as bs58Encode, decode as bs58Decode } from "bs58";
 import { CoinBasic } from "../../CoinBasic";
 import { CoinType } from "../../../types/CoinType";
 import { ALEO_PRIVATE_PREFIX } from "../constants";
-import { AleoAccountOption, AleoExportPKType, AleoImportPKType } from "../types/AleoAccount";
+import {
+  AleoAccountOption,
+  AleoExportPKType,
+  AleoImportPKType,
+} from "../types/AleoAccount";
 import { CoreError, CoreErrorCode } from "../../../types/Error";
-
 
 class AleoBasic extends CoinBasic<CoinType.ALEO> {
   public serializeBuffer(keyBuffer: Buffer): string {
@@ -40,15 +43,16 @@ class AleoBasic extends CoinBasic<CoinType.ALEO> {
     viewKey: string;
     address: string;
   } {
-    const pk = PrivateKey.from_string(`${ALEO_PRIVATE_PREFIX}${bs58Encode(privateKey)}`);
+    const pk = PrivateKey.from_string(
+      `${ALEO_PRIVATE_PREFIX}${bs58Encode(privateKey)}`
+    );
 
     const viewKey = pk.to_view_key().to_string();
     const address = pk.to_address().to_string();
     return {
       viewKey,
-      address
-    }
-
+      address,
+    };
   }
 
   public exportPrivateKey(privateKey: string, exportType: AleoExportPKType) {

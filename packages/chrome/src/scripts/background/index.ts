@@ -13,14 +13,13 @@ const keepAliveConnection = new Connection(
 );
 keepAliveConnection.connect();
 
-
 const authManager = new AuthManager();
 const keyringManager = new KeyringManager(authManager);
 keyringManager.init();
 
 export const popupWalletServer = new PopupWalletServer(
   authManager,
-  keyringManager,
+  keyringManager
 );
 
 const popupServerHandler = new PopupServerHandler(popupWalletServer);

@@ -1,4 +1,3 @@
-
 import { Box, type BoxProps } from "@chakra-ui/react";
 import { P4 } from "../../../common/theme/components/text";
 

@@ -1,4 +1,3 @@
-
 import { Navigate } from "react-router-dom";
 import { useAppStatus } from "../../../hooks/useAppStatus";
 

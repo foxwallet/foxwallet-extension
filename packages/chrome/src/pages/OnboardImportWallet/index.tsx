@@ -9,10 +9,7 @@ import { nanoid } from "nanoid";
 import { CreatePasswordStep } from "../../components/Onboard/CreatePassword";
 import { ImportMnemonicStep } from "../../components/Onboard/ImportMnemonic";
 
-const ImportWalletSteps = [
-  "Create",
-  "Import"
-]
+const ImportWalletSteps = ["Create", "Import"];
 
 export default function OnboardImportWallet() {
   const [step, setStep] = useState(2);
@@ -21,15 +18,17 @@ export default function OnboardImportWallet() {
   const { popupServerClient } = useClient();
   const walletIdRef = useRef("");
 
-
   const createWallet = useCallback(async () => {
     if (walletIdRef.current) {
       return;
     }
     const walletId = nanoid();
     walletIdRef.current = walletId;
-    const wallet = await popupServerClient
-      .createWallet({ walletName: walletNameRef.current, walletId, revealMnemonic: true });
+    const wallet = await popupServerClient.createWallet({
+      walletName: walletNameRef.current,
+      walletId,
+      revealMnemonic: true,
+    });
     const { confirmed } = await showMnemonicWarningDialog();
     if (confirmed) {
       setMnemonic(wallet.mnemonic || "");
@@ -38,8 +37,11 @@ export default function OnboardImportWallet() {
 
   const regenerateWallet = useCallback(async () => {
     const walletId = walletIdRef.current;
-    const wallet = await popupServerClient
-      .regenerateWallet({ walletName: walletNameRef.current, walletId, revealMnemonic: true });
+    const wallet = await popupServerClient.regenerateWallet({
+      walletName: walletNameRef.current,
+      walletId,
+      revealMnemonic: true,
+    });
     setMnemonic(wallet.mnemonic || "");
   }, []);
 
@@ -68,11 +70,15 @@ export default function OnboardImportWallet() {
   }, [step, mnemonic, createWallet, regenerateWallet]);
 
   return (
-    <PageWithHeader title="Import Wallet" enableBack={step === 1} onBack={() => {
+    <PageWithHeader
+      title="Import Wallet"
+      enableBack={step === 1}
+      onBack={() => {
         return true;
-    }}>
+      }}
+    >
       <Body>
-        <OnboardProgress currStep={step} steps={ImportWalletSteps}/>
+        <OnboardProgress currStep={step} steps={ImportWalletSteps} />
         {stepContent}
       </Body>
     </PageWithHeader>

@@ -1,6 +1,6 @@
-
 import { Flex, Box } from "@chakra-ui/react";
 import { H6, H5 } from "../../../common/theme/components/text";
+import { Fragment, useMemo } from "react";
 
 interface ProgressProps {
   currStep: number;
@@ -43,6 +43,7 @@ const ProgressItem = ({
 };
 
 export const OnboardProgress = ({ currStep, steps }: ProgressProps) => {
+
   return (
     <Flex
       justifyContent={"space-around"}
@@ -51,22 +52,18 @@ export const OnboardProgress = ({ currStep, steps }: ProgressProps) => {
       pt="3"
       pb="2"
     >
-      {/* <ProgressItem step={1} currStep={currStep} text={"Create"} />
-      <ProgressDivider />
-      <ProgressItem step={2} currStep={currStep} text={"Backup"} />
-      <ProgressDivider />
-      <ProgressItem step={3} currStep={currStep} text={"Confirm"} /> */}
-      <ProgressItem step={1} currStep={currStep} text={steps[0]} />
-      {
-        steps.slice(1).map((step, index) => {
-          return (
-            <>
-              <ProgressDivider />
-              <ProgressItem step={index + 2} currStep={currStep} text={step} />
-            </>
-          )
-        })
-      }
+      {steps.map((step, index) => {
+        if (index === 0) {
+          return (<ProgressItem key={index} step={index + 1} currStep={currStep} text={step} />);
+        }
+
+        return (
+          <Fragment key={index}>
+            <ProgressDivider />
+            <ProgressItem step={index + 1} currStep={currStep} text={step} />
+          </Fragment>
+        );
+      })}
     </Flex>
   );
 };

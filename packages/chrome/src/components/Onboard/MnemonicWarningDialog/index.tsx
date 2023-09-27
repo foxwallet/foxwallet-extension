@@ -19,10 +19,14 @@ const MnemonicWarningDialog = (props: Props) => {
       hideClose={true}
       onClose={onCancel}
       body={
-        <Flex flexDirection={"column"} alignItems={"center"} >
+        <Flex flexDirection={"column"} alignItems={"center"}>
           <IconPreventScreenshot w={"12"} h={"12"} mb={2} />
           <H6 mb={2}>{"Don't take screenshot"}</H6>
-          <P4>{"Obtaining the mnemonic phrase is equivalent to obtaining the ownership of the asset. To prevent leakage, it is recommended not to take screenshots or record the screen, and make sure that there is no camera around. Please do not share the mnemonic phrase with others to prevent asset loss due to fraud."}</P4>
+          <P4>
+            {
+              "Obtaining the mnemonic phrase is equivalent to obtaining the ownership of the asset. To prevent leakage, it is recommended not to take screenshots or record the screen, and make sure that there is no camera around. Please do not share the mnemonic phrase with others to prevent asset loss due to fraud."
+            }
+          </P4>
         </Flex>
       }
       footer={

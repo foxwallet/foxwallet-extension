@@ -12,7 +12,13 @@ export default defineManifest((env) => {
       "128": "logo.png",
     },
     action: { default_popup: "index.html" },
-    permissions: [ "storage", "clipboardWrite", "unlimitedStorage", "activeTab", "tabs" ],
+    permissions: [
+      "storage",
+      "clipboardWrite",
+      "unlimitedStorage",
+      "activeTab",
+      "tabs",
+    ],
     content_scripts: [
       {
         matches: ["http://*/*", "https://*/*"],
@@ -24,11 +30,14 @@ export default defineManifest((env) => {
       service_worker: "src/scripts/background/index.ts",
     },
     content_security_policy: {
-      "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
+      extension_pages:
+        "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';",
     },
-    web_accessible_resources: [{
-      "matches": [ "http://localhost/*", "http://127.0.0.1/*", "https://*/*" ],
-      "resources": [ ]
-    }],
-  }
+    web_accessible_resources: [
+      {
+        matches: ["http://localhost/*", "http://127.0.0.1/*", "https://*/*"],
+        resources: [],
+      },
+    ],
+  };
 });

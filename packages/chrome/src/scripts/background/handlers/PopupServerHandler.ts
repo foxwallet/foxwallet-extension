@@ -14,8 +14,7 @@ import { Mutex } from "async-mutex";
 
 const mutex = new Mutex();
 export class PopupServerHandler implements IHandler {
-  constructor(private popupServer: PopupWalletServer) {
-  }
+  constructor(private popupServer: PopupWalletServer) {}
 
   wrapPopupResp(rawResp: ServerPayload, id: number) {
     return {

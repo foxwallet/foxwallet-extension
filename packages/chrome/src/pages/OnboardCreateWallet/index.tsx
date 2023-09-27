@@ -10,11 +10,7 @@ import { ConfirmMnemonicStep } from "../../components/Onboard/ConfirmMnemonic";
 import { showMnemonicWarningDialog } from "../../components/Onboard/MnemonicWarningDialog";
 import { nanoid } from "nanoid";
 
-const CreateWalletSteps = [
-  "Create",
-  "Backup",
-  "Confirm"
-]
+const CreateWalletSteps = ["Create", "Backup", "Confirm"];
 
 function OnboardCreateWalletScreen() {
   const [step, setStep] = useState(1);
@@ -23,15 +19,17 @@ function OnboardCreateWalletScreen() {
   const { popupServerClient } = useClient();
   const walletIdRef = useRef("");
 
-
   const createWallet = useCallback(async () => {
     if (walletIdRef.current) {
       return;
     }
     const walletId = nanoid();
     walletIdRef.current = walletId;
-    const wallet = await popupServerClient
-      .createWallet({ walletName: walletNameRef.current, walletId, revealMnemonic: true });
+    const wallet = await popupServerClient.createWallet({
+      walletName: walletNameRef.current,
+      walletId,
+      revealMnemonic: true,
+    });
     const { confirmed } = await showMnemonicWarningDialog();
     if (confirmed) {
       setMnemonic(wallet.mnemonic || "");
@@ -40,8 +38,11 @@ function OnboardCreateWalletScreen() {
 
   const regenerateWallet = useCallback(async () => {
     const walletId = walletIdRef.current;
-    const wallet = await popupServerClient
-      .regenerateWallet({ walletName: walletNameRef.current, walletId, revealMnemonic: true });
+    const wallet = await popupServerClient.regenerateWallet({
+      walletName: walletNameRef.current,
+      walletId,
+      revealMnemonic: true,
+    });
     setMnemonic(wallet.mnemonic || "");
   }, []);
 
@@ -70,25 +71,23 @@ function OnboardCreateWalletScreen() {
           />
         );
       case 3:
-        return (
-          <ConfirmMnemonicStep
-            mnemonic={mnemonic}
-            onConfirm={() => {
-            }}
-          />
-        );
+        return <ConfirmMnemonicStep mnemonic={mnemonic} onConfirm={() => {}} />;
     }
   }, [step, mnemonic, createWallet, regenerateWallet]);
 
   return (
-    <PageWithHeader title="Create Wallet" enableBack={step !== 2} onBack={() => {
-      if (step > 1) {
-        setStep((curr) => curr - 1);
-        return false;
-      } else {
-        return true;
-      }
-    }}>
+    <PageWithHeader
+      title="Create Wallet"
+      enableBack={step !== 2}
+      onBack={() => {
+        if (step > 1) {
+          setStep((curr) => curr - 1);
+          return false;
+        } else {
+          return true;
+        }
+      }}
+    >
       <Body>
         <OnboardProgress currStep={step} steps={CreateWalletSteps} />
         {stepContent}

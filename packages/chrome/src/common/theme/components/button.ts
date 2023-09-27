@@ -86,7 +86,7 @@ export const buttonTheme = defineStyleConfig({
             bg: "gray.300",
             cursor: "not-allowed",
           },
-        }
+        };
       }
 
       return {

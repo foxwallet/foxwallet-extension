@@ -10,23 +10,23 @@ import { logger } from "../../../common/utils/logger";
 export type PopupServerMethod = keyof IPopupServer;
 
 export interface CreateWalletProps {
-  walletName: string,
-  walletId: string,
-  revealMnemonic: boolean,
+  walletName: string;
+  walletId: string;
+  revealMnemonic: boolean;
 }
 
 export type RegenerateWalletProps = CreateWalletProps;
 
 export type ImportHDWalletProps = {
-  walletName: string,
-  walletId: string,
+  walletName: string;
+  walletId: string;
   mnemonic: string;
 };
 
 export interface AddAccountProps {
-  walletId: string,
-  coin: CoinType,
-  accountId: string,
+  walletId: string;
+  coin: CoinType;
+  accountId: string;
 }
 
 export interface IPopupServer {
@@ -67,6 +67,6 @@ export async function executeServerMethod<T>(
     return {
       error: err.message,
       data: null,
-    }
+    };
   }
 }

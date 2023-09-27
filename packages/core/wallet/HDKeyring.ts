@@ -1,11 +1,19 @@
-
 import { EncryptedField } from "../types/EncryptedField";
 import { getCoinDerivation } from "../helper/CoinBasic";
 import { AccountOption } from "../types/CoinBasic";
 import { CoinCurve } from "../types/CoinCurve";
 import { CoinType, Coins } from "../types/CoinType";
-import { ImportHdKeyringProps, NewHdKeyringProps, RestoreHdKeyringProps } from "../types/HDKeyring";
-import { EncryptedKeyPair, EncryptedKeyPairWithViewKey, RawKeyPair, RawKeyPairWithViewKey } from "../types/KeyPair";
+import {
+  ImportHdKeyringProps,
+  NewHdKeyringProps,
+  RestoreHdKeyringProps,
+} from "../types/HDKeyring";
+import {
+  EncryptedKeyPair,
+  EncryptedKeyPairWithViewKey,
+  RawKeyPair,
+  RawKeyPairWithViewKey,
+} from "../types/KeyPair";
 import { decryptStr, encryptStr } from "../utils/encrypt";
 import { HDKey } from "./HDKey";
 import { BLS12377HDKey } from "./HDKey/BLS12377HDKey";
@@ -25,9 +33,7 @@ export class HDKeyring {
 
   constructor(private walletId: string) {}
 
-  public static async init(
-    opts: NewHdKeyringProps
-  ): Promise<HDKeyring> {
+  public static async init(opts: NewHdKeyringProps): Promise<HDKeyring> {
     const hdKeyring = new HDKeyring(opts.walletId);
     await hdKeyring.createNewMnemonic(opts.token);
     hdKeyring.initCheck();
@@ -36,9 +42,7 @@ export class HDKeyring {
     return hdKeyring;
   }
 
-  public static async import(
-    opts: ImportHdKeyringProps
-  ): Promise<HDKeyring> {
+  public static async import(opts: ImportHdKeyringProps): Promise<HDKeyring> {
     const hdKeyring = new HDKeyring(opts.walletId);
     await hdKeyring.initFromMnemonic(opts.mnemonic);
     hdKeyring.initCheck();
@@ -48,9 +52,7 @@ export class HDKeyring {
   }
 
   // restore HDKeyring from mnemonic after unlock
-  public static async restore(
-    opts: RestoreHdKeyringProps
-  ): Promise<HDKeyring> {
+  public static async restore(opts: RestoreHdKeyringProps): Promise<HDKeyring> {
     const hdKeyring = new HDKeyring(opts.walletId);
     hdKeyring.mnemonic = opts.mnemonic;
     const mnemonic = await decryptStr(opts.token, opts.mnemonic);
@@ -106,7 +108,9 @@ export class HDKeyring {
       this.coinWallets = {};
     }
     if (!this.coinWallets[symbol]) {
-      this.coinWallets[symbol] = getHDWallet(this.getCoinRoot(symbol), { symbol });
+      this.coinWallets[symbol] = getHDWallet(this.getCoinRoot(symbol), {
+        symbol,
+      });
     }
     return this.coinWallets[symbol]! as BaseHDWallet<T>;
   }
@@ -123,7 +127,12 @@ export class HDKeyring {
     if (!coinWallet) {
       throw new Error(`no ${symbol} wallet in ${accountId}`);
     }
-    const encryptedKeyPair = await coinWallet.derive(index, accountId, token, option);
+    const encryptedKeyPair = await coinWallet.derive(
+      index,
+      accountId,
+      token,
+      option
+    );
     return encryptedKeyPair;
   }
 

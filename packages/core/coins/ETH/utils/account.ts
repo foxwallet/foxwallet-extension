@@ -1,4 +1,4 @@
-import { Wallet, BytesLike } from 'ethers';
+import { Wallet, BytesLike } from "ethers";
 
 export const stripHexPrefix = (address: string) => {
   if (address.startsWith("0x")) {
@@ -7,12 +7,11 @@ export const stripHexPrefix = (address: string) => {
   return address;
 };
 
-
 export function isValidPrivateKey(privateKey: BytesLike): boolean {
-    try {
-        new Wallet(privateKey);
-        return true;
-    } catch (error) {
-        return false;
-    }
+  try {
+    new Wallet(privateKey);
+    return true;
+  } catch (error) {
+    return false;
+  }
 }

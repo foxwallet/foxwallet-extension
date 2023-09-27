@@ -54,7 +54,10 @@ export class Ed25519HDKey {
     const masterKey = getMasterKeyFromSeed(seed.toString("hex"));
     return new Ed25519HDKey(masterKey.key, masterKey.chainCode);
   }
-  constructor(public key: Buffer, public chainCode: Buffer) {}
+  constructor(
+    public key: Buffer,
+    public chainCode: Buffer
+  ) {}
 
   public derive(path: string): Ed25519HDKey {
     if (!isValidPath(path)) {

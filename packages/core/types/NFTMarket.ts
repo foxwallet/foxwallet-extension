@@ -10,6 +10,6 @@ export interface NFTMarket {
 export interface NFTApiConfig {
   uniqueId: ChainUniqueId;
   supportResync: boolean;
-};
+}
 
-export type  NFTConfig = Pick<NFTApiConfig, "supportResync">;
+export type NFTConfig = Pick<NFTApiConfig, "supportResync">;

@@ -1,8 +1,7 @@
 import { type IContentServer } from "./IWalletServer";
 
 export class ContentWalletServer implements IContentServer {
-  constructor() {
-  }
+  constructor() {}
 
   connect: (params: any) => Promise<any>;
 }

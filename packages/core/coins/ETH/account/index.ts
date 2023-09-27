@@ -2,10 +2,13 @@ import { Wallet } from "ethers";
 import { CoinType } from "../../../types/CoinType";
 import { CoreError, CoreErrorCode } from "../../../types/Error";
 import { CoinBasic } from "../../CoinBasic";
-import { EthAccountOption, EthExportPKType, EthImportPKType } from "../types/EthAccount";
+import {
+  EthAccountOption,
+  EthExportPKType,
+  EthImportPKType,
+} from "../types/EthAccount";
 import { isValidPrivateKey, stripHexPrefix } from "../utils/account";
 import * as ethUtil from "ethereumjs-util";
-
 
 class EthBasic extends CoinBasic<CoinType.ETH> {
   public serializeBuffer(keyBuffer: Buffer): string {
@@ -37,7 +40,7 @@ class EthBasic extends CoinBasic<CoinType.ETH> {
     publicKey: string;
     address: string;
   } {
-    const publicKey = ethUtil.privateToPublic(privateKey)
+    const publicKey = ethUtil.privateToPublic(privateKey);
     let address = ethUtil.publicToAddress(publicKey).toString("hex");
     address = ethUtil.addHexPrefix(address);
     return {

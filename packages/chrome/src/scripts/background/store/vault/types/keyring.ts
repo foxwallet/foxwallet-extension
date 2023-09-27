@@ -1,6 +1,9 @@
-import { CoinType, EncryptedKeyPairWithViewKey, EncryptedField } from "@foxwallet/core/types";
+import {
+  CoinType,
+  EncryptedKeyPairWithViewKey,
+  EncryptedField,
+} from "@foxwallet/core/types";
 import { Mnemonic } from "@foxwallet/core/wallet/mnemonic";
-
 
 export interface Cipher {
   data: string;
@@ -14,7 +17,7 @@ export enum WalletType {
 
 export type AccountWithViewKey = EncryptedKeyPairWithViewKey & {
   accountName: string;
-}
+};
 
 export type DisplayAccount = Omit<AccountWithViewKey, "privateKey" | "viewKey">;
 
@@ -23,15 +26,15 @@ export interface BaseWallet {
   walletId: string;
   walletName: string;
   accountsMap: {
-    [CoinType.ALEO]: AccountWithViewKey[]
+    [CoinType.ALEO]: AccountWithViewKey[];
   };
 }
 
 export type DisplayBaseWallet = Omit<BaseWallet, "accountsMap"> & {
   accountsMap: {
-    [CoinType.ALEO]: DisplayAccount[]
+    [CoinType.ALEO]: DisplayAccount[];
   };
-}
+};
 
 export interface HDWallet extends BaseWallet {
   walletType: WalletType.HD;

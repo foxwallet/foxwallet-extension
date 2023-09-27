@@ -1,10 +1,12 @@
-
 import { CoinType } from "../../types/CoinType";
 import { EthHDKey } from "../HDKey/EthHDKey";
 import { BaseHDWallet } from "./BaseHDWallet";
 import { AccountOption } from "../../types/CoinBasic";
 import { HDKey } from "../HDKey";
-import { EncryptedKeyPairWithPublicKey, RawKeyPairWithPublicKey } from "../../types/KeyPair";
+import {
+  EncryptedKeyPairWithPublicKey,
+  RawKeyPairWithPublicKey,
+} from "../../types/KeyPair";
 import { getCoinDerivation } from "../../helper/CoinBasic";
 import { CoreError } from "../../types/Error";
 import { coinBasicFactory } from "../../coins/CoinBasicFactory";

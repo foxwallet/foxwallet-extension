@@ -11,11 +11,11 @@ export type RawKeyPair = {
 
 export type RawKeyPairWithPublicKey = RawKeyPair & {
   publicKey: string;
-}
+};
 
 export type RawKeyPairWithViewKey = RawKeyPair & {
   viewKey: string;
-}
+};
 
 export type EncryptedKeyPair = {
   index: number;
@@ -26,11 +26,11 @@ export type EncryptedKeyPair = {
 
 export type EncryptedKeyPairWithPublicKey = EncryptedKeyPair & {
   publicKey: string;
-}
+};
 
 export type EncryptedKeyPairWithViewKey = EncryptedKeyPair & {
   viewKey: EncryptedField;
-}
+};
 
 export type HDWalletProps<T extends CoinType> = {
   symbol: T;

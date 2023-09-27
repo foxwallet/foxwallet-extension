@@ -1,4 +1,3 @@
-
 import { Flex, Image, Box, Container } from "@chakra-ui/react";
 import { H5 } from "../../../common/theme/components/text";
 import { useNavigate } from "react-router-dom";

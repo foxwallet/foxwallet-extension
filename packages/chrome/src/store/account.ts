@@ -1,7 +1,10 @@
 import { createModel } from "@rematch/core";
 import { type RootModel } from "./index";
 import { nanoid } from "nanoid";
-import { DisplayKeyring, WalletType } from "../scripts/background/store/vault/types/keyring";
+import {
+  DisplayKeyring,
+  WalletType,
+} from "../scripts/background/store/vault/types/keyring";
 import { clients } from "../hooks/useClient";
 import { CoinType } from "@foxwallet/core/types";
 
@@ -17,9 +20,8 @@ export const account = createModel<RootModel>()({
       return {
         ...state,
         ...keyring,
-      }
-    }
+      };
+    },
   },
-  effects: (dispatch) => ({
-  }),
+  effects: (dispatch) => ({}),
 });

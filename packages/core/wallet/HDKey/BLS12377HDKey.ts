@@ -1,5 +1,5 @@
 import { Buffer } from "buffer";
-import crypto from "crypto-browserify"
+import crypto from "crypto-browserify";
 
 const HARDENED_OFFSET = 0x80000000;
 const BLS12_377_CURVE = "bls12_377 seed";
@@ -54,7 +54,10 @@ export class BLS12377HDKey {
     const masterKey = getMasterKeyFromSeed(seed.toString("hex"));
     return new BLS12377HDKey(masterKey.key, masterKey.chainCode);
   }
-  constructor(public key: Buffer, public chainCode: Buffer) {}
+  constructor(
+    public key: Buffer,
+    public chainCode: Buffer
+  ) {}
 
   public derive(path: string): BLS12377HDKey {
     if (!isValidPath(path)) {

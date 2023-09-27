@@ -1,6 +1,16 @@
 import { CoinType } from "@foxwallet/core/types";
-import { PopupServerMethod, type IPopupServer, CreateWalletProps, RegenerateWalletProps, ImportHDWalletProps, AddAccountProps } from "../../scripts/background/servers/IWalletServer";
-import { DisplayWallet, DisplayKeyring } from "../../scripts/background/store/vault/types/keyring";
+import {
+  PopupServerMethod,
+  type IPopupServer,
+  CreateWalletProps,
+  RegenerateWalletProps,
+  ImportHDWalletProps,
+  AddAccountProps,
+} from "../../scripts/background/servers/IWalletServer";
+import {
+  DisplayWallet,
+  DisplayKeyring,
+} from "../../scripts/background/store/vault/types/keyring";
 import { KEEP_ALIVE_INTERVAL } from "../constants";
 import {
   MessageType,
@@ -93,7 +103,7 @@ export class PopupServerClient implements IClient, IPopupServer {
     }
   }
 
-  async initPassword(params: { password: string; }): Promise<boolean> {
+  async initPassword(params: { password: string }): Promise<boolean> {
     return await this.#send("initPassword", params);
   }
 
@@ -101,7 +111,9 @@ export class PopupServerClient implements IClient, IPopupServer {
     return await this.#send("createWallet", params);
   }
 
-  async regenerateWallet(params: RegenerateWalletProps): Promise<DisplayWallet> {
+  async regenerateWallet(
+    params: RegenerateWalletProps
+  ): Promise<DisplayWallet> {
     return await this.#send("regenerateWallet", params);
   }
 

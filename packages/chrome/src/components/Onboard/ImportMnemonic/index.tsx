@@ -1,34 +1,37 @@
-import { SyntheticEvent, useCallback, useEffect, useState } from "react";
+import { ChangeEvent, SyntheticEvent, useCallback, useEffect, useMemo, useRef, useState, KeyboardEvent } from "react";
 import { H6 } from "../../../common/theme/components/text";
-import { Box, Button, Text, Textarea } from "@chakra-ui/react";
+import { Box, Button, Flex, Text, Textarea } from "@chakra-ui/react";
 import { Content } from "../../../layouts/Content";
-import { wordlists } from "bip39";
+import { wordlists, validateMnemonic } from "bip39";
 import { useDebounce } from "use-debounce";
+import { logger } from "../../../common/utils/logger";
+import { useDataRef } from "../../../hooks/useDataRef";
 
 type Props = {
-  isValidMnemonic: (mnemonic: string) => void;
   onConfirm: (mnemonic: string) => void;
-}
+};
 
-export const ImportMnemonicStep = ({ onConfirm, isValidMnemonic }: Props) => {
+export const ImportMnemonicStep = ({ onConfirm }: Props) => {
   const [mnemonic, setMnemonic] = useState("");
-  const [debounceMnemonic] = useDebounce(mnemonic, 100, { trailing: true })
+  const mnemonicRef = useDataRef(mnemonic);
+  const [debounceMnemonic] = useDebounce(mnemonic, 100, { trailing: true });
   const [matchWords, setMatchWords] = useState<string[]>([]);
+  const matchWordsRef = useDataRef(matchWords);
   const [errorWord, setErrorWord] = useState("");
 
-  const checkLastWord = useCallback((word: string) => {
-    if (!word) {
-      return { correct: true, matchWords: []};
+  const checkLastWord = useCallback((lastWord: string) => {
+    if (!lastWord) {
+      return { correct: true, matchWords: [] };
     }
     const wordlist = wordlists.english;
     let exist = false;
     const matches = [];
     for (let word of wordlist) {
-      if (word === word) {
+      if (word === lastWord) {
         exist = true;
         break;
       }
-      if (word.startsWith(word)) {
+      if (word.startsWith(lastWord)) {
         matches.push(word);
       }
     }
@@ -40,7 +43,7 @@ export const ImportMnemonicStep = ({ onConfirm, isValidMnemonic }: Props) => {
       return { correct: false, matchWords: [] };
     } else {
       // last word is typing
-      return { correct: true, matchWords: matches.slice(0, 6) };
+      return { correct: true, matchWords: matches.slice(0, 10) };
     }
   }, []);
 
@@ -49,18 +52,22 @@ export const ImportMnemonicStep = ({ onConfirm, isValidMnemonic }: Props) => {
     return words.findLast((it) => !wordlist.includes(it)) || "";
   }, []);
 
-  const checkMnemonicWord = useCallback((originalText: string) => {
-    const words = originalText.split(" ");
-    const lastWord = words.pop() || "";
-    const { correct: lastWordCorrect, matchWords: _matchWords } = checkLastWord(lastWord);
-    setMatchWords(_matchWords);
-    if (!lastWordCorrect) {
-      setErrorWord(lastWord);
-    } else {
-      const otherError = checkOtherWords(words);
-      setErrorWord(otherError);
-    }
-  }, [checkLastWord, checkOtherWords]);
+  const checkMnemonicWord = useCallback(
+    (originalText: string) => {
+      const words = originalText.split(" ");
+      const lastWord = words.pop() || "";
+      const { correct: lastWordCorrect, matchWords: _matchWords } =
+        checkLastWord(lastWord);
+      setMatchWords(_matchWords);
+      if (!lastWordCorrect) {
+        setErrorWord(lastWord);
+      } else {
+        const otherError = checkOtherWords(words);
+        setErrorWord(otherError);
+      }
+    },
+    [checkLastWord, checkOtherWords]
+  );
 
   useEffect(() => {
     if (debounceMnemonic) {
@@ -68,33 +75,80 @@ export const ImportMnemonicStep = ({ onConfirm, isValidMnemonic }: Props) => {
     }
   }, [debounceMnemonic, checkMnemonicWord]);
 
-  const onInputChange = (e: SyntheticEvent) => {
+  const onReplaceLastWord = useCallback((word: string) => {
+    const words = mnemonicRef.current.split(" ");
+    words.pop();
+    words.push(word);
+    setMnemonic(words.join(" ") + " ");
+  }, [mnemonicRef]);
+
+  const onInputChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
     let value = e.target.value;
-    const processText = value.toLowerCase().replace(/\s\s+/g, " ");
+    let processText = value.toLowerCase().replace(/\s\s+/g, " ");
+    processText = processText.replace(/[^a-zA-Z\s]/g, "");
     setMnemonic(processText);
-  }
+  }, []);
+
+
+  const handleKeyDown = useCallback((e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' || e.key === 'Tab') {
+      e.preventDefault();
+      const word = matchWordsRef.current[0];
+      if (word) {
+        onReplaceLastWord(word);
+      }
+    }
+  }, []);
+
+  const isValid = useMemo(() => {
+    return validateMnemonic(mnemonic);
+  }, [mnemonic]);
+
+  const showError = useMemo(() => {
+    const words = mnemonic.trim().split(" ");
+    if (words.length === 12 || words.length === 24) {
+      return !isValid;
+    }
+    return false;
+  }, [mnemonic, isValid]);
+
+  console.log("==> showError: ", showError, isValid);
 
   return (
     <Content>
-      <H6 mb="2" color={"gray.600"} >{"Seed phrase"}</H6>
+      <H6 mb="2" color={"gray.600"}>
+        {"Seed phrase"}
+      </H6>
       <Textarea
         value={mnemonic}
         onChange={onInputChange}
+        onKeyDown={handleKeyDown}
         placeholder="Enter the seed phrase, separated by spaces"
-        size='md'
+        size="md"
         resize={"none"}
-        h={"100"}
+        h={"150"}
+        borderColor={`${showError ? "red.500" : "gray.50"}`}
+        borderWidth={1}
       />
-      {
-        matchWords.map((item) => {
+      <Flex flexWrap={"wrap"}>
+        {matchWords.map((item) => {
           return (
-            <Box>
-            <Text>{item}</Text>
+            <Box key={item} borderRadius={"md"} bg={"orange.100"} px={"2"} py={"1"} mr={"2"} mt={"2"} onClick={() => onReplaceLastWord(item)}>
+              <Text color={"orange.500"}>{item}</Text>
             </Box>
           );
-        })
-      }
-      <Button position={"fixed"} bottom={10} left={"4"} right={"4"} onClick={() => onConfirm(mnemonic)}>{"Confirm"}</Button>
+        })}
+      </Flex>
+      <Button
+        isDisabled={!isValid}
+        position={"fixed"}
+        bottom={10}
+        left={"4"}
+        right={"4"}
+        onClick={() => onConfirm(mnemonic.trim())}
+      >
+        {"Confirm"}
+      </Button>
     </Content>
-  )
+  );
 };

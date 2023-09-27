@@ -1,6 +1,13 @@
 import { EncryptedField } from "@foxwallet/core/types";
 import { walletStorageInstance } from "../../../../common/utils/storage";
-import { Cipher, HDWallet, KeyringObj, Vault, VaultKeys, WalletType } from "./types/keyring";
+import {
+  Cipher,
+  HDWallet,
+  KeyringObj,
+  Vault,
+  VaultKeys,
+  WalletType,
+} from "./types/keyring";
 import browser from "webextension-polyfill";
 
 export class VaultStorage {
@@ -11,7 +18,9 @@ export class VaultStorage {
   }
 
   async getCipher() {
-    const store = await this.#storage.get(VaultKeys.cipher) as { cipher?: Cipher };
+    const store = (await this.#storage.get(VaultKeys.cipher)) as {
+      cipher?: Cipher;
+    };
     return store?.cipher;
   }
 
@@ -25,7 +34,9 @@ export class VaultStorage {
   }
 
   async getKeyring() {
-    const store = await this.#storage.get(VaultKeys.keyring) as { keyring?: KeyringObj };
+    const store = (await this.#storage.get(VaultKeys.keyring)) as {
+      keyring?: KeyringObj;
+    };
     return store?.keyring;
   }
 
@@ -39,7 +50,7 @@ export class VaultStorage {
   }
 
   async getHDWallet(walletId: string) {
-    const keyring = await this.getKeyring() || {};
+    const keyring = (await this.getKeyring()) || {};
     const hdWallets = keyring[WalletType.HD] || [];
     const hdWallet = hdWallets.find((item) => item.walletId === walletId);
     if (!hdWallet) {
@@ -49,14 +60,14 @@ export class VaultStorage {
   }
 
   async isHDWalletExist(walletId: string) {
-    const keyring = await this.getKeyring() || {};
+    const keyring = (await this.getKeyring()) || {};
     const hdWallets = keyring[WalletType.HD] || [];
     const hdWallet = hdWallets.find((item) => item.walletId === walletId);
     return !!hdWallet;
   }
 
   async addHDWallet(newHdWallet: HDWallet) {
-    const keyring = await this.getKeyring() || {};
+    const keyring = (await this.getKeyring()) || {};
     const hdWallets = keyring[WalletType.HD] || [];
     if (hdWallets.some((item) => item.walletId === newHdWallet.walletId)) {
       throw new Error("HDWallet already exists");
@@ -69,7 +80,7 @@ export class VaultStorage {
   }
 
   async setHDWallet(hdWallet: HDWallet) {
-    const keyring = await this.getKeyring() || {};
+    const keyring = (await this.getKeyring()) || {};
     const hdWallets = keyring[WalletType.HD] || [];
     const newHdWallets = hdWallets.map((item) => {
       if (item.walletId === hdWallet.walletId) {
@@ -84,7 +95,7 @@ export class VaultStorage {
   }
 
   async getVault() {
-    return await this.#storage.get(null) as Vault;
+    return (await this.#storage.get(null)) as Vault;
   }
 
   async setVault(vault: Vault) {

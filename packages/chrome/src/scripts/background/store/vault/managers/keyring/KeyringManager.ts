@@ -1,7 +1,20 @@
 import { HDKeyring } from "@foxwallet/core";
-import { CoinType, EncryptedField, EncryptedKeyPairWithViewKey } from "@foxwallet/core/types";
+import {
+  CoinType,
+  EncryptedField,
+  EncryptedKeyPairWithViewKey,
+} from "@foxwallet/core/types";
 import { VaultStorage, vaultStorage } from "../../VaultStorage";
-import { AccountWithViewKey, BaseWallet, DisplayAccount, DisplayKeyring, DisplayWallet, HDWallet, KeyringObj, WalletType } from "../../types/keyring";
+import {
+  AccountWithViewKey,
+  BaseWallet,
+  DisplayAccount,
+  DisplayKeyring,
+  DisplayWallet,
+  HDWallet,
+  KeyringObj,
+  WalletType,
+} from "../../types/keyring";
 import { nanoid } from "nanoid";
 import { AuthManager } from "../auth/AuthManager";
 import { decryptStr } from "@foxwallet/core/utils/encrypt";
@@ -32,7 +45,9 @@ export class KeyringManager {
     return token;
   }
 
-  #formatDisplayAccountsMap(accountsMap: { [coinType in CoinType]: AccountWithViewKey[] }): { [coinType in CoinType]: DisplayAccount[] } {
+  #formatDisplayAccountsMap(accountsMap: {
+    [coinType in CoinType]: AccountWithViewKey[];
+  }): { [coinType in CoinType]: DisplayAccount[] } {
     let map: { [coinType in CoinType]: DisplayAccount[] } = {
       [CoinType.ALEO]: [],
     };
@@ -40,7 +55,7 @@ export class KeyringManager {
       map[coinType] = accountsMap[coinType].map((item) => {
         const { privateKey, viewKey, ...rest } = item;
         return rest;
-      })
+      });
     }
     return map;
   }
@@ -51,7 +66,7 @@ export class KeyringManager {
       walletId: wallet.walletId,
       walletName: wallet.walletName,
       accountsMap: this.#formatDisplayAccountsMap(wallet.accountsMap),
-    }
+    };
   }
 
   async getWallet(walletId: string): Promise<DisplayWallet> {
@@ -60,16 +75,28 @@ export class KeyringManager {
 
   async getAllWallet(): Promise<DisplayKeyring> {
     this.#getToken();
-    const keyrings = await this.#storage.getKeyring() || {};
-    const hdWallets = (keyrings[WalletType.HD] || []).map((item) => this.#formatDisplayWallet(item));
-    const simpleWallets = (keyrings[WalletType.SIMPLE] || []).map((item) => this.#formatDisplayWallet(item));
+    const keyrings = (await this.#storage.getKeyring()) || {};
+    const hdWallets = (keyrings[WalletType.HD] || []).map((item) =>
+      this.#formatDisplayWallet(item)
+    );
+    const simpleWallets = (keyrings[WalletType.SIMPLE] || []).map((item) =>
+      this.#formatDisplayWallet(item)
+    );
     return {
       [WalletType.HD]: hdWallets,
       [WalletType.SIMPLE]: simpleWallets,
-    }
+    };
   }
 
-  async createNewWallet({ walletName, walletId, revealMnemonic }: { walletName: string, walletId: string, revealMnemonic: boolean }): Promise<DisplayWallet> {
+  async createNewWallet({
+    walletName,
+    walletId,
+    revealMnemonic,
+  }: {
+    walletName: string;
+    walletId: string;
+    revealMnemonic: boolean;
+  }): Promise<DisplayWallet> {
     const token = this.#getToken();
     const existWallet = await this.#storage.isHDWalletExist(walletId);
     if (existWallet) {
@@ -79,11 +106,18 @@ export class KeyringManager {
       token,
       walletId,
     });
-    const newMnemonic = newKeyring.getEncryptedMnemonic() as EncryptedField | undefined;
+    const newMnemonic = newKeyring.getEncryptedMnemonic() as
+      | EncryptedField
+      | undefined;
     if (!newMnemonic) {
       throw new Error("createNewWallet failed");
     }
-    const newAccount = await newKeyring.derive(nanoid(), 0, CoinType.ALEO, token) as EncryptedKeyPairWithViewKey;
+    const newAccount = (await newKeyring.derive(
+      nanoid(),
+      0,
+      CoinType.ALEO,
+      token
+    )) as EncryptedKeyPairWithViewKey;
     const accountName = "Account 1";
     const newWallet: HDWallet = {
       walletType: WalletType.HD,
@@ -91,12 +125,14 @@ export class KeyringManager {
       walletName,
       mnemonic: newMnemonic,
       accountsMap: {
-        [CoinType.ALEO]: [{
-          ...newAccount,
-          accountName,
-        }],
-      }
-    }
+        [CoinType.ALEO]: [
+          {
+            ...newAccount,
+            accountName,
+          },
+        ],
+      },
+    };
 
     await this.#storage.addHDWallet(newWallet);
 
@@ -115,7 +151,15 @@ export class KeyringManager {
     return wallet;
   }
 
-  async regenerateWallet({ walletId, walletName, revealMnemonic }: { walletId: string, walletName: string, revealMnemonic: boolean }): Promise<DisplayWallet> {
+  async regenerateWallet({
+    walletId,
+    walletName,
+    revealMnemonic,
+  }: {
+    walletId: string;
+    walletName: string;
+    revealMnemonic: boolean;
+  }): Promise<DisplayWallet> {
     const token = this.#getToken();
     const keyring = await HDKeyring.init({
       token,
@@ -124,11 +168,18 @@ export class KeyringManager {
     if (!keyring) {
       throw new Error("regenerateWallet failed");
     }
-    const newMnemonic = keyring.getEncryptedMnemonic() as EncryptedField | undefined;
+    const newMnemonic = keyring.getEncryptedMnemonic() as
+      | EncryptedField
+      | undefined;
     if (!newMnemonic) {
       throw new Error("regenerateWallet failed");
     }
-    const newAccount = await keyring.derive(nanoid(), 0, CoinType.ALEO, token) as EncryptedKeyPairWithViewKey;
+    const newAccount = (await keyring.derive(
+      nanoid(),
+      0,
+      CoinType.ALEO,
+      token
+    )) as EncryptedKeyPairWithViewKey;
 
     const accountName = "Account 1";
     const newWallet: HDWallet = {
@@ -137,12 +188,14 @@ export class KeyringManager {
       walletName,
       mnemonic: newMnemonic,
       accountsMap: {
-        [CoinType.ALEO]: [{
-          ...newAccount,
-          accountName,
-        }],
-      }
-    }
+        [CoinType.ALEO]: [
+          {
+            ...newAccount,
+            accountName,
+          },
+        ],
+      },
+    };
 
     await this.#storage.setHDWallet(newWallet);
 
@@ -157,7 +210,15 @@ export class KeyringManager {
     return wallet;
   }
 
-  async importHDWallet({ walletName, walletId, mnemonic }: { walletName: string, walletId: string, mnemonic: string }): Promise<DisplayWallet> {
+  async importHDWallet({
+    walletName,
+    walletId,
+    mnemonic,
+  }: {
+    walletName: string;
+    walletId: string;
+    mnemonic: string;
+  }): Promise<DisplayWallet> {
     const token = this.#getToken();
     const existWallet = await this.#storage.isHDWalletExist(walletId);
     if (existWallet) {
@@ -168,11 +229,18 @@ export class KeyringManager {
       walletId,
       mnemonic,
     });
-    const newMnemonic = newKeyring.getEncryptedMnemonic() as EncryptedField | undefined;
+    const newMnemonic = newKeyring.getEncryptedMnemonic() as
+      | EncryptedField
+      | undefined;
     if (!newMnemonic) {
       throw new Error("createNewWallet failed");
     }
-    const newAccount = await newKeyring.derive(nanoid(), 0, CoinType.ALEO, token) as EncryptedKeyPairWithViewKey;
+    const newAccount = (await newKeyring.derive(
+      nanoid(),
+      0,
+      CoinType.ALEO,
+      token
+    )) as EncryptedKeyPairWithViewKey;
 
     const accountName = "Account 1";
     const newWallet: HDWallet = {
@@ -181,12 +249,14 @@ export class KeyringManager {
       walletName,
       mnemonic: newMnemonic,
       accountsMap: {
-        [CoinType.ALEO]: [{
-          ...newAccount,
-          accountName,
-        }],
-      }
-    }
+        [CoinType.ALEO]: [
+          {
+            ...newAccount,
+            accountName,
+          },
+        ],
+      },
+    };
     await this.#storage.addHDWallet(newWallet);
 
     this.#hdKeyrings[walletId] = newKeyring;
@@ -194,7 +264,11 @@ export class KeyringManager {
     return await this.getWallet(walletId);
   }
 
-  async addNewAccount({ walletId, coin, accountId } : AddAccountProps): Promise<DisplayWallet> {
+  async addNewAccount({
+    walletId,
+    coin,
+    accountId,
+  }: AddAccountProps): Promise<DisplayWallet> {
     const token = this.#getToken();
     const hdWallet = await this.#storage.getHDWallet(walletId);
     const index = hdWallet.accountsMap[coin].length;
@@ -207,12 +281,19 @@ export class KeyringManager {
       });
       this.#hdKeyrings[walletId] = keyring;
     }
-    const existAccount = hdWallet.accountsMap[coin].some((item) => item.accountId === accountId);
+    const existAccount = hdWallet.accountsMap[coin].some(
+      (item) => item.accountId === accountId
+    );
     if (existAccount) {
       throw new Error("Account have existed");
     }
-    const newEncryptedKeyPair = await keyring.derive(accountId, index, coin, token) as EncryptedKeyPairWithViewKey;
-    const accountName = `Account ${index}`
+    const newEncryptedKeyPair = (await keyring.derive(
+      accountId,
+      index,
+      coin,
+      token
+    )) as EncryptedKeyPairWithViewKey;
+    const accountName = `Account ${index}`;
     const newHdWallet: HDWallet = {
       ...hdWallet,
       accountsMap: {
@@ -222,13 +303,12 @@ export class KeyringManager {
           {
             ...newEncryptedKeyPair,
             accountName,
-          }
-        ]
-      }
-    }
+          },
+        ],
+      },
+    };
     await this.#storage.setHDWallet(newHdWallet);
 
     return await this.getWallet(walletId);
   }
 }
-

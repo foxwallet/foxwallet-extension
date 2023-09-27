@@ -3,7 +3,6 @@ export interface Cipher {
   salt: string;
 }
 
-
 export interface KeyringObj {}
 
 export interface Vault {

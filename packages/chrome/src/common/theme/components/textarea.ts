@@ -15,8 +15,8 @@ export const textAreaTheme = defineStyleConfig({
       lineHeight: "6",
       fontSize: "14",
       "::placeholder": {
-        color: "gray.300"
-      }
+        color: "gray.300",
+      },
     };
-  }
+  },
 });
