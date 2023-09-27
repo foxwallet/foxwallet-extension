@@ -1,17 +1,17 @@
 import { useDispatch } from "react-redux";
-import { Dispatch } from "../../store/store";
-import { useWalletDispatch } from "../../hooks/useStore";
-import { clients, useClient } from "../../hooks/useClient";
+import { Dispatch } from "../../../store/store";
+import { useWalletDispatch } from "../../../hooks/useStore";
+import { clients, useClient } from "../../../hooks/useClient";
 import { MouseEventHandler, SyntheticEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Box, Flex, Grid, Text, GridItem, BoxProps, Button } from "@chakra-ui/react";
-import { logger } from "../../common/utils/logger";
+import { logger } from "../../../common/utils/logger";
 import { nanoid } from "nanoid";
-import { DisplayWallet } from "../../scripts/background/store/vault/types/keyring";
-import { Content } from "../../layouts/Content";
-import { showMnemonicWarningDialog } from "../../components/MnemonicWarningDialog";
-import { shuffle } from "../../common/utils/array";
-import { useDataRef } from "../../hooks/useDataRef";
-import { IconCloseCircle } from "../../components/Icon";
+import { DisplayWallet } from "../../../scripts/background/store/vault/types/keyring";
+import { Content } from "../../../layouts/Content";
+import { showMnemonicWarningDialog } from "../MnemonicWarningDialog";
+import { shuffle } from "../../../common/utils/array";
+import { useDataRef } from "../../../hooks/useDataRef";
+import { IconCloseCircle } from "../../Custom/Icon";
 
 function WordGrid({ words }: { words: string[] }) {
   return (

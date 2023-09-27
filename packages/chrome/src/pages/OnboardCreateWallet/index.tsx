@@ -3,11 +3,11 @@ import { PageWithHeader } from "../../layouts/Page";
 import { Body } from "../../layouts/Body";
 import { OnboardProgress } from "../../components/Onboard/OnboardProgress";
 import { ClientContext, useClient } from "../../hooks/useClient";
-import { CreatePasswordStep } from "./CreatePasswordStep";
-import { BackupMnemonicStep } from "./BackupMnemonic";
+import { CreatePasswordStep } from "../../components/Onboard/CreatePassword";
+import { BackupMnemonicStep } from "../../components/Onboard/BackupMnemonic";
 import { logger } from "../../common/utils/logger";
-import { ConfirmMnemonicStep } from "./ConfirmMnemonic";
-import { showMnemonicWarningDialog } from "../../components/MnemonicWarningDialog";
+import { ConfirmMnemonicStep } from "../../components/Onboard/ConfirmMnemonic";
+import { showMnemonicWarningDialog } from "../../components/Onboard/MnemonicWarningDialog";
 import { nanoid } from "nanoid";
 
 const CreateWalletSteps = [

@@ -4,16 +4,18 @@ import { Body } from "../../layouts/Body";
 import { OnboardProgress } from "../../components/Onboard/OnboardProgress";
 import { ClientContext, useClient } from "../../hooks/useClient";
 import { logger } from "../../common/utils/logger";
-import { showMnemonicWarningDialog } from "../../components/MnemonicWarningDialog";
+import { showMnemonicWarningDialog } from "../../components/Onboard/MnemonicWarningDialog";
 import { nanoid } from "nanoid";
+import { CreatePasswordStep } from "../../components/Onboard/CreatePassword";
+import { ImportMnemonicStep } from "../../components/Onboard/ImportMnemonic";
 
 const ImportWalletSteps = [
   "Create",
   "Import"
 ]
 
-function OnboardImportWalletScreen() {
-  const [step, setStep] = useState(1);
+export default function OnboardImportWallet() {
+  const [step, setStep] = useState(2);
   const walletNameRef = useRef("");
   const [mnemonic, setMnemonic] = useState("");
   const { popupServerClient } = useClient();
@@ -56,20 +58,9 @@ function OnboardImportWalletScreen() {
         );
       case 2:
         return (
-          <BackupMnemonicStep
-            mnemonic={mnemonic}
-            createWallet={createWallet}
-            regenerateWallet={regenerateWallet}
-            onConfirm={() => {
+          <ImportMnemonicStep
+            onConfirm={(mnemonic) => {
               setStep((_step) => _step + 1);
-            }}
-          />
-        );
-      case 3:
-        return (
-          <ConfirmMnemonicStep
-            mnemonic={mnemonic}
-            onConfirm={() => {
             }}
           />
         );
@@ -77,13 +68,8 @@ function OnboardImportWalletScreen() {
   }, [step, mnemonic, createWallet, regenerateWallet]);
 
   return (
-    <PageWithHeader title="Create Wallet" enableBack={step !== 2} onBack={() => {
-      if (step > 1) {
-        setStep((curr) => curr - 1);
-        return false;
-      } else {
+    <PageWithHeader title="Import Wallet" enableBack={step === 1} onBack={() => {
         return true;
-      }
     }}>
       <Body>
         <OnboardProgress currStep={step} steps={ImportWalletSteps}/>
@@ -92,5 +78,3 @@ function OnboardImportWalletScreen() {
     </PageWithHeader>
   );
 }
-
-export default OnboardImportWalletScreen;

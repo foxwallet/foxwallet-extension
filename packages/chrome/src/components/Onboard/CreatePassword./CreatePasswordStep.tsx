@@ -1,20 +1,20 @@
 import { Button, Flex, InputRightElement } from "@chakra-ui/react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Content } from "../../layouts/Content";
-import { BaseInput, BaseInputGroup } from "../../components/Input";
-import { WarningArea } from "../../components/WarningArea";
+import { Content } from "../../../layouts/Content";
+import { BaseInput, BaseInputGroup } from "../../Custom/Input";
+import { WarningArea } from "../../Custom/WarningArea";
 import {
   IconCheckLine,
   IconCloseLine,
   IconEyeOn,
   IconEyeClose,
-} from "../../components/Icon";
+} from "../../Custom/Icon";
 import { type Score as PasswordScore } from "@zxcvbn-ts/core";
 import { useDebounce } from "use-debounce";
-import { getPasswordStrength } from "../../common/utils/zxcvbn";
-import { PasswordStrengthIndicator } from "../../components/PasswordStrengthIndicator";
-import { PASSWORD_MINIMUL_LENGTH } from "../../common/constants";
-import { showPasswordWarningDialog } from "../../components/PasswordWarningDialog";
+import { getPasswordStrength } from "../../../common/utils/zxcvbn";
+import { PasswordStrengthIndicator } from "../PasswordStrengthIndicator";
+import { PASSWORD_MINIMUL_LENGTH } from "../../../common/constants";
+import { showPasswordWarningDialog } from "../PasswordWarningDialog";
 
 export const CreatePasswordStep = (props: {
   onConfirm: (walletName: string, password: string) => void;

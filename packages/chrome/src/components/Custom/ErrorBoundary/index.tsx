@@ -1,6 +1,6 @@
 
 import { Component } from "react";
-import { type INodeProps } from "../../common/types";
+import { type INodeProps } from "../../../common/types";
 import { type ErrorInfo } from "react-dom/client";
 
 export type ErrorBoundaryProps = INodeProps & {

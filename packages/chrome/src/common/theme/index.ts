@@ -16,6 +16,7 @@ import { radii } from "./borderRadius";
 import { inputTheme } from "./components/input";
 import { checkBoxTheme } from "./components/checkbox";
 import { modalTheme } from "./components/modal";
+import { textAreaTheme } from "./components/textarea";
 
 const config: ThemeConfig = {
   initialColorMode: "light",
@@ -49,5 +50,6 @@ export const theme = extendBaseTheme({
     Input: inputTheme,
     Checkbox: checkBoxTheme,
     Modal: modalTheme,
+    Textarea: textAreaTheme,
   },
 });

@@ -1,8 +1,8 @@
 import { Button, Flex } from "@chakra-ui/react";
-import { H6, P3, P4 } from "../../common/theme/components/text";
-import { BasicModal } from "../Modal";
-import { promisifyChooseDialogWrapper } from "../../common/utils/dialog";
-import { IconPreventScreenshot } from "../Icon";
+import { H6, P3, P4 } from "../../../common/theme/components/text";
+import { BasicModal } from "../../Custom/Modal";
+import { promisifyChooseDialogWrapper } from "../../../common/utils/dialog";
+import { IconPreventScreenshot } from "../../Custom/Icon";
 
 interface Props {
   isOpen: boolean;

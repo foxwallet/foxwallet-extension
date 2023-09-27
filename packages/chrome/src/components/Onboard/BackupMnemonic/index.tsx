@@ -1,14 +1,14 @@
 import { useDispatch } from "react-redux";
-import { Dispatch } from "../../store/store";
-import { useWalletDispatch } from "../../hooks/useStore";
-import { clients, useClient } from "../../hooks/useClient";
+import { Dispatch } from "../../../store/store";
+import { useWalletDispatch } from "../../../hooks/useStore";
+import { clients, useClient } from "../../../hooks/useClient";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Box, Flex, Grid, Text, GridItem, BoxProps, Button } from "@chakra-ui/react";
-import { logger } from "../../common/utils/logger";
+import { logger } from "../../../common/utils/logger";
 import { nanoid } from "nanoid";
-import { DisplayWallet } from "../../scripts/background/store/vault/types/keyring";
-import { Content } from "../../layouts/Content";
-import { showMnemonicWarningDialog } from "../../components/MnemonicWarningDialog";
+import { DisplayWallet } from "../../../scripts/background/store/vault/types/keyring";
+import { Content } from "../../../layouts/Content";
+import { showMnemonicWarningDialog } from "../MnemonicWarningDialog";
 
 function Dot(props: BoxProps) {
   return <Box w={2} h={2} borderRadius={4} bg={"gray.100"} {...props}/>

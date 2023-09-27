@@ -5,7 +5,7 @@ import CloseCircle from "@/common/assets/image/icon_close_circle.svg";
 import EyeClose from "@/common/assets/image/icon_eye_close.svg";
 import Eye from "@/common/assets/image/icon_eye_on.svg";
 import Left from "@/common/assets/image/icon_left.svg";
-import Logo from "../../common/assets/image/onboard_logo.svg";
+import Logo from "@/common/assets/image/onboard_logo.svg";
 import PreventScreenshot from "@/common/assets/image/icon_prevent_screenshot.svg";
 import { chakra } from "@chakra-ui/react";
 

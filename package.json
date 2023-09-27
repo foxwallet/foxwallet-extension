@@ -14,7 +14,8 @@
     "build:prod": "npm run build:prod --workspace packages/chrome",
     "clean": "npm run clean --workspace packages/chrome",
     "preinstall": "npm run wasm --workspace packages/chrome",
-    "postinstall": "npm run build:dev && shx ln -s ../packages/chrome/node_modules/wasm/ ./node_modules/wasm/"
+    "postinstall": "npm run build:dev && shx ln -s ../packages/chrome/node_modules/wasm/ ./node_modules/wasm/",
+    "format": "prettier --write \"packages/**/*.{js,ts,jsx,tsx,json,md}\""
   },
   "lint-staged": {
     "*": "prettier --write --ignore-unknown",

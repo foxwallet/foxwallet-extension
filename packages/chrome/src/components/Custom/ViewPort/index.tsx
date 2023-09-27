@@ -1,6 +1,6 @@
 import React, { type PropsWithChildren } from "react";
 import { Box } from "@chakra-ui/react";
-import { useIsInTab } from "../../hooks/useTab";
+import { useIsInTab } from "../../../hooks/useTab";
 
 export const ViewPort = (props: PropsWithChildren) => {
   const isInTab = useIsInTab();

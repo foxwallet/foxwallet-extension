@@ -12,7 +12,7 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { useState } from "react";
-import { H6 } from "../../common/theme/components/text";
+import { H6 } from "../../../common/theme/components/text";
 import { IconCloseLine } from "../Icon";
 
 interface ModalProps {

@@ -8,7 +8,7 @@ import App from "./App";
 import { Provider } from "react-redux";
 import { store } from "./store/store";
 import { ClientContext, clients } from "./hooks/useClient";
-import { LoadingScreen } from "./components/Loading";
+import { LoadingScreen } from "./components/Custom/Loading";
 import { ChakraBaseProvider } from "@chakra-ui/react";
 import { theme } from "./common/theme";
 import { GlobalModal } from "./common/utils/dialog";

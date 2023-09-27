@@ -1,7 +1,7 @@
 
 import { Box, type BoxProps, Flex, type FlexProps } from "@chakra-ui/react";
 import { type Score } from "@zxcvbn-ts/core";
-import { B2, L2, L3 } from "../../common/theme/components/text";
+import { B2, L2, L3 } from "../../../common/theme/components/text";
 
 const Line = (props: BoxProps) => {
   return <Box h="1" borderRadius={"2"} {...props} />;

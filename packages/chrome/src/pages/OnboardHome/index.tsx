@@ -2,9 +2,9 @@ import { Box, Button, Flex, Image, Text, keyframes } from "@chakra-ui/react";
 import React, { useState, useRef } from "react";
 import { B3, H4, L1 } from "../../common/theme/components/text";
 import { useNavigate } from "react-router-dom";
-import BaseCheckbox from "../../components/Checkbox";
+import BaseCheckbox from "../../components/Custom/Checkbox";
 import browser from "webextension-polyfill";
-import { OnboardLogo } from "../../components/Icon";
+import { OnboardLogo } from "../../components/Custom/Icon";
 
 const shakeAnimation = keyframes`
   10%, 90% {
@@ -95,7 +95,20 @@ function OnboardHomeScreen() {
       >
         Create Wallet
       </Button>
-      <Button mx="8" mb="4">
+      <Button
+        mx="8"
+        mb="4"
+        onClick={() => {
+          if (!checked) {
+            setShowShakeAnimation(true);
+            setTimeout(() => {
+              setShowShakeAnimation(false);
+            }, 820);
+          } else {
+            navigate("/onboard/import");
+          }
+        }}
+      >
         Import Wallet
       </Button>
     </Flex>
