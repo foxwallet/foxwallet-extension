@@ -54,7 +54,7 @@ function OnboardCreateWalletScreen() {
             onConfirm={async (walletName, password) => {
               walletNameRef.current = walletName;
               const res = await popupServerClient.initPassword({ password });
-              logger.log("===> initPasswordres: ", res);
+              logger.log("===> create wallet PasswordStep: ", res);
               setStep((_step) => _step + 1);
             }}
           />

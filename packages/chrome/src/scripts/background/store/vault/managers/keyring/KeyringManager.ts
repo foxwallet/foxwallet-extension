@@ -37,6 +37,10 @@ export class KeyringManager {
     await initAleoWasm();
   }
 
+  async reset() {
+    this.#hdKeyrings = {};
+  }
+
   #getToken() {
     const token = this.#authManager.getToken();
     if (!token) {
@@ -135,18 +139,12 @@ export class KeyringManager {
     };
 
     await this.#storage.addHDWallet(newWallet);
-
     this.#hdKeyrings[walletId] = newKeyring;
-
-    logger.log("===> addHDWallet: ", newKeyring);
-
     const wallet = await this.getWallet(walletId);
 
     if (revealMnemonic) {
       wallet.mnemonic = await decryptStr(token, newMnemonic);
     }
-
-    logger.log("===> createNewWallet resp: ", wallet);
 
     return wallet;
   }
@@ -224,6 +222,17 @@ export class KeyringManager {
     if (existWallet) {
       throw new Error("Wallet have existed");
     }
+    const keyrings = Object.values(this.#hdKeyrings);
+    for (let keyring of keyrings) {
+      const encryptedMnemonic = keyring?.getEncryptedMnemonic();
+      if (!encryptedMnemonic) {
+        continue;
+      }
+      const exist = await decryptStr(token, encryptedMnemonic);
+      if (exist === mnemonic) {
+        throw new Error("Mnemonic exist!");
+      }
+    }
     const newKeyring = await HDKeyring.import({
       token,
       walletId,
@@ -280,6 +289,7 @@ export class KeyringManager {
         mnemonic: hdWallet.mnemonic,
       });
       this.#hdKeyrings[walletId] = keyring;
+      logger.log("===> addNewAccount wallet: ", keyring);
     }
     const existAccount = hdWallet.accountsMap[coin].some(
       (item) => item.accountId === accountId

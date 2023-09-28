@@ -1,4 +1,13 @@
-import { ChangeEvent, SyntheticEvent, useCallback, useEffect, useMemo, useRef, useState, KeyboardEvent } from "react";
+import {
+  ChangeEvent,
+  SyntheticEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  KeyboardEvent,
+} from "react";
 import { H6 } from "../../../common/theme/components/text";
 import { Box, Button, Flex, Text, Textarea } from "@chakra-ui/react";
 import { Content } from "../../../layouts/Content";
@@ -6,6 +15,7 @@ import { wordlists, validateMnemonic } from "bip39";
 import { useDebounce } from "use-debounce";
 import { logger } from "../../../common/utils/logger";
 import { useDataRef } from "../../../hooks/useDataRef";
+import { WarningArea } from "../../Custom/WarningArea";
 
 type Props = {
   onConfirm: (mnemonic: string) => void;
@@ -75,12 +85,15 @@ export const ImportMnemonicStep = ({ onConfirm }: Props) => {
     }
   }, [debounceMnemonic, checkMnemonicWord]);
 
-  const onReplaceLastWord = useCallback((word: string) => {
-    const words = mnemonicRef.current.split(" ");
-    words.pop();
-    words.push(word);
-    setMnemonic(words.join(" ") + " ");
-  }, [mnemonicRef]);
+  const onReplaceLastWord = useCallback(
+    (word: string) => {
+      const words = mnemonicRef.current.split(" ");
+      words.pop();
+      words.push(word);
+      setMnemonic(words.join(" ") + " ");
+    },
+    [mnemonicRef]
+  );
 
   const onInputChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
     let value = e.target.value;
@@ -89,9 +102,8 @@ export const ImportMnemonicStep = ({ onConfirm }: Props) => {
     setMnemonic(processText);
   }, []);
 
-
   const handleKeyDown = useCallback((e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' || e.key === 'Tab') {
+    if (e.key === "Enter" || e.key === "Tab") {
       e.preventDefault();
       const word = matchWordsRef.current[0];
       if (word) {
@@ -112,8 +124,6 @@ export const ImportMnemonicStep = ({ onConfirm }: Props) => {
     return false;
   }, [mnemonic, isValid]);
 
-  console.log("==> showError: ", showError, isValid);
-
   return (
     <Content>
       <H6 mb="2" color={"gray.600"}>
@@ -133,12 +143,27 @@ export const ImportMnemonicStep = ({ onConfirm }: Props) => {
       <Flex flexWrap={"wrap"}>
         {matchWords.map((item) => {
           return (
-            <Box key={item} borderRadius={"md"} bg={"orange.100"} px={"2"} py={"1"} mr={"2"} mt={"2"} onClick={() => onReplaceLastWord(item)}>
+            <Box
+              key={item}
+              borderRadius={"md"}
+              bg={"orange.100"}
+              px={"2"}
+              py={"1"}
+              mr={"2"}
+              mt={"2"}
+              onClick={() => onReplaceLastWord(item)}
+            >
               <Text color={"orange.500"}>{item}</Text>
             </Box>
           );
         })}
       </Flex>
+      {!!errorWord && (
+        <WarningArea
+          container={{ mt: "2" }}
+          content={`Please check "${errorWord}"`}
+        />
+      )}
       <Button
         isDisabled={!isValid}
         position={"fixed"}

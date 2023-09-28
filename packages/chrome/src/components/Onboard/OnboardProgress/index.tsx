@@ -43,7 +43,6 @@ const ProgressItem = ({
 };
 
 export const OnboardProgress = ({ currStep, steps }: ProgressProps) => {
-
   return (
     <Flex
       justifyContent={"space-around"}
@@ -54,7 +53,14 @@ export const OnboardProgress = ({ currStep, steps }: ProgressProps) => {
     >
       {steps.map((step, index) => {
         if (index === 0) {
-          return (<ProgressItem key={index} step={index + 1} currStep={currStep} text={step} />);
+          return (
+            <ProgressItem
+              key={index}
+              step={index + 1}
+              currStep={currStep}
+              text={step}
+            />
+          );
         }
 
         return (

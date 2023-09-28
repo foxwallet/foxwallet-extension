@@ -8,42 +8,16 @@ import { showMnemonicWarningDialog } from "../../components/Onboard/MnemonicWarn
 import { nanoid } from "nanoid";
 import { CreatePasswordStep } from "../../components/Onboard/CreatePassword";
 import { ImportMnemonicStep } from "../../components/Onboard/ImportMnemonic";
+import { showMessageToast } from "../../components/Custom/ErrorToast";
 
 const ImportWalletSteps = ["Create", "Import"];
 
 export default function OnboardImportWallet() {
-  const [step, setStep] = useState(2);
+  const [step, setStep] = useState(1);
   const walletNameRef = useRef("");
   const [mnemonic, setMnemonic] = useState("");
   const { popupServerClient } = useClient();
   const walletIdRef = useRef("");
-
-  const createWallet = useCallback(async () => {
-    if (walletIdRef.current) {
-      return;
-    }
-    const walletId = nanoid();
-    walletIdRef.current = walletId;
-    const wallet = await popupServerClient.createWallet({
-      walletName: walletNameRef.current,
-      walletId,
-      revealMnemonic: true,
-    });
-    const { confirmed } = await showMnemonicWarningDialog();
-    if (confirmed) {
-      setMnemonic(wallet.mnemonic || "");
-    }
-  }, []);
-
-  const regenerateWallet = useCallback(async () => {
-    const walletId = walletIdRef.current;
-    const wallet = await popupServerClient.regenerateWallet({
-      walletName: walletNameRef.current,
-      walletId,
-      revealMnemonic: true,
-    });
-    setMnemonic(wallet.mnemonic || "");
-  }, []);
 
   const stepContent = useMemo(() => {
     switch (step) {
@@ -52,8 +26,9 @@ export default function OnboardImportWallet() {
           <CreatePasswordStep
             onConfirm={async (walletName, password) => {
               walletNameRef.current = walletName;
+              walletIdRef.current = nanoid();
               const res = await popupServerClient.initPassword({ password });
-              logger.log("===> initPasswordres: ", res);
+              logger.log("===> import wallet PasswordStep: ", res);
               setStep((_step) => _step + 1);
             }}
           />
@@ -61,13 +36,29 @@ export default function OnboardImportWallet() {
       case 2:
         return (
           <ImportMnemonicStep
-            onConfirm={(mnemonic) => {
-              setStep((_step) => _step + 1);
+            onConfirm={async (mnemonic) => {
+              const walletId = walletIdRef.current;
+              const walletName = walletNameRef.current;
+              if (walletId && walletName && mnemonic) {
+                try {
+                  await popupServerClient.importHDWallet({
+                    walletId,
+                    walletName,
+                    mnemonic,
+                  });
+                } catch (err) {
+                  if (err instanceof Error) {
+                    showMessageToast({ message: err.message });
+                  }
+                }
+              } else {
+                logger.error("import mnemonic failed: ", walletId, walletName);
+              }
             }}
           />
         );
     }
-  }, [step, mnemonic, createWallet, regenerateWallet]);
+  }, [step, popupServerClient]);
 
   return (
     <PageWithHeader

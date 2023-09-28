@@ -23,6 +23,7 @@ export class PopupWalletServer implements IPopupServer {
     //   throw new Error("Password already inited");
     // }
     await this.authManager.initPassword(params.password);
+    await this.keyringManager.reset();
     return true;
   }
 
