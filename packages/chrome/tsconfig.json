@@ -1,9 +1,10 @@
 {
   "compilerOptions": {
     "target": "esnext",
+    "jsx": "react-jsx",
     "useDefineForClassFields": true,
     "lib": ["DOM", "DOM.Iterable", "esnext"],
-    "allowJs": false,
+    "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -14,11 +15,10 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx",
     "strictPropertyInitialization": false,
     "types": ["vite/client", "@types/chrome"]
   },
-  "include": ["src", "manifest.ts"],
+  "include": ["./src", "./manifest.ts"],
   "paths": {
     "@/*": ["./src/*"],
     "components/*": ["./src/components/*"],

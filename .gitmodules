@@ -1,3 +1,3 @@
-[submodule "aleo/aleo_sdk"]
-	path = aleo/aleo_sdk
+[submodule "aleo_sdk"]
+	path = aleo_sdk
 	url = git@github.com:foxwallet/aleo_sdk.git

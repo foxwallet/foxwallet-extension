@@ -5,7 +5,6 @@ import { ViewPort } from "./components/Custom/ViewPort";
 
 function App() {
   const routes = useRoutes(routesConfig);
-
   return (
     <ViewPort>
       <ErrorBoundary>{routes}</ErrorBoundary>

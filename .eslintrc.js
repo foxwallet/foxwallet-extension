@@ -4,21 +4,25 @@ module.exports = {
     browser: true,
     es2021: true,
   },
-  extends: ["standard-with-typescript", "plugin:prettier/recommended"],
+  extends: [
+    "plugin:react/recommended",
+    "plugin:react/jsx-runtime",
+    "standard-with-typescript",
+    "plugin:prettier/recommended",
+  ],
   parserOptions: {
     ecmaVersion: "latest",
     sourceType: "module",
-    project: [path.resolve(__dirname, "./packages/chrome/tsconfig.json")],
+    project: ["./packages/**/tsconfig.json"],
   },
+  plugins: ["react"],
   rules: {
-    "@typescript-eslint/consistent-type-imports": "off",
-    "@typescript-eslint/explicit-function-return-type": "off",
-    "@typescript-eslint/strict-boolean-expressions": "warn",
-    "@typescript-eslint/no-floating-promises": "warn",
-    "@typescript-eslint/no-misused-promises": "warn",
-    "@typescript-eslint/no-extraneous-class": "warn",
-    "@typescript-eslint/no-empty-interface": "warn",
-    "@typescript-eslint/consistent-type-assertions": "warn",
+    "@typescript-eslint/no-unused-vars": 1,
   },
-  settings: {},
+  includes: [path.resolve(__dirname, "./packages/**/*")],
+  settings: {
+    react: {
+      version: "detect",
+    },
+  },
 };
