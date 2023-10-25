@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "jsx": "react-jsx",
+    "useDefineForClassFields": true,
+    "lib": ["DOM", "DOM.Iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "strictPropertyInitialization": false,
+    "types": ["@types/chrome"],
+    "paths": {
+      "@/*": ["./app/*"],
+      "core/*": ["./core/*"],
+      "aleo/*": ["./aleo/*"]
+    }
+  },
+  "include": ["./app", "./core", "./aleo"]
+}
