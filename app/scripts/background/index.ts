@@ -6,6 +6,7 @@ import { PopupServerHandler } from "./handlers/PopupServerHandler";
 import { PopupWalletServer } from "./servers/PopupServer";
 import { AuthManager } from "./store/vault/managers/auth/AuthManager";
 import { KeyringManager } from "./store/vault/managers/keyring/KeyringManager";
+import { sync } from "./offscreen_helper";
 
 const keepAliveConnection = new Connection(
   keepAliveHandler,
@@ -35,3 +36,5 @@ const contentConnection = new Connection(
   PortName.CONTENT_TO_BACKGROUND
 );
 contentConnection.connect();
+
+sync();

@@ -17,6 +17,7 @@ export default defineManifest((env) => {
       "unlimitedStorage",
       "activeTab",
       "tabs",
+      "offscreen",
     ],
     content_scripts: [
       {

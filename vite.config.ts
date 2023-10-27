@@ -19,7 +19,15 @@ export default defineConfig(({ mode }) => ({
     },
     // minify: mode === "production",
     minify: false,
-    rollupOptions: {},
+    rollupOptions: {
+      input: {
+        offscreen: "./offscreen.html"
+      },
+      output: {
+        entryFileNames: "[name].js",
+        format: 'esm',
+      }
+    },
   },
   server: {
     port: 5173,
