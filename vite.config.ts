@@ -21,12 +21,12 @@ export default defineConfig(({ mode }) => ({
     minify: false,
     rollupOptions: {
       input: {
-        offscreen: "./offscreen.html"
+        offscreen: "./offscreen.html",
       },
       output: {
         entryFileNames: "[name].js",
-        format: 'esm',
-      }
+        format: "esm",
+      },
     },
   },
   server: {

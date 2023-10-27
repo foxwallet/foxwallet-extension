@@ -1,4 +1,4 @@
-const OFFSCREEN_DOCUMENT_PATH = '/offscreen.html';
+const OFFSCREEN_DOCUMENT_PATH = "/offscreen.html";
 
 // A global promise to avoid concurrency issues
 let creating: Promise<void> | null;
@@ -31,9 +31,9 @@ async function setupOffscreenDocument(path: string) {
           url: path,
           reasons: [
             chrome.offscreen.Reason.WORKERS ||
-              chrome.offscreen.Reason.LOCAL_STORAGE
+              chrome.offscreen.Reason.LOCAL_STORAGE,
           ],
-          justification: 'Sync aleo transactions'
+          justification: "Sync aleo transactions",
         });
 
         await creating;
@@ -41,7 +41,7 @@ async function setupOffscreenDocument(path: string) {
       }
     }
   } catch (err: any) {
-    if (!err.message.startsWith('Only a single offscreen')) {
+    if (!err.message.startsWith("Only a single offscreen")) {
       throw err;
     }
   }
@@ -54,8 +54,8 @@ export async function sync() {
 
   console.log("===> before sendMessage");
   const privateKey = await chrome.runtime.sendMessage({
-    type: 'get-private-key',
-    target: 'offscreen'
+    type: "get-private-key",
+    target: "offscreen",
   });
   console.log("===> privateKey: ", privateKey);
 

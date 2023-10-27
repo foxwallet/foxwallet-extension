@@ -1,6 +1,6 @@
 import { Transition } from "./transition";
 
 export type Execution = {
-    edition: number;
-    transitions?: (Transition)[];
-}
+  edition: number;
+  transitions?: Transition[];
+};

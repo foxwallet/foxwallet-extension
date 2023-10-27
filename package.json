@@ -15,9 +15,14 @@
     "format": "prettier --write .",
     "postinstall": "yarn wasm && vite build --mode development"
   },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
   "lint-staged": {
     "*.{ts,js,tsx,jsx}": [
-      "npm run prettier",
+      "npm run format",
       "npm run lint"
     ]
   },

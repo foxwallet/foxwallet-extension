@@ -1,7 +1,7 @@
 import { Execution } from "./execution";
 
 export type Transaction = {
-    type: string;
-    id: string;
-    execution: Execution;
-}
+  type: string;
+  id: string;
+  execution: Execution;
+};
