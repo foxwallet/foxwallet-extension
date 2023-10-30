@@ -15,7 +15,7 @@ export interface IHandler {
 export class Connection implements IConnection {
   constructor(
     private readonly handler: IHandler,
-    private readonly portName: PortName
+    private readonly portName: PortName,
   ) {}
 
   connect(): void {
@@ -24,7 +24,9 @@ export class Connection implements IConnection {
         logger.error(port.name, " connect wrong port ", this.portName);
         return;
       }
-      this.handler.handle(port);
+      this.handler.handle(port)?.catch((err) => {
+        logger.error("Handle port error ", err.message);
+      });
     });
   }
 }

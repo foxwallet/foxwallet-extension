@@ -1,4 +1,4 @@
-import { ChainUniqueId } from "./ChainUniqueId";
+import { type ChainUniqueId } from "./ChainUniqueId";
 
 export interface NFTMarket {
   name: string;

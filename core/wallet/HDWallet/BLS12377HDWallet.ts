@@ -1,41 +1,41 @@
 import { CoinType } from "../../types/CoinType";
-import { BLS12377HDKey } from "../HDKey/BLS12377HDKey";
-import { BaseHDWallet } from "./BaseHDWallet";
-import { AccountOption } from "../../types/CoinBasic";
-import { HDKey } from "../HDKey";
+import { type BLS12377HDKey } from "../HDKey/BLS12377HDKey";
+import { type BaseHDWallet } from "./BaseHDWallet";
+import { type AccountOption } from "../../types/CoinBasic";
+import { type HDKey } from "../HDKey";
 import {
-  EncryptedKeyPairWithViewKey,
+  type EncryptedKeyPairWithViewKey,
   RawKeyPair,
   RawKeyPairWithViewKey,
 } from "../../types/KeyPair";
 import { getCoinDerivation } from "../../helper/CoinBasic";
 import { CoreError } from "../../types/Error";
 import { encryptStr } from "../../utils/encrypt";
-import { logger } from "ethers";
 import { PrivateKey } from "aleo_wasm";
+import { logger } from "@/common/utils/logger";
 
 export class BLS12377HDWallet<T extends CoinType> implements BaseHDWallet<T> {
-  private coinRootPath: string;
-  private coinRoot: BLS12377HDKey;
-  private symbol: T;
+  private readonly coinRootPath: string;
+  private readonly coinRoot: BLS12377HDKey;
+  private readonly symbol: T;
 
   constructor(symbol: T, hdWallet: HDKey[T]) {
     this.symbol = symbol;
     this.coinRootPath = getCoinDerivation(symbol).path[0];
-    this.coinRoot = hdWallet.derive(this.coinRootPath) as BLS12377HDKey;
+    this.coinRoot = hdWallet.derive(this.coinRootPath);
   }
 
   public async derive(
     i: number,
     accountId: string,
     token: string,
-    _option?: AccountOption[T]
+    _option?: AccountOption[T],
   ): Promise<EncryptedKeyPairWithViewKey> {
     switch (this.symbol) {
       case CoinType.ALEO: {
         try {
           const wallet = this.coinRoot.deriveChild(i);
-          console.log("===> new pk: ", new PrivateKey().to_string());
+          logger.log("===> new pk: ", new PrivateKey().to_string());
           const pk = PrivateKey.from_seed_unchecked(wallet.key);
 
           const viewKey = pk.to_view_key().to_string();
@@ -53,11 +53,12 @@ export class BLS12377HDWallet<T extends CoinType> implements BaseHDWallet<T> {
             accountId,
             privateKey: encryptedPrivateKey,
             viewKey: encryptedViewKey,
-            address: address,
+            address,
             index: i,
           };
         } catch (err) {
-          throw new CoreError("BLS12377HDWallet derive failed " + err);
+          // @ts-expect-error throw error
+          throw new CoreError("BLS12377HDWallet derive failed " + err.message);
         }
       }
       default: {

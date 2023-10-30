@@ -1,6 +1,7 @@
 import { wrap } from "comlink";
 import browser from "webextension-polyfill";
 import type { WorkerAPI } from "./worker";
+import { logger } from "@/common/utils/logger";
 
 let singletonWorker: WorkerAPI | null = null;
 
@@ -23,7 +24,7 @@ async function getPrivateKey(sendResponse: (param: any) => void) {
     const privateKey = await aleoWorker.getPrivateKey();
     sendResponse(privateKey);
   } catch (err) {
-    console.log("==> err: ", err);
+    logger.log("==> err: ", err);
   }
 }
 
@@ -40,10 +41,11 @@ function handleMessages(
   }
 
   if (message.type === "get-private-key") {
-    getPrivateKey(sendResponse);
+    getPrivateKey(sendResponse).catch((err) => {
+      logger.log(`==> ${message.type} err: `, err);
+    });
     return true;
   }
 
-  console.warn(`Unexpected message type received: '${message.type}'.`);
-  return;
+  logger.warn(`Unexpected message type received: '${message.type}'.`);
 }

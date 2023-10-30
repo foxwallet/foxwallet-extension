@@ -1,4 +1,4 @@
-import { Wallet, BytesLike } from "ethers";
+import { Wallet, type BytesLike } from "ethers";
 
 export const stripHexPrefix = (address: string) => {
   if (address.startsWith("0x")) {

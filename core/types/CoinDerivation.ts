@@ -1,4 +1,4 @@
-import { CoinCurve } from "./CoinCurve";
+import { type CoinCurve } from "./CoinCurve";
 
 export interface CoinDerivation {
   path: string[];

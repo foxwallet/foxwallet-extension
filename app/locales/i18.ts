@@ -13,6 +13,7 @@ import bn from "./languages/bn.json";
 import hi from "./languages/hi.json";
 import ur from "./languages/ur.json";
 import de from "./languages/de.json";
+import { logger } from "@/common/utils/logger";
 
 // import { isDev } from "../common/utils/env";
 
@@ -92,12 +93,15 @@ i18n
     interpolation: {
       escapeValue: false, // react already safes from xss
     },
+  })
+  .catch((err) => {
+    logger.error("===> i18n init error: ", err);
   });
 
 export type WalletTFunction = ReturnType<typeof useTranslation>[0];
 
 export async function changeLanguage(
-  language: string
+  language: string,
 ): Promise<WalletTFunction> {
   return await i18n.changeLanguage(language);
 }

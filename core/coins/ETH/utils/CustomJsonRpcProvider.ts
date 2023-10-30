@@ -1,5 +1,5 @@
 import { providers } from "ethers";
-import { Block } from "@ethersproject/abstract-provider";
+import { type Block } from "@ethersproject/abstract-provider";
 
 // https://github.com/ethers-io/ethers.js/issues/2107
 export class Formatter extends providers.Formatter {

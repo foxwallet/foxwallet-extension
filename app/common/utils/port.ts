@@ -14,7 +14,7 @@ export class Port implements IPort {
     info: browser.Runtime.ConnectConnectInfoType,
     opts?: {
       onConnect?: (port: IPort) => void | Promise<void>;
-    }
+    },
   ) {
     if (!info.name) {
       throw new Error("Need port name to identify port");
@@ -34,7 +34,9 @@ export class Port implements IPort {
       this.connected = false;
       logger.log(this.portName, " disconnected");
     });
-    this.onConnect(newPort);
+    this.onConnect(newPort)?.catch((err) => {
+      logger.error("Handle port error ", err.message);
+    });
     return newPort;
   }
 

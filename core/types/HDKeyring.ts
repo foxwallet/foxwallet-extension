@@ -1,18 +1,18 @@
-import { EncryptedField } from "./EncryptedField";
+import { type EncryptedField } from "./EncryptedField";
 
-export type NewHdKeyringProps = {
+export interface NewHdKeyringProps {
   token: string;
   walletId: string;
-};
+}
 
-export type ImportHdKeyringProps = {
+export interface ImportHdKeyringProps {
   token: string;
   walletId: string;
   mnemonic: string;
-};
+}
 
-export type RestoreHdKeyringProps = {
+export interface RestoreHdKeyringProps {
   walletId: string;
   token: string;
   mnemonic: EncryptedField;
-};
+}

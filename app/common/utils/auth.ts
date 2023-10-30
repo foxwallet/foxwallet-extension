@@ -22,13 +22,13 @@ export const generateToken = async (password: string) => {
     token,
     { name: "AES-CTR", length: 256 },
     false,
-    ["encrypt", "decrypt"]
+    ["encrypt", "decrypt"],
   );
   const secretBytes = new TextEncoder().encode(WALLET_MASTER_SECRET);
   const encrypted = await crypto.subtle.encrypt(
     { name: "AES-CTR", counter: new Uint8Array(16), length: 64 },
     key,
-    secretBytes
+    secretBytes,
   );
   return {
     token: token.toString("hex"),
@@ -51,7 +51,7 @@ export const getToken = async (password: string, salt: Buffer) => {
       name: "PBKDF2",
     },
     false,
-    ["deriveBits"]
+    ["deriveBits"],
   );
 
   const derivedBits = await crypto.subtle.deriveBits(
@@ -62,7 +62,7 @@ export const getToken = async (password: string, salt: Buffer) => {
       hash: "SHA-256",
     },
     baseKey,
-    PBKDF2_KEY_LENGTH
+    PBKDF2_KEY_LENGTH,
   );
 
   return Buffer.from(derivedBits);
@@ -75,12 +75,12 @@ export const validateToken = async (token: Buffer, cipher: Cipher) => {
       token,
       { name: "AES-CTR", length: 256 },
       false,
-      ["decrypt"]
+      ["decrypt"],
     );
     const decrypted = await crypto.subtle.decrypt(
       { name: "AES-CTR", counter: new Uint8Array(16), length: 64 },
       key,
-      Buffer.from(cipher.data, "hex")
+      Buffer.from(cipher.data, "hex"),
     );
     const secret = new TextDecoder().decode(decrypted);
     return secret === WALLET_MASTER_SECRET;

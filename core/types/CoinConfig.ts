@@ -1,8 +1,8 @@
-import { ChainUniqueId } from "./ChainUniqueId";
-import { CoinType } from "./CoinType";
-import { ExplorerLanguages } from "./ExplorerLanguages";
-import { NFTConfig, NFTMarket } from "./NFTMarket";
-import { NativeToken } from "./Token";
+import { type ChainUniqueId } from "./ChainUniqueId";
+import { type CoinType } from "./CoinType";
+import { type ExplorerLanguages } from "./ExplorerLanguages";
+import { type NFTConfig, type NFTMarket } from "./NFTMarket";
+import { type NativeToken } from "./Token";
 
 export interface CoinConfig {
   coinType: CoinType;

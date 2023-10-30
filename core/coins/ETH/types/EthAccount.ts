@@ -6,4 +6,4 @@ export enum EthExportPKType {
   HEX = "hex",
 }
 
-export type EthAccountOption = {};
+export interface EthAccountOption {}

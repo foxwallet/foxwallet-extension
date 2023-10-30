@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import browser from "webextension-polyfill";
 import { useDataRef } from "./useDataRef";
+import { logger } from "@/common/utils/logger";
 
 export const openInTab = async () => {
   const url = browser.runtime.getURL("index.html");
@@ -16,9 +17,13 @@ export const getIsInTab = async () => {
 export const useIsInTab = () => {
   const [isInTab, setIsInTab] = useState(false);
   useEffect(() => {
-    getIsInTab().then((value) => {
-      setIsInTab(value);
-    });
+    getIsInTab()
+      .then((value) => {
+        setIsInTab(value);
+      })
+      .catch((err) => {
+        logger.error("===> getIsInTab error: ", err);
+      });
   }, []);
   return isInTab;
 };

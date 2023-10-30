@@ -1,5 +1,5 @@
 export function shuffle<T>(src: T[]): T[] {
-  let arr = [...src];
+  const arr = [...src];
   let n = arr.length;
   let random: number;
   while (n !== 0) {

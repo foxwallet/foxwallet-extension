@@ -1,3 +1,5 @@
+import { logger } from "@/common/utils/logger";
+
 const OFFSCREEN_DOCUMENT_PATH = "/offscreen.html";
 
 // A global promise to avoid concurrency issues
@@ -14,7 +16,7 @@ async function hasDocument() {
 
   return matchedClients.some(
     // @ts-ignore
-    (c) => c.url === chrome.runtime.getURL(OFFSCREEN_DOCUMENT_PATH)
+    (c) => c.url === chrome.runtime.getURL(OFFSCREEN_DOCUMENT_PATH),
   );
 }
 
@@ -48,16 +50,16 @@ async function setupOffscreenDocument(path: string) {
 }
 
 export async function sync() {
-  console.log("===> before setupOffscreenDocument");
+  logger.log("===> before setupOffscreenDocument");
 
   await setupOffscreenDocument(OFFSCREEN_DOCUMENT_PATH);
 
-  console.log("===> before sendMessage");
+  logger.log("===> before sendMessage");
   const privateKey = await chrome.runtime.sendMessage({
     type: "get-private-key",
     target: "offscreen",
   });
-  console.log("===> privateKey: ", privateKey);
+  logger.log("===> privateKey: ", privateKey);
 
   await closeOffscreenDocument();
   return privateKey;

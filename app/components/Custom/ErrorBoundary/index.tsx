@@ -1,6 +1,7 @@
 import { Component } from "react";
 import { type INodeProps } from "../../../common/types";
 import { type ErrorInfo } from "react-dom/client";
+import { logger } from "@/common/utils/logger";
 
 export type ErrorBoundaryProps = INodeProps & {
   onError?: (error: Error, info: ErrorInfo) => void;
@@ -21,7 +22,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps> {
       errorInfo: info?.componentStack ?? "",
     });
     // You can also log the error to an error reporting service
-    console.error("ErrorBoundary: ", error, info);
+    logger.error("ErrorBoundary: ", error, info);
     this.props.onError?.(error, info);
   }
 

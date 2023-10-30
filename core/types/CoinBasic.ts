@@ -1,14 +1,14 @@
 import {
-  AleoAccountOption,
-  AleoExportPKType,
-  AleoImportPKType,
+  type AleoAccountOption,
+  type AleoExportPKType,
+  type AleoImportPKType,
 } from "../coins/ALEO/types/AleoAccount";
 import {
   EthAccountOption,
   EthExportPKType,
   EthImportPKType,
 } from "../coins/ETH/types/EthAccount";
-import { CoinType } from "./CoinType";
+import { type CoinType } from "./CoinType";
 
 export interface ImportPrivateKeyTypeMap {
   // [CoinType.ETH]: EthImportPKType;

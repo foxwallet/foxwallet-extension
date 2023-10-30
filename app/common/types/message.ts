@@ -1,4 +1,4 @@
-import { PopupServerMethod } from "../../scripts/background/servers/IWalletServer";
+import { type PopupServerMethod } from "../../scripts/background/servers/IWalletServer";
 import { type PortName } from "./port";
 
 export enum MessageType {

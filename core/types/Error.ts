@@ -6,7 +6,7 @@ export enum CoreErrorCode {
 export class CoreError extends Error {
   constructor(
     public code: string,
-    message?: string
+    message?: string,
   ) {
     super(message);
     this.code = code;

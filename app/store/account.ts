@@ -2,7 +2,7 @@ import { createModel } from "@rematch/core";
 import { type RootModel } from "./index";
 import { nanoid } from "nanoid";
 import {
-  DisplayKeyring,
+  type DisplayKeyring,
   WalletType,
 } from "../scripts/background/store/vault/types/keyring";
 

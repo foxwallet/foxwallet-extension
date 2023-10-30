@@ -1,24 +1,24 @@
-import { EncryptedField } from "../types/EncryptedField";
+import { type EncryptedField } from "../types/EncryptedField";
 import { getCoinDerivation } from "../helper/CoinBasic";
-import { AccountOption } from "../types/CoinBasic";
+import { type AccountOption } from "../types/CoinBasic";
 import { CoinCurve } from "../types/CoinCurve";
-import { CoinType, Coins } from "../types/CoinType";
+import { type CoinType, Coins } from "../types/CoinType";
 import {
-  ImportHdKeyringProps,
-  NewHdKeyringProps,
-  RestoreHdKeyringProps,
+  type ImportHdKeyringProps,
+  type NewHdKeyringProps,
+  type RestoreHdKeyringProps,
 } from "../types/HDKeyring";
 import {
-  EncryptedKeyPair,
+  type EncryptedKeyPair,
   EncryptedKeyPairWithViewKey,
   RawKeyPair,
   RawKeyPairWithViewKey,
 } from "../types/KeyPair";
 import { decryptStr, encryptStr } from "../utils/encrypt";
-import { HDKey } from "./HDKey";
+import { type HDKey } from "./HDKey";
 import { BLS12377HDKey } from "./HDKey/BLS12377HDKey";
 import { EthHDKey } from "./HDKey/EthHDKey";
-import { BaseHDWallet, getHDWallet } from "./HDWallet/BaseHDWallet";
+import { type BaseHDWallet, getHDWallet } from "./HDWallet/BaseHDWallet";
 import { Mnemonic } from "./mnemonic";
 
 type CoinsWallets = {
@@ -31,7 +31,7 @@ export class HDKeyring {
   private bls12377Root?: BLS12377HDKey;
   private coinWallets?: CoinsWallets;
 
-  constructor(private walletId: string) {}
+  constructor(private readonly walletId: string) {}
 
   public static async init(opts: NewHdKeyringProps): Promise<HDKeyring> {
     const hdKeyring = new HDKeyring(opts.walletId);
@@ -108,9 +108,12 @@ export class HDKeyring {
       this.coinWallets = {};
     }
     if (!this.coinWallets[symbol]) {
-      this.coinWallets[symbol] = getHDWallet(this.getCoinRoot(symbol), {
-        symbol,
-      });
+      this.coinWallets[symbol] = getHDWallet<CoinType>(
+        this.getCoinRoot(symbol),
+        {
+          symbol,
+        },
+      );
     }
     return this.coinWallets[symbol]! as BaseHDWallet<T>;
   }
@@ -120,7 +123,7 @@ export class HDKeyring {
     index: number,
     symbol: T,
     token: string,
-    option?: AccountOption[T]
+    option?: AccountOption[T],
   ): Promise<EncryptedKeyPair> {
     this.initCheck();
     const coinWallet = this.getWallet(symbol);
@@ -131,7 +134,7 @@ export class HDKeyring {
       index,
       accountId,
       token,
-      option
+      option,
     );
     return encryptedKeyPair;
   }

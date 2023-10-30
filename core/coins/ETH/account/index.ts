@@ -3,7 +3,7 @@ import { CoinType } from "../../../types/CoinType";
 import { CoreError, CoreErrorCode } from "../../../types/Error";
 import { CoinBasic } from "../../CoinBasic";
 import {
-  EthAccountOption,
+  type EthAccountOption,
   EthExportPKType,
   EthImportPKType,
 } from "../types/EthAccount";
@@ -17,7 +17,7 @@ class EthBasic extends CoinBasic<CoinType.ETH> {
 
   public deserializePrivateKeyStr(
     privateKeyType: EthImportPKType,
-    keyStr: string
+    keyStr: string,
   ): { privateKey: Buffer } {
     switch (privateKeyType) {
       case EthImportPKType.ETH_HEX: {
@@ -35,7 +35,7 @@ class EthBasic extends CoinBasic<CoinType.ETH> {
 
   public deriveAddress(
     privateKey: Buffer,
-    _option: EthAccountOption
+    _option: EthAccountOption,
   ): {
     publicKey: string;
     address: string;

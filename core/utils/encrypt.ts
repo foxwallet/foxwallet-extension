@@ -5,11 +5,11 @@ import {
   keyFromPassword,
 } from "@metamask/browser-passworder";
 import { getRandomBytes } from "./random";
-import { EncryptedField } from "../types/EncryptedField";
+import { type EncryptedField } from "../types/EncryptedField";
 
 export const encryptStr = async (
   token: string,
-  data: string
+  data: string,
 ): Promise<EncryptedField | undefined> => {
   if (!data) {
     return undefined;
@@ -23,7 +23,7 @@ export const encryptStr = async (
 
 export const decryptStr = async (
   token: string,
-  payload: EncryptedField
+  payload: EncryptedField,
 ): Promise<string> => {
   const { salt } = payload;
   const key = await keyFromPassword(token, salt);

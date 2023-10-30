@@ -26,9 +26,13 @@ const swrStorageInstance = localForage.createInstance({
 
 const memoryCache = new Map();
 
-swrStorageInstance.iterate((value, key) => {
-  memoryCache.set(key, value);
-});
+swrStorageInstance
+  .iterate((value, key) => {
+    memoryCache.set(key, value);
+  })
+  .catch((err) => {
+    logger.log("swrStorageInstance iterate error ", err.message);
+  });
 
 export const swrCache: Cache = {
   keys: function* () {

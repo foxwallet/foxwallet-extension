@@ -35,7 +35,7 @@ const isValidPath = (path: string): boolean => {
     .split("/")
     .slice(1)
     .map(replaceDerive)
-    .some(isNaN as any /* ts T_T*/);
+    .some(isNaN as any /* ts T_T */);
 };
 
 export const getMasterKeyFromSeed = (seed: string): IKeys => {
@@ -54,9 +54,10 @@ export class BLS12377HDKey {
     const masterKey = getMasterKeyFromSeed(seed.toString("hex"));
     return new BLS12377HDKey(masterKey.key, masterKey.chainCode);
   }
+
   constructor(
     public key: Buffer,
-    public chainCode: Buffer
+    public chainCode: Buffer,
   ) {}
 
   public derive(path: string): BLS12377HDKey {
@@ -72,7 +73,7 @@ export class BLS12377HDKey {
 
     const keys = segments.reduce(
       (parentKeys, segment) => CKDPriv(parentKeys, segment + HARDENED_OFFSET),
-      { key: this.key, chainCode: this.chainCode }
+      { key: this.key, chainCode: this.chainCode },
     );
     return new BLS12377HDKey(keys.key, keys.chainCode);
   }

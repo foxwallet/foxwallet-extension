@@ -1,13 +1,13 @@
 import { AccountOption } from "./CoinBasic";
-import { CoinType } from "./CoinType";
-import { EncryptedField } from "./EncryptedField";
+import { type CoinType } from "./CoinType";
+import { type EncryptedField } from "./EncryptedField";
 
-export type RawKeyPair = {
+export interface RawKeyPair {
   index: number;
   accountId: string;
   privateKey: string;
   address: string;
-};
+}
 
 export type RawKeyPairWithPublicKey = RawKeyPair & {
   publicKey: string;
@@ -17,12 +17,12 @@ export type RawKeyPairWithViewKey = RawKeyPair & {
   viewKey: string;
 };
 
-export type EncryptedKeyPair = {
+export interface EncryptedKeyPair {
   index: number;
   accountId: string;
   privateKey: EncryptedField;
   address: string;
-};
+}
 
 export type EncryptedKeyPairWithPublicKey = EncryptedKeyPair & {
   publicKey: string;
@@ -32,6 +32,6 @@ export type EncryptedKeyPairWithViewKey = EncryptedKeyPair & {
   viewKey: EncryptedField;
 };
 
-export type HDWalletProps<T extends CoinType> = {
+export interface HDWalletProps<T extends CoinType> {
   symbol: T;
-};
+}

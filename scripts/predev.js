@@ -7,7 +7,7 @@ const regex = /input = new URL\('\/assets\/([^']+)'\, self\.location\);/g;
 
 const replacedString = code.replace(
   regex,
-  "input = new URL('$1', import.meta.url);"
+  "input = new URL('$1', import.meta.url);",
 );
 
 fs.writeFileSync(jsPath, replacedString);

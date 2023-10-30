@@ -1,28 +1,28 @@
 import { getCoinDerivation } from "../../helper/CoinBasic";
-import { AccountOption } from "../../types/CoinBasic";
+import { type AccountOption } from "../../types/CoinBasic";
 import { CoinCurve } from "../../types/CoinCurve";
-import { CoinType } from "../../types/CoinType";
+import { type CoinType } from "../../types/CoinType";
 import {
-  EncryptedKeyPair,
-  HDWalletProps,
+  type EncryptedKeyPair,
+  type HDWalletProps,
   RawKeyPair,
 } from "../../types/KeyPair";
-import { HDKey } from "../HDKey";
+import { type HDKey } from "../HDKey";
 import { BLS12377HDWallet } from "./BLS12377HDWallet";
 // import { Secp256k1HDWallet } from "./Secp256k1HDWallet";
 
 export interface BaseHDWallet<T extends CoinType> {
-  derive(
+  derive: (
     index: number,
     accountId: string,
     token: string,
-    option?: AccountOption[T]
-  ): Promise<EncryptedKeyPair>;
+    option?: AccountOption[T],
+  ) => Promise<EncryptedKeyPair>;
 }
 
 export function getHDWallet<T extends CoinType>(
   hdWallet: HDKey[T],
-  config: HDWalletProps<T>
+  config: HDWalletProps<T>,
 ): BaseHDWallet<T> {
   const { symbol } = config;
   const coinCurve = getCoinDerivation(symbol).curve;

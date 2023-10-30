@@ -5,6 +5,7 @@ import {
   wordlists,
 } from "bip39";
 import { getRandomBytes } from "../utils/random";
+import { logger } from "@/common/utils/logger";
 
 const MnemonicLengthSeedBytesPair = {
   12: 16, // 128 bits
@@ -19,7 +20,8 @@ export class Mnemonic {
       const bytes = getRandomBytes(randomBytesNr);
       return entropyToMnemonic(bytes, wordlists.EN);
     } catch (e) {
-      // @ts-ignore
+      logger.log("===> Mnemonic.generate error:", e);
+      // @ts-expect-error Mnemonic throw error
       throw new Error(e);
     }
   }
@@ -28,12 +30,12 @@ export class Mnemonic {
     let mnemonic = "";
     while (!mnemonic) {
       const newMnemonic = await this.generate(words);
-      let newMnemonicArr = newMnemonic.split(" ");
+      const newMnemonicArr = newMnemonic.split(" ");
       const map: { [key in string]: number } = {};
       let dupFlag = false;
-      for (let word of newMnemonicArr) {
+      for (const word of newMnemonicArr) {
         if (map[word] && map[word] > 0) {
-          console.warn("mnemonic have dup words");
+          logger.warn("mnemonic have dup words");
           dupFlag = true;
           break;
         }

@@ -1,14 +1,14 @@
 import {
-  PopupServerMethod,
+  type PopupServerMethod,
   type IPopupServer,
-  CreateWalletProps,
-  RegenerateWalletProps,
-  ImportHDWalletProps,
-  AddAccountProps,
+  type CreateWalletProps,
+  type RegenerateWalletProps,
+  type ImportHDWalletProps,
+  type AddAccountProps,
 } from "../../scripts/background/servers/IWalletServer";
 import {
-  DisplayWallet,
-  DisplayKeyring,
+  type DisplayWallet,
+  type DisplayKeyring,
 } from "../../scripts/background/store/vault/types/keyring";
 import { KEEP_ALIVE_INTERVAL } from "../constants";
 import {
@@ -111,7 +111,7 @@ export class PopupServerClient implements IClient, IPopupServer {
   }
 
   async regenerateWallet(
-    params: RegenerateWalletProps
+    params: RegenerateWalletProps,
   ): Promise<DisplayWallet> {
     return await this.#send("regenerateWallet", params);
   }
