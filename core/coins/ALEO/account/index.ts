@@ -17,7 +17,7 @@ class AleoBasic extends CoinBasic<CoinType.ALEO> {
 
   public deserializePrivateKeyStr(
     privateKeyType: AleoImportPKType,
-    keyStr: string
+    keyStr: string,
   ): {
     privateKey: Buffer;
   } {
@@ -38,13 +38,13 @@ class AleoBasic extends CoinBasic<CoinType.ALEO> {
 
   public deriveAleoViewKey(
     privateKey: Buffer,
-    option: AleoAccountOption
+    option: AleoAccountOption,
   ): {
     viewKey: string;
     address: string;
   } {
     const pk = PrivateKey.from_string(
-      `${ALEO_PRIVATE_PREFIX}${bs58Encode(privateKey)}`
+      `${ALEO_PRIVATE_PREFIX}${bs58Encode(privateKey)}`,
     );
 
     const viewKey = pk.to_view_key().to_string();

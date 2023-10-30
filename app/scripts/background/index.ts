@@ -10,7 +10,7 @@ import { sync } from "./offscreen_helper";
 
 const keepAliveConnection = new Connection(
   keepAliveHandler,
-  PortName.KEEP_ALIVE
+  PortName.KEEP_ALIVE,
 );
 keepAliveConnection.connect();
 
@@ -20,20 +20,20 @@ keyringManager.init();
 
 export const popupWalletServer = new PopupWalletServer(
   authManager,
-  keyringManager
+  keyringManager,
 );
 
 const popupServerHandler = new PopupServerHandler(popupWalletServer);
 
 const popupConnection = new Connection(
   popupServerHandler,
-  PortName.POPUP_TO_BACKGROUND
+  PortName.POPUP_TO_BACKGROUND,
 );
 popupConnection.connect();
 
 const contentConnection = new Connection(
   contentServerHandler,
-  PortName.CONTENT_TO_BACKGROUND
+  PortName.CONTENT_TO_BACKGROUND,
 );
 contentConnection.connect();
 

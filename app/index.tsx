@@ -26,16 +26,16 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
         </ClientContext.Provider>
       </ChakraBaseProvider>
     </HashRouter>
-  </StrictMode>
+  </StrictMode>,
 );
 
 // pure modal, can't access other state in the modal, provide state by props
 ReactDOM.createRoot(
-  document.getElementById("modal-root") as HTMLElement
+  document.getElementById("modal-root") as HTMLElement,
 ).render(
   <StrictMode>
     <ChakraBaseProvider theme={theme}>
       <GlobalModal />
     </ChakraBaseProvider>
-  </StrictMode>
+  </StrictMode>,
 );

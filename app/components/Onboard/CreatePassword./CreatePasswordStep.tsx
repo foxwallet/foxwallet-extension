@@ -23,7 +23,7 @@ export const CreatePasswordStep = (props: {
   const [viewPass, setViewPass] = useState(false);
   const [password, setPassword] = useState("");
   const [passwordScore, setPasswordScore] = useState<PasswordScore | null>(
-    null
+    null,
   );
   const [debouncePassword] = useDebounce(password, 300);
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -34,14 +34,14 @@ export const CreatePasswordStep = (props: {
       const value = event.target.value.trim();
       setWalletName(value);
     },
-    []
+    [],
   );
 
   const onPasswordChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       setPassword(event.target.value);
     },
-    []
+    [],
   );
 
   useEffect(() => {

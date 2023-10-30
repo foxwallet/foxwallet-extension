@@ -37,7 +37,7 @@ export class PopupServerHandler implements IHandler {
         }
         const resp = this.wrapPopupResp(
           await executeServerMethod(this.popupServer[method](payload) as any),
-          id
+          id,
         );
         port.postMessage(resp);
       } finally {

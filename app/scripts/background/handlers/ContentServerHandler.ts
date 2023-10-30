@@ -39,7 +39,7 @@ export class ContentServerHandler implements IHandler {
       }
       const resp = this.wrapContentResp(
         await executeServerMethod(this.contentServer[method](payload)),
-        id
+        id,
       );
       port.postMessage(resp);
     });

@@ -76,7 +76,7 @@ export const ImportMnemonicStep = ({ onConfirm }: Props) => {
         setErrorWord(otherError);
       }
     },
-    [checkLastWord, checkOtherWords]
+    [checkLastWord, checkOtherWords],
   );
 
   useEffect(() => {
@@ -92,7 +92,7 @@ export const ImportMnemonicStep = ({ onConfirm }: Props) => {
       words.push(word);
       setMnemonic(words.join(" ") + " ");
     },
-    [mnemonicRef]
+    [mnemonicRef],
   );
 
   const onInputChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {

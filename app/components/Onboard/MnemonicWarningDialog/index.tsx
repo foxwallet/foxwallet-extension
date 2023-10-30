@@ -39,5 +39,5 @@ const MnemonicWarningDialog = (props: Props) => {
 };
 
 export const showMnemonicWarningDialog = promisifyChooseDialogWrapper(
-  MnemonicWarningDialog
+  MnemonicWarningDialog,
 );

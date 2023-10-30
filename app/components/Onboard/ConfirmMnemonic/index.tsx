@@ -107,7 +107,7 @@ export const ConfirmMnemonicStep = (props: {
         return [...newList];
       });
     },
-    [otherWordListRef, answerWordListRef]
+    [otherWordListRef, answerWordListRef],
   );
 
   const onWordSelect = useCallback(
@@ -125,7 +125,7 @@ export const ConfirmMnemonicStep = (props: {
       });
       setOtherWordList((prev) => prev.filter((item) => item !== word));
     },
-    [otherWordListRef, answerWordListRef]
+    [otherWordListRef, answerWordListRef],
   );
 
   const isValid = useMemo(() => {

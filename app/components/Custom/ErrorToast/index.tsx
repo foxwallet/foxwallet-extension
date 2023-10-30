@@ -56,7 +56,7 @@ export function MessageToast(props: MessageToastProps & ToastProps) {
 }
 
 function MessageToastWrapper(
-  props: MessageToastProps & { duration?: number; onDismiss: () => void }
+  props: MessageToastProps & { duration?: number; onDismiss: () => void },
 ) {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -87,7 +87,7 @@ export function promisifyMessageToastWrapper() {
       };
       popupEvents.emit(
         "showDialog",
-        <MessageToastWrapper key={id} onDismiss={onDismiss} {...props} />
+        <MessageToastWrapper key={id} onDismiss={onDismiss} {...props} />,
       );
     });
   };

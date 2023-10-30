@@ -39,5 +39,5 @@ const PasswordWarningDialog = (props: Props) => {
 };
 
 export const showPasswordWarningDialog = promisifyChooseDialogWrapper(
-  PasswordWarningDialog
+  PasswordWarningDialog,
 );

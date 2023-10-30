@@ -16,13 +16,13 @@ export interface RawChooseDialogProps<T> {
 }
 
 export type RawChooseDialog<OtherProps, T> = (
-  props: RawChooseDialogProps<T> & ModalProps & OtherProps
+  props: RawChooseDialogProps<T> & ModalProps & OtherProps,
 ) => JSX.Element;
 
 function ChooseDialogWrapper<OtherProps = Record<string, any>, T = undefined>(
   props: RawChooseDialogProps<T> & {
     Dialog: RawChooseDialog<OtherProps, T>;
-  }
+  },
 ) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { Dialog } = props;
@@ -60,7 +60,7 @@ export function promisifyChooseDialogWrapper<
     props: Omit<
       OtherProps,
       keyof ModalProps | keyof RawChooseDialogProps<T>
-    > = {} as OtherProps
+    > = {} as OtherProps,
   ) => {
     const id = Date.now();
 
@@ -80,9 +80,9 @@ export function promisifyChooseDialogWrapper<
             onConfirm={onConfirm}
             onCancel={onCancel}
             Dialog={Dialog}
-          />
+          />,
         );
-      }
+      },
     );
   };
 }
@@ -92,13 +92,13 @@ export interface RawConfirmDialogProps<T> {
 }
 
 export type RawConfirmDialog<OtherProps, T> = (
-  props: RawConfirmDialogProps<T> & ModalProps & OtherProps
+  props: RawConfirmDialogProps<T> & ModalProps & OtherProps,
 ) => JSX.Element;
 
 function ConfirmDialogWrapper<OtherProps = Record<string, any>, T = undefined>(
   props: RawConfirmDialogProps<T> & {
     Dialog: RawConfirmDialog<OtherProps, T>;
-  }
+  },
 ) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { Dialog } = props;
@@ -130,7 +130,7 @@ export function promisifyConfirmDialogWrapper<
     props: Omit<
       OtherProps,
       keyof ModalProps | keyof RawChooseDialogProps<T>
-    > = {} as OtherProps
+    > = {} as OtherProps,
   ) => {
     const id = Date.now();
 
@@ -146,9 +146,9 @@ export function promisifyConfirmDialogWrapper<
             {...props}
             onConfirm={onConfirm}
             Dialog={Dialog}
-          />
+          />,
         );
-      }
+      },
     );
   };
 }

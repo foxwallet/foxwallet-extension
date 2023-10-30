@@ -48,7 +48,7 @@ export interface IContentServer {
 }
 
 export async function executeServerMethod<T>(
-  promise: Promise<T>
+  promise: Promise<T>,
 ): Promise<ServerPayload<T>> {
   try {
     return await promise

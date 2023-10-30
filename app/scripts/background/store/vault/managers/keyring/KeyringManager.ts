@@ -81,10 +81,10 @@ export class KeyringManager {
     this.#getToken();
     const keyrings = (await this.#storage.getKeyring()) || {};
     const hdWallets = (keyrings[WalletType.HD] || []).map((item) =>
-      this.#formatDisplayWallet(item)
+      this.#formatDisplayWallet(item),
     );
     const simpleWallets = (keyrings[WalletType.SIMPLE] || []).map((item) =>
-      this.#formatDisplayWallet(item)
+      this.#formatDisplayWallet(item),
     );
     return {
       [WalletType.HD]: hdWallets,
@@ -120,7 +120,7 @@ export class KeyringManager {
       nanoid(),
       0,
       CoinType.ALEO,
-      token
+      token,
     )) as EncryptedKeyPairWithViewKey;
     const accountName = "Account 1";
     const newWallet: HDWallet = {
@@ -176,7 +176,7 @@ export class KeyringManager {
       nanoid(),
       0,
       CoinType.ALEO,
-      token
+      token,
     )) as EncryptedKeyPairWithViewKey;
 
     const accountName = "Account 1";
@@ -248,7 +248,7 @@ export class KeyringManager {
       nanoid(),
       0,
       CoinType.ALEO,
-      token
+      token,
     )) as EncryptedKeyPairWithViewKey;
 
     const accountName = "Account 1";
@@ -292,7 +292,7 @@ export class KeyringManager {
       logger.log("===> addNewAccount wallet: ", keyring);
     }
     const existAccount = hdWallet.accountsMap[coin].some(
-      (item) => item.accountId === accountId
+      (item) => item.accountId === accountId,
     );
     if (existAccount) {
       throw new Error("Account have existed");
@@ -301,7 +301,7 @@ export class KeyringManager {
       accountId,
       index,
       coin,
-      token
+      token,
     )) as EncryptedKeyPairWithViewKey;
     const accountName = `Account ${index}`;
     const newHdWallet: HDWallet = {

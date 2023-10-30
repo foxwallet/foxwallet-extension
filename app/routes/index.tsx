@@ -5,10 +5,10 @@ import { CheckOnboard } from "../components/Onboard/CheckOnboard";
 const MainPage = lazy(async () => await import("../pages/Main"));
 const OnboardHome = lazy(async () => await import("../pages/OnboardHome"));
 const OnboardCreateWallet = lazy(
-  async () => await import("../pages/OnboardCreateWallet")
+  async () => await import("../pages/OnboardCreateWallet"),
 );
 const OnboardImportWallet = lazy(
-  async () => await import("../pages/OnboardImportWallet")
+  async () => await import("../pages/OnboardImportWallet"),
 );
 
 // 加上 onboard 和 lock 逻辑

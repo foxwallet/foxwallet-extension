@@ -31,7 +31,7 @@ export class PopupWalletServer implements IPopupServer {
   }
 
   async regenerateWallet(
-    params: RegenerateWalletProps
+    params: RegenerateWalletProps,
   ): Promise<DisplayWallet> {
     return await this.keyringManager.regenerateWallet(params);
   }
