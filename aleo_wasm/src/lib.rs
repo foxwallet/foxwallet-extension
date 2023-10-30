@@ -161,6 +161,9 @@ pub use programs::*;
 pub mod record;
 pub use record::*;
 
+pub mod future;
+pub use future::*;
+
 pub(crate) mod types;
 
 use wasm_bindgen::prelude::*;

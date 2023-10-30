@@ -16,12 +16,13 @@
 
 use crate::{
     account::PrivateKey,
-    types::{IdentifierNative, ProgramIDNative, RecordPlaintextNative},
+    types::{IdentifierNative, ProgramIDNative, RecordPlaintextNative, Entry, CurrentNetwork, PlaintextNative },
     Credits,
 };
 
 use std::{ops::Deref, str::FromStr};
 use wasm_bindgen::prelude::*;
+use serde_json::{json, Value};
 
 /// Plaintext representation of an Aleo record
 #[wasm_bindgen]
@@ -88,6 +89,71 @@ impl RecordPlaintext {
             .map_err(|_| "Serial number derivation failed".to_string())?;
         Ok(serial_number.to_string())
     }
+
+    #[wasm_bindgen(js_name = toJSON)]
+    pub fn to_json(
+        &self,
+    ) -> String {
+        fn aleo_parse_entry(entry: &Entry<CurrentNetwork, PlaintextNative>) -> serde_json::Value {
+            let (plaintext, visibility) = match entry {
+                Entry::Constant(constant) => (constant, "constant"),
+                Entry::Public(public) => (public, "public"),
+                Entry::Private(private) => (private, "private"),
+            };
+            match plaintext {
+                PlaintextNative::Literal(literal, ..) => {
+                    serde_json::Value::String(format!("{}.{}", literal, visibility))
+                }
+                PlaintextNative::Struct(struct_, ..) => {
+                    let mut map = serde_json::value::Map::new();
+                    let _ = struct_.iter().enumerate().try_for_each(|(_i, (name, plaintext))| {
+                        match plaintext {
+                            PlaintextNative::Literal(literal, ..) => {
+                                map.insert(name.to_string(), serde_json::Value::String(format!("{}.{}", literal, visibility)));
+                            },
+                            PlaintextNative::Struct(..) | PlaintextNative::Array(..) => {
+                                map.insert(name.to_string(), aleo_parse_entry(&match entry {
+                                    Entry::Constant(..) => Entry::Constant(plaintext.clone()),
+                                    Entry::Public(..) => Entry::Public(plaintext.clone()),
+                                    Entry::Private(..) => Entry::Private(plaintext.clone()),
+                                }));
+                            }
+                        }
+                        Ok::<(), String>(())
+                    });
+                    Value::Object(map)
+                }
+                PlaintextNative::Array(array, ..) => {
+                    let mut res: Vec<serde_json::Value> = vec![];
+                    let _ = array.iter().enumerate().try_for_each(|(_i, plaintext)| {
+                        match plaintext {
+                            PlaintextNative::Literal(literal, ..) => {
+                                res.push(serde_json::Value::String(format!("{}.{}", literal, visibility)));
+                            },
+                            PlaintextNative::Struct(..) | PlaintextNative::Array(..) => {
+                                res.push(aleo_parse_entry(&match entry {
+                                    Entry::Constant(..) => Entry::Constant(plaintext.clone()),
+                                    Entry::Public(..) => Entry::Public(plaintext.clone()),
+                                    Entry::Private(..) => Entry::Private(plaintext.clone()),
+                                }));
+                            },
+                        }
+                        Ok::<(), String>(())
+                    });
+                    Value::Array(res)
+                }
+            }
+        }
+
+        let data = self.0.data();
+        let mut map = serde_json::Map::new();
+        for (key, value) in data {
+            map.insert(key.to_string(), aleo_parse_entry(value));
+        }
+        json!({
+            "data": map,
+        }).to_string()
+    }
 }
 
 impl From<RecordPlaintextNative> for RecordPlaintext {
@@ -114,6 +180,8 @@ impl Deref for RecordPlaintext {
 
 #[cfg(test)]
 mod tests {
+    wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
+
     use super::*;
 
     use wasm_bindgen_test::wasm_bindgen_test;
@@ -186,5 +254,15 @@ mod tests {
             Some("The record plaintext string provided was invalid".into())
         );
         assert!(RecordPlaintext::from_string(invalid_bech32).is_err());
+    }
+
+    #[wasm_bindgen_test]
+    fn test_parse_record() {
+        let record_text = String::from("{\n  owner: aleo1xs53pjftr8vst9ev2drwdu0kyyj2f4fxx93j3n30hfr8dqjnwq8qyvka7t.private,\n  token: 1field.private,\n  amount: 1000000u128.private,\n  _nonce: 8330039551488987378611890241359478445256923358029060207444253989434222025046group.public\n}");
+        let except = String::from(r#"{"data":{"token":"1field.private","amount":"1000000u128.private"}}"#);
+        let record = RecordPlaintext::from_string(&record_text).unwrap();
+        let res = record.to_json();
+        println!("res {}", res);
+        assert_eq!(except, res);
     }
 }

@@ -33,7 +33,6 @@ use crate::{
     types::{
         cost_in_microcredits,
         deployment_cost,
-        CurrentAleo,
         IdentifierNative,
         ProcessNative,
         ProgramIDNative,

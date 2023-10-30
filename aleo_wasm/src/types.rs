@@ -31,6 +31,8 @@ pub use snarkvm_console::{
         Record,
         Response,
         ValueType,
+        Future,
+        Argument,
     },
     types::Field,
 };
@@ -84,3 +86,5 @@ pub type QueryNative = Query<CurrentNetwork, CurrentBlockMemory>;
 pub type ResponseNative = Response<CurrentNetwork>;
 pub type TransactionNative = Transaction<CurrentNetwork>;
 pub type VerifyingKeyNative = VerifyingKey<CurrentNetwork>;
+pub type FutureNative = Future<CurrentNetwork>;
+pub type ArgumentNative = Argument<CurrentNetwork>;
