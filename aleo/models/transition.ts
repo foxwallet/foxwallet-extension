@@ -10,5 +10,4 @@ export type Transition = {
   proof: string;
   tpk: string;
   tcm: string;
-  fee: number;
 };

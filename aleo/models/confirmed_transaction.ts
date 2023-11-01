@@ -1,7 +1,8 @@
 import { Transaction } from "./transaction";
 
 export type ConfirmedTransaction = {
+  status: string;
   type: string;
-  id: string;
+  index: number;
   transaction: Transaction;
 };
