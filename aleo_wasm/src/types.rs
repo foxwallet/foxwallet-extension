@@ -16,7 +16,7 @@
 
 pub use snarkvm_circuit_network::{Aleo, AleoV0};
 pub use snarkvm_console::{
-    account::{Address, PrivateKey, Signature, ViewKey},
+    account::{Address, PrivateKey, Signature, ViewKey, GraphKey},
     network::{Network, Testnet3},
     program::{
         Ciphertext,
@@ -88,3 +88,4 @@ pub type TransactionNative = Transaction<CurrentNetwork>;
 pub type VerifyingKeyNative = VerifyingKey<CurrentNetwork>;
 pub type FutureNative = Future<CurrentNetwork>;
 pub type ArgumentNative = Argument<CurrentNetwork>;
+pub type GraphKeyNative = GraphKey<CurrentNetwork>;

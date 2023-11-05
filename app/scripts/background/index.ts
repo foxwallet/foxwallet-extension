@@ -1,12 +1,12 @@
 import { PortName } from "../../common/types/port";
 import { Connection } from "../../common/utils/connection";
+import { main } from "./aleo";
 import { contentServerHandler } from "./handlers/ContentServerHandler";
 import { keepAliveHandler } from "./handlers/KeepaliveHandler";
 import { PopupServerHandler } from "./handlers/PopupServerHandler";
 import { PopupWalletServer } from "./servers/PopupServer";
 import { AuthManager } from "./store/vault/managers/auth/AuthManager";
 import { KeyringManager } from "./store/vault/managers/keyring/KeyringManager";
-import { sync } from "./offscreen_helper";
 
 const keepAliveConnection = new Connection(
   keepAliveHandler,
@@ -37,4 +37,4 @@ const contentConnection = new Connection(
 );
 contentConnection.connect();
 
-sync();
+main();

@@ -96,9 +96,7 @@ impl Future {
 
 
         let res = aleo_parse_future(&self);
-        json!({
-            "data": res,
-        }).to_string()
+        json!(res).to_string()
     }
 }
 

@@ -351,9 +351,6 @@ class BlockHeightSearch implements RecordSearchParams {
   }
 }
 
-export {
-  BlockHeightSearch,
-  NetworkRecordProvider,
-  RecordProvider,
-  RecordSearchParams,
-};
+export { BlockHeightSearch, NetworkRecordProvider };
+
+export type { RecordProvider, RecordSearchParams };

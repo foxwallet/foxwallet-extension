@@ -15,7 +15,7 @@
 // along with the Aleo SDK library. If not, see <https://www.gnu.org/licenses/>.
 
 use super::{Address, PrivateKey};
-use crate::{record::RecordCiphertext, types::ViewKeyNative};
+use crate::{record::RecordCiphertext, types::{ViewKeyNative, GraphKeyNative}, programs::{Field}};
 
 use core::{convert::TryFrom, fmt, ops::Deref, str::FromStr};
 use wasm_bindgen::prelude::*;
@@ -67,6 +67,16 @@ impl ViewKey {
             Ok(plaintext) => Ok(plaintext.to_string()),
             Err(error) => Err(error),
         }
+    }
+
+    #[wasm_bindgen(js_name = skTag)]
+    pub fn sk_tag(&self) -> Result<Field, String> {
+        let graph_key = GraphKeyNative::try_from(self.0).map_err(|error| error.to_string()).unwrap();
+        Ok(Field::from(graph_key.sk_tag()))
+    }
+
+    pub fn clone(&self) -> Self {
+        Self(self.0.clone())
     }
 }
 

@@ -342,7 +342,7 @@ class AleoNetworkClient {
       );
     } catch (error) {
       const errorMessage =
-        "Error fetching blocks between " + start + " and " + end + ".";
+        "Error fetching blocks between " + start + " and " + end + ". ";
       throw new Error(errorMessage);
     }
   }

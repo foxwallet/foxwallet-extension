@@ -543,9 +543,9 @@ class AleoKeyProvider implements FunctionKeyProvider {
   }
 }
 
-export {
-  AleoKeyProvider,
-  AleoKeyProviderParams,
+export { AleoKeyProvider, AleoKeyProviderParams };
+
+export type {
   AleoKeyProviderInitParams,
   CachedKeyPair,
   FunctionKeyPair,

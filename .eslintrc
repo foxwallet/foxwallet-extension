@@ -24,7 +24,8 @@
     "no-new": 0,
     "@typescript-eslint/consistent-type-assertions": 0,
     "@typescript-eslint/no-extraneous-class": 1,
-    "@typescript-eslint/no-non-null-assertion": 1
+    "@typescript-eslint/no-non-null-assertion": 1,
+    "@typescript-eslint/prefer-readonly": 0
   },
   "settings": {
     "react": {

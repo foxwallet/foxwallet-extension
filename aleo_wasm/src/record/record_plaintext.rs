@@ -16,8 +16,9 @@
 
 use crate::{
     account::PrivateKey,
-    types::{IdentifierNative, ProgramIDNative, RecordPlaintextNative, Entry, CurrentNetwork, PlaintextNative },
+    types::{IdentifierNative, ProgramIDNative, RecordPlaintextNative, Entry, CurrentNetwork, PlaintextNative, Network },
     Credits,
+    programs::{Field},
 };
 
 use std::{ops::Deref, str::FromStr};
@@ -150,9 +151,14 @@ impl RecordPlaintext {
         for (key, value) in data {
             map.insert(key.to_string(), aleo_parse_entry(value));
         }
-        json!({
-            "data": map,
-        }).to_string()
+        json!(map).to_string()
+    }
+
+
+    #[wasm_bindgen(js_name = tag)]
+    pub fn tag(sk_tag: &Field, commitment: &Field) -> Result<String, String> {
+        let field = CurrentNetwork::hash_psd2(&[sk_tag.clone().into(), commitment.clone().into()]).map_err(|_| "get tag error".to_string()).unwrap();
+        Ok(field.to_string())
     }
 }
 
@@ -183,6 +189,8 @@ mod tests {
     wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
     use super::*;
+
+    use crate::{account::ViewKey, programs::Field};
 
     use wasm_bindgen_test::wasm_bindgen_test;
 
@@ -264,5 +272,32 @@ mod tests {
         let res = record.to_json();
         println!("res {}", res);
         assert_eq!(except, res);
+    }
+
+    #[wasm_bindgen_test]
+    fn test_get_tag() {
+        let view_key = String::from("AViewKey1ggsbye8ZgyGYrnes6RsEmTCEbFDhZrcDHk9VX5YB9WMe");
+        let view_key = ViewKey::from_string(&view_key);
+        let sk_tag = view_key.sk_tag();
+        if let Err(error) = sk_tag {
+            println!("error {}", error);
+            return;
+        }
+        let sk_tag = sk_tag.unwrap();
+        let commitment = String::from("2149342116809958318557518154762560247369221364755483783505065073359530604400field");
+        let commitment = Field::from_string(&commitment);
+        if let Err(error) = commitment {
+            println!("error {}", error);
+            return;
+        }
+        let commitment = commitment.unwrap();
+        let tag = RecordPlaintext::tag(sk_tag, commitment);
+        if let Err(error) = tag {
+            println!("error {}", error);
+            return;
+        }
+        let tag = tag.unwrap();
+        println!("tag {}", tag.to_string());
+        assert_eq!("5160198561520580404140839978195317190485470188533031603714036994336519193296field", tag.to_string());
     }
 }

@@ -2,6 +2,11 @@ import { wrap } from "comlink";
 import browser from "webextension-polyfill";
 import type { WorkerAPI } from "./worker";
 import { logger } from "@/common/utils/logger";
+import {
+  AleoWorkerMessage,
+  AleoWorkerMethod,
+  SyncBlockParams,
+} from "./aleo.di";
 
 let singletonWorker: WorkerAPI | null = null;
 
@@ -15,23 +20,44 @@ const createAleoWorker = () => {
   return singletonWorker;
 };
 
-createAleoWorker();
+async function initWorker(
+  rpcList: string[],
+  sendResponse: (param: any) => void,
+) {
+  const aleoWorker = createAleoWorker();
+  await aleoWorker.initWasm();
+  await aleoWorker.initAleoWorker(rpcList);
+  sendResponse({ error: null, data: true });
+}
 
 async function getPrivateKey(sendResponse: (param: any) => void) {
+  const aleoWorker = createAleoWorker();
+  await aleoWorker.initWasm();
+  const privateKey = await aleoWorker.getPrivateKey();
+  sendResponse({ error: null, data: privateKey });
+}
+
+async function syncBlocks(
+  params: SyncBlockParams,
+  sendResponse: (param: any) => void,
+) {
   try {
     const aleoWorker = createAleoWorker();
     await aleoWorker.initWasm();
-    const privateKey = await aleoWorker.getPrivateKey();
-    sendResponse(privateKey);
+    const blocksInfo = await aleoWorker.syncBlocks(params);
+    sendResponse({ error: null, data: blocksInfo });
   } catch (err) {
     logger.log("==> err: ", err);
+    if (err instanceof Error) {
+      sendResponse({ error: err.message });
+    }
   }
 }
 
 browser.runtime.onMessage.addListener(handleMessages);
 
 function handleMessages(
-  message: any,
+  message: AleoWorkerMessage,
   sender: browser.Runtime.MessageSender,
   sendResponse: (param: any) => void,
 ) {
@@ -40,12 +66,36 @@ function handleMessages(
     return;
   }
 
-  if (message.type === "get-private-key") {
-    getPrivateKey(sendResponse).catch((err) => {
-      logger.log(`==> ${message.type} err: `, err);
-    });
-    return true;
+  switch (message.type) {
+    case AleoWorkerMethod.INIT_WORKER: {
+      initWorker(message.params, sendResponse).catch((err) => {
+        logger.log(`==> ${message.type} err: `, err);
+        if (err instanceof Error) {
+          sendResponse({ error: err.message });
+        }
+      });
+    }
+    case AleoWorkerMethod.GET_PRIVATE_KEY: {
+      getPrivateKey(sendResponse).catch((err) => {
+        logger.log(`==> ${message.type} err: `, err);
+        if (err instanceof Error) {
+          sendResponse({ error: err.message });
+        }
+      });
+      return true;
+    }
+    case AleoWorkerMethod.SYNC_BLOCKS: {
+      const params = message.params as SyncBlockParams;
+      syncBlocks(params, sendResponse).catch((err) => {
+        logger.log(`==> ${message.type} err: `, err);
+        if (err instanceof Error) {
+          sendResponse({ error: err.message });
+        }
+      });
+      return true;
+    }
+    default: {
+      logger.warn(`Unexpected message type received: '${message.type}'.`);
+    }
   }
-
-  logger.warn(`Unexpected message type received: '${message.type}'.`);
 }
