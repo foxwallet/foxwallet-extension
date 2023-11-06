@@ -5,42 +5,125 @@ import type {
   TxInfo,
   SyncBlockParams,
   TxMetadata,
+  LogFunc,
+  FutureJSON,
 } from "./aleo.di";
-import type { ViewKey } from "aleo_wasm";
-import { Field, RecordPlaintext } from "aleo_wasm";
-import { AleoNetworkClient } from "aleo/network-client";
-import type { Transition } from "aleo/index";
 import {
-  parseFuture,
-  parseRecordCiphertext,
-  parseU64,
-  parseViewKey,
-} from "./helper";
+  Field,
+  ViewKey,
+  RecordPlaintext,
+  PrivateKey,
+  RecordCiphertext,
+  Future,
+} from "aleo_wasm";
+import type { Transition } from "aleo/index";
+import { AleoRpcService } from "./aleo_service";
+import { AutoSwitch } from "@/common/utils/retry";
+import { AutoSwitchServiceType } from "@/common/types/retry";
 
-// TODO: 添加重试逻辑
-// TODO: 错误信息发送到主线程
 export class AleoWorker {
-  networkClients: AleoNetworkClient[];
+  rpcService: AleoRpcService;
+  static logger: LogFunc | undefined;
 
-  constructor(private rpcList: string[]) {
-    this.networkClients = rpcList.map((rpc) => {
-      return new AleoNetworkClient(rpc);
-    });
+  static setLogger(logger: LogFunc) {
+    AleoWorker.logger = logger;
   }
 
-  // TODO: 添加重试逻辑
-  private getBlocksInRange = async (start: number, end: number) => {
-    const blocksInRange = await this.networkClients[0].getBlockRange(
+  constructor(
+    private workerId: number,
+    rpcList: string[],
+  ) {
+    this.rpcService = new AleoRpcService({ configs: rpcList });
+  }
+
+  get getWorkerId() {
+    return this.workerId;
+  }
+
+  log(...args: any[]) {
+    if (AleoWorker.logger) {
+      AleoWorker.logger("log", ` workerId ${this.workerId} `, ...args);
+    } else {
+      console.log("===> worker's logger is not set");
+    }
+  }
+
+  error(...args: any[]) {
+    if (AleoWorker.logger) {
+      AleoWorker.logger("error", ` workerId ${this.workerId} `, ...args);
+    } else {
+      console.log("===> worker's logger is not set");
+    }
+  }
+
+  parsePrivateKey = (privateKeyStr: string): PrivateKey => {
+    try {
+      const privateKey = PrivateKey.from_string(privateKeyStr);
+      return privateKey;
+    } catch (err) {
+      throw new Error("Invalid private key");
+    }
+  };
+
+  parseViewKey = (viewKeyStr: string): ViewKey => {
+    try {
+      const viewKey = ViewKey.from_string(viewKeyStr);
+      return viewKey;
+    } catch (err) {
+      throw new Error("Invalid view key");
+    }
+  };
+
+  parseU64 = (u64?: string): bigint => {
+    if (!u64) {
+      return 0n;
+    }
+    try {
+      return BigInt(u64.slice(0, -3));
+    } catch (err) {
+      this.error("===> parseU64 error: ", err);
+      return 0n;
+    }
+  };
+
+  parseFuture = (futureStr?: string): FutureJSON | undefined => {
+    if (!futureStr) {
+      return undefined;
+    }
+    try {
+      const future = Future.fromString(futureStr);
+      const futureObj = JSON.parse(future.toJSON());
+      return futureObj;
+    } catch (err) {
+      this.error("===> parseFuture error: ", err);
+      return undefined;
+    }
+  };
+
+  parseRecordCiphertext = (recordCiphertextStr: string) => {
+    try {
+      return RecordCiphertext.fromString(recordCiphertextStr);
+    } catch (err) {
+      this.error("===> parseRecordCiphertext error: ", err);
+      return undefined;
+    }
+  };
+
+  @AutoSwitch({ serviceType: AutoSwitchServiceType.RPC, waitTime: 2000 })
+  async getBlocksInRange(start: number, end: number) {
+    const blocksInRange = await this.rpcService.currInstance().getBlockRange(
       start,
       // By default, this rpc will return [scopeBegin, scopeEnd), so we need to add 1 to scopeEnd
       end + 1,
     );
     return blocksInRange;
-  };
+  }
 
   private getTransitionIdBySerialNumber = async (serialNumber: string) => {
     try {
-      const txId = await this.networkClients[0].getTransitionId(serialNumber);
+      const txId = await this.rpcService
+        .currInstance()
+        .getTransitionId(serialNumber);
       return txId;
     } catch (err) {
       return undefined;
@@ -56,7 +139,7 @@ export class AleoWorker {
       const tag = RecordPlaintext.tag(skTag, commitmentField);
       return tag;
     } catch (err) {
-      console.log("===> computeTag error: ", err);
+      this.error("===> computeTag error: ", err);
       return undefined;
     }
   };
@@ -68,19 +151,19 @@ export class AleoWorker {
     commitment: string,
   ): Promise<RecordDetail | undefined> => {
     try {
-      const record = parseRecordCiphertext(ciphertext);
+      const record = this.parseRecordCiphertext(ciphertext);
       if (!record) {
         return undefined;
       }
       const newViewKey = viewKey.clone();
       const newSkTag = skTag.clone();
       const isOwner = record.isOwner(newViewKey);
-      console.log("===> record: ", isOwner);
+      this.log("===> record: ", isOwner);
       if (isOwner) {
         const plaintext = record.decrypt(newViewKey);
         const nonce = plaintext.nonce();
         const tag = this.computeTag(newSkTag, commitment);
-        console.log("===> tag: ", tag);
+        this.log("===> tag: ", tag);
         return {
           plaintext: plaintext.toString(),
           content: JSON.parse(plaintext.toJSON()),
@@ -90,7 +173,7 @@ export class AleoWorker {
         };
       }
     } catch (err) {
-      console.log("==> record decrypt error: ", err);
+      this.error("==> record decrypt error: ", err);
     }
     return undefined;
   };
@@ -132,7 +215,7 @@ export class AleoWorker {
         receivedRecords = records.filter(
           (record) => !!record,
         ) as RecordDetail[];
-        console.log("===> receivedRecords: ", receivedRecords);
+        this.log("===> receivedRecords: ", receivedRecords);
         spentRecordTags =
           transition.inputs
             ?.filter((input) => input.type === "record")
@@ -146,17 +229,17 @@ export class AleoWorker {
         //   inputRecordsSerialNumber.push(serialNumber);
         // }
         receiverAddress = transition.inputs?.[1].value ?? "";
-        amount = parseU64(transition.inputs?.[2].value);
+        amount = this.parseU64(transition.inputs?.[2].value);
         spentRecordTags = [transition.inputs?.[0].tag as string];
         break;
       }
       case "transfer_public": {
         receiverAddress = transition.inputs?.[0].value ?? "";
-        amount = parseU64(transition.inputs?.[1].value);
+        amount = this.parseU64(transition.inputs?.[1].value);
         break;
       }
       case "transfer_public_to_private": {
-        amount = parseU64(transition.inputs?.[1].value);
+        amount = this.parseU64(transition.inputs?.[1].value);
         const records = await Promise.all(
           transition.outputs?.map(async (output) => {
             if (output.type === "record") {
@@ -178,7 +261,7 @@ export class AleoWorker {
       }
       case "join": {
         const output = transition.outputs?.[0];
-        console.log("===> join transition: ", output);
+        this.log("===> join transition: ", output);
         if (output?.type === "record") {
           const record = await this.decryptRecord(
             viewKey,
@@ -186,7 +269,7 @@ export class AleoWorker {
             output.value,
             output.id,
           );
-          console.log("===> join parsed transition: ", record);
+          this.log("===> join parsed transition: ", record);
           if (record) {
             receivedRecords = [record];
           }
@@ -242,9 +325,9 @@ export class AleoWorker {
         return undefined;
       }
       case "transfer_private_to_public": {
-        const receiverAddress = transition.inputs?.[1].value || "";
+        const receiverAddress = transition.inputs?.[1].value ?? "";
         if (receiverAddress === address) {
-          const amount = parseU64(transition.inputs?.[2].value);
+          const amount = this.parseU64(transition.inputs?.[2].value);
           return {
             program: "credits.aleo",
             function: transition.function,
@@ -255,12 +338,12 @@ export class AleoWorker {
         return undefined;
       }
       case "transfer_public": {
-        const receiverAddress = transition.inputs?.[0].value || "";
+        const receiverAddress = transition.inputs?.[0].value ?? "";
         if (receiverAddress === address) {
-          const futureObj = parseFuture(transition.outputs?.[0].value);
+          const futureObj = this.parseFuture(transition.outputs?.[0].value);
           if (futureObj) {
             const senderAddress = futureObj.arguments?.[0];
-            const amount = parseU64(futureObj.arguments?.[2]);
+            const amount = this.parseU64(futureObj.arguments?.[2]);
             return {
               program: "credits.aleo",
               function: transition.function,
@@ -282,8 +365,8 @@ export class AleoWorker {
             output.id,
           );
           if (record) {
-            const amount = parseU64(transition.inputs?.[1].value);
-            const futureObj = parseFuture(transition.outputs?.[0].value);
+            const amount = this.parseU64(transition.inputs?.[1].value);
+            const futureObj = this.parseFuture(transition.outputs?.[0].value);
             const senderAddress = futureObj?.arguments?.[0];
             return {
               program: "credits.aleo",
@@ -329,7 +412,7 @@ export class AleoWorker {
         spentRecordTags =
           transition.inputs
             ?.filter((intput) => intput.type === "record")
-            .map((input) => input.tag as string) || [];
+            .map((input) => input.tag as string) ?? [];
         return {
           program: transition.program,
           function: transition.function,
@@ -364,7 +447,7 @@ export class AleoWorker {
           return record;
         }
         return undefined;
-      }) || [],
+      }) ?? [],
     );
     const customRecords = records.filter(
       (record) => !!record,
@@ -374,7 +457,7 @@ export class AleoWorker {
       spentRecordTags =
         transition.inputs
           ?.filter((input) => input.type === "record")
-          .map((input) => input.tag as string) || [];
+          .map((input) => input.tag as string) ?? [];
     }
     return {
       program: transition.program,
@@ -408,8 +491,12 @@ export class AleoWorker {
     skTag: Field,
   ) => {
     return await Promise.all(
-      transitions.map((transition) => {
-        return this.parseSenderExecuteTransition(transition, viewKey, skTag);
+      transitions.map(async (transition) => {
+        return await this.parseSenderExecuteTransition(
+          transition,
+          viewKey,
+          skTag,
+        );
       }),
     );
   };
@@ -444,8 +531,8 @@ export class AleoWorker {
     address: string,
   ) => {
     const parsedTransitions = await Promise.all(
-      transitions.map((transition) => {
-        return this.parseReceiverExecuteTransition(
+      transitions.map(async (transition) => {
+        return await this.parseReceiverExecuteTransition(
           transition,
           viewKey,
           skTag,
@@ -453,9 +540,9 @@ export class AleoWorker {
         );
       }),
     );
-    let nonEmptyTransitions = parsedTransitions.filter(
+    const nonEmptyTransitions = parsedTransitions.filter(
       (parsedTransition) => !!parsedTransition,
-    ) as (TxInfo & { receivedRecords?: RecordDetail[] })[];
+    ) as Array<TxInfo & { receivedRecords?: RecordDetail[] }>;
     return nonEmptyTransitions;
   };
 
@@ -477,14 +564,14 @@ export class AleoWorker {
         if (!output || output.type !== "future") {
           return undefined;
         }
-        const futureObj = parseFuture(output.value);
+        const futureObj = this.parseFuture(output.value);
         if (!futureObj) {
           return undefined;
         }
         // 当前地址付 fee
         if (futureObj.arguments && futureObj.arguments[0] === address) {
-          const baseFee = parseU64(transition.inputs?.[0].value);
-          const priorityFee = parseU64(transition.inputs?.[1].value);
+          const baseFee = this.parseU64(transition.inputs?.[0].value);
+          const priorityFee = this.parseU64(transition.inputs?.[1].value);
           const fee = baseFee + priorityFee;
 
           return {
@@ -498,7 +585,7 @@ export class AleoWorker {
       }
       case "fee_private": {
         const outputs = transition.outputs;
-        if (!outputs || !outputs[0]) {
+        if (!outputs?.[0]) {
           return undefined;
         }
         const output = outputs[0];
@@ -515,8 +602,8 @@ export class AleoWorker {
           }
         }
         if (receivedRecords.length > 0) {
-          const baseFee = parseU64(transition.inputs?.[1].value);
-          const priorityFee = parseU64(transition.inputs?.[2].value);
+          const baseFee = this.parseU64(transition.inputs?.[1].value);
+          const priorityFee = this.parseU64(transition.inputs?.[2].value);
           const fee = baseFee + priorityFee;
           const spentRecordTags = [transition.inputs?.[0].tag as string];
           return {
@@ -556,7 +643,7 @@ export class AleoWorker {
     const recordsMap: { [program in string]?: RecordDetail[] } = {};
     const allSpentRecordTags: string[] = [];
     const txInfoList: TxHistoryItem[] = [];
-    const viewKeyObj = parseViewKey(viewKey);
+    const viewKeyObj = this.parseViewKey(viewKey);
     const skTag = viewKeyObj.skTag();
     const address = viewKeyObj.to_address().to_string();
 
@@ -564,7 +651,7 @@ export class AleoWorker {
     let scopeBegin = Math.max(begin, end - 50);
     while (scopeBegin <= scopeEnd) {
       const blocksInRange = await this.getBlocksInRange(scopeBegin, scopeEnd);
-      console.log(
+      this.log(
         "===> get blocks in range: ",
         scopeBegin,
         scopeEnd,
@@ -594,7 +681,7 @@ export class AleoWorker {
                       skTag,
                       address,
                     );
-                    console.log("===> feeInfo: ", feeInfo);
+                    this.log("===> feeInfo: ", feeInfo);
                     // current user is sender
                     if (feeInfo) {
                       const {
@@ -624,7 +711,7 @@ export class AleoWorker {
                             viewKeyObj,
                             skTag,
                           );
-                        console.log(
+                        this.log(
                           "===> parsedTransitions: ",
                           executeTransitons,
                           parsedTransitions,
@@ -684,7 +771,7 @@ export class AleoWorker {
                             },
                           );
                           txInfoList.push({
-                            transitions: transitions,
+                            transitions,
                             ...txMetadata,
                           });
                         }

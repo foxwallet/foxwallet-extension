@@ -16,6 +16,8 @@
     "isolatedModules": true,
     "noEmit": true,
     "strictPropertyInitialization": false,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "types": ["@types/chrome"],
     "paths": {
       "@/*": ["./app/*"],

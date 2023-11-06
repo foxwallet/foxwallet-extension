@@ -18,14 +18,15 @@
   "rules": {
     "@typescript-eslint/no-unused-vars": 1,
     "@typescript-eslint/no-empty-interface": 0,
-    "@typescript-eslint/strict-boolean-expressions": 1,
-    "@typescript-eslint/explicit-function-return-type": 1,
+    "@typescript-eslint/strict-boolean-expressions": 0,
+    "@typescript-eslint/explicit-function-return-type": 0,
     "prefer-regex-literals": 0,
     "no-new": 0,
     "@typescript-eslint/consistent-type-assertions": 0,
     "@typescript-eslint/no-extraneous-class": 1,
     "@typescript-eslint/no-non-null-assertion": 1,
-    "@typescript-eslint/prefer-readonly": 0
+    "@typescript-eslint/prefer-readonly": 0,
+    "@typescript-eslint/return-await": 0
   },
   "settings": {
     "react": {

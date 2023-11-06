@@ -64,3 +64,5 @@ export interface AleoWorkerMessage {
   target: "offscreen";
   params: any;
 }
+
+export type LogFunc = (type: "log" | "error", ...args: any[]) => void;

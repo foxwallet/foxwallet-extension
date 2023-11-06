@@ -1,5 +1,5 @@
 import { logger } from "@/common/utils/logger";
-import { AleoWorkerMethod, SyncBlockParams } from "./aleo.di";
+import { AleoWorkerMethod, type SyncBlockParams } from "./aleo.di";
 
 const OFFSCREEN_DOCUMENT_PATH = "/offscreen.html";
 

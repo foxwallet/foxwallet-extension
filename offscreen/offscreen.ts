@@ -1,14 +1,22 @@
-import { wrap } from "comlink";
+import { wrap, proxy } from "comlink";
 import browser from "webextension-polyfill";
 import type { WorkerAPI } from "./worker";
 import { logger } from "@/common/utils/logger";
 import {
-  AleoWorkerMessage,
+  type AleoWorkerMessage,
   AleoWorkerMethod,
-  SyncBlockParams,
+  type SyncBlockParams,
 } from "./aleo.di";
 
 let singletonWorker: WorkerAPI | null = null;
+
+export function mainLogger(type: "log" | "error", ...args: any[]) {
+  if (type === "error") {
+    console.error("===> [WORKER]: ", ...args);
+  } else {
+    console.log("===> [WORKER]: ", ...args);
+  }
+}
 
 const createAleoWorker = () => {
   if (!singletonWorker) {
@@ -16,17 +24,19 @@ const createAleoWorker = () => {
       type: "module",
     });
     singletonWorker = wrap<WorkerAPI>(worker);
+    singletonWorker.setLogger(proxy(mainLogger));
   }
   return singletonWorker;
 };
 
 async function initWorker(
+  workerId: number,
   rpcList: string[],
   sendResponse: (param: any) => void,
 ) {
   const aleoWorker = createAleoWorker();
   await aleoWorker.initWasm();
-  await aleoWorker.initAleoWorker(rpcList);
+  await aleoWorker.initAleoWorker(workerId, rpcList);
   sendResponse({ error: null, data: true });
 }
 
@@ -68,12 +78,13 @@ function handleMessages(
 
   switch (message.type) {
     case AleoWorkerMethod.INIT_WORKER: {
-      initWorker(message.params, sendResponse).catch((err) => {
+      initWorker(0, message.params, sendResponse).catch((err) => {
         logger.log(`==> ${message.type} err: `, err);
         if (err instanceof Error) {
           sendResponse({ error: err.message });
         }
       });
+      return true;
     }
     case AleoWorkerMethod.GET_PRIVATE_KEY: {
       getPrivateKey(sendResponse).catch((err) => {
@@ -95,7 +106,7 @@ function handleMessages(
       return true;
     }
     default: {
-      logger.warn(`Unexpected message type received: '${message.type}'.`);
+      logger.warn(`Unexpected message type received'.`);
     }
   }
 }

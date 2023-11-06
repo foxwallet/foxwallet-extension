@@ -1,5 +1,5 @@
 import { PrivateKey, RecordCiphertext, Future, ViewKey } from "aleo_wasm";
-import { FutureJSON } from "./aleo.di";
+import { type FutureJSON } from "./aleo.di";
 
 export const parsePrivateKey = (privateKeyStr: string): PrivateKey => {
   try {
