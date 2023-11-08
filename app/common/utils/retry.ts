@@ -4,13 +4,13 @@ import { sleep } from "./sleep";
 export const isNetworkError = (err: any) => {
   if (err?.message && typeof err.message === "string") {
     const msg = err.message;
-    return msg === "Network Error" || msg.startsWith("Error fetching");
+    return msg === "Network Error" || msg.startsWith("Error fetching blocks");
   }
   return false;
 };
 
 export const isInternetUnreachable = async () => {
-  return navigator.onLine;
+  return !navigator.onLine;
 };
 
 export const getServiceNameByType = (type: AutoSwitchServiceType) => {
@@ -25,6 +25,7 @@ async function loop(
   emptyValue: any,
   retryTimes: number = 0,
   shouldPreventSwitch: () => Promise<boolean>,
+  propertyKey: string,
   waitTime?: number,
 ): Promise<any> {
   try {
@@ -51,7 +52,11 @@ async function loop(
       retryTimes < 10 &&
       service.canSwitch()
     ) {
-      console.log("method: " + method, " switch to next due to:", error);
+      console.log(
+        "method: " + propertyKey,
+        " switch to next due to:",
+        (error as Error).message,
+      );
       const methodName = "switchToNext";
       service[methodName].bind(service)();
       if (waitTime) {
@@ -65,17 +70,21 @@ async function loop(
         emptyValue,
         retryTimes + 1,
         shouldPreventSwitch,
+        propertyKey,
         waitTime,
       );
     }
     console.log(
-      "method: " + method,
+      "method: " + propertyKey,
       " retry loop throw error:",
       // @ts-expect-error error message
       error.message,
-      isNetworkError(error),
-      prevent,
+      " isNetworkError " + isNetworkError(error),
       retryTimes,
+      " navigator.onLine: ",
+      navigator.onLine,
+      " prevent: ",
+      prevent,
     );
     throw error;
   }
@@ -90,7 +99,7 @@ export function AutoSwitch(params: {
   const { serviceType, emptyValue, waitTime, shouldPreventSwitch } = params;
   return function (
     _target: any,
-    _propertyKey: string,
+    propertyKey: string,
     descriptor: PropertyDescriptor,
   ) {
     const method = descriptor.value;
@@ -109,6 +118,7 @@ export function AutoSwitch(params: {
         emptyValue,
         0,
         shouldPreventSwitch ?? isInternetUnreachable,
+        propertyKey,
         waitTime,
       );
     };

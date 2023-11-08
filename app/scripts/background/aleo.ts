@@ -17,8 +17,8 @@ import { parseU64 } from "../../../offscreen/helper";
 
 export async function main() {
   await initWorker([
-    "https://vm.aleo.org/api",
     "https://dev.foxnb.net/api/v1/aleo",
+    "https://vm.aleo.org/api",
   ]);
   const resp = await syncBlocks({
     viewKey: "AViewKey1cYH2yRXZnF8zA7BkvJEbb1jvbkjWwg6o62gL2Lkcu87y",

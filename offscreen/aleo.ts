@@ -1,12 +1,12 @@
-import type {
-  FeeInfo,
-  RecordDetail,
-  TxHistoryItem,
-  TxInfo,
-  SyncBlockParams,
-  TxMetadata,
-  LogFunc,
-  FutureJSON,
+import {
+  type FeeInfo,
+  type RecordDetail,
+  type TxHistoryItem,
+  type TxInfo,
+  type SyncBlockParams,
+  type TxMetadata,
+  type LogFunc,
+  type FutureJSON,
 } from "./aleo.di";
 import {
   Field,
@@ -16,14 +16,22 @@ import {
   RecordCiphertext,
   Future,
 } from "aleo_wasm";
-import type { Transition } from "aleo/index";
+import * as aleo from "aleo/index";
 import { AleoRpcService } from "./aleo_service";
 import { AutoSwitch } from "@/common/utils/retry";
 import { AutoSwitchServiceType } from "@/common/types/retry";
+import { Measure, MeasureAsync } from "@/common/utils/measure";
 
 export class AleoWorker {
   rpcService: AleoRpcService;
   static logger: LogFunc | undefined;
+  private taskInfo: SyncBlockParams | undefined;
+  private isProcessing = false;
+  // finished blocks in current scope
+  private currHeight: number | undefined;
+  private measureMap: {
+    [process in string]?: { time: number; count: number; max: number };
+  } = {};
 
   static setLogger(logger: LogFunc) {
     AleoWorker.logger = logger;
@@ -32,6 +40,7 @@ export class AleoWorker {
   constructor(
     private workerId: number,
     rpcList: string[],
+    public enableMeasure: boolean,
   ) {
     this.rpcService = new AleoRpcService({ configs: rpcList });
   }
@@ -110,7 +119,9 @@ export class AleoWorker {
   };
 
   @AutoSwitch({ serviceType: AutoSwitchServiceType.RPC, waitTime: 2000 })
+  @MeasureAsync()
   async getBlocksInRange(start: number, end: number) {
+    this.log("===> getBlocksInRange: ", start, end);
     const blocksInRange = await this.rpcService.currInstance().getBlockRange(
       start,
       // By default, this rpc will return [scopeBegin, scopeEnd), so we need to add 1 to scopeEnd
@@ -130,10 +141,8 @@ export class AleoWorker {
     }
   };
 
-  private computeTag = (
-    skTag: Field,
-    commitment: string,
-  ): string | undefined => {
+  @Measure()
+  private computeTag(skTag: Field, commitment: string): string | undefined {
     try {
       const commitmentField = Field.fromString(commitment);
       const tag = RecordPlaintext.tag(skTag, commitmentField);
@@ -142,14 +151,16 @@ export class AleoWorker {
       this.error("===> computeTag error: ", err);
       return undefined;
     }
-  };
+  }
 
-  private decryptRecord = async (
+  @Measure()
+  private decryptRecord(
     viewKey: ViewKey,
     skTag: Field,
     ciphertext: string,
     commitment: string,
-  ): Promise<RecordDetail | undefined> => {
+    programId: string,
+  ): RecordDetail | undefined {
     try {
       const record = this.parseRecordCiphertext(ciphertext);
       if (!record) {
@@ -165,6 +176,7 @@ export class AleoWorker {
         const tag = this.computeTag(newSkTag, commitment);
         this.log("===> tag: ", tag);
         return {
+          programId,
           plaintext: plaintext.toString(),
           content: JSON.parse(plaintext.toJSON()),
           nonce,
@@ -176,18 +188,17 @@ export class AleoWorker {
       this.error("==> record decrypt error: ", err);
     }
     return undefined;
-  };
+  }
 
-  private parseSenderCreditTransition = async (
-    transition: Transition,
+  @Measure()
+  parseSenderCreditTransition(
+    transition: aleo.Transition,
     viewKey: ViewKey,
     skTag: Field,
-  ): Promise<
-    TxInfo & {
-      receivedRecords?: RecordDetail[];
-      spentRecordTags: string[];
-    }
-  > => {
+  ): TxInfo & {
+    receivedRecords?: RecordDetail[];
+    spentRecordTags: string[];
+  } {
     let receivedRecords: RecordDetail[] | undefined;
     let spentRecordTags: string[] = [];
     // let inputRecordsSerialNumber: string[] = [];
@@ -198,20 +209,20 @@ export class AleoWorker {
         // if sender send private tx
         // output[1] is the sender's received record
         // in case of sender send aleo to himself, we need to check output[0] as well
-        const records = await Promise.all(
-          transition.outputs?.map(async (output) => {
+        const records =
+          transition.outputs?.map((output) => {
             if (output.type === "record") {
-              const record = await this.decryptRecord(
+              const record = this.decryptRecord(
                 viewKey,
                 skTag,
                 output.value,
                 output.id,
+                transition.program,
               );
               return record;
             }
             return undefined;
-          }) ?? [],
-        );
+          }) ?? [];
         receivedRecords = records.filter(
           (record) => !!record,
         ) as RecordDetail[];
@@ -240,20 +251,20 @@ export class AleoWorker {
       }
       case "transfer_public_to_private": {
         amount = this.parseU64(transition.inputs?.[1].value);
-        const records = await Promise.all(
-          transition.outputs?.map(async (output) => {
+        const records =
+          transition.outputs?.map((output) => {
             if (output.type === "record") {
-              const record = await this.decryptRecord(
+              const record = this.decryptRecord(
                 viewKey,
                 skTag,
                 output.value,
                 output.id,
+                transition.program,
               );
               return record;
             }
             return undefined;
-          }) ?? [],
-        );
+          }) ?? [];
         receivedRecords = records.filter(
           (record) => !!record,
         ) as RecordDetail[];
@@ -263,11 +274,12 @@ export class AleoWorker {
         const output = transition.outputs?.[0];
         this.log("===> join transition: ", output);
         if (output?.type === "record") {
-          const record = await this.decryptRecord(
+          const record = this.decryptRecord(
             viewKey,
             skTag,
             output.value,
             output.id,
+            transition.program,
           );
           this.log("===> join parsed transition: ", record);
           if (record) {
@@ -292,14 +304,15 @@ export class AleoWorker {
       spentRecordTags,
       // inputCreditRecordSerialNumber: inputRecordsSerialNumber,
     };
-  };
+  }
 
-  private parseReceiverCreditTransition = async (
-    transition: Transition,
+  @Measure()
+  parseReceiverCreditTransition(
+    transition: aleo.Transition,
     viewKey: ViewKey,
     skTag: Field,
     address: string,
-  ): Promise<(TxInfo & { receivedRecords?: RecordDetail[] }) | undefined> => {
+  ): (TxInfo & { receivedRecords?: RecordDetail[] }) | undefined {
     switch (transition.function) {
       case "transfer_private": {
         // if sender send private tx
@@ -307,11 +320,12 @@ export class AleoWorker {
         // in case of sender send aleo to himself, we need to check output[0] as well
         const output = transition.outputs?.[0];
         if (output && output.type === "record") {
-          const record = await this.decryptRecord(
+          const record = this.decryptRecord(
             viewKey,
             skTag,
             output.value,
             output.id,
+            transition.program,
           );
           if (record) {
             return {
@@ -358,11 +372,12 @@ export class AleoWorker {
       case "transfer_public_to_private": {
         const output = transition.outputs?.[0];
         if (output) {
-          const record = await this.decryptRecord(
+          const record = this.decryptRecord(
             viewKey,
             skTag,
             output.value,
             output.id,
+            transition.program,
           );
           if (record) {
             const amount = this.parseU64(transition.inputs?.[1].value);
@@ -381,26 +396,27 @@ export class AleoWorker {
         return undefined;
       }
     }
-  };
+  }
 
-  private parseSplitTransition = async (
-    transition: Transition,
+  @Measure()
+  parseSplitTransition(
+    transition: aleo.Transition,
     viewKey: ViewKey,
     skTag: Field,
-  ): Promise<
+  ):
     | (TxInfo & { receivedRecords: RecordDetail[]; spentRecordTags: string[] })
-    | undefined
-  > => {
+    | undefined {
     const outputs = transition.outputs;
     let spentRecordTags: string[] = [];
     if (outputs) {
       const records: RecordDetail[] = [];
       for (const output of outputs) {
-        const record = await this.decryptRecord(
+        const record = this.decryptRecord(
           viewKey,
           skTag,
           output.value,
           output.id,
+          transition.program,
         );
         if (record) {
           records.push(record);
@@ -425,30 +441,29 @@ export class AleoWorker {
       }
     }
     return undefined;
-  };
+  }
 
-  private parseCustomTransition = async (
-    transition: Transition,
+  @Measure()
+  parseCustomTransition(
+    transition: aleo.Transition,
     viewKey: ViewKey,
     skTag: Field,
     type: TxInfo["txType"],
-  ): Promise<
-    TxInfo & { receivedRecords: RecordDetail[]; spentRecordTags: string[] }
-  > => {
-    const records = await Promise.all(
-      transition.outputs?.map(async (output) => {
+  ): TxInfo & { receivedRecords: RecordDetail[]; spentRecordTags: string[] } {
+    const records =
+      transition.outputs?.map((output) => {
         if (output.type === "record") {
-          const record = await this.decryptRecord(
+          const record = this.decryptRecord(
             viewKey,
             skTag,
             output.value,
             output.id,
+            transition.program,
           );
           return record;
         }
         return undefined;
-      }) ?? [],
-    );
+      }) ?? [];
     const customRecords = records.filter(
       (record) => !!record,
     ) as RecordDetail[];
@@ -466,98 +481,80 @@ export class AleoWorker {
       receivedRecords: customRecords,
       spentRecordTags,
     };
-  };
+  }
 
-  private parseSenderExecuteTransition = async (
-    transition: Transition,
+  private parseSenderExecuteTransition = (
+    transition: aleo.Transition,
     viewKey: ViewKey,
     skTag: Field,
   ) => {
     if (transition.program === "credits.aleo") {
-      return await this.parseSenderCreditTransition(transition, viewKey, skTag);
+      return this.parseSenderCreditTransition(transition, viewKey, skTag);
     } else {
-      return await this.parseCustomTransition(
-        transition,
-        viewKey,
-        skTag,
-        "send",
-      );
+      return this.parseCustomTransition(transition, viewKey, skTag, "send");
     }
   };
 
-  private parseSenderExecuteTransitions = async (
-    transitions: Transition[],
+  private parseSenderExecuteTransitions = (
+    transitions: aleo.Transition[],
     viewKey: ViewKey,
     skTag: Field,
   ) => {
-    return await Promise.all(
-      transitions.map(async (transition) => {
-        return await this.parseSenderExecuteTransition(
-          transition,
-          viewKey,
-          skTag,
-        );
-      }),
-    );
+    return transitions.map((transition) => {
+      return this.parseSenderExecuteTransition(transition, viewKey, skTag);
+    });
   };
 
-  private parseReceiverExecuteTransition = async (
-    transition: Transition,
+  private parseReceiverExecuteTransition = (
+    transition: aleo.Transition,
     viewKey: ViewKey,
     skTag: Field,
     address: string,
   ) => {
     if (transition.program === "credits.aleo") {
-      return await this.parseReceiverCreditTransition(
+      return this.parseReceiverCreditTransition(
         transition,
         viewKey,
         skTag,
         address,
       );
     } else {
-      return await this.parseCustomTransition(
-        transition,
-        viewKey,
-        skTag,
-        "receive",
-      );
+      return this.parseCustomTransition(transition, viewKey, skTag, "receive");
     }
   };
 
-  private parseReceiverExecuteTransitions = async (
-    transitions: Transition[],
+  private parseReceiverExecuteTransitions = (
+    transitions: aleo.Transition[],
     viewKey: ViewKey,
     skTag: Field,
     address: string,
   ) => {
-    const parsedTransitions = await Promise.all(
-      transitions.map(async (transition) => {
-        return await this.parseReceiverExecuteTransition(
-          transition,
-          viewKey,
-          skTag,
-          address,
-        );
-      }),
-    );
+    const parsedTransitions = transitions.map((transition) => {
+      return this.parseReceiverExecuteTransition(
+        transition,
+        viewKey,
+        skTag,
+        address,
+      );
+    });
     const nonEmptyTransitions = parsedTransitions.filter(
       (parsedTransition) => !!parsedTransition,
     ) as Array<TxInfo & { receivedRecords?: RecordDetail[] }>;
     return nonEmptyTransitions;
   };
 
-  private parseFeeTransition = async (
-    transition: Transition,
+  @Measure()
+  parseFeeTransition(
+    transition: aleo.Transition,
     viewKey: ViewKey,
     skTag: Field,
     address: string,
-  ): Promise<
+  ):
     | (FeeInfo & {
         receivedRecords?: RecordDetail[];
         spentRecordTags?: string[];
       })
-    | undefined
-  > => {
+    | undefined {
     switch (transition.function) {
       case "fee_public": {
         const output = transition.outputs?.[0];
@@ -591,11 +588,12 @@ export class AleoWorker {
         const output = outputs[0];
         const receivedRecords: RecordDetail[] = [];
         if (output.type === "record") {
-          const record = await this.decryptRecord(
+          const record = this.decryptRecord(
             viewKey,
             skTag,
             output.value,
             output.id,
+            transition.program,
           );
           if (record) {
             receivedRecords.push(record);
@@ -618,7 +616,7 @@ export class AleoWorker {
         return undefined;
       }
     }
-  };
+  }
 
   private insertRecords = (
     map: { [program in string]?: RecordDetail[] },
@@ -633,11 +631,6 @@ export class AleoWorker {
     }
   };
 
-  private taskInfo: { begin: number; end: number } | undefined;
-  private isProcessing = false;
-  // finished blocks in current scope
-  private finishedBlock = [];
-
   getSyncProcess = () => {
     const taskInfo = this.taskInfo;
     if (!taskInfo) {
@@ -648,7 +641,12 @@ export class AleoWorker {
     }
     return {
       ...taskInfo,
+      currHeight: this.currHeight,
     };
+  };
+
+  setEnableMeasure = (enable: boolean) => {
+    this.enableMeasure = enable;
   };
 
   syncBlocks = async ({ viewKey, begin, end }: SyncBlockParams) => {
@@ -658,9 +656,11 @@ export class AleoWorker {
     if (begin < 0) {
       throw new Error("start must be greater than 0");
     }
+    const startTime = performance.now();
     const recordsMap: { [program in string]?: RecordDetail[] } = {};
     const allSpentRecordTags: string[] = [];
     const txInfoList: TxHistoryItem[] = [];
+
     const viewKeyObj = this.parseViewKey(viewKey);
     const skTag = viewKeyObj.skTag();
     const address = viewKeyObj.to_address().to_string();
@@ -669,6 +669,9 @@ export class AleoWorker {
     let scopeBegin = Math.max(begin, end - 50);
     try {
       while (scopeBegin <= scopeEnd) {
+        // const recordsMapInScope: { [program in string]?: RecordDetail[] } = {};
+        // const spentRecordTagsInScope: string[] = [];
+        // const txInfoListInScope: TxHistoryItem[] = [];
         const blocksInRange = await this.getBlocksInRange(scopeBegin, scopeEnd);
         this.log(
           "===> get blocks in range: ",
@@ -677,189 +680,184 @@ export class AleoWorker {
           blocksInRange,
           address,
         );
-        await Promise.all(
-          blocksInRange.map(async (block) => {
-            const blockRecordsMap: { [program in string]?: RecordDetail[] } =
-              {};
-            const blockSpentRecordTags: string[] = [];
-            const blockTxInfoList: TxHistoryItem[] = [];
+        blocksInRange.forEach((block) => {
+          const blockRecordsMap: { [program in string]?: RecordDetail[] } = {};
+          const blockSpentRecordTags: string[] = [];
+          const blockTxInfoList: TxHistoryItem[] = [];
 
-            const transactions = block.transactions;
-            const height = block.header.metadata.height;
-            const timestamp = block.header.metadata.timestamp;
-            if (transactions) {
-              await Promise.all(
-                transactions.map(async (confirmedTransaction) => {
-                  if (
-                    confirmedTransaction.status === "accepted" &&
-                    confirmedTransaction.type === "execute"
-                  ) {
-                    const transaction = confirmedTransaction.transaction;
-                    // 先解析 fee 交易，这样能不同交易进行分类讨论
-                    // 如果没有 fee 可能是 split 交易
-                    const feeTransition = transaction.fee?.transition;
-                    if (feeTransition) {
-                      const feeInfo = await this.parseFeeTransition(
-                        feeTransition,
-                        viewKeyObj,
-                        skTag,
-                        address,
-                      );
-                      this.log("===> feeInfo: ", feeInfo);
-                      // current user is sender
-                      if (feeInfo) {
-                        const {
-                          receivedRecords,
-                          spentRecordTags,
-                          ...feeInfoWithoutRecords
-                        } = feeInfo;
-                        if (spentRecordTags) {
-                          blockSpentRecordTags.push(...spentRecordTags);
-                        }
-                        this.insertRecords(
-                          blockRecordsMap,
-                          feeTransition.program,
-                          receivedRecords,
+          const transactions = block.transactions;
+          const height = block.header.metadata.height;
+          const timestamp = block.header.metadata.timestamp;
+          if (transactions) {
+            transactions.forEach((confirmedTransaction) => {
+              if (
+                confirmedTransaction.status === "accepted" &&
+                confirmedTransaction.type === "execute"
+              ) {
+                const transaction = confirmedTransaction.transaction;
+                // 先解析 fee 交易，这样能不同交易进行分类讨论
+                // 如果没有 fee 可能是 split 交易
+                const feeTransition = transaction.fee?.transition;
+                if (feeTransition) {
+                  const feeInfo = this.parseFeeTransition(
+                    feeTransition,
+                    viewKeyObj,
+                    skTag,
+                    address,
+                  );
+                  this.log("===> feeInfo: ", feeInfo);
+                  // current user is sender
+                  if (feeInfo) {
+                    const {
+                      receivedRecords,
+                      spentRecordTags,
+                      ...feeInfoWithoutRecords
+                    } = feeInfo;
+                    if (spentRecordTags) {
+                      blockSpentRecordTags.push(...spentRecordTags);
+                    }
+                    this.insertRecords(
+                      blockRecordsMap,
+                      feeTransition.program,
+                      receivedRecords,
+                    );
+                    const txMetadata: TxMetadata = {
+                      txId: transaction.id,
+                      height,
+                      timestamp,
+                    };
+                    const executeTransitons =
+                      transaction.execution?.transitions;
+                    if (executeTransitons && executeTransitons.length > 0) {
+                      const parsedTransitions =
+                        this.parseSenderExecuteTransitions(
+                          executeTransitons,
+                          viewKeyObj,
+                          skTag,
                         );
+                      this.log(
+                        "===> parsedTransitions: ",
+                        executeTransitons,
+                        parsedTransitions,
+                      );
+                      const transitions = parsedTransitions.map(
+                        (parsedTransition) => {
+                          const {
+                            receivedRecords,
+                            spentRecordTags,
+                            ...txInfo
+                          } = parsedTransition;
+                          blockSpentRecordTags.push(...spentRecordTags);
+                          this.insertRecords(
+                            blockRecordsMap,
+                            txInfo.program,
+                            receivedRecords,
+                          );
+                          return txInfo;
+                        },
+                      );
+                      blockTxInfoList.push({
+                        transitions,
+                        ...txMetadata,
+                        feeInfo: {
+                          ...feeInfoWithoutRecords,
+                        },
+                      });
+                    }
+                  } else {
+                    // maybe current user is receiver
+                    const executeTransitons =
+                      transaction.execution?.transitions;
+                    if (executeTransitons && executeTransitons.length > 0) {
+                      const parsedTransitions =
+                        this.parseReceiverExecuteTransitions(
+                          executeTransitons,
+                          viewKeyObj,
+                          skTag,
+                          address,
+                        );
+                      if (parsedTransitions.length > 0) {
                         const txMetadata: TxMetadata = {
                           txId: transaction.id,
                           height,
                           timestamp,
                         };
-                        const executeTransitons =
-                          transaction.execution?.transitions;
-                        if (executeTransitons && executeTransitons.length > 0) {
-                          const parsedTransitions =
-                            await this.parseSenderExecuteTransitions(
-                              executeTransitons,
-                              viewKeyObj,
-                              skTag,
+                        const transitions = parsedTransitions.map(
+                          (parsedTransition) => {
+                            const { receivedRecords, ...txInfo } =
+                              parsedTransition;
+                            this.insertRecords(
+                              blockRecordsMap,
+                              txInfo.program,
+                              receivedRecords,
                             );
-                          this.log(
-                            "===> parsedTransitions: ",
-                            executeTransitons,
-                            parsedTransitions,
-                          );
-                          const transitions = parsedTransitions.map(
-                            (parsedTransition) => {
-                              const {
-                                receivedRecords,
-                                spentRecordTags,
-                                ...txInfo
-                              } = parsedTransition;
-                              blockSpentRecordTags.push(...spentRecordTags);
-                              this.insertRecords(
-                                blockRecordsMap,
-                                txInfo.program,
-                                receivedRecords,
-                              );
-                              return txInfo;
-                            },
-                          );
-                          blockTxInfoList.push({
-                            transitions,
-                            ...txMetadata,
-                            feeInfo: {
-                              ...feeInfoWithoutRecords,
-                            },
-                          });
-                        }
-                      } else {
-                        // maybe current user is receiver
-                        const executeTransitons =
-                          transaction.execution?.transitions;
-                        if (executeTransitons && executeTransitons.length > 0) {
-                          const parsedTransitions =
-                            await this.parseReceiverExecuteTransitions(
-                              executeTransitons,
-                              viewKeyObj,
-                              skTag,
-                              address,
-                            );
-                          if (parsedTransitions.length > 0) {
-                            const txMetadata: TxMetadata = {
-                              txId: transaction.id,
-                              height,
-                              timestamp,
-                            };
-                            const transitions = parsedTransitions.map(
-                              (parsedTransition) => {
-                                const { receivedRecords, ...txInfo } =
-                                  parsedTransition;
-                                this.insertRecords(
-                                  blockRecordsMap,
-                                  txInfo.program,
-                                  receivedRecords,
-                                );
-                                return txInfo;
-                              },
-                            );
-                            blockTxInfoList.push({
-                              transitions,
-                              ...txMetadata,
-                            });
-                          }
-                        }
-                      }
-                    } else if (
-                      transaction.execution.transitions?.[0].program ===
-                        "credits.aleo" &&
-                      transaction.execution.transitions?.[0].function ===
-                        "split"
-                    ) {
-                      const executeTransiton =
-                        transaction.execution?.transitions[0];
-                      if (executeTransiton) {
-                        const parsedTransition =
-                          await this.parseSplitTransition(
-                            executeTransiton,
-                            viewKeyObj,
-                            skTag,
-                          );
-                        if (parsedTransition) {
-                          const txMetadata: TxMetadata = {
-                            txId: transaction.id,
-                            height,
-                            timestamp,
-                          };
-                          const {
-                            receivedRecords,
-                            spentRecordTags,
-                            ...transition
-                          } = parsedTransition;
-                          blockSpentRecordTags.push(...spentRecordTags);
-                          this.insertRecords(
-                            blockRecordsMap,
-                            transition.program,
-                            receivedRecords,
-                          );
-                          blockTxInfoList.push({
-                            transitions: [transition],
-                            ...txMetadata,
-                          });
-                        }
+                            return txInfo;
+                          },
+                        );
+                        blockTxInfoList.push({
+                          transitions,
+                          ...txMetadata,
+                        });
                       }
                     }
                   }
-                }),
-              );
-            }
+                } else if (
+                  transaction.execution.transitions?.[0].program ===
+                    "credits.aleo" &&
+                  transaction.execution.transitions?.[0].function === "split"
+                ) {
+                  const executeTransiton =
+                    transaction.execution?.transitions[0];
+                  if (executeTransiton) {
+                    const parsedTransition = this.parseSplitTransition(
+                      executeTransiton,
+                      viewKeyObj,
+                      skTag,
+                    );
+                    if (parsedTransition) {
+                      const txMetadata: TxMetadata = {
+                        txId: transaction.id,
+                        height,
+                        timestamp,
+                      };
+                      const {
+                        receivedRecords,
+                        spentRecordTags,
+                        ...transition
+                      } = parsedTransition;
+                      blockSpentRecordTags.push(...spentRecordTags);
+                      this.insertRecords(
+                        blockRecordsMap,
+                        transition.program,
+                        receivedRecords,
+                      );
+                      blockTxInfoList.push({
+                        transitions: [transition],
+                        ...txMetadata,
+                      });
+                    }
+                  }
+                }
+              }
+            });
+          }
 
-            for (const [key, value] of Object.entries(blockRecordsMap)) {
-              if (!value) {
-                continue;
-              }
-              const currArr = recordsMap[key];
-              if (!currArr) {
-                recordsMap[key] = [...value];
-              } else {
-                recordsMap[key] = [...currArr, ...value];
-              }
+          // update scope state
+          for (const [key, value] of Object.entries(blockRecordsMap)) {
+            if (!value) {
+              continue;
             }
-            allSpentRecordTags.push(...blockSpentRecordTags);
-            txInfoList.push(...blockTxInfoList);
-          }),
-        );
+            const currArr = recordsMap[key];
+            if (!currArr) {
+              recordsMap[key] = [...value];
+            } else {
+              recordsMap[key] = [...currArr, ...value];
+            }
+          }
+          allSpentRecordTags.push(...blockSpentRecordTags);
+          txInfoList.push(...blockTxInfoList);
+          this.currHeight = height;
+        });
 
         scopeEnd = scopeBegin - 1;
         scopeBegin = Math.max(begin, scopeEnd - 50);
@@ -869,21 +867,28 @@ export class AleoWorker {
       return {
         recordsMap,
         txInfoList,
-        range: [currHeight + 1, end],
+        range: [this.currHeight ?? end + 1, end],
         spentRecordTags: allSpentRecordTags,
       };
     }
+    const endTime = performance.now();
     return {
       recordsMap,
       txInfoList,
       range: [begin, end],
       spentRecordTags: allSpentRecordTags,
+      measureMap: {
+        ...this.measureMap,
+        totalTime: endTime - startTime,
+      },
     };
   };
 
   beginSyncBlockTask = async ({ viewKey, begin, end }: SyncBlockParams) => {
-    this.taskInfo = { begin, end };
+    this.taskInfo = { begin, end, viewKey };
     this.isProcessing = true;
+    this.measureMap = {};
+    this.currHeight = undefined;
     let resp;
     try {
       resp = await this.syncBlocks({ viewKey, begin, end });
@@ -892,6 +897,8 @@ export class AleoWorker {
     }
     this.isProcessing = false;
     this.taskInfo = undefined;
+    this.currHeight = undefined;
+    this.measureMap = {};
     return resp;
   };
 }

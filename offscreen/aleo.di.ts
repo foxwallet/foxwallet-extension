@@ -5,6 +5,7 @@ export interface SyncBlockParams {
 }
 
 export interface RecordDetail {
+  programId: string;
   plaintext: string;
   content: object;
   nonce: string;

@@ -8,6 +8,8 @@ import {
   type SyncBlockParams,
 } from "./aleo.di";
 
+const enableMeasure = true;
+
 let singletonWorker: WorkerAPI | null = null;
 
 export function mainLogger(type: "log" | "error", ...args: any[]) {
@@ -32,11 +34,12 @@ const createAleoWorker = () => {
 async function initWorker(
   workerId: number,
   rpcList: string[],
+  enableMeasure: boolean,
   sendResponse: (param: any) => void,
 ) {
   const aleoWorker = createAleoWorker();
   await aleoWorker.initWasm();
-  await aleoWorker.initAleoWorker(workerId, rpcList);
+  await aleoWorker.initAleoWorker(workerId, rpcList, enableMeasure);
   sendResponse({ error: null, data: true });
 }
 
@@ -78,12 +81,14 @@ function handleMessages(
 
   switch (message.type) {
     case AleoWorkerMethod.INIT_WORKER: {
-      initWorker(0, message.params, sendResponse).catch((err) => {
-        logger.log(`==> ${message.type} err: `, err);
-        if (err instanceof Error) {
-          sendResponse({ error: err.message });
-        }
-      });
+      initWorker(0, message.params, enableMeasure, sendResponse).catch(
+        (err) => {
+          logger.log(`==> ${message.type} err: `, err);
+          if (err instanceof Error) {
+            sendResponse({ error: err.message });
+          }
+        },
+      );
       return true;
     }
     case AleoWorkerMethod.GET_PRIVATE_KEY: {
