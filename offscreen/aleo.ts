@@ -7,6 +7,9 @@ import {
   type TxMetadata,
   type LogFunc,
   type FutureJSON,
+  type SyncBlockResp,
+  type RecordDetailWithBlockInfo,
+  type BlockSpentTags,
 } from "./aleo.di";
 import {
   Field,
@@ -21,6 +24,7 @@ import { AleoRpcService } from "./aleo_service";
 import { AutoSwitch } from "@/common/utils/retry";
 import { AutoSwitchServiceType } from "@/common/types/retry";
 import { Measure, MeasureAsync } from "@/common/utils/measure";
+import { ALEO_BLOCK_RANGE } from "@/common/constants";
 
 export class AleoWorker {
   rpcService: AleoRpcService;
@@ -121,7 +125,6 @@ export class AleoWorker {
   @AutoSwitch({ serviceType: AutoSwitchServiceType.RPC, waitTime: 2000 })
   @MeasureAsync()
   async getBlocksInRange(start: number, end: number) {
-    this.log("===> getBlocksInRange: ", start, end);
     const blocksInRange = await this.rpcService.currInstance().getBlockRange(
       start,
       // By default, this rpc will return [scopeBegin, scopeEnd), so we need to add 1 to scopeEnd
@@ -538,7 +541,7 @@ export class AleoWorker {
       );
     });
     const nonEmptyTransitions = parsedTransitions.filter(
-      (parsedTransition) => !!parsedTransition,
+      (parsedTransition) => !!parsedTransition?.receivedRecords?.length,
     ) as Array<TxInfo & { receivedRecords?: RecordDetail[] }>;
     return nonEmptyTransitions;
   };
@@ -619,15 +622,25 @@ export class AleoWorker {
   }
 
   private insertRecords = (
-    map: { [program in string]?: RecordDetail[] },
+    map: { [program in string]?: RecordDetailWithBlockInfo[] },
     program: string,
+    txId: string,
+    height: number,
+    timestamp: number,
     records?: RecordDetail[],
   ) => {
     if (records && records.length > 0) {
       if (!map[program]) {
         map[program] = [];
       }
-      map[program]!.push(...records);
+      map[program]!.push(
+        ...records.map((item) => ({
+          ...item,
+          txId,
+          height,
+          timestamp,
+        })),
+      );
     }
   };
 
@@ -657,37 +670,36 @@ export class AleoWorker {
       throw new Error("start must be greater than 0");
     }
     const startTime = performance.now();
-    const recordsMap: { [program in string]?: RecordDetail[] } = {};
-    const allSpentRecordTags: string[] = [];
+    const recordsMap: { [program in string]?: RecordDetailWithBlockInfo[] } =
+      {};
+    const allSpentRecordTags: BlockSpentTags[] = [];
     const txInfoList: TxHistoryItem[] = [];
 
     const viewKeyObj = this.parseViewKey(viewKey);
     const skTag = viewKeyObj.skTag();
     const address = viewKeyObj.to_address().to_string();
 
+    const groupNumber = ALEO_BLOCK_RANGE;
     let scopeEnd = end;
-    let scopeBegin = Math.max(begin, end - 50);
+    let scopeBegin = Math.max(begin, end - groupNumber + 1);
     try {
       while (scopeBegin <= scopeEnd) {
         // const recordsMapInScope: { [program in string]?: RecordDetail[] } = {};
         // const spentRecordTagsInScope: string[] = [];
         // const txInfoListInScope: TxHistoryItem[] = [];
         const blocksInRange = await this.getBlocksInRange(scopeBegin, scopeEnd);
-        this.log(
-          "===> get blocks in range: ",
-          scopeBegin,
-          scopeEnd,
-          blocksInRange,
-          address,
-        );
+        this.log("===> getBlocksInRange: ", scopeBegin, scopeEnd, address);
         blocksInRange.forEach((block) => {
-          const blockRecordsMap: { [program in string]?: RecordDetail[] } = {};
-          const blockSpentRecordTags: string[] = [];
-          const blockTxInfoList: TxHistoryItem[] = [];
-
           const transactions = block.transactions;
           const height = block.header.metadata.height;
           const timestamp = block.header.metadata.timestamp;
+
+          const blockRecordsMap: {
+            [program in string]?: RecordDetailWithBlockInfo[];
+          } = {};
+          const blockSpentRecordTags: string[] = [];
+          const blockTxInfoList: TxHistoryItem[] = [];
+
           if (transactions) {
             transactions.forEach((confirmedTransaction) => {
               if (
@@ -719,6 +731,9 @@ export class AleoWorker {
                     this.insertRecords(
                       blockRecordsMap,
                       feeTransition.program,
+                      transaction.id,
+                      height,
+                      timestamp,
                       receivedRecords,
                     );
                     const txMetadata: TxMetadata = {
@@ -751,6 +766,9 @@ export class AleoWorker {
                           this.insertRecords(
                             blockRecordsMap,
                             txInfo.program,
+                            transaction.id,
+                            height,
+                            timestamp,
                             receivedRecords,
                           );
                           return txInfo;
@@ -789,6 +807,9 @@ export class AleoWorker {
                             this.insertRecords(
                               blockRecordsMap,
                               txInfo.program,
+                              transaction.id,
+                              height,
+                              timestamp,
                               receivedRecords,
                             );
                             return txInfo;
@@ -829,6 +850,9 @@ export class AleoWorker {
                       this.insertRecords(
                         blockRecordsMap,
                         transition.program,
+                        transaction.id,
+                        height,
+                        timestamp,
                         receivedRecords,
                       );
                       blockTxInfoList.push({
@@ -854,24 +878,39 @@ export class AleoWorker {
               recordsMap[key] = [...currArr, ...value];
             }
           }
-          allSpentRecordTags.push(...blockSpentRecordTags);
+          if (blockSpentRecordTags.length > 0) {
+            allSpentRecordTags.push({
+              height,
+              timestamp,
+              tags: [...blockSpentRecordTags],
+            });
+          }
           txInfoList.push(...blockTxInfoList);
           this.currHeight = height;
         });
 
         scopeEnd = scopeBegin - 1;
-        scopeBegin = Math.max(begin, scopeEnd - 50);
+        scopeBegin = Math.max(begin, scopeEnd - groupNumber + 1);
       }
     } catch (err) {
       this.error("===> syncBlocks error: ", err);
+      const totalTime = performance.now() - startTime;
       return {
         recordsMap,
         txInfoList,
         range: [this.currHeight ?? end + 1, end],
         spentRecordTags: allSpentRecordTags,
+        measureMap: {
+          ...this.measureMap,
+          totalTime: {
+            time: totalTime,
+            max: totalTime,
+            count: 1,
+          },
+        },
       };
     }
-    const endTime = performance.now();
+    const totalTime = performance.now() - startTime;
     return {
       recordsMap,
       txInfoList,
@@ -879,12 +918,20 @@ export class AleoWorker {
       spentRecordTags: allSpentRecordTags,
       measureMap: {
         ...this.measureMap,
-        totalTime: endTime - startTime,
+        totalTime: {
+          time: totalTime,
+          max: totalTime,
+          count: 1,
+        },
       },
     };
   };
 
-  beginSyncBlockTask = async ({ viewKey, begin, end }: SyncBlockParams) => {
+  beginSyncBlockTask = async ({
+    viewKey,
+    begin,
+    end,
+  }: SyncBlockParams): Promise<SyncBlockResp | undefined> => {
     this.taskInfo = { begin, end, viewKey };
     this.isProcessing = true;
     this.measureMap = {};

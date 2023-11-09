@@ -18,12 +18,12 @@ import { parseU64 } from "../../../offscreen/helper";
 export async function main() {
   await initWorker([
     "https://dev.foxnb.net/api/v1/aleo",
-    "https://vm.aleo.org/api",
+    // "https://vm.aleo.org/api",
   ]);
   const resp = await syncBlocks({
     viewKey: "AViewKey1cYH2yRXZnF8zA7BkvJEbb1jvbkjWwg6o62gL2Lkcu87y",
-    begin: 132989,
-    end: 132991,
+    begin: 103991,
+    end: 133991,
   });
   console.log("===> resp: ", resp);
   // const future = Future.fromString(

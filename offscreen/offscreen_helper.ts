@@ -5,26 +5,28 @@ const OFFSCREEN_DOCUMENT_PATH = "/offscreen.html";
 
 // A global promise to avoid concurrency issues
 let creating: Promise<void> | null;
-let locating;
 
-// There can only be one offscreenDocument. So we create a helper function
-// that returns a boolean indicating if a document is already active.
-async function hasDocument() {
-  // Check all windows controlled by the service worker to see if one
-  // of them is the offscreen document with the given path
-  // @ts-ignore
-  const matchedClients = await clients.matchAll();
-
-  return matchedClients.some(
-    // @ts-ignore
-    (c) => c.url === chrome.runtime.getURL(OFFSCREEN_DOCUMENT_PATH),
-  );
+async function hasDocument(path: string) {
+  if ("getContexts" in chrome.runtime) {
+    // @ts-expect-error getContexts not in type
+    const contexts = await chrome.runtime.getContexts({
+      contextTypes: ["OFFSCREEN_DOCUMENT"],
+      documentUrls: [path],
+    });
+    return contexts.length > 0;
+  } else {
+    // @ts-expect-error matchAll not in type
+    const matchedClients = await clients.matchAll();
+    // @ts-expect-error client type
+    return await matchedClients.some((client) => {
+      return client.url.includes(chrome.runtime.id);
+    });
+  }
 }
 
 async function setupOffscreenDocument(path: string) {
-  //if we do not have a document, we are already setup and can skip
   try {
-    const has = await hasDocument();
+    const has = await hasDocument(OFFSCREEN_DOCUMENT_PATH);
     if (!has) {
       // create offscreen document
       if (creating) {
@@ -36,7 +38,7 @@ async function setupOffscreenDocument(path: string) {
             chrome.offscreen.Reason.WORKERS,
             chrome.offscreen.Reason.LOCAL_STORAGE,
           ],
-          justification: "Sync aleo transactions",
+          justification: "For syncing aleo transactions",
         });
 
         await creating;
@@ -51,7 +53,7 @@ async function setupOffscreenDocument(path: string) {
 }
 
 async function closeOffscreenDocument() {
-  const has = await hasDocument();
+  const has = await hasDocument(OFFSCREEN_DOCUMENT_PATH);
   if (!has) {
     return;
   }
@@ -84,14 +86,14 @@ export async function syncBlocks(params: SyncBlockParams) {
   return blocksInfo;
 }
 
-export async function getPrivateKey() {
-  logger.log("===> getPrivateKey setupOffscreenDocument");
-  await setupOffscreenDocument(OFFSCREEN_DOCUMENT_PATH);
-  logger.log("===> getPrivateKey sendMessage");
-  const privateKey = await chrome.runtime.sendMessage({
-    type: AleoWorkerMethod.GET_PRIVATE_KEY,
-    target: "offscreen",
-  });
-  logger.log("===> getPrivateKey resp: ", privateKey);
-  return privateKey;
-}
+// export async function getPrivateKey() {
+//   logger.log("===> getPrivateKey setupOffscreenDocument");
+//   await setupOffscreenDocument(OFFSCREEN_DOCUMENT_PATH);
+//   logger.log("===> getPrivateKey sendMessage");
+//   const privateKey = await chrome.runtime.sendMessage({
+//     type: AleoWorkerMethod.GET_PRIVATE_KEY,
+//     target: "offscreen",
+//   });
+//   logger.log("===> getPrivateKey resp: ", privateKey);
+//   return privateKey;
+// }

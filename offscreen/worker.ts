@@ -4,18 +4,20 @@ import type { LogFunc, SyncBlockParams } from "./aleo.di";
 import { AleoWorker } from "./aleo";
 
 let aleoWorker: AleoWorker | null = null;
+let workerId: number;
 
 async function initWasm() {
   await init();
 }
 
 async function initAleoWorker(
-  workerId: number,
+  id: number,
   rpcList: string[],
   enableMeasure: boolean,
 ) {
   if (!aleoWorker) {
-    aleoWorker = new AleoWorker(workerId, rpcList, enableMeasure);
+    workerId = id;
+    aleoWorker = new AleoWorker(id, rpcList, enableMeasure);
   }
   return true;
 }
@@ -39,8 +41,12 @@ async function getTaskProgress() {
   return aleoWorker.getSyncProcess();
 }
 
-function setLogger(cb: LogFunc) {
+async function setLogger(cb: LogFunc) {
   AleoWorker.setLogger(cb);
+}
+
+async function getWorkerId() {
+  return workerId;
 }
 
 const workerAPI = {
@@ -50,6 +56,7 @@ const workerAPI = {
   syncBlocks,
   setLogger,
   getTaskProgress,
+  getWorkerId,
 };
 
 export type WorkerAPI = typeof workerAPI;

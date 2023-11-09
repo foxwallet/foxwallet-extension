@@ -16,6 +16,8 @@ export interface RecordDetail {
   commitment: string;
 }
 
+export type RecordDetailWithBlockInfo = RecordDetail & TxMetadata;
+
 export interface FeeInfo {
   feeType: "fee_public" | "fee_private";
   fee: string;
@@ -57,7 +59,7 @@ export interface OffscreenResp<T> {
 export enum AleoWorkerMethod {
   INIT_WORKER = "INIT_WORKER",
   SYNC_BLOCKS = "SYNC_BLOCKS",
-  GET_PRIVATE_KEY = "GET_PRIVATE_KEY",
+  // GET_PRIVATE_KEY = "GET_PRIVATE_KEY",
 }
 
 export interface AleoWorkerMessage {
@@ -67,3 +69,28 @@ export interface AleoWorkerMessage {
 }
 
 export type LogFunc = (type: "log" | "error", ...args: any[]) => void;
+
+export type BlockSpentTags = Omit<TxMetadata, "txId"> & { tags: string[] };
+
+export interface SyncBlockResp {
+  range: number[];
+  recordsMap: { [key in string]?: RecordDetailWithBlockInfo[] };
+  txInfoList: TxHistoryItem[];
+  spentRecordTags?: BlockSpentTags[];
+  measureMap: {
+    [key in string]: { time: number; max: number; count: number };
+  };
+}
+
+export enum TaskPriority {
+  HIGH = 0,
+  MEDIUM = 1,
+  LOW = 2,
+}
+
+export interface TaskParams {
+  taskId: number;
+  taskName: AleoWorkerMethod;
+  priority: TaskPriority;
+  timestamp: number;
+}
