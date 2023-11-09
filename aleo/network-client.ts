@@ -28,10 +28,12 @@ type ProgramImports = { [key: string]: string | Program };
  */
 class AleoNetworkClient {
   host: string;
+  chainId: string;
   account: Account | undefined;
 
   constructor(host: string) {
-    this.host = host + "/testnet3";
+    this.host = host;
+    this.chainId = "testnet3";
   }
 
   /**
@@ -63,12 +65,16 @@ class AleoNetworkClient {
    * @param host
    */
   setHost(host: string) {
-    this.host = host + "/testnet3";
+    this.host = host;
+  }
+
+  setChainId(chainId: string) {
+    this.chainId = chainId;
   }
 
   async fetchData<Type>(url = "/"): Promise<Type> {
     try {
-      const response = await get(this.host + url);
+      const response = await get(`${this.host}/${this.chainId}${url}`);
       return await response.json();
     } catch (error) {
       throw new Error("Error fetching data.");

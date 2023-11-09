@@ -10,6 +10,11 @@ import {
   type TaskParams,
 } from "./aleo.di";
 import { ALEO_BATCH_SIZE } from "@/common/constants";
+import localForage from "localforage";
+
+export const aleoBlockStorageInstance = localForage.createInstance({
+  driver: localForage.INDEXEDDB,
+});
 
 const enableMeasure = true;
 
@@ -21,6 +26,7 @@ const taskQuene: Array<SyncBlockParams & TaskParams & { timestamp: number }> =
 const taskInProcess: Array<Promise<void> | undefined> = new Array<
   Promise<void> | undefined
 >(workerNumber);
+const storageMap = new Map<string, LocalForage>();
 // const taskProcessMap = new Map<
 //   number,
 //   {
@@ -40,6 +46,20 @@ export function mainLogger(type: "log" | "error", ...args: any[]) {
     console.log("===> [WORKER]: ", ...args);
   }
 }
+
+const getAleoStorageInstance = (chainId: string, address: string) => {
+  const key = `${chainId}-${address}`;
+  const existInstance = storageMap.get(key);
+  if (existInstance) {
+    return existInstance;
+  }
+  const newInstance = aleoBlockStorageInstance.createInstance({
+    name: chainId,
+    storeName: address,
+  });
+  storageMap.set(key, newInstance);
+  return newInstance;
+};
 
 const createAleoWorker = async () => {
   const rawWorker = new Worker(new URL("worker.js", import.meta.url), {
@@ -76,7 +96,17 @@ async function initWorker(
 async function getProcess(taskId: number) {}
 
 async function executeSyncBlocks(params: SyncBlockParams & TaskParams) {
-  const { viewKey, begin, end, taskId, taskName, priority, timestamp } = params;
+  const {
+    viewKey,
+    address,
+    chainId,
+    begin,
+    end,
+    taskId,
+    taskName,
+    priority,
+    timestamp,
+  } = params;
   console.log("===> executeSyncBlocks: ", begin, end);
   const step = ALEO_BATCH_SIZE;
   let count = 0;
@@ -87,6 +117,8 @@ async function executeSyncBlocks(params: SyncBlockParams & TaskParams) {
       priority,
       timestamp,
       viewKey,
+      address,
+      chainId,
       begin: Math.max(begin, i - step + 1),
       end: i,
     });
@@ -135,6 +167,8 @@ async function executeSyncBlocks(params: SyncBlockParams & TaskParams) {
       taskInProcess[workerId] = worker
         .syncBlocks({
           viewKey,
+          address,
+          chainId,
           begin: taskBegin,
           end: taskEnd,
         })
@@ -197,61 +231,65 @@ async function executeSyncBlocks(params: SyncBlockParams & TaskParams) {
   });
 }
 
-function mergeBlocksResult(list: SyncBlockResp[]) {
-  return list.reduce<SyncBlockResp & { range: number[][] }>(
-    (prev, curr) => {
-      const {
-        recordsMap: allRecordsMap,
-        spentRecordTags: allSpentRecordTags,
-        txInfoList: allTxInfoList,
-        measureMap: allMeasureMap,
-        range: oldRange,
-      } = prev;
-      const { recordsMap, spentRecordTags, txInfoList, measureMap, range } =
-        curr;
-      for (const [key, value] of Object.entries(recordsMap)) {
-        if (!value) {
-          continue;
-        }
-        const existRecords = allRecordsMap[key];
-        if (!existRecords) {
-          allRecordsMap[key] = [...value];
-        } else {
-          allRecordsMap[key] = [...existRecords, ...value];
-        }
+function mergeBlocksResult(list: SyncBlockResp[]): SyncBlockResp[] {
+  list.sort((item1, item2) => {
+    const [begin1] = item1.range;
+    const [begin2] = item2.range;
+    return begin1 - begin2;
+  });
+
+  return list.reduce<SyncBlockResp[]>((prev, curr) => {
+    if (prev.length === 0) {
+      return [curr];
+    }
+    const {
+      recordsMap: lastRecordsMap,
+      spentRecordTags: lastSpentRecordTags,
+      txInfoList: lastTxInfoList,
+      measureMap: lastMeasureMap,
+      range: lastRange,
+    } = prev[prev.length - 1];
+    const { recordsMap, spentRecordTags, txInfoList, measureMap, range } = curr;
+    // Didn't overlap
+    if (range[0] !== lastRange[1] + 1) {
+      return [...prev, curr];
+    }
+    for (const [key, value] of Object.entries(recordsMap)) {
+      if (!value) {
+        continue;
       }
-      for (const [key, value] of Object.entries(measureMap)) {
-        const existMeasure = allMeasureMap[key];
-        if (!existMeasure) {
-          allMeasureMap[key] = { ...value };
-        } else {
-          allMeasureMap[key] = {
-            time: (existMeasure.time + value.time) / 2,
-            max: Math.max(existMeasure.max, value.max),
-            count: existMeasure.count + value.count,
-          };
-        }
+      const existRecords = lastRecordsMap[key];
+      if (!existRecords) {
+        lastRecordsMap[key] = [...value];
+      } else {
+        lastRecordsMap[key] = [...existRecords, ...value];
       }
-      oldRange.push(range);
-      return {
-        recordsMap: allRecordsMap,
-        spentRecordTags: [
-          ...(allSpentRecordTags ?? []),
-          ...(spentRecordTags ?? []),
-        ],
-        txInfoList: [...allTxInfoList, ...txInfoList],
-        measureMap: allMeasureMap,
-        range: oldRange,
-      };
-    },
-    {
-      recordsMap: {},
-      spentRecordTags: [],
-      txInfoList: [],
-      measureMap: {},
-      range: [],
-    },
-  );
+    }
+    for (const [key, value] of Object.entries(measureMap)) {
+      const existMeasure = lastMeasureMap[key];
+      if (!existMeasure) {
+        lastMeasureMap[key] = { ...value };
+      } else {
+        lastMeasureMap[key] = {
+          time: (existMeasure.time + value.time) / 2,
+          max: Math.max(existMeasure.max, value.max),
+          count: existMeasure.count + value.count,
+        };
+      }
+    }
+    const merged = {
+      recordsMap: lastRecordsMap,
+      spentRecordTags: [
+        ...(lastSpentRecordTags ?? []),
+        ...(spentRecordTags ?? []),
+      ],
+      txInfoList: [...lastTxInfoList, ...txInfoList],
+      measureMap: lastMeasureMap,
+      range: [lastRange[0], range[1]],
+    };
+    prev[prev.length - 1] = merged;
+    return prev;
+  }, []);
 }
 
 async function syncBlocks(
@@ -260,10 +298,17 @@ async function syncBlocks(
 ) {
   try {
     const startTime = performance.now();
+    const { begin, end, address, chainId } = params;
     const result = await executeSyncBlocks(params);
     const totalTime = performance.now() - startTime;
     console.log("===> syncBlocks totalTime: ", totalTime);
     const formatResult = mergeBlocksResult(result);
+    const accountStorage = getAleoStorageInstance(chainId, address);
+    for (const item of formatResult) {
+      const key = `${begin}-${end}`;
+      await accountStorage.setItem(key, item);
+    }
+
     sendResponse({ error: null, data: formatResult });
   } catch (err) {
     logger.log("==> err: ", err);

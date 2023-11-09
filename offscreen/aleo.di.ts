@@ -1,5 +1,7 @@
 export interface SyncBlockParams {
   viewKey: string;
+  address: string;
+  chainId: string;
   begin: number;
   end: number;
 }

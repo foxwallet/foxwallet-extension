@@ -22,7 +22,9 @@ export async function main() {
   ]);
   const resp = await syncBlocks({
     viewKey: "AViewKey1cYH2yRXZnF8zA7BkvJEbb1jvbkjWwg6o62gL2Lkcu87y",
-    begin: 103991,
+    address: "aleo1xs53pjftr8vst9ev2drwdu0kyyj2f4fxx93j3n30hfr8dqjnwq8qyvka7t",
+    chainId: "testnet3",
+    begin: 130991,
     end: 133991,
   });
   console.log("===> resp: ", resp);

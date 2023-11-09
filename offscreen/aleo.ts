@@ -124,7 +124,8 @@ export class AleoWorker {
 
   @AutoSwitch({ serviceType: AutoSwitchServiceType.RPC, waitTime: 2000 })
   @MeasureAsync()
-  async getBlocksInRange(start: number, end: number) {
+  async getBlocksInRange(chainId: string, start: number, end: number) {
+    this.rpcService.currInstance().setChainId(chainId);
     const blocksInRange = await this.rpcService.currInstance().getBlockRange(
       start,
       // By default, this rpc will return [scopeBegin, scopeEnd), so we need to add 1 to scopeEnd
@@ -662,7 +663,7 @@ export class AleoWorker {
     this.enableMeasure = enable;
   };
 
-  syncBlocks = async ({ viewKey, begin, end }: SyncBlockParams) => {
+  syncBlocks = async ({ viewKey, chainId, begin, end }: SyncBlockParams) => {
     if (begin > end) {
       throw new Error("start must be less than end");
     }
@@ -687,7 +688,11 @@ export class AleoWorker {
         // const recordsMapInScope: { [program in string]?: RecordDetail[] } = {};
         // const spentRecordTagsInScope: string[] = [];
         // const txInfoListInScope: TxHistoryItem[] = [];
-        const blocksInRange = await this.getBlocksInRange(scopeBegin, scopeEnd);
+        const blocksInRange = await this.getBlocksInRange(
+          chainId,
+          scopeBegin,
+          scopeEnd,
+        );
         this.log("===> getBlocksInRange: ", scopeBegin, scopeEnd, address);
         blocksInRange.forEach((block) => {
           const transactions = block.transactions;
@@ -929,16 +934,18 @@ export class AleoWorker {
 
   beginSyncBlockTask = async ({
     viewKey,
+    address,
+    chainId,
     begin,
     end,
   }: SyncBlockParams): Promise<SyncBlockResp | undefined> => {
-    this.taskInfo = { begin, end, viewKey };
+    this.taskInfo = { begin, end, viewKey, address, chainId };
     this.isProcessing = true;
     this.measureMap = {};
     this.currHeight = undefined;
     let resp;
     try {
-      resp = await this.syncBlocks({ viewKey, begin, end });
+      resp = await this.syncBlocks({ viewKey, address, chainId, begin, end });
     } catch (err) {
       this.error("===> syncBlocks error: ", err);
     }
