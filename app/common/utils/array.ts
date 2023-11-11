@@ -1,10 +1,8 @@
-export function shuffle<T>(src: T[]): T[] {
-  const arr = [...src];
-  let n = arr.length;
-  let random: number;
-  while (n !== 0) {
-    random = (Math.random() * n--) >>> 0;
-    [arr[n], arr[random]] = [arr[random], arr[n]];
+export function shuffle<T>(array: T[]): T[] {
+  const newArray = [...array];
+  for (let i = newArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
   }
-  return arr;
+  return newArray;
 }

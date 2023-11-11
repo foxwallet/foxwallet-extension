@@ -25,6 +25,7 @@ import { AutoSwitch } from "@/common/utils/retry";
 import { AutoSwitchServiceType } from "@/common/types/retry";
 import { Measure, MeasureAsync } from "@/common/utils/measure";
 import { ALEO_BLOCK_RANGE } from "@/common/constants";
+import { shuffle } from "@/common/utils/array";
 
 export class AleoWorker {
   rpcService: AleoRpcService;
@@ -46,6 +47,7 @@ export class AleoWorker {
     rpcList: string[],
     public enableMeasure: boolean,
   ) {
+    rpcList = shuffle(rpcList);
     this.rpcService = new AleoRpcService({ configs: rpcList });
   }
 
