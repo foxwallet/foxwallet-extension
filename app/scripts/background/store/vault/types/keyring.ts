@@ -82,5 +82,5 @@ export interface AleoSyncAccount {
   address: string;
   viewKey: string;
   priority: TaskPriority;
-  timestamp?: number;
+  height?: number;
 }

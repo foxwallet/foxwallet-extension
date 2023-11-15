@@ -13,14 +13,24 @@ import {
 import browser from "webextension-polyfill";
 import { aleoAccountStorageInstance } from "@/common/utils/indexeddb";
 import { TaskPriority } from "../../../../../offscreen/aleo.di";
+import { AleoRpcService } from "../../../../../offscreen/aleo_service";
+import { ReserveChainConfigs } from "core/env";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
+import { AutoSwitch } from "@/common/utils/retry";
+import { AutoSwitchServiceType } from "@/common/types/retry";
+import { logger } from "@/common/utils/logger";
 
 export class VaultStorage {
   #storage: browser.Storage.LocalStorageArea;
   #aleoStorage: LocalForage;
+  rpcService: AleoRpcService;
 
   constructor() {
     this.#storage = walletStorageInstance;
     this.#aleoStorage = aleoAccountStorageInstance;
+    this.rpcService = new AleoRpcService({
+      configs: ReserveChainConfigs[InnerChainUniqueId.ALEO_TESTNET_3].rpcList,
+    });
   }
 
   async getCipher() {
@@ -72,6 +82,11 @@ export class VaultStorage {
     return !!hdWallet;
   }
 
+  @AutoSwitch({ serviceType: AutoSwitchServiceType.RPC })
+  async getLatestHeight() {
+    return await this.rpcService.currInstance().getLatestHeight();
+  }
+
   async addHDWallet(newHdWallet: HDWallet, method: AccountMethod) {
     const keyring = (await this.getKeyring()) || {};
     const hdWallets = keyring[WalletType.HD] || [];
@@ -97,17 +112,22 @@ export class VaultStorage {
               priority: TaskPriority.LOW,
             });
           }
-
           const item: AleoSyncAccount = {
             walletId: newHdWallet.walletId,
             accountId: aleoAccount.accountId,
             address: aleoAccount.address,
             viewKey: aleoAccount.viewKey,
             priority: TaskPriority.MEDIUM,
-            timestamp: Date.now(),
           };
-
-          this.#aleoStorage.setItem(aleoAccount.address, item);
+          this.getLatestHeight()
+            .then((height) => {
+              item.height = height;
+              this.#aleoStorage.setItem(aleoAccount.address, item);
+            })
+            .catch((err) => {
+              logger.error("===> VaultStorage getLatestHeight error: ", err);
+              this.#aleoStorage.setItem(aleoAccount.address, item);
+            });
         }
         break;
       }
@@ -176,10 +196,17 @@ export class VaultStorage {
               viewKey: aleoAccount.viewKey,
               address: aleoAccount.address,
               priority: TaskPriority.MEDIUM,
-              timestamp: Date.now(),
             };
 
-            await this.#aleoStorage.setItem(aleoAccount.address, item);
+            this.getLatestHeight()
+              .then((height) => {
+                item.height = height;
+                this.#aleoStorage.setItem(aleoAccount.address, item);
+              })
+              .catch((err) => {
+                logger.error("===> VaultStorage getLatestHeight error: ", err);
+                this.#aleoStorage.setItem(aleoAccount.address, item);
+              });
           }
           break;
         }

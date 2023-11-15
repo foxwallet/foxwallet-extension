@@ -135,13 +135,25 @@ export class MainLoop {
       i >= 0;
       i -= 1
     ) {
-      const start = i * ALEO_SYNC_BLOCK_SIZE;
-      const stop = Math.min((i + 1) * ALEO_SYNC_BLOCK_SIZE - 1, lastHeight);
-      const partRange = `${start}-`;
-      const totalRange = `${partRange}${stop}`;
       const taskWithRange = new Map<string, SyncBlockParams[]>();
+      let start;
+      let stop;
       for (const account of accounts) {
-        const { address, viewKey, priority } = account;
+        const { address, viewKey, priority, height } = account;
+        const addressCreateHeight = height ?? 0;
+        const addressStartRange = Math.floor(
+          addressCreateHeight / ALEO_SYNC_BLOCK_SIZE,
+        );
+        // no need to sync the block before address create
+        if (i < addressStartRange) {
+          continue;
+        }
+
+        start = Math.max(i * ALEO_SYNC_BLOCK_SIZE, addressCreateHeight);
+        stop = Math.min((i + 1) * ALEO_SYNC_BLOCK_SIZE - 1, lastHeight);
+        const partRange = `${start}-`;
+        const totalRange = `${partRange}${stop}`;
+
         const ranges = await this.getAccountExistRange(
           chainId,
           accountRangeMap,
