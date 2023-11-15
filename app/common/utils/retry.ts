@@ -4,7 +4,7 @@ import { sleep } from "./sleep";
 export const isNetworkError = (err: any) => {
   if (err?.message && typeof err.message === "string") {
     const msg = err.message;
-    return msg === "Network Error" || msg.startsWith("Error fetching blocks");
+    return msg === "Network Error" || msg.startsWith("network error");
   }
   return false;
 };
@@ -153,7 +153,6 @@ export abstract class AutoSwitchService<C, T> {
   }
 
   currInstance() {
-    console.log("use instance", this.currConfig());
     return this._currInstance;
   }
 

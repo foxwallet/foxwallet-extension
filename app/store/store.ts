@@ -10,7 +10,7 @@ import loadingPlugin, { type ExtraModelsFromLoading } from "@rematch/loading";
 import { type PersistConfig } from "redux-persist/lib/types";
 import createMigrate from "redux-persist/lib/createMigrate";
 import selectPlugin from "@rematch/select";
-import { appStorageInstance } from "../common/utils/storage";
+import { appStorageInstance } from "../common/utils/indexeddb";
 // import { isDev } from "../common/utils/env";
 import { logger } from "../common/utils/logger";
 

@@ -1,5 +1,10 @@
 import { logger } from "@/common/utils/logger";
 import { AleoWorkerMethod, type SyncBlockParams } from "./aleo.di";
+import {
+  type BackgroundMessage,
+  MessageOrigin,
+  OffscreenMethod,
+} from "@/common/types/offscreen";
 
 const OFFSCREEN_DOCUMENT_PATH = "/offscreen.html";
 
@@ -38,7 +43,7 @@ async function setupOffscreenDocument(path: string) {
             chrome.offscreen.Reason.WORKERS,
             chrome.offscreen.Reason.LOCAL_STORAGE,
           ],
-          justification: "For syncing aleo transactions",
+          justification: "Syncing aleo blocks",
         });
 
         await creating;
@@ -60,31 +65,36 @@ async function closeOffscreenDocument() {
   await chrome.offscreen.closeDocument();
 }
 
-export async function initWorker(rpcList: string[]) {
+export async function setupOffscreen() {
+  await setupOffscreenDocument(OFFSCREEN_DOCUMENT_PATH);
+}
+
+export async function initWorker() {
   logger.log("===> initWorker setupOffscreenDocument");
   await setupOffscreenDocument(OFFSCREEN_DOCUMENT_PATH);
   logger.log("===> initWorker sendMessage");
-  const initResp = await chrome.runtime.sendMessage({
-    type: AleoWorkerMethod.INIT_WORKER,
-    target: "offscreen",
-    params: rpcList,
-  });
+  const messsage: BackgroundMessage = {
+    type: OffscreenMethod.INIT_WORKER,
+    origin: MessageOrigin.BACKGROUND_TO_OFFSCREEN,
+    payload: null,
+  };
+  const initResp = await chrome.runtime.sendMessage(messsage);
   logger.log("===> initWorker resp: ", initResp);
   return initResp;
 }
 
-export async function syncBlocks(params: SyncBlockParams) {
-  logger.log("===> syncBlocks setupOffscreenDocument");
-  await setupOffscreenDocument(OFFSCREEN_DOCUMENT_PATH);
-  logger.log("===> syncBlocks sendMessage");
-  const blocksInfo = await chrome.runtime.sendMessage({
-    type: AleoWorkerMethod.SYNC_BLOCKS,
-    target: "offscreen",
-    params,
-  });
-  logger.log("===> syncBlocks resp: ", blocksInfo);
-  return blocksInfo;
-}
+// export async function syncBlocks(params: SyncBlockParams) {
+//   logger.log("===> syncBlocks setupOffscreenDocument");
+//   await setupOffscreenDocument(OFFSCREEN_DOCUMENT_PATH);
+//   logger.log("===> syncBlocks sendMessage");
+//   const blocksInfo = await chrome.runtime.sendMessage({
+//     type: AleoWorkerMethod.SYNC_BLOCKS,
+//     target: "offscreen",
+//     params,
+//   });
+//   logger.log("===> syncBlocks resp: ", blocksInfo);
+//   return blocksInfo;
+// }
 
 // export async function getPrivateKey() {
 //   logger.log("===> getPrivateKey setupOffscreenDocument");

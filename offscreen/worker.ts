@@ -1,6 +1,6 @@
 import init, { PrivateKey } from "aleo_wasm";
 import { expose } from "comlink";
-import type { LogFunc, SyncBlockParams } from "./aleo.di";
+import type { LogFunc, WorkerSyncTask } from "./aleo.di";
 import { AleoWorker } from "./aleo";
 
 let aleoWorker: AleoWorker | null = null;
@@ -27,7 +27,7 @@ async function getPrivateKey() {
   return privateKey.to_string();
 }
 
-async function syncBlocks(params: SyncBlockParams) {
+async function syncBlocks(params: WorkerSyncTask) {
   if (!aleoWorker) {
     throw new Error("aleoWorker not init");
   }

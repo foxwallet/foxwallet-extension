@@ -6,6 +6,7 @@ import {
 } from "core/types";
 import { VaultStorage, vaultStorage } from "../../VaultStorage";
 import {
+  AccountMethod,
   AccountWithViewKey,
   BaseWallet,
   DisplayAccount,
@@ -127,6 +128,7 @@ export class KeyringManager {
       walletType: WalletType.HD,
       walletId,
       walletName,
+      origin: "create",
       mnemonic: newMnemonic,
       accountsMap: {
         [CoinType.ALEO]: [
@@ -138,7 +140,7 @@ export class KeyringManager {
       },
     };
 
-    await this.#storage.addHDWallet(newWallet);
+    await this.#storage.addHDWallet(newWallet, AccountMethod.CREATE);
     this.#hdKeyrings[walletId] = newKeyring;
     const wallet = await this.getWallet(walletId);
 
@@ -184,6 +186,7 @@ export class KeyringManager {
       walletType: WalletType.HD,
       walletId,
       walletName,
+      origin: "create",
       mnemonic: newMnemonic,
       accountsMap: {
         [CoinType.ALEO]: [
@@ -195,7 +198,7 @@ export class KeyringManager {
       },
     };
 
-    await this.#storage.setHDWallet(newWallet);
+    await this.#storage.setHDWallet(newWallet, AccountMethod.REGENERATE);
 
     this.#hdKeyrings[walletId] = keyring;
 
@@ -256,6 +259,7 @@ export class KeyringManager {
       walletType: WalletType.HD,
       walletId,
       walletName,
+      origin: "import",
       mnemonic: newMnemonic,
       accountsMap: {
         [CoinType.ALEO]: [
@@ -266,7 +270,7 @@ export class KeyringManager {
         ],
       },
     };
-    await this.#storage.addHDWallet(newWallet);
+    await this.#storage.addHDWallet(newWallet, AccountMethod.IMPORT);
 
     this.#hdKeyrings[walletId] = newKeyring;
 
@@ -303,6 +307,7 @@ export class KeyringManager {
       coin,
       token,
     )) as EncryptedKeyPairWithViewKey;
+    // TODO: use i18n
     const accountName = `Account ${index}`;
     const newHdWallet: HDWallet = {
       ...hdWallet,
@@ -317,7 +322,7 @@ export class KeyringManager {
         ],
       },
     };
-    await this.#storage.setHDWallet(newHdWallet);
+    await this.#storage.setHDWallet(newHdWallet, AccountMethod.ADD);
 
     return await this.getWallet(walletId);
   }

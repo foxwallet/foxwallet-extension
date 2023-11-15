@@ -35,7 +35,6 @@ export class BLS12377HDWallet<T extends CoinType> implements BaseHDWallet<T> {
       case CoinType.ALEO: {
         try {
           const wallet = this.coinRoot.deriveChild(i);
-          logger.log("===> new pk: ", new PrivateKey().to_string());
           const pk = PrivateKey.from_seed_unchecked(wallet.key);
 
           const viewKey = pk.to_view_key().to_string();
@@ -45,14 +44,10 @@ export class BLS12377HDWallet<T extends CoinType> implements BaseHDWallet<T> {
           if (!encryptedPrivateKey) {
             throw new Error("Encrypt private key failed");
           }
-          const encryptedViewKey = await encryptStr(token, viewKey);
-          if (!encryptedViewKey) {
-            throw new Error("Encrypt view key failed");
-          }
           return {
             accountId,
             privateKey: encryptedPrivateKey,
-            viewKey: encryptedViewKey,
+            viewKey,
             address,
             index: i,
           };

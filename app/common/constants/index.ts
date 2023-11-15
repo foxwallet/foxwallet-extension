@@ -8,6 +8,8 @@ export const PBKDF2_KEY_LENGTH = 256;
 
 export const WALLET_MASTER_SECRET = "fox_wallet_extension";
 
-export const ALEO_BATCH_SIZE = 500;
+export const ALEO_SYNC_BLOCK_SIZE = 10000;
+
+export const ALEO_WORKER_TASK_SIZE = 500;
 
 export const ALEO_BLOCK_RANGE = 50;

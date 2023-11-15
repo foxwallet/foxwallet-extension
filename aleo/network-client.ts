@@ -73,12 +73,15 @@ class AleoNetworkClient {
   }
 
   async fetchData<Type>(url = "/"): Promise<Type> {
-    try {
-      const response = await get(`${this.host}/${this.chainId}${url}`);
-      return await response.json();
-    } catch (error) {
-      throw new Error("Error fetching data.");
+    const response = await get(`${this.host}/${this.chainId}${url}`);
+    if (!response.ok) {
+      throw new Error(
+        `get error: url ${url} statusCode ${
+          response.status
+        } body ${await response.text()}`,
+      );
     }
+    return await response.json();
   }
 
   /**
@@ -324,13 +327,9 @@ class AleoNetworkClient {
    * @example
    * const block = networkClient.getBlock(1234);
    */
-  async getBlock(height: number): Promise<Block | Error> {
-    try {
-      const block = await this.fetchData<Block>("/block/" + height);
-      return block;
-    } catch (error) {
-      throw new Error("Error fetching block.");
-    }
+  async getBlock(height: number): Promise<Block> {
+    const block = await this.fetchData<Block>("/block/" + height);
+    return block;
   }
 
   /**
@@ -342,15 +341,9 @@ class AleoNetworkClient {
    * const blockRange = networkClient.getBlockRange(2050, 2100);
    */
   async getBlockRange(start: number, end: number): Promise<Array<Block>> {
-    try {
-      return await this.fetchData<Array<Block>>(
-        "/blocks?start=" + start + "&end=" + end,
-      );
-    } catch (error) {
-      const errorMessage =
-        "Error fetching blocks between " + start + " and " + end + ". ";
-      throw new Error(errorMessage);
-    }
+    return await this.fetchData<Array<Block>>(
+      "/blocks?start=" + start + "&end=" + end,
+    );
   }
 
   /**
@@ -359,12 +352,8 @@ class AleoNetworkClient {
    * @example
    * const latestHeight = networkClient.getLatestBlock();
    */
-  async getLatestBlock(): Promise<Block | Error> {
-    try {
-      return (await this.fetchData<Block>("/latest/block")) as Block;
-    } catch (error) {
-      throw new Error("Error fetching latest block.");
-    }
+  async getLatestBlock(): Promise<Block> {
+    return (await this.fetchData<Block>("/latest/block")) as Block;
   }
 
   /**
@@ -373,12 +362,8 @@ class AleoNetworkClient {
    * @example
    * const latestHash = networkClient.getLatestHash();
    */
-  async getLatestHash(): Promise<string | Error> {
-    try {
-      return await this.fetchData<string>("/latest/hash");
-    } catch (error) {
-      throw new Error("Error fetching latest hash.");
-    }
+  async getLatestHash(): Promise<string> {
+    return await this.fetchData<string>("/latest/hash");
   }
 
   /**
@@ -387,12 +372,8 @@ class AleoNetworkClient {
    * @example
    * const latestHeight = networkClient.getLatestHeight();
    */
-  async getLatestHeight(): Promise<number | Error> {
-    try {
-      return await this.fetchData<number>("/latest/height");
-    } catch (error) {
-      throw new Error("Error fetching latest height.");
-    }
+  async getLatestHeight(): Promise<number> {
+    return await this.fetchData<number>("/latest/height");
   }
 
   /**
@@ -406,12 +387,8 @@ class AleoNetworkClient {
    * const expectedSource = "program hello_hello.aleo;\n\nfunction hello:\n    input r0 as u32.public;\n    input r1 as u32.private;\n    add r0 r1 into r2;\n    output r2 as u32.private;\n"
    * assert.equal(program, expectedSource);
    */
-  async getProgram(programId: string): Promise<string | Error> {
-    try {
-      return await this.fetchData<string>("/program/" + programId);
-    } catch (error) {
-      throw new Error("Error fetching program");
-    }
+  async getProgram(programId: string): Promise<string> {
+    return await this.fetchData<string>("/program/" + programId);
   }
 
   /**
@@ -431,17 +408,17 @@ class AleoNetworkClient {
    * // Both program objects should be equal
    * assert.equal(programObjectFromID.to_string(), programObjectFromSource.to_string());
    */
-  async getProgramObject(inputProgram: string): Promise<Program | Error> {
+  async getProgramObject(inputProgram: string): Promise<Program> {
     try {
-      return Program.fromString(inputProgram);
-    } catch (error) {
-      try {
-        return Program.fromString(<string>await this.getProgram(inputProgram));
-      } catch (error) {
-        throw new Error(
-          `${inputProgram} is neither a program name or a valid program`,
-        );
+      if (inputProgram.endsWith(".aleo")) {
+        return Program.fromString(await this.getProgram(inputProgram));
+      } else {
+        return Program.fromString(inputProgram);
       }
+    } catch (error) {
+      throw new Error(
+        `${inputProgram} is neither a program name or a valid program`,
+      );
     }
   }
 
@@ -472,7 +449,7 @@ class AleoNetworkClient {
    */
   async getProgramImports(
     inputProgram: Program | string,
-  ): Promise<ProgramImports | Error> {
+  ): Promise<ProgramImports> {
     try {
       const imports: ProgramImports = {};
 
@@ -520,12 +497,12 @@ class AleoNetworkClient {
    */
   async getProgramImportNames(
     inputProgram: Program | string,
-  ): Promise<string[] | Error> {
+  ): Promise<string[]> {
     try {
       const program =
         inputProgram instanceof Program
           ? inputProgram
-          : <Program>await this.getProgramObject(inputProgram);
+          : await this.getProgramObject(inputProgram);
       return program.getImports();
     } catch (error) {
       throw new Error("Error fetching program imports with error: " + error);
@@ -541,18 +518,10 @@ class AleoNetworkClient {
    * const expectedMappings = ["account"];
    * assert.deepStrictEqual(mappings, expectedMappings);
    */
-  async getProgramMappingNames(
-    programId: string,
-  ): Promise<Array<string> | Error> {
-    try {
-      return await this.fetchData<Array<string>>(
-        "/program/" + programId + "/mappings",
-      );
-    } catch (error) {
-      throw new Error(
-        "Error fetching program mappings - ensure the program exists on chain before trying again",
-      );
-    }
+  async getProgramMappingNames(programId: string): Promise<Array<string>> {
+    return await this.fetchData<Array<string>>(
+      "/program/" + programId + "/mappings",
+    );
   }
 
   /**
@@ -573,16 +542,10 @@ class AleoNetworkClient {
     programId: string,
     mappingName: string,
     key: string,
-  ): Promise<string | Error> {
-    try {
-      return await this.fetchData<string>(
-        "/program/" + programId + "/mapping/" + mappingName + "/" + key,
-      );
-    } catch (error) {
-      throw new Error(
-        "Error fetching mapping value - ensure the mapping exists and the key is correct",
-      );
-    }
+  ): Promise<string> {
+    return await this.fetchData<string>(
+      "/program/" + programId + "/mapping/" + mappingName + "/" + key,
+    );
   }
 
   /**
@@ -591,12 +554,8 @@ class AleoNetworkClient {
    * @example
    * const stateRoot = networkClient.getStateRoot();
    */
-  async getStateRoot(): Promise<string | Error> {
-    try {
-      return await this.fetchData<string>("/latest/stateRoot");
-    } catch (error) {
-      throw new Error("Error fetching Aleo state root");
-    }
+  async getStateRoot(): Promise<string> {
+    return await this.fetchData<string>("/latest/stateRoot");
   }
 
   /**
@@ -606,12 +565,8 @@ class AleoNetworkClient {
    * @example
    * const transaction = networkClient.getTransaction("at1handz9xjrqeynjrr0xay4pcsgtnczdksz3e584vfsgaz0dh0lyxq43a4wj");
    */
-  async getTransaction(id: string): Promise<Transaction | Error> {
-    try {
-      return await this.fetchData<Transaction>("/transaction/" + id);
-    } catch (error) {
-      throw new Error("Error fetching transaction.");
-    }
+  async getTransaction(id: string): Promise<Transaction> {
+    return await this.fetchData<Transaction>("/transaction/" + id);
   }
 
   /**
@@ -621,14 +576,10 @@ class AleoNetworkClient {
    * @example
    * const transactions = networkClient.getTransactions(654);
    */
-  async getTransactions(height: number): Promise<Array<Transaction> | Error> {
-    try {
-      return await this.fetchData<Array<Transaction>>(
-        "/block/" + height.toString() + "/transactions",
-      );
-    } catch (error) {
-      throw new Error("Error fetching transactions.");
-    }
+  async getTransactions(height: number): Promise<Array<Transaction>> {
+    return await this.fetchData<Array<Transaction>>(
+      "/block/" + height.toString() + "/transactions",
+    );
   }
 
   /**
@@ -637,14 +588,8 @@ class AleoNetworkClient {
    * @example
    * const transactions = networkClient.getTransactionsInMempool();
    */
-  async getTransactionsInMempool(): Promise<Array<Transaction> | Error> {
-    try {
-      return await this.fetchData<Array<Transaction>>(
-        "/memoryPool/transactions",
-      );
-    } catch (error) {
-      throw new Error("Error fetching transactions from mempool.");
-    }
+  async getTransactionsInMempool(): Promise<Array<Transaction>> {
+    return await this.fetchData<Array<Transaction>>("/memoryPool/transactions");
   }
 
   /**
@@ -655,13 +600,7 @@ class AleoNetworkClient {
    * const transition = networkClient.getTransitionId("2429232855236830926144356377868449890830704336664550203176918782554219952323field");
    */
   async getTransitionId(transition_id: string): Promise<string> {
-    try {
-      return await this.fetchData<string>(
-        "/find/transitionID/" + transition_id,
-      );
-    } catch (error) {
-      throw new Error("Error fetching transition ID.");
-    }
+    return await this.fetchData<string>("/find/transitionID/" + transition_id);
   }
 
   /**
@@ -672,7 +611,7 @@ class AleoNetworkClient {
    */
   async submitTransaction(
     transaction: WasmTransaction | string,
-  ): Promise<string | Error> {
+  ): Promise<string> {
     const transaction_string =
       transaction instanceof WasmTransaction
         ? transaction.toString()
@@ -684,6 +623,11 @@ class AleoNetworkClient {
           "Content-Type": "application/json",
         },
       });
+      if (!response.ok) {
+        throw new Error(
+          `post error: submitTransaction statusCode ${response.status} body ${response.body}`,
+        );
+      }
 
       try {
         return await response.json();

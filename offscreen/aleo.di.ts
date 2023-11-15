@@ -1,9 +1,10 @@
 export interface SyncBlockParams {
   viewKey: string;
   address: string;
-  chainId: string;
   begin: number;
   end: number;
+  batchId: string;
+  priority: TaskPriority;
 }
 
 export interface RecordDetail {
@@ -60,7 +61,7 @@ export interface OffscreenResp<T> {
 
 export enum AleoWorkerMethod {
   INIT_WORKER = "INIT_WORKER",
-  SYNC_BLOCKS = "SYNC_BLOCKS",
+  // SYNC_BLOCKS = "SYNC_BLOCKS",
   // GET_PRIVATE_KEY = "GET_PRIVATE_KEY",
 }
 
@@ -74,11 +75,37 @@ export type LogFunc = (type: "log" | "error", ...args: any[]) => void;
 
 export type BlockSpentTags = Omit<TxMetadata, "txId"> & { tags: string[] };
 
-export interface SyncBlockResp {
-  range: number[];
-  recordsMap: { [key in string]?: RecordDetailWithBlockInfo[] };
+// export interface SyncBlockResp {
+//   range: number[];
+//   recordsMap: { [key in string]?: RecordDetailWithBlockInfo[] };
+//   txInfoList: TxHistoryItem[];
+//   spentRecordTags?: BlockSpentTags[];
+//   measureMap: {
+//     [key in string]: { time: number; max: number; count: number };
+//   };
+// }
+
+export type SyncBlockResp = SyncBlockParams & SyncBlockResult;
+
+export interface SyncBlockResult {
+  recordsMap: { [program in string]?: RecordDetailWithBlockInfo[] };
+  spentRecordTags: BlockSpentTags[];
   txInfoList: TxHistoryItem[];
-  spentRecordTags?: BlockSpentTags[];
+  range: number[];
+}
+
+export type SyncBlockResultWithDuration = SyncBlockResult & {
+  measure: {
+    totalTime: number;
+    requestTime: number;
+  };
+};
+
+export interface AddressSyncBlockResp {
+  chainId: string;
+  addressResultMap: {
+    [x in string]: SyncBlockResp;
+  };
   measureMap: {
     [key in string]: { time: number; max: number; count: number };
   };
@@ -91,8 +118,19 @@ export enum TaskPriority {
 }
 
 export interface TaskParams {
-  taskId: number;
-  taskName: AleoWorkerMethod;
   priority: TaskPriority;
   timestamp: number;
 }
+
+export interface TaskParamWithRange {
+  address: string[]; // easier to change priority
+  begin: number;
+  end: number;
+  chainId: string;
+  priority: TaskPriority;
+  timestamp: number;
+}
+
+export type WorkerSyncTask = TaskParamWithRange & {
+  syncParams: SyncBlockParams[];
+};

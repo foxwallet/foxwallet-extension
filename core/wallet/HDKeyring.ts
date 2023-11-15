@@ -8,12 +8,7 @@ import {
   type NewHdKeyringProps,
   type RestoreHdKeyringProps,
 } from "../types/HDKeyring";
-import {
-  type EncryptedKeyPair,
-  EncryptedKeyPairWithViewKey,
-  RawKeyPair,
-  RawKeyPairWithViewKey,
-} from "../types/KeyPair";
+import { type EncryptedKeyPair } from "../types/KeyPair";
 import { decryptStr, encryptStr } from "../utils/encrypt";
 import { type HDKey } from "./HDKey";
 import { BLS12377HDKey } from "./HDKey/BLS12377HDKey";

@@ -1,8 +1,17 @@
 import { AleoWorker } from "../../../offscreen/aleo";
 import init from "aleo_wasm";
-import { syncBlocks, initWorker } from "../../../offscreen/offscreen_helper";
+import {
+  initWorker,
+  setupOffscreen,
+} from "../../../offscreen/offscreen_helper";
 import { Future } from "aleo_wasm";
 import { parseU64 } from "../../../offscreen/helper";
+import browser from "webextension-polyfill";
+import {
+  MessageOrigin,
+  OffscreenMessage,
+  OffscreenMessageType,
+} from "@/common/types/offscreen";
 
 // export async function main() {
 //   await init();
@@ -15,23 +24,26 @@ import { parseU64 } from "../../../offscreen/helper";
 //   console.log("===> resp: ", resp);
 // }
 
-export async function main() {
-  await initWorker([
-    "https://dev.foxnb.net/api/v1/aleo",
-    // "https://vm.aleo.org/api",
-  ]);
-  const resp = await syncBlocks({
-    viewKey: "AViewKey1cYH2yRXZnF8zA7BkvJEbb1jvbkjWwg6o62gL2Lkcu87y",
-    address: "aleo1xs53pjftr8vst9ev2drwdu0kyyj2f4fxx93j3n30hfr8dqjnwq8qyvka7t",
-    chainId: "testnet3",
-    begin: 130991,
-    end: 133991,
-  });
-  console.log("===> resp: ", resp);
-  // const future = Future.fromString(
-  //   "{\n  program_id: credits.aleo,\n  function_name: fee_public,\n  arguments: [\n    aleo1xs53pjftr8vst9ev2drwdu0kyyj2f4fxx93j3n30hfr8dqjnwq8qyvka7t,\n    12210u64\n  ]\n}",
-  // );
-  // console.log("==> future: ", JSON.parse(future.toJSON()));
-  // const u64 = parseU64("12210u64");
-  // console.log("===> u64: ", u64);
+const onOffscreenMessage = (
+  message: OffscreenMessage,
+  sender: browser.Runtime.MessageSender,
+  sendResponse: (data: any) => void,
+) => {
+  if (message.origin !== MessageOrigin.OFFSCREEN_TO_BACKGROUND) {
+    return;
+  }
+  const { type, payload } = message;
+
+  switch (type) {
+    case OffscreenMessageType.ERROR: {
+      console.log("===> offscreen error: ", payload);
+      sendResponse(true);
+      break;
+    }
+  }
+};
+
+export async function offscreen() {
+  browser.runtime.onMessage.addListener(onOffscreenMessage);
+  await initWorker();
 }

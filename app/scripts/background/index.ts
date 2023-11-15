@@ -1,6 +1,6 @@
 import { PortName } from "../../common/types/port";
 import { Connection } from "../../common/utils/connection";
-import { main } from "./aleo";
+import { offscreen } from "./aleo";
 import { contentServerHandler } from "./handlers/ContentServerHandler";
 import { keepAliveHandler } from "./handlers/KeepaliveHandler";
 import { PopupServerHandler } from "./handlers/PopupServerHandler";
@@ -37,4 +37,4 @@ const contentConnection = new Connection(
 );
 contentConnection.connect();
 
-main();
+offscreen();

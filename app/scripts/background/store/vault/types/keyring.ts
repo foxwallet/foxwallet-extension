@@ -3,6 +3,7 @@ import {
   EncryptedKeyPairWithViewKey,
   EncryptedField,
 } from "core/types";
+import { TaskPriority } from "../../../../../../offscreen/aleo.di";
 
 export interface Cipher {
   data: string;
@@ -37,6 +38,7 @@ export type DisplayBaseWallet = Omit<BaseWallet, "accountsMap"> & {
 
 export interface HDWallet extends BaseWallet {
   walletType: WalletType.HD;
+  origin: "import" | "create";
   mnemonic: EncryptedField;
 }
 
@@ -65,4 +67,20 @@ export enum VaultKeys {
 export interface Vault {
   [VaultKeys.cipher]?: Cipher;
   [VaultKeys.keyring]?: KeyringObj;
+}
+
+export enum AccountMethod {
+  CREATE = "create",
+  IMPORT = "import",
+  ADD = "add",
+  REGENERATE = "regenerate",
+}
+
+export interface AleoSyncAccount {
+  walletId: string;
+  accountId: string;
+  address: string;
+  viewKey: string;
+  priority: TaskPriority;
+  timestamp?: number;
 }

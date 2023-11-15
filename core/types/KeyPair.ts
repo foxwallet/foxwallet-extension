@@ -18,8 +18,8 @@ export type RawKeyPairWithViewKey = RawKeyPair & {
 };
 
 export interface EncryptedKeyPair {
-  index: number;
   accountId: string;
+  index: number;
   privateKey: EncryptedField;
   address: string;
 }
@@ -29,7 +29,7 @@ export type EncryptedKeyPairWithPublicKey = EncryptedKeyPair & {
 };
 
 export type EncryptedKeyPairWithViewKey = EncryptedKeyPair & {
-  viewKey: EncryptedField;
+  viewKey: string;
 };
 
 export interface HDWalletProps<T extends CoinType> {
