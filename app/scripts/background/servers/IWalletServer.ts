@@ -34,6 +34,24 @@ export interface AleoBalanceProps {
   address: string;
 }
 
+export interface AleoBalance {
+  privateBalance: string;
+  publicBalance: string;
+  total: string;
+}
+
+export enum RecordFilter {
+  UNSPENT = "unspent",
+  SPENT = "spent",
+  ALL = "all",
+}
+export interface AleoRecordsProps {
+  chainId: string;
+  address: string;
+  programId: string;
+  recordFilter: RecordFilter;
+}
+
 export interface IPopupServer {
   initPassword: (params: { password: string }) => Promise<boolean>;
 
@@ -47,7 +65,7 @@ export interface IPopupServer {
 
   getAllWallet: () => Promise<DisplayKeyring>;
 
-  getAleoBalance(params: AleoBalanceProps): Promise<string>;
+  getAleoBalance(params: AleoBalanceProps): Promise<AleoBalance>;
 }
 
 export interface IContentServer {

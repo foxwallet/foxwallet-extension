@@ -1,22 +1,32 @@
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { AleoConfig } from "../types/AleoConfig";
 import { IAleoStorage } from "../types/IAleoStorage";
-import { RecordDetailWithSpent } from "../types/SyncTask";
+import { AleoAddressInfo, RecordDetailWithSpent } from "../types/SyncTask";
 import { parseU64 } from "../utils/num";
 import { logger } from "@/common/utils/logger";
+import { AleoRpcService } from "../../../../offscreen/aleo_service";
+import { AutoSwitch } from "@/common/utils/retry";
+import { AutoSwitchServiceType } from "@/common/types/retry";
+import { RecordFilter } from "@/scripts/background/servers/IWalletServer";
+
+const CREDITS_MAPPING_NAME = "account";
 
 export class AleoService {
   config: AleoConfig;
   chainId: string;
   aleoStorage: IAleoStorage;
+  rpcService: AleoRpcService;
 
   constructor(config: AleoConfig, storage: IAleoStorage) {
     this.config = config;
     this.chainId = config.chainId;
     this.aleoStorage = storage;
+    this.rpcService = new AleoRpcService({ configs: config.rpcList });
   }
 
-  async getPrivateBalance(address: string): Promise<string> {
+  private syncBlocks = async (
+    address: string,
+  ): Promise<AleoAddressInfo | null> => {
     const addressInfo = await this.aleoStorage.getAddressInfo(
       this.chainId,
       address,
@@ -28,7 +38,7 @@ export class AleoService {
     );
 
     if (blockRanges.length === 0) {
-      return "0";
+      return null;
     }
     blockRanges.sort((range1, range2) => {
       const [start1] = range1.split("-");
@@ -146,26 +156,85 @@ export class AleoService {
       allRecordsMap[programId] = recordsMap;
     }
 
-    const privateBalance =
-      Object.values(allRecordsMap[this.config.nativeCurrency.address] ?? {})
-        ?.reduce((sum, record) => {
-          if (!record) {
-            return sum;
-          }
-          if (record.spent) {
-            return sum;
-          }
-          return sum + parseU64(record.content.microcredits);
-        }, 0n)
-        .toString() ?? "0";
-
-    await this.aleoStorage.setAddressInfo(this.chainId, address, {
+    const result = {
       recordsMap: allRecordsMap,
       txInfoList: allTxInfoList,
       spentRecordTags: Array.from(allSpentRecordTagsSet),
       range: [existBegin, existEnd],
-    });
+    };
+
+    await this.aleoStorage.setAddressInfo(this.chainId, address, result);
+
+    return result;
+  };
+
+  async getPrivateBalance(address: string): Promise<bigint> {
+    const result = await this.syncBlocks(address);
+
+    if (!result) {
+      return 0n;
+    }
+
+    const { recordsMap } = result;
+
+    const privateBalance =
+      Object.values(
+        recordsMap[this.config.nativeCurrency.address] ?? {},
+      )?.reduce((sum, record) => {
+        if (!record) {
+          return sum;
+        }
+        if (record.spent) {
+          return sum;
+        }
+        return sum + parseU64(record.content.microcredits);
+      }, 0n) ?? 0n;
 
     return privateBalance;
+  }
+
+  @AutoSwitch({ serviceType: AutoSwitchServiceType.RPC })
+  async getPublicBalance(address: string): Promise<bigint> {
+    const balance = await this.rpcService
+      .currInstance()
+      .getProgramMappingValue(
+        this.config.nativeCurrency.address,
+        CREDITS_MAPPING_NAME,
+        address,
+      );
+    console.log("===> public balance: ", balance);
+    if (!balance) {
+      return 0n;
+    }
+    return parseU64(balance);
+  }
+
+  async getRecords(
+    address: string,
+    programId: string,
+    recordFilter: RecordFilter,
+  ) {
+    const result = await this.syncBlocks(address);
+
+    if (!result) {
+      return [];
+    }
+
+    return Object.values(result.recordsMap[programId] ?? {}).filter((item) => {
+      if (!item) {
+        return false;
+      }
+      switch (recordFilter) {
+        case RecordFilter.SPENT: {
+          return item.spent;
+        }
+        case RecordFilter.UNSPENT: {
+          return !item.spent;
+        }
+        case RecordFilter.ALL: {
+          return true;
+        }
+      }
+    });
   }
 }

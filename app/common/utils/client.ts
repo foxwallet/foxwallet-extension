@@ -6,6 +6,7 @@ import {
   type ImportHDWalletProps,
   type AddAccountProps,
   type AleoBalanceProps,
+  type AleoBalance,
 } from "../../scripts/background/servers/IWalletServer";
 import {
   type DisplayWallet,
@@ -129,7 +130,7 @@ export class PopupServerClient implements IClient, IPopupServer {
     return await this.#send("getAllWallet", {});
   }
 
-  async getAleoBalance(params: AleoBalanceProps): Promise<string> {
+  async getAleoBalance(params: AleoBalanceProps): Promise<AleoBalance> {
     return await this.#send("getAleoBalance", params);
   }
 

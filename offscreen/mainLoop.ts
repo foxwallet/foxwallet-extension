@@ -352,6 +352,7 @@ export class MainLoop {
           "===> storeBlockResult batchStart error: set init block error ",
           batchId,
           formatResult,
+          await this.aleoStorage.getAleoBlockRanges(chainId, address),
         );
         return false;
       }
@@ -467,7 +468,7 @@ export class MainLoop {
         // }
         this.taskInProcess[workerId] = worker
           .syncBlocks(task)
-          .then((resp) => {
+          .then(async (resp) => {
             console.log(
               "===> finished task: ",
               task,
@@ -535,7 +536,7 @@ export class MainLoop {
                     if (batchMap[batchKey] === 0) {
                       console.log("===> store batch: ", batchKey, resultBatch);
                       // store batch data
-                      void this.storeBlockResults(
+                      await this.storeBlockResults(
                         chainId,
                         address,
                         batchId,
@@ -582,14 +583,14 @@ export class MainLoop {
     });
   }
 
-  onNetworkOnline = () => {
+  private onNetworkOnline = () => {
     console.log("===> online listener: ", navigator.onLine);
     // 当网络在线时触发
     this.onLine = true;
     void this.loop();
   };
 
-  setNetworkListener() {
+  private setNetworkListener() {
     window.addEventListener("online", this.onNetworkOnline);
   }
 

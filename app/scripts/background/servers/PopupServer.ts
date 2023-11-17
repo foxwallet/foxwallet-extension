@@ -9,6 +9,8 @@ import {
   ImportHDWalletProps,
   AddAccountProps,
   AleoBalanceProps,
+  AleoBalance,
+  AleoRecordsProps,
 } from "./IWalletServer";
 import { ALEO_CHAIN_CONFIGS } from "core/coins/ALEO/config/chains";
 import { AleoStorage } from "../store/aleo/AleoStorage";
@@ -60,7 +62,24 @@ export class PopupWalletServer implements IPopupServer {
   async getAleoBalance({
     chainId,
     address,
-  }: AleoBalanceProps): Promise<string> {
-    return await this.aleoService.getPrivateBalance(address);
+  }: AleoBalanceProps): Promise<AleoBalance> {
+    const [privateBalance, publicBalance] = await Promise.all([
+      this.aleoService.getPrivateBalance(address),
+      this.aleoService.getPublicBalance(address),
+    ]);
+    return {
+      privateBalance: privateBalance.toString(),
+      publicBalance: publicBalance.toString(),
+      total: (privateBalance + publicBalance).toString(),
+    };
+  }
+
+  async getRecords({
+    chainId,
+    address,
+    programId,
+    recordFilter,
+  }: AleoRecordsProps) {
+    return await this.aleoService.getRecords(address, programId, recordFilter);
   }
 }
