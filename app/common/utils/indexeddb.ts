@@ -12,7 +12,6 @@ export const appStorageInstance = localForage.createInstance({
 export const aleoAccountStorageInstance = localForage.createInstance({
   driver: localForage.INDEXEDDB,
   name: "fox_wallet",
-  storeName: "aleo",
 });
 
 export const aleoBlockStorageInstance = localForage.createInstance({

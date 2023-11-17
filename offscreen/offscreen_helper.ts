@@ -1,5 +1,4 @@
 import { logger } from "@/common/utils/logger";
-import { AleoWorkerMethod, type SyncBlockParams } from "./aleo.di";
 import {
   type BackgroundMessage,
   MessageOrigin,

@@ -1,19 +1,4 @@
-import {
-  type FeeInfo,
-  type RecordDetail,
-  type TxHistoryItem,
-  type TxInfo,
-  type SyncBlockParams,
-  type TxMetadata,
-  type LogFunc,
-  type FutureJSON,
-  type SyncBlockResp,
-  type RecordDetailWithBlockInfo,
-  type BlockSpentTags,
-  type TaskParamWithRange,
-  type AddressSyncBlockResp,
-  type WorkerSyncTask,
-} from "./aleo.di";
+import { type LogFunc } from "./aleo.di";
 import {
   Field,
   ViewKey,
@@ -29,6 +14,18 @@ import { AutoSwitchServiceType } from "@/common/types/retry";
 import { Measure, MeasureAsync } from "@/common/utils/measure";
 import { ALEO_BLOCK_RANGE } from "@/common/constants";
 import { shuffle } from "@/common/utils/array";
+import {
+  type RecordDetail,
+  type RecordDetailWithBlockInfo,
+  type FeeInfo,
+  type AleoTxHistoryItem,
+  type TxInfo,
+  type TxMetadata,
+  type FutureJSON,
+  type SyncBlockResp,
+  type AddressSyncBlockResp,
+  type WorkerSyncTask,
+} from "core/coins/ALEO/types/SyncTask";
 
 export class AleoWorker {
   rpcService: AleoRpcService;
@@ -189,7 +186,7 @@ export class AleoWorker {
           content: JSON.parse(plaintext.toJSON()),
           nonce,
           commitment,
-          tag,
+          tag: tag ?? "",
         };
       }
     } catch (err) {
@@ -249,6 +246,19 @@ export class AleoWorker {
         receiverAddress = transition.inputs?.[1].value ?? "";
         amount = this.parseU64(transition.inputs?.[2].value);
         spentRecordTags = [transition.inputs?.[0].tag as string];
+        const output = transition.outputs?.[0];
+        if (output && output.type === "record") {
+          const record = this.decryptRecord(
+            viewKey,
+            skTag,
+            output.value,
+            output.id,
+            transition.program,
+          );
+          if (record) {
+            receivedRecords = [record];
+          }
+        }
         break;
       }
       case "transfer_public": {
@@ -646,20 +656,6 @@ export class AleoWorker {
     }
   };
 
-  getSyncProcess = () => {
-    const taskInfo = this.taskInfo;
-    if (!taskInfo) {
-      return undefined;
-    }
-    if (!this.isProcessing) {
-      return undefined;
-    }
-    return {
-      ...taskInfo,
-      currHeight: this.currHeight,
-    };
-  };
-
   setEnableMeasure = (enable: boolean) => {
     this.enableMeasure = enable;
   };
@@ -678,19 +674,11 @@ export class AleoWorker {
       [key in string]?: { viewKey: ViewKey; skTag: Field };
     } = {};
 
-    // const recordsMap: { [program in string]?: RecordDetailWithBlockInfo[] } =
-    //   {};
-    // const spentRecordTags: BlockSpentTags[] = [];
-    // const txInfoList: TxHistoryItem[] = [];
-
     const groupNumber = ALEO_BLOCK_RANGE;
     let scopeEnd = end;
     let scopeBegin = Math.max(begin, end - groupNumber + 1);
     try {
       while (scopeBegin <= scopeEnd) {
-        // const recordsMapInScope: { [program in string]?: RecordDetail[] } = {};
-        // const spentRecordTagsInScope: string[] = [];
-        // const txInfoListInScope: TxHistoryItem[] = [];
         const blocksInRange = await this.getBlocksInRange(
           chainId,
           scopeBegin,
@@ -731,7 +719,7 @@ export class AleoWorker {
               [program in string]?: RecordDetailWithBlockInfo[];
             } = {};
             const blockSpentRecordTags: string[] = [];
-            const blockTxInfoList: TxHistoryItem[] = [];
+            const blockTxInfoList: AleoTxHistoryItem[] = [];
 
             if (transactions) {
               transactions.forEach((confirmedTransaction) => {

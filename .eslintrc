@@ -26,7 +26,8 @@
     "@typescript-eslint/no-extraneous-class": 1,
     "@typescript-eslint/no-non-null-assertion": 1,
     "@typescript-eslint/prefer-readonly": 0,
-    "@typescript-eslint/return-await": 0
+    "@typescript-eslint/return-await": 0,
+    "@typescript-eslint/no-misused-promises": 0
   },
   "settings": {
     "react": {

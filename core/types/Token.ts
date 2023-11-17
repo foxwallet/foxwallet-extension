@@ -9,3 +9,8 @@ export interface NativeToken extends BaseToken {
   address?: string;
   icon?: TexImageSource;
 }
+
+export interface NativeTokenWithAddress extends BaseToken {
+  address: string;
+  icon?: TexImageSource;
+}

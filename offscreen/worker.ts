@@ -1,7 +1,8 @@
 import init, { PrivateKey } from "aleo_wasm";
 import { expose } from "comlink";
-import type { LogFunc, WorkerSyncTask } from "./aleo.di";
+import type { LogFunc } from "./aleo.di";
 import { AleoWorker } from "./aleo";
+import type { WorkerSyncTask } from "core/coins/ALEO/types/SyncTask";
 
 let aleoWorker: AleoWorker | null = null;
 let workerId: number;
@@ -34,13 +35,6 @@ async function syncBlocks(params: WorkerSyncTask) {
   return await aleoWorker.beginSyncBlockTask(params);
 }
 
-async function getTaskProgress() {
-  if (!aleoWorker) {
-    throw new Error("aleoWorker not init");
-  }
-  return aleoWorker.getSyncProcess();
-}
-
 async function setLogger(cb: LogFunc) {
   AleoWorker.setLogger(cb);
 }
@@ -55,7 +49,6 @@ const workerAPI = {
   getPrivateKey,
   syncBlocks,
   setLogger,
-  getTaskProgress,
   getWorkerId,
 };
 

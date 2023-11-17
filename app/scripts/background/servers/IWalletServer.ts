@@ -29,6 +29,11 @@ export interface AddAccountProps {
   accountId: string;
 }
 
+export interface AleoBalanceProps {
+  chainId: string;
+  address: string;
+}
+
 export interface IPopupServer {
   initPassword: (params: { password: string }) => Promise<boolean>;
 
@@ -41,6 +46,8 @@ export interface IPopupServer {
   addAccount: (params: AddAccountProps) => Promise<DisplayWallet>;
 
   getAllWallet: () => Promise<DisplayKeyring>;
+
+  getAleoBalance(params: AleoBalanceProps): Promise<string>;
 }
 
 export interface IContentServer {

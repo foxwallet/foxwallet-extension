@@ -2,7 +2,6 @@ import { CoinType } from "core/types";
 import { walletStorageInstance } from "../../../../common/utils/localstorage";
 import {
   AccountMethod,
-  AleoSyncAccount,
   Cipher,
   HDWallet,
   KeyringObj,
@@ -11,23 +10,25 @@ import {
   WalletType,
 } from "./types/keyring";
 import browser from "webextension-polyfill";
-import { aleoAccountStorageInstance } from "@/common/utils/indexeddb";
-import { TaskPriority } from "../../../../../offscreen/aleo.di";
 import { AleoRpcService } from "../../../../../offscreen/aleo_service";
 import { ReserveChainConfigs } from "core/env";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { AutoSwitch } from "@/common/utils/retry";
 import { AutoSwitchServiceType } from "@/common/types/retry";
 import { logger } from "@/common/utils/logger";
+import { TaskPriority } from "core/coins/ALEO/types/SyncTask";
+import { AleoStorage } from "../aleo/AleoStorage";
+import { ALEO_CHAIN_CONFIGS } from "core/coins/ALEO/config/chains";
+import { AleoSyncAccount } from "core/coins/ALEO/types/AleoSyncAccount";
 
 export class VaultStorage {
   #storage: browser.Storage.LocalStorageArea;
-  #aleoStorage: LocalForage;
+  #aleoStorage: AleoStorage;
   rpcService: AleoRpcService;
 
   constructor() {
     this.#storage = walletStorageInstance;
-    this.#aleoStorage = aleoAccountStorageInstance;
+    this.#aleoStorage = AleoStorage.getInstance();
     this.rpcService = new AleoRpcService({
       configs: ReserveChainConfigs[InnerChainUniqueId.ALEO_TESTNET_3].rpcList,
     });
@@ -102,15 +103,20 @@ export class VaultStorage {
       case AccountMethod.CREATE: {
         const aleoAccount = newHdWallet.accountsMap[CoinType.ALEO][0];
         if (aleoAccount) {
-          const otherAccounts = await this.#aleoStorage.keys();
+          const chainId = ALEO_CHAIN_CONFIGS.TEST_NET_3.chainId;
+          const otherAccounts =
+            await this.#aleoStorage.getAccountsAddress(chainId);
           for (const otherAccount of otherAccounts) {
-            const info = (await this.#aleoStorage.getItem(
+            const info = await this.#aleoStorage.getAccountInfo(
+              chainId,
               otherAccount,
-            )) as AleoSyncAccount;
-            await this.#aleoStorage.setItem(otherAccount, {
-              ...info,
-              priority: TaskPriority.LOW,
-            });
+            );
+            if (info) {
+              await this.#aleoStorage.setAccountInfo(chainId, {
+                ...info,
+                priority: TaskPriority.LOW,
+              });
+            }
           }
           const item: AleoSyncAccount = {
             walletId: newHdWallet.walletId,
@@ -122,11 +128,11 @@ export class VaultStorage {
           this.getLatestHeight()
             .then((height) => {
               item.height = height;
-              this.#aleoStorage.setItem(aleoAccount.address, item);
+              this.#aleoStorage.setAccountInfo(chainId, item);
             })
             .catch((err) => {
               logger.error("===> VaultStorage getLatestHeight error: ", err);
-              this.#aleoStorage.setItem(aleoAccount.address, item);
+              this.#aleoStorage.setAccountInfo(chainId, item);
             });
         }
         break;
@@ -134,15 +140,21 @@ export class VaultStorage {
       case AccountMethod.IMPORT: {
         const aleoAccount = newHdWallet.accountsMap[CoinType.ALEO][0];
         if (aleoAccount) {
-          const otherAccounts = await this.#aleoStorage.keys();
+          // const otherAccounts = await this.#aleoStorage.keys();
+          const chainId = ALEO_CHAIN_CONFIGS.TEST_NET_3.chainId;
+          const otherAccounts =
+            await this.#aleoStorage.getAccountsAddress(chainId);
           for (const otherAccount of otherAccounts) {
-            const info = (await this.#aleoStorage.getItem(
+            const info = await this.#aleoStorage.getAccountInfo(
+              chainId,
               otherAccount,
-            )) as AleoSyncAccount;
-            await this.#aleoStorage.setItem(otherAccount, {
-              ...info,
-              priority: TaskPriority.LOW,
-            });
+            );
+            if (info) {
+              await this.#aleoStorage.setAccountInfo(chainId, {
+                ...info,
+                priority: TaskPriority.LOW,
+              });
+            }
           }
 
           const item: AleoSyncAccount = {
@@ -152,7 +164,7 @@ export class VaultStorage {
             address: aleoAccount.address,
             priority: TaskPriority.MEDIUM,
           };
-          this.#aleoStorage.setItem(aleoAccount.address, item);
+          this.#aleoStorage.setAccountInfo(chainId, item);
         }
         break;
       }
@@ -172,23 +184,28 @@ export class VaultStorage {
         ...keyring,
         [WalletType.HD]: [...hdWallets],
       });
+      const chainId = ALEO_CHAIN_CONFIGS.TEST_NET_3.chainId;
       switch (method) {
         case AccountMethod.REGENERATE: {
           const oldAccount = oldWallet.accountsMap[CoinType.ALEO][0];
           if (oldAccount) {
-            await this.#aleoStorage.removeItem(oldAccount.address);
+            await this.#aleoStorage.removeAccount(chainId, oldAccount.address);
           }
           const aleoAccount = hdWallet.accountsMap[CoinType.ALEO][0];
           if (aleoAccount) {
-            const otherAccounts = await this.#aleoStorage.keys();
+            const otherAccounts =
+              await this.#aleoStorage.getAccountsAddress(chainId);
             for (const otherAccount of otherAccounts) {
-              const info = (await this.#aleoStorage.getItem(
+              const info = await this.#aleoStorage.getAccountInfo(
+                chainId,
                 otherAccount,
-              )) as AleoSyncAccount;
-              await this.#aleoStorage.setItem(otherAccount, {
-                ...info,
-                priority: TaskPriority.LOW,
-              });
+              );
+              if (info) {
+                await this.#aleoStorage.setAccountInfo(chainId, {
+                  ...info,
+                  priority: TaskPriority.LOW,
+                });
+              }
             }
             const item: AleoSyncAccount = {
               walletId: hdWallet.walletId,
@@ -201,11 +218,11 @@ export class VaultStorage {
             this.getLatestHeight()
               .then((height) => {
                 item.height = height;
-                this.#aleoStorage.setItem(aleoAccount.address, item);
+                this.#aleoStorage.setAccountInfo(chainId, item);
               })
               .catch((err) => {
                 logger.error("===> VaultStorage getLatestHeight error: ", err);
-                this.#aleoStorage.setItem(aleoAccount.address, item);
+                this.#aleoStorage.setAccountInfo(chainId, item);
               });
           }
           break;
@@ -214,15 +231,19 @@ export class VaultStorage {
           const length = hdWallet.accountsMap[CoinType.ALEO].length;
           const aleoAccount = hdWallet.accountsMap[CoinType.ALEO][length - 1];
           if (aleoAccount) {
-            const otherAccounts = await this.#aleoStorage.keys();
+            const otherAccounts =
+              await this.#aleoStorage.getAccountsAddress(chainId);
             for (const otherAccount of otherAccounts) {
-              const info = (await this.#aleoStorage.getItem(
+              const info = await this.#aleoStorage.getAccountInfo(
+                chainId,
                 otherAccount,
-              )) as AleoSyncAccount;
-              await this.#aleoStorage.setItem(otherAccount, {
-                ...info,
-                priority: TaskPriority.LOW,
-              });
+              );
+              if (info) {
+                await this.#aleoStorage.setAccountInfo(chainId, {
+                  ...info,
+                  priority: TaskPriority.LOW,
+                });
+              }
             }
 
             const item: AleoSyncAccount = {
@@ -232,7 +253,7 @@ export class VaultStorage {
               address: aleoAccount.address,
               priority: TaskPriority.MEDIUM,
             };
-            await this.#aleoStorage.setItem(aleoAccount.address, item);
+            this.#aleoStorage.setAccountInfo(chainId, item);
           }
           break;
         }

@@ -3,7 +3,6 @@ import {
   EncryptedKeyPairWithViewKey,
   EncryptedField,
 } from "core/types";
-import { TaskPriority } from "../../../../../../offscreen/aleo.di";
 
 export interface Cipher {
   data: string;
@@ -74,13 +73,4 @@ export enum AccountMethod {
   IMPORT = "import",
   ADD = "add",
   REGENERATE = "regenerate",
-}
-
-export interface AleoSyncAccount {
-  walletId: string;
-  accountId: string;
-  address: string;
-  viewKey: string;
-  priority: TaskPriority;
-  height?: number;
 }

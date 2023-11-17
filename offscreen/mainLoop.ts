@@ -1,20 +1,7 @@
-import {
-  StorageKey,
-  aleoAccountStorageInstance,
-  getAleoStorageInstance,
-} from "@/common/utils/indexeddb";
-import type { AleoSyncAccount } from "@/scripts/background/store/vault/types/keyring";
 import { AleoRpcService } from "./aleo_service";
 import { AutoSwitch } from "@/common/utils/retry";
 import { AutoSwitchServiceType } from "@/common/types/retry";
 import { sleep } from "@/common/utils/sleep";
-import { TaskPriority } from "./aleo.di";
-import type {
-  SyncBlockParams,
-  SyncBlockResult,
-  SyncBlockResultWithDuration,
-  TaskParamWithRange,
-} from "./aleo.di";
 import { type WorkerAPI } from "./worker";
 import { proxy, wrap } from "comlink";
 import {
@@ -28,16 +15,24 @@ import {
   OffscreenMessageType,
 } from "@/common/types/offscreen";
 import browser from "webextension-polyfill";
+import { AleoStorage } from "@/scripts/background/store/aleo/AleoStorage";
+import type { AleoSyncAccount } from "core/coins/ALEO/types/AleoSyncAccount";
+import {
+  type SyncBlockParams,
+  type SyncBlockResult,
+  type TaskParamWithRange,
+  TaskPriority,
+} from "core/coins/ALEO/types/SyncTask";
+import { ALEO_CHAIN_CONFIGS } from "core/coins/ALEO/config/chains";
 
-// export const SYNC_TASK_QUENE_LIMIT = 20;
-export const SYNC_TASK_QUENE_LIMIT = 1;
+// larger limit
+export const SYNC_TASK_QUENE_LIMIT = 100;
 
 const ENABLE_MEASURE = true;
 
-const CHAIN_ID = "testnet3";
+const CHAIN_ID = ALEO_CHAIN_CONFIGS.TEST_NET_3.chainId;
 
-// const WORKER_NUMBER = navigator.hardwareConcurrency ?? 12;
-const WORKER_NUMBER = 12;
+const WORKER_NUMBER = navigator.hardwareConcurrency ?? 4;
 
 export class MainLoop {
   static instance: MainLoop;
@@ -46,6 +41,7 @@ export class MainLoop {
   syncTaskQuene: Array<TaskParamWithRange & { syncParams: SyncBlockParams[] }>;
   workerList: WorkerAPI[];
   taskInProcess: Array<Promise<void> | undefined>;
+  aleoStorage: AleoStorage;
 
   static getInstace(rpcList: string[]) {
     const cacheInstance = MainLoop.instance;
@@ -63,6 +59,7 @@ export class MainLoop {
     this.syncTaskQuene = [];
     this.workerList = [];
     this.taskInProcess = new Array<Promise<void> | undefined>(WORKER_NUMBER);
+    this.aleoStorage = AleoStorage.getInstance();
   }
 
   async sendMessage(message: OffscreenMessage) {
@@ -113,12 +110,13 @@ export class MainLoop {
     if (cacheRange) {
       return cacheRange;
     }
-    const instance = getAleoStorageInstance(
-      "testnet3",
-      address,
-      StorageKey.BLOCK,
-    );
-    const ranges = await instance.keys();
+    // const instance = getAleoStorageInstance(
+    //   "testnet3",
+    //   address,
+    //   StorageKey.BLOCK,
+    // );
+    // const ranges = await instance.keys();
+    const ranges = await this.aleoStorage.getAleoBlockRanges(chainId, address);
     map.set(key, ranges ?? []);
     return ranges;
   }
@@ -252,6 +250,7 @@ export class MainLoop {
     if (list.length === 0) {
       return undefined;
     }
+    console.log("===> mergeBlocksResult: ", list);
     list.sort((item1, item2) => {
       const [begin1] = item1.range;
       const [begin2] = item2.range;
@@ -324,22 +323,39 @@ export class MainLoop {
       [key in string]: { time: number; max: number; count: number };
     },
   ): Promise<boolean> {
+    console.log("===> storeBlockResults batchId: ", batchId, results);
     const formatResult = this.mergeBlocksResult(results);
     if (!formatResult) {
       console.error("===> store syncBlocksResult failed: ", formatResult);
       return false;
     }
-    const accountStorage = getAleoStorageInstance(
+    // const accountStorage = getAleoStorageInstance(
+    //   chainId,
+    //   address,
+    //   StorageKey.BLOCK,
+    // );
+    console.log("===> storeBlockResults formatResult: ", formatResult);
+    const key = batchId.toString();
+    const batchStart = Number(batchId.split("-")[0]);
+    const existItem = await this.aleoStorage.getAleoBlockInfo(
       chainId,
       address,
-      StorageKey.BLOCK,
+      key,
     );
-    const key = batchId.toString();
-    const existItem = (await accountStorage.getItem(key)) as
-      | SyncBlockResultWithDuration
-      | undefined;
+    console.log("===> storeBlockResults existItem: ", existItem);
+    // const existItem = (await accountStorage.getItem(key)) as
+    //   | SyncBlockResultWithDuration
+    //   | undefined;
     if (!existItem) {
-      await accountStorage.setItem(key, {
+      if (batchStart !== formatResult.range[0]) {
+        console.error(
+          "===> storeBlockResult batchStart error: set init block error ",
+          batchId,
+          formatResult,
+        );
+        return false;
+      }
+      await this.aleoStorage.setAleoBlocks(chainId, address, key, {
         ...formatResult,
         measure: {
           totalTime: measureMap?.totalTime?.time ?? 0,
@@ -355,6 +371,17 @@ export class MainLoop {
           batchId,
           existItem,
           formatResult,
+        );
+        return false;
+      }
+      const newRange = merged.range;
+      const newKey = `${newRange[0]}-${newRange[1]}`;
+      if (batchStart !== newRange[0]) {
+        console.error(
+          "===> storeBlockResult batchStart error: ",
+          batchId,
+          merged,
+          existItem,
         );
         return false;
       }
@@ -375,13 +402,27 @@ export class MainLoop {
           newMeasure.totalTime = (existMeasure.totalTime + newTotalTime) / 2;
         }
       }
-      const newRange = merged.range;
-      const newKey = `${newRange[0]}-${newRange[1]}`;
-      await accountStorage.setItem(newKey, {
+      console.log(
+        "===> storeBlockResult merged: ",
+        merged,
+        key,
+        newKey,
+        newRange,
+      );
+      await this.aleoStorage.removeAleoBlock(chainId, address, key);
+      console.log("===> storeBlockResult remove: ", key);
+      await this.aleoStorage.setAleoBlocks(chainId, address, newKey, {
         ...merged,
+        range: newRange,
         measure: newMeasure,
       });
-      await accountStorage.removeItem(key);
+      console.log(
+        "===> storeBlockResult setAleoBlocks: ",
+        newKey,
+        merged,
+        newRange,
+        newMeasure,
+      );
       return true;
     }
   }
@@ -560,13 +601,14 @@ export class MainLoop {
       return;
     }
     try {
-      const addressList = await aleoAccountStorageInstance.keys();
+      const addressList = await this.aleoStorage.getAccountsAddress(CHAIN_ID);
       console.log("===> addressList ", addressList.length, addressList);
       const accounts: AleoSyncAccount[] = [];
       for (const address of addressList) {
-        const account = (await aleoAccountStorageInstance.getItem(
+        const account = await this.aleoStorage.getAccountInfo(
+          CHAIN_ID,
           address,
-        )) as AleoSyncAccount;
+        );
         if (!account) {
           console.log("===> can't get account info");
           continue;
@@ -587,7 +629,7 @@ export class MainLoop {
       console.log("===> lastHeight: ", lastHeight);
       if (!lastHeight) {
         // fetch height failed, sleep & retry
-        await sleep(2000);
+        await sleep(10000);
         return this.loop();
       }
       await this.initWorker();
@@ -601,7 +643,13 @@ export class MainLoop {
         JSON.stringify(batchMap),
         JSON.stringify(this.syncTaskQuene),
       );
+      if (this.syncTaskQuene.length === 0) {
+        // no task, sleep & retry
+        await sleep(10000);
+        return this.loop();
+      }
       await this.executeSyncBlocks(batchMap);
+      return this.loop();
     } catch (err) {
       console.log("===> loop err: ", err);
       const errMsg = "loop error: " + (err as Error).message;

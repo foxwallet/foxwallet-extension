@@ -5,6 +5,7 @@ import {
   type RegenerateWalletProps,
   type ImportHDWalletProps,
   type AddAccountProps,
+  type AleoBalanceProps,
 } from "../../scripts/background/servers/IWalletServer";
 import {
   type DisplayWallet,
@@ -128,8 +129,12 @@ export class PopupServerClient implements IClient, IPopupServer {
     return await this.#send("getAllWallet", {});
   }
 
+  async getAleoBalance(params: AleoBalanceProps): Promise<string> {
+    return await this.#send("getAleoBalance", params);
+  }
+
   async #send<T, R>(method: PopupServerMethod, payload: T): Promise<R> {
-    return await new Promise((resolve, reject) => {
+    return await new Promise<R>((resolve, reject) => {
       const id = Date.now();
       const message: ServerMessage = {
         type: MessageType.REQUEST,
@@ -140,11 +145,11 @@ export class PopupServerClient implements IClient, IPopupServer {
       };
       const callback = (error: Error | null, data: any) => {
         if (error) {
-          logger.error("PopupServerClient ", error.message);
+          logger.error("PopupServerClient ", error);
           reject(error);
-          return;
+        } else {
+          resolve(data);
         }
-        resolve(data);
       };
       this.callbackMap.set(id, callback);
       this.port.postMessage(message);
