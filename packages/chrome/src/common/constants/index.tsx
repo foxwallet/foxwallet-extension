@@ -1,1 +1,0 @@
-export const KEEP_ALIVE_INTERVAL = 3000;
