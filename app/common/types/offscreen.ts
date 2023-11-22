@@ -21,6 +21,7 @@ export interface OffscreenMessage<T = any> {
 
 export enum OffscreenMethod {
   INIT_WORKER = "init_worker",
+  SEND_TX = "send_tx",
 }
 
 export interface BackgroundMessage<T = any> {

@@ -23,6 +23,7 @@ const aleoBlockStorageMap = new Map<string, LocalForage>();
 export enum StorageKey {
   BLOCK = "block",
   INFO = "info",
+  LOCAL_TX = "local_tx",
 }
 
 export const getAleoStorageInstance = (

@@ -9,6 +9,14 @@ export const isNetworkError = (err: any) => {
   return false;
 };
 
+export const isServerError = (err: any) => {
+  if (err?.message && typeof err.message === "string") {
+    const msg = err.message;
+    return msg.includes("statusCode 5");
+  }
+  return false;
+};
+
 export const isInternetUnreachable = async () => {
   return !navigator.onLine;
 };
@@ -47,7 +55,7 @@ async function loop(
       );
     }
     if (
-      isNetworkError(error) &&
+      (isNetworkError(error) || isServerError(error)) &&
       !prevent &&
       retryTimes < 10 &&
       service.canSwitch()

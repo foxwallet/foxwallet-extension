@@ -62,7 +62,8 @@ impl ProgramManager {
     pub async fn deploy(
         private_key: &PrivateKey,
         program: &str,
-        fee_credits: f64,
+        base_fee: u64,
+        priority_fee: u64,
         fee_record: Option<RecordPlaintext>,
         url:  &str,
         imports: Option<Object>,
@@ -71,10 +72,10 @@ impl ProgramManager {
     ) -> Result<Transaction, String> {
         log("Creating deployment transaction");
         // Convert fee to microcredits and check that the fee record has enough credits to pay it
-        let fee_microcredits = match &fee_record {
-            Some(fee_record) => Self::validate_amount(fee_credits, fee_record, true)?,
-            None => (fee_credits as u64) * 1_000_000,
-        };
+        // let fee_microcredits = match &fee_record {
+        //     Some(fee_record) => Self::validate_amount(fee_credits, fee_record, true)?,
+        //     None => (fee_credits as u64) * 1_000_000,
+        // };
 
         let mut process_native = ProcessNative::load_web().map_err(|err| err.to_string())?;
         let process = &mut process_native;
@@ -95,7 +96,7 @@ impl ProgramManager {
         log("Ensuring the fee is sufficient to pay for the deployment");
         let (minimum_deployment_cost, (_, _)) =
             deployment_cost::<CurrentNetwork>(&deployment).map_err(|err| err.to_string())?;
-        if fee_microcredits < minimum_deployment_cost {
+        if base_fee < minimum_deployment_cost {
             return Err(format!(
                 "Fee is too low to pay for the deployment. The minimum fee is {} credits",
                 minimum_deployment_cost as f64 / 1_000_000.0
@@ -108,7 +109,8 @@ impl ProgramManager {
             process,
             private_key,
             fee_record,
-            fee_microcredits,
+            base_fee,
+            priority_fee,
             url,
             fee_proving_key,
             fee_verifying_key,
