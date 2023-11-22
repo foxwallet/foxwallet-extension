@@ -1,7 +1,6 @@
 import { CoinType } from "../types/CoinType";
 import { aleoBasic } from "./ALEO/account";
 import { type CoinBasic } from "./CoinBasic";
-import { ethBasic } from "./ETH/account";
 
 export function coinBasicFactory<T extends CoinType>(
   coinType: T,

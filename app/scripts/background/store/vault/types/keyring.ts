@@ -20,6 +20,11 @@ export type AccountWithViewKey = EncryptedKeyPairWithViewKey & {
 
 export type DisplayAccount = Omit<AccountWithViewKey, "privateKey" | "viewKey">;
 
+export type SelectedAccount = DisplayAccount & {
+  walletId: string;
+  coinType: CoinType;
+};
+
 export interface BaseWallet {
   walletType: WalletType;
   walletId: string;

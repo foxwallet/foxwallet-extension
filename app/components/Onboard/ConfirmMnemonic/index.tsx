@@ -1,6 +1,5 @@
 import { useDispatch } from "react-redux";
 import { Dispatch } from "../../../store/store";
-import { useWalletDispatch } from "../../../hooks/useStore";
 import { clients, useClient } from "../../../hooks/useClient";
 import {
   MouseEventHandler,

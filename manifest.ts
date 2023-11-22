@@ -18,6 +18,7 @@ export default defineManifest((env) => {
       "activeTab",
       "tabs",
       "offscreen",
+      "notifications",
     ],
     content_scripts: [
       {
@@ -36,7 +37,7 @@ export default defineManifest((env) => {
     web_accessible_resources: [
       {
         matches: ["http://localhost/*", "http://127.0.0.1/*", "https://*/*"],
-        resources: [],
+        resources: ["injector.js"],
       },
     ],
   };
