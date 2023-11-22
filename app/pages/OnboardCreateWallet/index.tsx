@@ -1,4 +1,11 @@
-import { useCallback, useContext, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { PageWithHeader } from "../../layouts/Page";
 import { Body } from "../../layouts/Body";
 import { OnboardProgress } from "../../components/Onboard/OnboardProgress";
@@ -9,6 +16,10 @@ import { logger } from "../../common/utils/logger";
 import { ConfirmMnemonicStep } from "../../components/Onboard/ConfirmMnemonic";
 import { showMnemonicWarningDialog } from "../../components/Onboard/MnemonicWarningDialog";
 import { nanoid } from "nanoid";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { usePopupDispatch } from "@/hooks/useStore";
+import { CoinType } from "core/types";
 
 const CreateWalletSteps = ["Create", "Backup", "Confirm"];
 
@@ -18,6 +29,8 @@ function OnboardCreateWalletScreen() {
   const [mnemonic, setMnemonic] = useState("");
   const { popupServerClient } = useClient();
   const walletIdRef = useRef("");
+  const navigate = useNavigate();
+  const dispatch = usePopupDispatch();
 
   const createWallet = useCallback(async () => {
     if (walletIdRef.current) {
@@ -30,9 +43,18 @@ function OnboardCreateWalletScreen() {
       walletId,
       revealMnemonic: true,
     });
+    const coinType = CoinType.ALEO;
+    const account = wallet.accountsMap[coinType][0];
+    await dispatch.account.setSelectedAccount({
+      selectedAccount: {
+        walletId: wallet.walletId,
+        coinType,
+        ...account,
+      },
+    });
     const { confirmed } = await showMnemonicWarningDialog();
     if (confirmed) {
-      setMnemonic(wallet.mnemonic || "");
+      setMnemonic(wallet.mnemonic ?? "");
     }
   }, []);
 
@@ -43,7 +65,16 @@ function OnboardCreateWalletScreen() {
       walletId,
       revealMnemonic: true,
     });
-    setMnemonic(wallet.mnemonic || "");
+    const coinType = CoinType.ALEO;
+    const account = wallet.accountsMap[coinType][0];
+    await dispatch.account.setSelectedAccount({
+      selectedAccount: {
+        walletId: wallet.walletId,
+        coinType,
+        ...account,
+      },
+    });
+    setMnemonic(wallet.mnemonic ?? "");
   }, []);
 
   const stepContent = useMemo(() => {
@@ -71,7 +102,14 @@ function OnboardCreateWalletScreen() {
           />
         );
       case 3:
-        return <ConfirmMnemonicStep mnemonic={mnemonic} onConfirm={() => {}} />;
+        return (
+          <ConfirmMnemonicStep
+            mnemonic={mnemonic}
+            onConfirm={() => {
+              navigate("/main");
+            }}
+          />
+        );
     }
   }, [step, mnemonic, createWallet, regenerateWallet]);
 

@@ -14,33 +14,38 @@ import {
   DisplayWallet,
   HDWallet,
   KeyringObj,
+  SimpleWallet,
   WalletType,
 } from "../../types/keyring";
 import { nanoid } from "nanoid";
 import { AuthManager } from "../auth/AuthManager";
-import { decryptStr } from "core/utils/encrypt";
+import { decryptStr, encryptStr } from "core/utils/encrypt";
 import { logger } from "../../../../../../common/utils/logger";
-import { AddAccountProps } from "../../../../servers/IWalletServer";
+import {
+  AddAccountProps,
+  ImportPrivateKeyProps,
+} from "../../../../servers/IWalletServer";
 import initAleoWasm from "aleo_wasm";
+import { ERROR_CODE } from "@/common/types/error";
+import { coinBasicFactory } from "core/coins/CoinBasicFactory";
 
 export class KeyringManager {
   #storage: VaultStorage;
   #authManager: AuthManager;
-  #hdKeyrings: { [walletId in string]?: HDKeyring };
+  // #hdKeyrings: { [walletId in string]?: HDKeyring };
 
   constructor(authManager: AuthManager) {
     this.#storage = vaultStorage;
     this.#authManager = authManager;
-    this.#hdKeyrings = {};
+    // this.#hdKeyrings = {};
   }
 
   async init() {
     await initAleoWasm();
   }
 
-  async reset() {
-    this.#hdKeyrings = {};
-  }
+  // TODO: reset
+  async reset() {}
 
   #getToken() {
     const token = this.#authManager.getToken();
@@ -74,12 +79,20 @@ export class KeyringManager {
     };
   }
 
-  async getWallet(walletId: string): Promise<DisplayWallet> {
+  async getHDWallet(walletId: string): Promise<DisplayWallet> {
     return this.#formatDisplayWallet(await this.#storage.getHDWallet(walletId));
   }
 
-  async getAllWallet(): Promise<DisplayKeyring> {
-    this.#getToken();
+  async getSimpleWallet(walletId: string): Promise<DisplayWallet> {
+    return this.#formatDisplayWallet(
+      await this.#storage.getSimpleWallet(walletId),
+    );
+  }
+
+  async getAllWallet(noAuth?: boolean): Promise<DisplayKeyring> {
+    if (!noAuth) {
+      this.#getToken();
+    }
     const keyrings = (await this.#storage.getKeyring()) || {};
     const hdWallets = (keyrings[WalletType.HD] || []).map((item) =>
       this.#formatDisplayWallet(item),
@@ -141,8 +154,8 @@ export class KeyringManager {
     };
 
     await this.#storage.addHDWallet(newWallet, AccountMethod.CREATE);
-    this.#hdKeyrings[walletId] = newKeyring;
-    const wallet = await this.getWallet(walletId);
+    // this.#hdKeyrings[walletId] = newKeyring;
+    const wallet = await this.getHDWallet(walletId);
 
     if (revealMnemonic) {
       wallet.mnemonic = await decryptStr(token, newMnemonic);
@@ -200,9 +213,9 @@ export class KeyringManager {
 
     await this.#storage.setHDWallet(newWallet, AccountMethod.REGENERATE);
 
-    this.#hdKeyrings[walletId] = keyring;
+    // this.#hdKeyrings[walletId] = keyring;
 
-    const wallet = await this.getWallet(walletId);
+    const wallet = await this.getHDWallet(walletId);
 
     if (revealMnemonic) {
       wallet.mnemonic = await decryptStr(token, newMnemonic);
@@ -225,9 +238,9 @@ export class KeyringManager {
     if (existWallet) {
       throw new Error("Wallet have existed");
     }
-    const keyrings = Object.values(this.#hdKeyrings);
-    for (let keyring of keyrings) {
-      const encryptedMnemonic = keyring?.getEncryptedMnemonic();
+    const allHDWallets = await this.#storage.getAllHDWallets();
+    for (let hdWallet of allHDWallets) {
+      const encryptedMnemonic = hdWallet.mnemonic;
       if (!encryptedMnemonic) {
         continue;
       }
@@ -272,39 +285,32 @@ export class KeyringManager {
     };
     await this.#storage.addHDWallet(newWallet, AccountMethod.IMPORT);
 
-    this.#hdKeyrings[walletId] = newKeyring;
-
-    return await this.getWallet(walletId);
+    return await this.getHDWallet(walletId);
   }
 
   async addNewAccount({
     walletId,
-    coin,
+    coinType,
     accountId,
   }: AddAccountProps): Promise<DisplayWallet> {
     const token = this.#getToken();
     const hdWallet = await this.#storage.getHDWallet(walletId);
-    const index = hdWallet.accountsMap[coin].length;
-    let keyring = this.#hdKeyrings[walletId];
-    if (!keyring) {
-      keyring = await HDKeyring.restore({
-        walletId,
-        token,
-        mnemonic: hdWallet.mnemonic,
-      });
-      this.#hdKeyrings[walletId] = keyring;
-      logger.log("===> addNewAccount wallet: ", keyring);
-    }
-    const existAccount = hdWallet.accountsMap[coin].some(
+    const index = hdWallet.accountsMap[coinType].length;
+    const existAccount = hdWallet.accountsMap[coinType].some(
       (item) => item.accountId === accountId,
     );
     if (existAccount) {
-      throw new Error("Account have existed");
+      throw new Error("AccountId have existed");
     }
+    const keyring = await HDKeyring.restore({
+      walletId,
+      token,
+      mnemonic: hdWallet.mnemonic,
+    });
     const newEncryptedKeyPair = (await keyring.derive(
       accountId,
       index,
-      coin,
+      coinType,
       token,
     )) as EncryptedKeyPairWithViewKey;
     // TODO: use i18n
@@ -313,8 +319,8 @@ export class KeyringManager {
       ...hdWallet,
       accountsMap: {
         ...hdWallet.accountsMap,
-        [coin]: [
-          ...hdWallet.accountsMap[coin],
+        [coinType]: [
+          ...hdWallet.accountsMap[coinType],
           {
             ...newEncryptedKeyPair,
             accountName,
@@ -324,6 +330,173 @@ export class KeyringManager {
     };
     await this.#storage.setHDWallet(newHdWallet, AccountMethod.ADD);
 
-    return await this.getWallet(walletId);
+    return await this.getHDWallet(walletId);
+  }
+
+  async importPrivateKey<T extends CoinType>({
+    walletId,
+    walletName,
+    coinType,
+    privateKey,
+    privateKeyType,
+  }: ImportPrivateKeyProps<T>) {
+    const token = this.#getToken();
+    const simpleWallets = await this.#storage.getAllSimpleWallets();
+    for (const wallet of simpleWallets) {
+      const account = wallet.accountsMap[coinType]?.[0];
+      if (!account) {
+        continue;
+      }
+      const existPrivateKey = await decryptStr(token, account.privateKey);
+      if (existPrivateKey === privateKey) {
+        throw new Error("PrivateKey exist!");
+      }
+    }
+    const account = await coinBasicFactory(coinType).deriveAccount(
+      privateKey,
+      privateKeyType,
+    );
+    const privateKeyObj = await encryptStr(token, privateKey);
+    if (!privateKeyObj) {
+      throw new Error("Encrypt privateKey failed");
+    }
+    const newSimpleWallet: SimpleWallet = {
+      walletType: WalletType.SIMPLE,
+      walletId,
+      walletName,
+      accountsMap: {
+        [CoinType.ALEO]: [
+          {
+            ...account,
+            index: 0,
+            accountId: nanoid(),
+            accountName: "Account 1",
+            privateKey: privateKeyObj,
+          },
+        ],
+      },
+    };
+    await this.#storage.addSimpleWallet(newSimpleWallet);
+
+    return await this.getSimpleWallet(walletId);
+  }
+
+  async getPrivateKey({
+    walletId,
+    coinType,
+    accountId,
+  }: {
+    walletId: string;
+    coinType: CoinType;
+    accountId: string;
+  }) {
+    const wallet = await this.#storage.getHDWallet(walletId);
+    const account = wallet.accountsMap[coinType].find(
+      (item) => item.accountId === accountId,
+    );
+    if (!account) {
+      throw new Error("Account not found " + accountId);
+    }
+    const token = this.#getToken();
+    if (!token) {
+      throw new Error(ERROR_CODE.NOT_AUTH);
+    }
+    const encryptedPrivateKey = account.privateKey;
+    const privateKey = decryptStr(token, encryptedPrivateKey);
+    return privateKey;
+  }
+
+  async getPrivateKeyByAddress({
+    coinType,
+    address,
+  }: {
+    coinType: CoinType;
+    address: string;
+  }) {
+    const keyring = await this.#storage.getKeyring();
+    if (!keyring) {
+      throw new Error("Empty keyring");
+    }
+    const token = this.#getToken();
+    if (!token) {
+      throw new Error(ERROR_CODE.NOT_AUTH);
+    }
+    const { HD: hdWallets, SIMPLE: simpleWallets } = keyring;
+    if (hdWallets) {
+      for (const wallet of hdWallets) {
+        const account = wallet.accountsMap[coinType].find(
+          (item) => item.address === address,
+        );
+        if (!account) {
+          throw new Error("Account not found " + address);
+        }
+        const encryptedPrivateKey = account.privateKey;
+        const privateKey = decryptStr(token, encryptedPrivateKey);
+        return privateKey;
+      }
+    }
+    if (simpleWallets) {
+      for (const wallet of simpleWallets) {
+        const account = wallet.accountsMap[coinType].find(
+          (item) => item.address === address,
+        );
+        if (!account) {
+          throw new Error("Account not found " + address);
+        }
+        const encryptedPrivateKey = account.privateKey;
+        const privateKey = decryptStr(token, encryptedPrivateKey);
+        return privateKey;
+      }
+    }
+    return null;
+  }
+
+  async getViewKey({
+    coinType,
+    address,
+  }: {
+    coinType: CoinType;
+    address: string;
+  }) {
+    const keyring = await this.#storage.getKeyring();
+    if (!keyring) {
+      throw new Error("Empty keyring");
+    }
+    const { HD: hdWallets, SIMPLE: simpleWallets } = keyring;
+    if (hdWallets) {
+      for (const wallet of hdWallets) {
+        const account = wallet.accountsMap[coinType].find(
+          (item) => item.address === address,
+        );
+        if (!account) {
+          throw new Error("Account not found " + address);
+        }
+        return account.viewKey;
+      }
+    }
+    if (simpleWallets) {
+      for (const wallet of simpleWallets) {
+        const account = wallet.accountsMap[coinType].find(
+          (item) => item.address === address,
+        );
+        if (!account) {
+          throw new Error("Account not found " + address);
+        }
+        return account.viewKey;
+      }
+    }
+    return null;
+  }
+
+  async hasWallet() {
+    const keyring = await this.#storage.getKeyring();
+    if (
+      !keyring ||
+      !keyring[WalletType.HD] ||
+      keyring[WalletType.HD]?.length === 0
+    ) {
+      return false;
+    }
+    return true;
   }
 }

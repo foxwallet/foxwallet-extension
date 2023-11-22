@@ -12,6 +12,11 @@ import { LoadingScreen } from "./components/Custom/Loading";
 import { ChakraBaseProvider } from "@chakra-ui/react";
 import { theme } from "./common/theme";
 import { GlobalModal } from "./common/utils/dialog";
+import { PersistGate } from "redux-persist/integration/react";
+import { getPersistor } from "@rematch/persist";
+import { ViewPort } from "./components/Custom/ViewPort";
+
+const persistor = getPersistor();
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <StrictMode>
@@ -19,9 +24,11 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
       <ChakraBaseProvider theme={theme}>
         <ClientContext.Provider value={clients}>
           <Provider store={store}>
-            <Suspense fallback={<LoadingScreen />}>
-              <App />
-            </Suspense>
+            <PersistGate loading={<LoadingScreen />} persistor={persistor}>
+              <Suspense fallback={<LoadingScreen />}>
+                <App />
+              </Suspense>
+            </PersistGate>
           </Provider>
         </ClientContext.Provider>
       </ChakraBaseProvider>
@@ -35,7 +42,9 @@ ReactDOM.createRoot(
 ).render(
   <StrictMode>
     <ChakraBaseProvider theme={theme}>
-      <GlobalModal />
+      <ViewPort>
+        <GlobalModal />
+      </ViewPort>
     </ChakraBaseProvider>
   </StrictMode>,
 );

@@ -1,8 +1,16 @@
 @import "./common/styles/tailwind.css";
 @import "./common//styles/font.css";
+@import "./common/styles/scrollbar.scss";
+
+html {
+  overflow: hidden;
+}
 
 body {
-  background-color: rgba(0, 0, 0, 0.05);
+  @apply no-scrollbar;
+  background-color: rgba(239, 238, 238, 0.05);
   position: relative;
   font-size: 14px;
+  overflow: hidden;
+  max-height: 600px;
 }

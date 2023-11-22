@@ -6,7 +6,8 @@
   "extends": [
     "plugin:react/recommended",
     "plugin:react/jsx-runtime",
-    "standard-with-typescript",
+    "react-hooks",
+    "plugin:standard-with-typescript",
     "plugin:prettier/recommended"
   ],
   "parserOptions": {
@@ -27,7 +28,8 @@
     "@typescript-eslint/no-non-null-assertion": 1,
     "@typescript-eslint/prefer-readonly": 0,
     "@typescript-eslint/return-await": 0,
-    "@typescript-eslint/no-misused-promises": 0
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn"
   },
   "settings": {
     "react": {
