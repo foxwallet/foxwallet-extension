@@ -16,7 +16,7 @@ const mutex = new Mutex();
 export class PopupServerHandler implements IHandler {
   constructor(private popupServer: PopupWalletServer) {}
 
-  wrapPopupResp(rawResp: ServerPayload, id: number) {
+  wrapPopupResp(rawResp: ServerPayload, id: string) {
     return {
       id,
       payload: rawResp,

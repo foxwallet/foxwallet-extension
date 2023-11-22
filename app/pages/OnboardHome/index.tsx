@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import BaseCheckbox from "../../components/Custom/Checkbox";
 import browser from "webextension-polyfill";
 import { OnboardLogo } from "../../components/Custom/Icon";
+import { useCurrAccount } from "@/hooks/useCurrAccount";
 
 const shakeAnimation = keyframes`
   10%, 90% {
@@ -27,13 +28,14 @@ function OnboardHomeScreen() {
   const navigate = useNavigate();
   const [checked, setChecked] = useState(false);
   const [showShakeAnimation, setShowShakeAnimation] = useState(false);
+  const { selectedAccount } = useCurrAccount();
 
   return (
     <Flex direction={"column"} w={"full"} h={"full"}>
       <Flex alignItems={"center"} justifyContent={"center"} w={"full"} flex={1}>
         <OnboardLogo />
       </Flex>
-      <Flex direction={"column"} alignItems={"center"} px="8" mb="8">
+      <Flex direction={"column"} alignItems={"center"} px="6" mb="8">
         <H4>{"The best Web3 wallet entrance to crypto world"}</H4>
       </Flex>
       {/* Open new tab will dismiss the popup window, so check the policy advance */}
@@ -80,7 +82,7 @@ function OnboardHomeScreen() {
         </B3>
       </BaseCheckbox>
       <Button
-        mx="8"
+        mx="6"
         mb="4"
         onClick={() => {
           if (!checked) {
@@ -96,7 +98,7 @@ function OnboardHomeScreen() {
         Create Wallet
       </Button>
       <Button
-        mx="8"
+        mx="6"
         mb="4"
         onClick={() => {
           if (!checked) {

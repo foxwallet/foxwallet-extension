@@ -1,3 +1,4 @@
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import {
   type PopupServerMethod,
   type IPopupServer,
@@ -5,12 +6,19 @@ import {
   type RegenerateWalletProps,
   type ImportHDWalletProps,
   type AddAccountProps,
-  type AleoBalanceProps,
-  type AleoBalance,
+  AleoSendTxProps,
+  GetSelectedAccountProps,
+  SetSelectedAccountProps,
+  RequestFinfishProps,
+  GetSelectedUniqueIdProps,
+  SetSelectedUniqueIdProps,
+  ResyncAleoProps,
+  ImportPrivateKeyProps,
 } from "../../scripts/background/servers/IWalletServer";
 import {
   type DisplayWallet,
   type DisplayKeyring,
+  SelectedAccount,
 } from "../../scripts/background/store/vault/types/keyring";
 import { KEEP_ALIVE_INTERVAL } from "../constants";
 import {
@@ -22,6 +30,9 @@ import {
 import { PortName } from "../types/port";
 import { logger } from "./logger";
 import { type IPort, Port } from "./port";
+import { AleoTransaction } from "core/coins/ALEO/types/Tranaction";
+import { nanoid } from "nanoid";
+import { CoinType } from "core/types";
 
 export interface IClient {
   _connect: () => void;
@@ -32,7 +43,7 @@ export class KeepAliveClient implements IClient {
   private port: IPort;
   private timer?: number;
 
-  constructor(private readonly portName: PortName) {
+  constructor(private readonly origin: PortName) {
     this._connect();
   }
 
@@ -55,7 +66,7 @@ export class KeepAliveClient implements IClient {
       try {
         this.port.postMessage({
           type: MessageType.KEEP_ALIVE,
-          origin: this.portName,
+          origin: this.origin,
           payload: {
             portName: PortName.KEEP_ALIVE,
           },
@@ -70,7 +81,7 @@ export class KeepAliveClient implements IClient {
 
 export class PopupServerClient implements IClient, IPopupServer {
   private port: IPort;
-  private callbackMap: Map<number, (error: Error | null, data: any) => void>;
+  private callbackMap: Map<string, (error: Error | null, data: any) => void>;
 
   constructor() {
     this.callbackMap = new Map();
@@ -108,6 +119,22 @@ export class PopupServerClient implements IClient, IPopupServer {
     return await this.#send("initPassword", params);
   }
 
+  async hasAuth(params: { checkExpire?: boolean }): Promise<boolean> {
+    return await this.#send("hasAuth", params);
+  }
+
+  async login(params: { password: string }): Promise<boolean> {
+    return await this.#send("login", params);
+  }
+
+  async lock(): Promise<void> {
+    return await this.#send("lock", {});
+  }
+
+  async timeoutLock(): Promise<void> {
+    return await this.#send("timeoutLock", {});
+  }
+
   async createWallet(params: CreateWalletProps): Promise<DisplayWallet> {
     return await this.#send("createWallet", params);
   }
@@ -126,17 +153,55 @@ export class PopupServerClient implements IClient, IPopupServer {
     return await this.#send("addAccount", params);
   }
 
+  async importPrivateKey<T extends CoinType>(
+    params: ImportPrivateKeyProps<T>,
+  ): Promise<DisplayWallet> {
+    return await this.#send("importPrivateKey", params);
+  }
+
+  async getSelectedAccount(
+    params: GetSelectedAccountProps,
+  ): Promise<SelectedAccount | null> {
+    return await this.#send("getSelectedAccount", params);
+  }
+
+  async setSelectedAccount(
+    params: SetSelectedAccountProps,
+  ): Promise<SelectedAccount> {
+    return await this.#send("setSelectedAccount", params);
+  }
+
+  async getSelectedUniqueId(
+    params: GetSelectedUniqueIdProps,
+  ): Promise<InnerChainUniqueId> {
+    return await this.#send("getSelectedUniqueId", params);
+  }
+
+  async setSelectedUniqueId(
+    params: SetSelectedUniqueIdProps,
+  ): Promise<InnerChainUniqueId> {
+    return await this.#send("setSelectedUniqueId", params);
+  }
+
   async getAllWallet(): Promise<DisplayKeyring> {
     return await this.#send("getAllWallet", {});
   }
 
-  async getAleoBalance(params: AleoBalanceProps): Promise<AleoBalance> {
-    return await this.#send("getAleoBalance", params);
+  async rescanAleo(params: ResyncAleoProps): Promise<boolean> {
+    return await this.#send("rescanAleo", params);
+  }
+
+  async sendAleoTransaction(params: AleoSendTxProps): Promise<AleoTransaction> {
+    return await this.#send("sendAleoTransaction", params);
+  }
+
+  async onRequestFinish(params: RequestFinfishProps): Promise<void> {
+    return await this.#send("onRequestFinish", params);
   }
 
   async #send<T, R>(method: PopupServerMethod, payload: T): Promise<R> {
     return await new Promise<R>((resolve, reject) => {
-      const id = Date.now();
+      const id = nanoid();
       const message: ServerMessage = {
         type: MessageType.REQUEST,
         id,

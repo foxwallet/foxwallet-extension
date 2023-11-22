@@ -18,6 +18,7 @@ const MnemonicWarningDialog = (props: Props) => {
       isOpen={isOpen}
       hideClose={true}
       onClose={onCancel}
+      isCentered
       body={
         <Flex flexDirection={"column"} alignItems={"center"}>
           <IconPreventScreenshot w={"12"} h={"12"} mb={2} />

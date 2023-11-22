@@ -6,5 +6,4 @@ export interface AleoSyncAccount {
   address: string;
   viewKey: string;
   priority: TaskPriority;
-  height?: number;
 }

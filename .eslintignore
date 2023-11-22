@@ -1,8 +1,7 @@
 **/dist/
 **/coverage/
 **/node_modules/
-**/aleo/
-**/aleo_wasm/
+**/@aleohq/
 **/scripts/
 manifest.ts
 vite.config.ts

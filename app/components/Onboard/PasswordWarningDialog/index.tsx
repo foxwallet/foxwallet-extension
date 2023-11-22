@@ -16,6 +16,7 @@ const PasswordWarningDialog = (props: Props) => {
     <BasicModal
       isOpen={isOpen}
       onClose={onCancel}
+      isCentered
       title={"Warning"}
       body={
         <P3>
