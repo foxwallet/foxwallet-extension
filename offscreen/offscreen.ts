@@ -43,15 +43,35 @@ function handleMessages(
       });
       break;
     }
-    // case AleoWorkerMethod.GET_PRIVATE_KEY: {
-    //   getPrivateKey(sendResponse).catch((err) => {
-    //     logger.log(`==> ${message.type} err: `, err);
-    //     if (err instanceof Error) {
-    //       sendResponse({ error: err.message });
-    //     }
-    //   });
-    //   return true;
-    // }
+    case OffscreenMethod.SEND_TX: {
+      const params = message.payload;
+      mainLoop
+        .sendTransaction(params)
+        .then((resp) => {
+          sendResponse({
+            type: OffscreenMessageType.RESPONSE,
+            origin: MessageOrigin.OFFSCREEN_TO_BACKGROUND,
+            payload: {
+              error: null,
+              data: resp,
+            },
+          });
+        })
+        .catch((err) => {
+          logger.log(`==> ${message.type} err: `, err);
+          if (err instanceof Error) {
+            sendResponse({
+              type: OffscreenMessageType.RESPONSE,
+              origin: MessageOrigin.OFFSCREEN_TO_BACKGROUND,
+              payload: {
+                error: err.message,
+                data: null,
+              },
+            });
+          }
+        });
+      return true;
+    }
     default: {
       logger.warn(`Unexpected message type received'.`);
     }

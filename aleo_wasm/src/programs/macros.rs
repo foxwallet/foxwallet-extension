@@ -98,7 +98,7 @@ macro_rules! execute_program {
 
 #[macro_export]
 macro_rules! execute_fee {
-    ($process:expr, $private_key:expr, $fee_record:expr, $fee_microcredits:expr, $submission_url:expr, $fee_proving_key:expr, $fee_verifying_key:expr, $execution_id:expr, $rng:expr) => {{
+    ($process:expr, $private_key:expr, $fee_record:expr, $base_fee:expr, $priority_fee:expr, $submission_url:expr, $fee_proving_key:expr, $fee_verifying_key:expr, $execution_id:expr, $rng:expr) => {{
         if (($fee_proving_key.is_some() && $fee_verifying_key.is_none())
             || ($fee_proving_key.is_none() && $fee_verifying_key.is_some()))
         {
@@ -136,14 +136,14 @@ macro_rules! execute_fee {
                 $process.authorize_fee_private::<CurrentAleo, _>(
                     $private_key,
                     fee_record_native,
-                    $fee_microcredits,
-                    0u64,
+                    $base_fee,
+                    $priority_fee,
                     $execution_id,
                     $rng,
                 ).map_err(|e| e.to_string())?
             }
             None => {
-                $process.authorize_fee_public::<CurrentAleo, _>($private_key, $fee_microcredits, 0u64, $execution_id, $rng).map_err(|e| e.to_string())?
+                $process.authorize_fee_public::<CurrentAleo, _>($private_key, $base_fee, $priority_fee, $execution_id, $rng).map_err(|e| e.to_string())?
             }
         };
 

@@ -166,6 +166,7 @@ impl ProgramManager {
             private_key,
             fee_record,
             fee_microcredits,
+            0u64,
             url,
             fee_proving_key,
             fee_verifying_key,

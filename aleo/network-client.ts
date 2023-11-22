@@ -612,12 +612,13 @@ class AleoNetworkClient {
   async submitTransaction(
     transaction: WasmTransaction | string,
   ): Promise<string> {
-    const transaction_string =
-      transaction instanceof WasmTransaction
-        ? transaction.toString()
-        : transaction;
+    const url = `${this.host}/${this.chainId}/transaction/broadcast`;
     try {
-      const response = await post(this.host + "/transaction/broadcast", {
+      const transaction_string =
+        transaction instanceof WasmTransaction
+          ? transaction.toString()
+          : transaction;
+      const response = await post(url, {
         body: transaction_string,
         headers: {
           "Content-Type": "application/json",
@@ -629,21 +630,9 @@ class AleoNetworkClient {
         );
       }
 
-      try {
-        return await response.json();
-      } catch (error) {
-        throw new Error(
-          `Error posting transaction. Aleo network response: ${
-            (error as Error).message
-          }`,
-        );
-      }
-    } catch (error) {
-      throw new Error(
-        `Error posting transaction: No response received: ${
-          (error as Error).message
-        }`,
-      );
+      return await response.json();
+    } catch (err) {
+      throw new Error(`${(err as Error).message}  url: ${url}`);
     }
   }
 }

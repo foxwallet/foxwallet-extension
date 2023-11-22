@@ -1,4 +1,11 @@
-import { useCallback, useContext, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { PageWithHeader } from "../../layouts/Page";
 import { Body } from "../../layouts/Body";
 import { OnboardProgress } from "../../components/Onboard/OnboardProgress";
@@ -32,8 +39,20 @@ function OnboardCreateWalletScreen() {
     });
     const { confirmed } = await showMnemonicWarningDialog();
     if (confirmed) {
-      setMnemonic(wallet.mnemonic || "");
+      setMnemonic(wallet.mnemonic ?? "");
     }
+  }, []);
+
+  useEffect(() => {
+    async function main() {
+      const balance = await popupServerClient.getAleoBalance({
+        chainId: "testnet3",
+        address:
+          "aleo1xs53pjftr8vst9ev2drwdu0kyyj2f4fxx93j3n30hfr8dqjnwq8qyvka7t",
+      });
+      console.log("===> balance: ", balance);
+    }
+    main();
   }, []);
 
   const regenerateWallet = useCallback(async () => {
@@ -43,7 +62,7 @@ function OnboardCreateWalletScreen() {
       walletId,
       revealMnemonic: true,
     });
-    setMnemonic(wallet.mnemonic || "");
+    setMnemonic(wallet.mnemonic ?? "");
   }, []);
 
   const stepContent = useMemo(() => {

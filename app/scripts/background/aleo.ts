@@ -2,6 +2,7 @@ import { AleoWorker } from "../../../offscreen/aleo";
 import init from "aleo_wasm";
 import {
   initWorker,
+  sendTransaction,
   setupOffscreen,
 } from "../../../offscreen/offscreen_helper";
 import { Future } from "aleo_wasm";
@@ -46,4 +47,7 @@ const onOffscreenMessage = (
 export async function offscreen() {
   browser.runtime.onMessage.addListener(onOffscreenMessage);
   await initWorker();
+  setTimeout(async () => {
+    await sendTransaction();
+  });
 }

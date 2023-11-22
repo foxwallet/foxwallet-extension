@@ -132,7 +132,8 @@ impl ProgramManager {
         program: &str,
         function: &str,
         inputs: Array,
-        fee_credits: f64,
+        base_fee: u64,
+        priority_fee: u64,
         fee_record: Option<RecordPlaintext>,
         url: &str,
         imports: Option<Object>,
@@ -142,10 +143,10 @@ impl ProgramManager {
         fee_verifying_key: Option<VerifyingKey>,
     ) -> Result<Transaction, String> {
         log(&format!("Executing function: {function} on-chain"));
-        let fee_microcredits = match &fee_record {
-            Some(fee_record) => Self::validate_amount(fee_credits, fee_record, true)?,
-            None => (fee_credits as u64) * 1_000_000,
-        };
+        // let fee_microcredits = match &fee_record {
+        //     Some(fee_record) => Self::validate_amount(fee_credits, fee_record, true)?,
+        //     None => (fee_credits as u64) * 1_000_000,
+        // };
 
         let mut process_native = ProcessNative::load_web().map_err(|err| err.to_string())?;
         let process = &mut process_native;
@@ -184,7 +185,8 @@ impl ProgramManager {
             process,
             private_key,
             fee_record,
-            fee_microcredits,
+            base_fee,
+            priority_fee,
             url,
             fee_proving_key,
             fee_verifying_key,

@@ -5,3 +5,7 @@ export interface FutureJSON {
 }
 
 export type LogFunc = (type: "log" | "error", ...args: any[]) => void;
+
+export type AleoProgramImportsMap = {
+  [key in string]: string;
+};

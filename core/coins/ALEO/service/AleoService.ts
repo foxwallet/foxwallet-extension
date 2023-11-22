@@ -158,7 +158,7 @@ export class AleoService {
 
     const result = {
       recordsMap: allRecordsMap,
-      txInfoList: allTxInfoList,
+      txInfoList: allTxInfoList.sort((tx1, tx2) => tx2.height - tx1.height),
       spentRecordTags: Array.from(allSpentRecordTagsSet),
       range: [existBegin, existEnd],
     };
@@ -236,5 +236,15 @@ export class AleoService {
         }
       }
     });
+  }
+
+  async getTxHistory(address: string) {
+    const result = await this.syncBlocks(address);
+
+    if (!result) {
+      return [];
+    }
+
+    return result.txInfoList;
   }
 }
