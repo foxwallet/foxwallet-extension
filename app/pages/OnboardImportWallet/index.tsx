@@ -9,15 +9,20 @@ import { nanoid } from "nanoid";
 import { CreatePasswordStep } from "../../components/Onboard/CreatePassword";
 import { ImportMnemonicStep } from "../../components/Onboard/ImportMnemonic";
 import { showMessageToast } from "../../components/Custom/ErrorToast";
+import { usePopupDispatch } from "@/hooks/useStore";
+import { sleep } from "@/common/utils/sleep";
+import { useNavigate } from "react-router-dom";
+import { CoinType } from "core/types";
 
 const ImportWalletSteps = ["Create", "Import"];
 
 export default function OnboardImportWallet() {
   const [step, setStep] = useState(1);
   const walletNameRef = useRef("");
-  const [mnemonic, setMnemonic] = useState("");
   const { popupServerClient } = useClient();
   const walletIdRef = useRef("");
+  const navigate = useNavigate();
+  const dispatch = usePopupDispatch();
 
   const stepContent = useMemo(() => {
     switch (step) {
@@ -41,14 +46,25 @@ export default function OnboardImportWallet() {
               const walletName = walletNameRef.current;
               if (walletId && walletName && mnemonic) {
                 try {
-                  await popupServerClient.importHDWallet({
+                  const wallet = await popupServerClient.importHDWallet({
                     walletId,
                     walletName,
                     mnemonic,
                   });
+                  const coinType = CoinType.ALEO;
+                  const account = wallet.accountsMap[coinType][0];
+                  dispatch.account.setSelectedAccount({
+                    selectedAccount: {
+                      walletId: wallet.walletId,
+                      coinType,
+                      ...account,
+                    },
+                  });
+                  await sleep(500);
+                  navigate("/");
                 } catch (err) {
                   if (err instanceof Error) {
-                    showMessageToast({ message: err.message });
+                    void showMessageToast({ message: err.message });
                   }
                 }
               } else {

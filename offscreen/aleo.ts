@@ -8,7 +8,6 @@ import {
   Future,
 } from "aleo_wasm";
 import * as aleo from "aleo/index";
-import { AleoRpcService } from "./aleo_service";
 import { AutoSwitch } from "@/common/utils/retry";
 import { AutoSwitchServiceType } from "@/common/types/retry";
 import { Measure, MeasureAsync } from "@/common/utils/measure";
@@ -26,6 +25,7 @@ import {
   type AddressSyncBlockResp,
   type WorkerSyncTask,
 } from "core/coins/ALEO/types/SyncTask";
+import { AleoRpcService } from "core/coins/ALEO/service/instances/rpc";
 
 export class AleoWorker {
   rpcService: AleoRpcService;

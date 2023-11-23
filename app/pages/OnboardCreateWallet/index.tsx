@@ -16,6 +16,10 @@ import { logger } from "../../common/utils/logger";
 import { ConfirmMnemonicStep } from "../../components/Onboard/ConfirmMnemonic";
 import { showMnemonicWarningDialog } from "../../components/Onboard/MnemonicWarningDialog";
 import { nanoid } from "nanoid";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { usePopupDispatch } from "@/hooks/useStore";
+import { CoinType } from "core/types";
 
 const CreateWalletSteps = ["Create", "Backup", "Confirm"];
 
@@ -25,6 +29,8 @@ function OnboardCreateWalletScreen() {
   const [mnemonic, setMnemonic] = useState("");
   const { popupServerClient } = useClient();
   const walletIdRef = useRef("");
+  const navigate = useNavigate();
+  const dispatch = usePopupDispatch();
 
   const createWallet = useCallback(async () => {
     if (walletIdRef.current) {
@@ -37,23 +43,32 @@ function OnboardCreateWalletScreen() {
       walletId,
       revealMnemonic: true,
     });
+    const coinType = CoinType.ALEO;
+    const account = wallet.accountsMap[coinType][0];
+    dispatch.account.setSelectedAccount({
+      selectedAccount: {
+        walletId: wallet.walletId,
+        coinType,
+        ...account,
+      },
+    });
     const { confirmed } = await showMnemonicWarningDialog();
     if (confirmed) {
       setMnemonic(wallet.mnemonic ?? "");
     }
   }, []);
 
-  useEffect(() => {
-    async function main() {
-      const balance = await popupServerClient.getAleoBalance({
-        chainId: "testnet3",
-        address:
-          "aleo1xs53pjftr8vst9ev2drwdu0kyyj2f4fxx93j3n30hfr8dqjnwq8qyvka7t",
-      });
-      console.log("===> balance: ", balance);
-    }
-    main();
-  }, []);
+  // useEffect(() => {
+  //   async function main() {
+  //     const balance = await popupServerClient.getBalance({
+  //       chainId: "testnet3",
+  //       address:
+  //         "aleo1xs53pjftr8vst9ev2drwdu0kyyj2f4fxx93j3n30hfr8dqjnwq8qyvka7t",
+  //     });
+  //     console.log("===> balance: ", balance);
+  //   }
+  //   main();
+  // }, []);
 
   const regenerateWallet = useCallback(async () => {
     const walletId = walletIdRef.current;
@@ -61,6 +76,15 @@ function OnboardCreateWalletScreen() {
       walletName: walletNameRef.current,
       walletId,
       revealMnemonic: true,
+    });
+    const coinType = CoinType.ALEO;
+    const account = wallet.accountsMap[coinType][0];
+    dispatch.account.setSelectedAccount({
+      selectedAccount: {
+        walletId: wallet.walletId,
+        coinType,
+        ...account,
+      },
     });
     setMnemonic(wallet.mnemonic ?? "");
   }, []);
@@ -90,7 +114,14 @@ function OnboardCreateWalletScreen() {
           />
         );
       case 3:
-        return <ConfirmMnemonicStep mnemonic={mnemonic} onConfirm={() => {}} />;
+        return (
+          <ConfirmMnemonicStep
+            mnemonic={mnemonic}
+            onConfirm={() => {
+              navigate("/main");
+            }}
+          />
+        );
     }
   }, [step, mnemonic, createWallet, regenerateWallet]);
 

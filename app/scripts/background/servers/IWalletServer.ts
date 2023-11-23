@@ -6,6 +6,7 @@ import {
 } from "../../../common/types/message";
 import { DisplayKeyring, DisplayWallet } from "../store/vault/types/keyring";
 import { logger } from "../../../common/utils/logger";
+import { ChainUniqueId } from "core/types/ChainUniqueId";
 
 export type PopupServerMethod = keyof IPopupServer;
 
@@ -29,16 +30,25 @@ export interface AddAccountProps {
   accountId: string;
 }
 
-export interface AleoBalanceProps {
-  chainId: string;
+export interface GetBalanceProps {
+  uniqueId: ChainUniqueId;
   address: string;
 }
 
-export interface AleoBalance {
-  privateBalance: string;
-  publicBalance: string;
-  total: string;
-}
+// export enum SerializeType {
+//   BIG_INT = "big_int",
+// }
+
+// export interface SerializeValue {
+//   type: SerializeType;
+//   value: string;
+// }
+
+// export interface GetBalanceResp {
+//   privateBalance: SerializeValue;
+//   publicBalance: SerializeValue;
+//   total: SerializeValue;
+// }
 
 export enum RecordFilter {
   UNSPENT = "unspent",
@@ -52,8 +62,26 @@ export interface AleoRecordsProps {
   recordFilter: RecordFilter;
 }
 
+// interface PopupClientEventListeners {
+//   lock: () => void;
+// }
+
+// export type PopupClientEvent = keyof PopupClientEventListeners;
+
+// type PopupClientListenerMap = {
+//   [T in PopupClientEvent]: PopupClientEventListeners[T][];
+// };
+
 export interface IPopupServer {
   initPassword: (params: { password: string }) => Promise<boolean>;
+
+  hasAuth(): Promise<boolean>;
+
+  login(params: { password: string }): Promise<boolean>;
+
+  lock(): Promise<void>;
+
+  timeoutLock(): Promise<void>;
 
   createWallet: (params: CreateWalletProps) => Promise<DisplayWallet>;
 
@@ -65,7 +93,7 @@ export interface IPopupServer {
 
   getAllWallet: () => Promise<DisplayKeyring>;
 
-  getAleoBalance(params: AleoBalanceProps): Promise<AleoBalance>;
+  // getBalance(params: GetBalanceProps): Promise<GetBalanceResp>;
 }
 
 export interface IContentServer {

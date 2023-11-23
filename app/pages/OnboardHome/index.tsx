@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import BaseCheckbox from "../../components/Custom/Checkbox";
 import browser from "webextension-polyfill";
 import { OnboardLogo } from "../../components/Custom/Icon";
+import { useCurrAccount } from "@/hooks/useCurrAccount";
 
 const shakeAnimation = keyframes`
   10%, 90% {
@@ -27,6 +28,7 @@ function OnboardHomeScreen() {
   const navigate = useNavigate();
   const [checked, setChecked] = useState(false);
   const [showShakeAnimation, setShowShakeAnimation] = useState(false);
+  const { selectedAccount } = useCurrAccount();
 
   return (
     <Flex direction={"column"} w={"full"} h={"full"}>

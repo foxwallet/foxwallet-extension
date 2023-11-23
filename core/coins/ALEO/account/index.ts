@@ -1,4 +1,4 @@
-import { PrivateKey } from "aleo_wasm";
+import init, { PrivateKey, Address } from "aleo_wasm";
 import { encode as bs58Encode, decode as bs58Decode } from "bs58";
 import { CoinBasic } from "../../CoinBasic";
 import { CoinType } from "../../../types/CoinType";
@@ -9,8 +9,25 @@ import {
   AleoImportPKType,
 } from "../types/AleoAccount";
 import { CoreError, CoreErrorCode } from "../../../types/Error";
+import { logger } from "@/common/utils/logger";
 
 class AleoBasic extends CoinBasic<CoinType.ALEO> {
+  constructor() {
+    super(CoinType.ALEO);
+    init();
+  }
+
+  public isValidAddress(address: string): boolean {
+    try {
+      const addressObj = Address.from_string(address);
+      console.log("===> addressObj: ", addressObj, !!addressObj);
+      return !!addressObj;
+    } catch (err) {
+      logger.log("===> isValidAddress failed: ", err, address);
+      return false;
+    }
+  }
+
   public serializeBuffer(keyBuffer: Buffer): string {
     return `${ALEO_PRIVATE_PREFIX}${bs58Encode(keyBuffer)}`;
   }
@@ -68,4 +85,4 @@ class AleoBasic extends CoinBasic<CoinType.ALEO> {
   }
 }
 
-export const aleoBasic = new AleoBasic(CoinType.ALEO);
+export const aleoBasic = new AleoBasic();

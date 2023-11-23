@@ -1,8 +1,10 @@
 import { Navigate } from "react-router-dom";
-import { useAppStatus } from "../../../hooks/useAppStatus";
+import { useCurrAccount } from "@/hooks/useCurrAccount";
+import { store } from "@/store/store";
 
 export const CheckOnboard = (props: { children: React.ReactNode }) => {
-  const { hasWallet } = useAppStatus();
+  const { selectedAccount } = useCurrAccount();
+  const hasWallet = !!selectedAccount.address;
 
   if (hasWallet) {
     return props.children;

@@ -4,10 +4,11 @@ import { IAleoStorage } from "../types/IAleoStorage";
 import { AleoAddressInfo, RecordDetailWithSpent } from "../types/SyncTask";
 import { parseU64 } from "../utils/num";
 import { logger } from "@/common/utils/logger";
-import { AleoRpcService } from "../../../../offscreen/aleo_service";
 import { AutoSwitch } from "@/common/utils/retry";
 import { AutoSwitchServiceType } from "@/common/types/retry";
 import { RecordFilter } from "@/scripts/background/servers/IWalletServer";
+import { uniqBy } from "lodash";
+import { AleoRpcService } from "./instances/rpc";
 
 const CREDITS_MAPPING_NAME = "account";
 
@@ -43,7 +44,7 @@ export class AleoService {
     blockRanges.sort((range1, range2) => {
       const [start1] = range1.split("-");
       const [start2] = range2.split("-");
-      return parseInt(start2) - parseInt(start1);
+      return parseInt(start1) - parseInt(start2);
     });
 
     const allRecordsMap: {
@@ -75,23 +76,12 @@ export class AleoService {
       const { recordsMap, txInfoList, spentRecordTags, range } = blockInfo;
       const [blockBegin, blockEnd] = range;
       if (existBegin !== undefined && existEnd !== undefined) {
-        if (existBegin <= blockBegin && existEnd >= blockEnd) {
-          logger.log(
-            "===> skip block",
-            blockBegin,
-            blockEnd,
-            existBegin,
-            existEnd,
-          );
-          continue;
-        }
         existBegin = Math.min(existBegin, blockBegin);
         existEnd = Math.max(existEnd, blockEnd);
       } else {
         existBegin = blockBegin;
         existEnd = blockEnd;
       }
-      logger.log("===> sync", blockBegin, blockEnd, existBegin, existEnd);
       if (spentRecordTags) {
         for (const spentRecordTag of spentRecordTags) {
           for (const tag of spentRecordTag.tags) {
@@ -110,17 +100,11 @@ export class AleoService {
           }
           const { commitment } = record;
           if (!newRecords[commitment]) {
+            logger.log("===> insert record: ", record);
             newRecords[commitment] = {
               ...record,
               spent: false,
             };
-          } else {
-            logger.log(
-              "===> record with same commitment",
-              record,
-              newRecords[commitment],
-              commitment,
-            );
           }
         }
         allRecordsMap[programId] = newRecords;
@@ -158,7 +142,9 @@ export class AleoService {
 
     const result = {
       recordsMap: allRecordsMap,
-      txInfoList: allTxInfoList.sort((tx1, tx2) => tx2.height - tx1.height),
+      txInfoList: uniqBy(allTxInfoList, (tx) => tx.txId).sort(
+        (tx1, tx2) => tx2.height - tx1.height,
+      ),
       spentRecordTags: Array.from(allSpentRecordTagsSet),
       range: [existBegin, existEnd],
     };
@@ -207,6 +193,18 @@ export class AleoService {
       return 0n;
     }
     return parseU64(balance);
+  }
+
+  async getBalance(address: string) {
+    const [privateBalance, publicBalance] = await Promise.all([
+      this.getPrivateBalance(address),
+      this.getPublicBalance(address),
+    ]);
+    return {
+      privateBalance: privateBalance,
+      publicBalance: publicBalance,
+      total: privateBalance + publicBalance,
+    };
   }
 
   async getRecords(

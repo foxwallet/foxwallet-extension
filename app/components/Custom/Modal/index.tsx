@@ -21,9 +21,10 @@ interface ModalProps {
   hideClose?: boolean;
   onClose: () => void;
   body: React.ReactNode;
-  footer: React.ReactNode;
+  footer?: React.ReactNode;
   bodyStyle?: ModalBodyProps;
   footerStyle?: ModalFooterProps;
+  isCentered?: boolean;
 }
 
 export function BasicModal(props: ModalProps) {
@@ -36,6 +37,7 @@ export function BasicModal(props: ModalProps) {
     footer,
     bodyStyle,
     footerStyle,
+    isCentered,
   } = props;
 
   return (
@@ -44,7 +46,7 @@ export function BasicModal(props: ModalProps) {
       closeOnOverlayClick={!hideClose}
       onClose={onClose}
       isOpen={isOpen}
-      isCentered
+      isCentered={isCentered}
     >
       <ModalOverlay backdropFilter="blur(10px)" />
       <ModalContent
@@ -77,9 +79,11 @@ export function BasicModal(props: ModalProps) {
         )}
 
         <ModalBody {...bodyStyle}>{body}</ModalBody>
-        <ModalFooter justifyContent={"center"} mt={4} {...footerStyle}>
-          {footer}
-        </ModalFooter>
+        {!!footer && (
+          <ModalFooter justifyContent={"center"} mt={4} {...footerStyle}>
+            {footer}
+          </ModalFooter>
+        )}
       </ModalContent>
     </Modal>
   );

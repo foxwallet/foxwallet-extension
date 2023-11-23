@@ -13,6 +13,8 @@ import {
   OffscreenMessage,
   OffscreenMessageType,
 } from "@/common/types/offscreen";
+import { nanoid } from "nanoid";
+import { AleoSendTxParams } from "core/coins/ALEO/types/Tranaction";
 
 // export async function main() {
 //   await init();
@@ -47,7 +49,26 @@ const onOffscreenMessage = (
 export async function offscreen() {
   browser.runtime.onMessage.addListener(onOffscreenMessage);
   await initWorker();
-  setTimeout(async () => {
-    await sendTransaction();
-  });
+  // setTimeout(async () => {
+  //   const localId = nanoid();
+  //   const timestamp = Date.now();
+  //   const params: AleoSendTxParams = {
+  //     privateKey: "",
+  //     address:
+  //       "aleo1xs53pjftr8vst9ev2drwdu0kyyj2f4fxx93j3n30hfr8dqjnwq8qyvka7t",
+  //     chainId: "testnet3",
+  //     programId: "credits.aleo",
+  //     functionName: "transfer_public_to_private",
+  //     inputs: [
+  //       "aleo1xs53pjftr8vst9ev2drwdu0kyyj2f4fxx93j3n30hfr8dqjnwq8qyvka7t",
+  //       "2000000u64",
+  //     ],
+  //     baseFee: 153388,
+  //     priorityFee: 10000,
+  //     feeRecord: null,
+  //     localId,
+  //     timestamp,
+  //   };
+  //   await sendTransaction(params);
+  // });
 }

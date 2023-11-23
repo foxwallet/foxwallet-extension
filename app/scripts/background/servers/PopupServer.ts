@@ -1,4 +1,3 @@
-import { AleoService } from "core/coins/ALEO/service/AleoService";
 import { AuthManager } from "../store/vault/managers/auth/AuthManager";
 import { KeyringManager } from "../store/vault/managers/keyring/KeyringManager";
 import { DisplayKeyring, DisplayWallet } from "../store/vault/types/keyring";
@@ -8,24 +7,14 @@ import {
   type IPopupServer,
   ImportHDWalletProps,
   AddAccountProps,
-  AleoBalanceProps,
-  AleoBalance,
-  AleoRecordsProps,
 } from "./IWalletServer";
-import { ALEO_CHAIN_CONFIGS } from "core/coins/ALEO/config/chains";
-import { AleoStorage } from "../store/aleo/AleoStorage";
 export class PopupWalletServer implements IPopupServer {
   authManager: AuthManager;
   keyringManager: KeyringManager;
-  aleoService: AleoService;
 
   constructor(authManager: AuthManager, keyringManager: KeyringManager) {
     this.authManager = authManager;
     this.keyringManager = keyringManager;
-    this.aleoService = new AleoService(
-      ALEO_CHAIN_CONFIGS.TEST_NET_3,
-      AleoStorage.getInstance(),
-    );
   }
 
   async initPassword(params: { password: string }): Promise<boolean> {
@@ -35,6 +24,22 @@ export class PopupWalletServer implements IPopupServer {
     await this.authManager.initPassword(params.password);
     await this.keyringManager.reset();
     return true;
+  }
+
+  async hasAuth(): Promise<boolean> {
+    return this.authManager.hasAuth();
+  }
+
+  async login(params: { password: string }): Promise<boolean> {
+    return await this.authManager.login(params.password);
+  }
+
+  async lock(): Promise<void> {
+    return this.authManager.lock();
+  }
+
+  async timeoutLock(): Promise<void> {
+    return this.authManager.timeoutLock();
   }
 
   async createWallet(params: CreateWalletProps): Promise<DisplayWallet> {
@@ -59,27 +64,41 @@ export class PopupWalletServer implements IPopupServer {
     return await this.keyringManager.getAllWallet();
   }
 
-  async getAleoBalance({
-    chainId,
-    address,
-  }: AleoBalanceProps): Promise<AleoBalance> {
-    const [privateBalance, publicBalance] = await Promise.all([
-      this.aleoService.getPrivateBalance(address),
-      this.aleoService.getPublicBalance(address),
-    ]);
-    return {
-      privateBalance: privateBalance.toString(),
-      publicBalance: publicBalance.toString(),
-      total: (privateBalance + publicBalance).toString(),
-    };
-  }
+  // async getBalance({
+  //   uniqueId,
+  //   address,
+  // }: GetBalanceProps): Promise<GetBalanceResp> {
+  //   switch (uniqueId) {
+  //     case InnerChainUniqueId.ALEO_TESTNET_3:
+  //       const [privateBalance, publicBalance] = await Promise.all([
+  //         this.aleoService.getPrivateBalance(address),
+  //         this.aleoService.getPublicBalance(address),
+  //       ]);
+  //       return {
+  //         privateBalance: {
+  //           type: SerializeType.BIG_INT,
+  //           value: privateBalance.toString(),
+  //         },
+  //         publicBalance: {
+  //           type: SerializeType.BIG_INT,
+  //           value: publicBalance.toString(),
+  //         },
+  //         total: {
+  //           type: SerializeType.BIG_INT,
+  //           value: (privateBalance + publicBalance).toString(),
+  //         },
+  //       };
+  //     default:
+  //       throw new Error("Unsupported chain");
+  //   }
+  // }
 
-  async getRecords({
-    chainId,
-    address,
-    programId,
-    recordFilter,
-  }: AleoRecordsProps) {
-    return await this.aleoService.getRecords(address, programId, recordFilter);
-  }
+  // async getRecords({
+  //   chainId,
+  //   address,
+  //   programId,
+  //   recordFilter,
+  // }: AleoRecordsProps) {
+  //   return await this.aleoService.getRecords(address, programId, recordFilter);
+  // }
 }

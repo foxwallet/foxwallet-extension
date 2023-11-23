@@ -6,10 +6,13 @@ import {
 import { logger } from "../../../../../../common/utils/logger";
 import { vaultStorage, type VaultStorage } from "../../VaultStorage";
 
+const EXPIRE_TIME = 1000 * 60 * 15;
+
 export class AuthManager {
   #storage: VaultStorage;
   #token?: string;
   #loginTimestamp?: number;
+  #timerId?: number;
 
   constructor() {
     this.#storage = vaultStorage;
@@ -27,6 +30,31 @@ export class AuthManager {
   }
 
   async updatePassword(password: string) {}
+
+  hasAuth() {
+    if (!this.#token || !this.#loginTimestamp) {
+      return false;
+    }
+    clearTimeout(this.#timerId);
+    const now = Date.now();
+    if (now - this.#loginTimestamp >= EXPIRE_TIME) {
+      this.lock();
+      return false;
+    }
+    return true;
+  }
+
+  lock = () => {
+    this.#token = undefined;
+    this.#loginTimestamp = undefined;
+    this.#timerId = undefined;
+  };
+
+  timeoutLock = () => {
+    this.#loginTimestamp = Date.now();
+    // @ts-expect-error setTimeout
+    this.#timerId = setTimeout(this.lock, EXPIRE_TIME);
+  };
 
   async login(password: string) {
     const cipher = await this.#storage.getCipher();

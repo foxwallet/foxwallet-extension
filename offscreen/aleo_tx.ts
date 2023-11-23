@@ -1,6 +1,5 @@
 import { shuffle } from "@/common/utils/array";
 import type { AleoProgramImportsMap, LogFunc } from "./aleo.di";
-import { AleoRpcService } from "./aleo_service";
 import {
   PrivateKey,
   Program,
@@ -18,6 +17,7 @@ import {
   type AleoTransaction,
   type AleoPendingTxInfo,
 } from "core/coins/ALEO/types/Tranaction";
+import { AleoRpcService } from "core/coins/ALEO/service/instances/rpc";
 
 export class AleoTxWorker {
   rpcService: AleoRpcService;

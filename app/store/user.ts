@@ -4,14 +4,14 @@ import { type RootModel } from "./index";
 export const user = createModel<RootModel>()({
   name: "user",
   state: {
-    hasWallet: false,
+    hasAuth: false,
   },
   reducers: {
-    setHasWallet(state, payload: { hasWallet: boolean }) {
-      const { hasWallet } = payload;
+    setHasAuth(state, payload: { hasAuth: boolean }) {
+      const { hasAuth } = payload;
       return {
         ...state,
-        hasWallet,
+        hasAuth,
       };
     },
   },

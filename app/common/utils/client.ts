@@ -5,8 +5,6 @@ import {
   type RegenerateWalletProps,
   type ImportHDWalletProps,
   type AddAccountProps,
-  type AleoBalanceProps,
-  type AleoBalance,
 } from "../../scripts/background/servers/IWalletServer";
 import {
   type DisplayWallet,
@@ -108,6 +106,22 @@ export class PopupServerClient implements IClient, IPopupServer {
     return await this.#send("initPassword", params);
   }
 
+  async hasAuth(): Promise<boolean> {
+    return await this.#send("hasAuth", {});
+  }
+
+  async login(params: { password: string }): Promise<boolean> {
+    return await this.#send("login", params);
+  }
+
+  async lock(): Promise<void> {
+    return await this.#send("lock", {});
+  }
+
+  async timeoutLock(): Promise<void> {
+    return await this.#send("timeoutLock", {});
+  }
+
   async createWallet(params: CreateWalletProps): Promise<DisplayWallet> {
     return await this.#send("createWallet", params);
   }
@@ -130,9 +144,9 @@ export class PopupServerClient implements IClient, IPopupServer {
     return await this.#send("getAllWallet", {});
   }
 
-  async getAleoBalance(params: AleoBalanceProps): Promise<AleoBalance> {
-    return await this.#send("getAleoBalance", params);
-  }
+  // async getBalance(params: GetBalanceProps): Promise<GetBalanceResp> {
+  //   return await this.#send("getBalance", params);
+  // }
 
   async #send<T, R>(method: PopupServerMethod, payload: T): Promise<R> {
     return await new Promise<R>((resolve, reject) => {

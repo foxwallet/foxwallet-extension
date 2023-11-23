@@ -1,4 +1,3 @@
-import { AleoRpcService } from "./aleo_service";
 import { AutoSwitch } from "@/common/utils/retry";
 import { AutoSwitchServiceType } from "@/common/types/retry";
 import { sleep } from "@/common/utils/sleep";
@@ -28,6 +27,7 @@ import type {
   AleoSendTxParams,
   AleoTransaction,
 } from "core/coins/ALEO/types/Tranaction";
+import { AleoRpcService } from "core/coins/ALEO/service/instances/rpc";
 
 // larger limit
 export const SYNC_TASK_QUENE_LIMIT = 100;

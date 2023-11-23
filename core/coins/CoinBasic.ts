@@ -41,4 +41,6 @@ export abstract class CoinBasic<T extends CoinType> {
   public getPrivateKeyForSign(privateKey: string): string {
     return privateKey;
   }
+
+  public abstract isValidAddress(address: string): boolean;
 }

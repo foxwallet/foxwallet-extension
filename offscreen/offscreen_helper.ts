@@ -84,28 +84,10 @@ export async function initWorker() {
   return initResp;
 }
 
-export async function sendTransaction(_params?: AleoSendTxParams) {
+export async function sendTransaction(params: AleoSendTxParams) {
   logger.log("===> initWorker setupOffscreenDocument");
   await setupOffscreenDocument(OFFSCREEN_DOCUMENT_PATH);
   logger.log("===> initWorker sendMessage");
-  const localId = nanoid();
-  const timestamp = Date.now();
-  const params: AleoSendTxParams = {
-    privateKey: "",
-    address: "aleo1xs53pjftr8vst9ev2drwdu0kyyj2f4fxx93j3n30hfr8dqjnwq8qyvka7t",
-    chainId: "testnet3",
-    programId: "credits.aleo",
-    functionName: "transfer_public_to_private",
-    inputs: [
-      "aleo1xs53pjftr8vst9ev2drwdu0kyyj2f4fxx93j3n30hfr8dqjnwq8qyvka7t",
-      "2000000u64",
-    ],
-    baseFee: 153388,
-    priorityFee: 10000,
-    feeRecord: null,
-    localId,
-    timestamp,
-  };
   const messsage: BackgroundMessage = {
     type: OffscreenMethod.SEND_TX,
     origin: MessageOrigin.BACKGROUND_TO_OFFSCREEN,
