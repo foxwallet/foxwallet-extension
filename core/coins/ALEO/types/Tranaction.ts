@@ -8,15 +8,16 @@ export interface AleoSendTxParams {
   programId: string;
   functionName: string;
   inputs: string[];
-  baseFee: number;
-  priorityFee: number;
+  baseFee: string;
+  priorityFee: string;
   feeRecord: string | null;
   timestamp: number;
+  amount?: string;
 }
 
 export type AleoTransaction = Transaction;
 
-export type AleoPendingTxInfo = Omit<
+export type AleoLocalTxInfo = Omit<
   AleoSendTxParams,
   "privateKey" | "chainId" | "address"
 > & {

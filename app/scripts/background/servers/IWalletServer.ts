@@ -7,6 +7,10 @@ import {
 import { DisplayKeyring, DisplayWallet } from "../store/vault/types/keyring";
 import { logger } from "../../../common/utils/logger";
 import { ChainUniqueId } from "core/types/ChainUniqueId";
+import {
+  AleoSendTxParams,
+  AleoTransaction,
+} from "core/coins/ALEO/types/Tranaction";
 
 export type PopupServerMethod = keyof IPopupServer;
 
@@ -62,6 +66,13 @@ export interface AleoRecordsProps {
   recordFilter: RecordFilter;
 }
 
+export type AleoSendTxProps = Omit<AleoSendTxParams, "privateKey"> & {
+  walletId: string;
+  uniqueId: ChainUniqueId;
+  coinType: CoinType;
+  accountId: string;
+};
+
 // interface PopupClientEventListeners {
 //   lock: () => void;
 // }
@@ -75,7 +86,7 @@ export interface AleoRecordsProps {
 export interface IPopupServer {
   initPassword: (params: { password: string }) => Promise<boolean>;
 
-  hasAuth(): Promise<boolean>;
+  hasAuth(params: { checkExpire?: boolean }): Promise<boolean>;
 
   login(params: { password: string }): Promise<boolean>;
 
@@ -93,7 +104,7 @@ export interface IPopupServer {
 
   getAllWallet: () => Promise<DisplayKeyring>;
 
-  // getBalance(params: GetBalanceProps): Promise<GetBalanceResp>;
+  sendAleoTransaction(params: AleoSendTxProps): Promise<AleoTransaction>;
 }
 
 export interface IContentServer {

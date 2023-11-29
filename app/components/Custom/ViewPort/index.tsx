@@ -7,7 +7,7 @@ export const ViewPort = (props: PropsWithChildren) => {
 
   return (
     <Box
-      w={isInTab ? "full" : "360px"}
+      w={isInTab ? "full" : "375px"}
       h={isInTab ? "full" : "600px"}
       {...props}
     />

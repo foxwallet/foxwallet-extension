@@ -1,3 +1,5 @@
+import { AleoTxAddressType } from "./History";
+
 export enum TaskPriority {
   HIGH = 0,
   MEDIUM = 1,
@@ -30,6 +32,7 @@ export type RecordDetailWithBlockInfo = RecordDetail & TxMetadata;
 export type RecordDetailWithSpent = RecordDetail &
   TxMetadata & {
     spent: boolean;
+    parsedContent?: { [key in string]: any };
   };
 
 export interface FeeInfo {
@@ -48,7 +51,7 @@ export interface TxMetadata {
 export interface TxInfo {
   program: string;
   function: string;
-  txType: "send" | "receive";
+  txType: AleoTxAddressType;
   address?: string; // "public" "private to public"
   amount?: string; // "public" "public to private" "private to public"
   // inputCreditRecordSerialNumber?: string[]; // "private" "private to public" "join" "split"

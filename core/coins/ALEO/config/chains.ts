@@ -5,6 +5,7 @@ import { ReserveChainConfigs } from "core/env";
 import { ExplorerLanguages } from "core/types/ExplorerLanguages";
 // @ts-expect-error missing type
 import AleoLogo from "../../../assets/images/chains/aleo.webp";
+import { NATIVE_TOKEN_PROGRAM_ID } from "../constants";
 
 export const ALEO_CHAIN_CONFIGS: { [key in string]: AleoConfig } = {
   TEST_NET_3: {
@@ -18,7 +19,7 @@ export const ALEO_CHAIN_CONFIGS: { [key in string]: AleoConfig } = {
       name: "Aleo",
       decimals: 6,
       symbol: "ALEO",
-      address: "credits.aleo",
+      address: NATIVE_TOKEN_PROGRAM_ID,
     },
     explorerUrls: {
       [ExplorerLanguages.EN]: "https://aleo.info/en/",

@@ -29,5 +29,17 @@ export const useCoinService = (uniqueId: ChainUniqueId) => {
     return coinServiceEntry.getInstance(uniqueId);
   }, [uniqueId]);
 
-  return coinService;
+  const chainConfig = useMemo(() => {
+    return {
+      ...coinService.config,
+    };
+  }, [coinService]);
+
+  const nativeCurrency = useMemo(() => {
+    return {
+      ...chainConfig.nativeCurrency,
+    };
+  }, [chainConfig]);
+
+  return { coinService, chainConfig, nativeCurrency };
 };

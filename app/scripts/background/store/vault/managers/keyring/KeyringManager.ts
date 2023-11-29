@@ -22,16 +22,17 @@ import { decryptStr } from "core/utils/encrypt";
 import { logger } from "../../../../../../common/utils/logger";
 import { AddAccountProps } from "../../../../servers/IWalletServer";
 import initAleoWasm from "aleo_wasm";
+import { ERROR_CODE } from "@/common/types/error";
 
 export class KeyringManager {
   #storage: VaultStorage;
   #authManager: AuthManager;
-  #hdKeyrings: { [walletId in string]?: HDKeyring };
+  // #hdKeyrings: { [walletId in string]?: HDKeyring };
 
   constructor(authManager: AuthManager) {
     this.#storage = vaultStorage;
     this.#authManager = authManager;
-    this.#hdKeyrings = {};
+    // this.#hdKeyrings = {};
   }
 
   async init() {
@@ -39,7 +40,7 @@ export class KeyringManager {
   }
 
   async reset() {
-    this.#hdKeyrings = {};
+    // this.#hdKeyrings = {};
   }
 
   #getToken() {
@@ -141,7 +142,7 @@ export class KeyringManager {
     };
 
     await this.#storage.addHDWallet(newWallet, AccountMethod.CREATE);
-    this.#hdKeyrings[walletId] = newKeyring;
+    // this.#hdKeyrings[walletId] = newKeyring;
     const wallet = await this.getWallet(walletId);
 
     if (revealMnemonic) {
@@ -200,7 +201,7 @@ export class KeyringManager {
 
     await this.#storage.setHDWallet(newWallet, AccountMethod.REGENERATE);
 
-    this.#hdKeyrings[walletId] = keyring;
+    // this.#hdKeyrings[walletId] = keyring;
 
     const wallet = await this.getWallet(walletId);
 
@@ -225,9 +226,9 @@ export class KeyringManager {
     if (existWallet) {
       throw new Error("Wallet have existed");
     }
-    const keyrings = Object.values(this.#hdKeyrings);
-    for (let keyring of keyrings) {
-      const encryptedMnemonic = keyring?.getEncryptedMnemonic();
+    const allHDWallets = await this.#storage.getAllHDWallets();
+    for (let hdWallet of allHDWallets) {
+      const encryptedMnemonic = hdWallet.mnemonic;
       if (!encryptedMnemonic) {
         continue;
       }
@@ -272,7 +273,7 @@ export class KeyringManager {
     };
     await this.#storage.addHDWallet(newWallet, AccountMethod.IMPORT);
 
-    this.#hdKeyrings[walletId] = newKeyring;
+    // this.#hdKeyrings[walletId] = newKeyring;
 
     return await this.getWallet(walletId);
   }
@@ -285,22 +286,28 @@ export class KeyringManager {
     const token = this.#getToken();
     const hdWallet = await this.#storage.getHDWallet(walletId);
     const index = hdWallet.accountsMap[coin].length;
-    let keyring = this.#hdKeyrings[walletId];
-    if (!keyring) {
-      keyring = await HDKeyring.restore({
-        walletId,
-        token,
-        mnemonic: hdWallet.mnemonic,
-      });
-      this.#hdKeyrings[walletId] = keyring;
-      logger.log("===> addNewAccount wallet: ", keyring);
-    }
+    // let keyring = this.#hdKeyrings[walletId];
+    // let hdWallet = this.#storage.getHDWallet(walletId);
+    // if (!hdWallet) {
+    //   keyring = await HDKeyring.restore({
+    //     walletId,
+    //     token,
+    //     mnemonic: hdWallet.mnemonic,
+    //   });
+    //   this.#hdKeyrings[walletId] = keyring;
+    //   logger.log("===> addNewAccount wallet: ", keyring);
+    // }
     const existAccount = hdWallet.accountsMap[coin].some(
       (item) => item.accountId === accountId,
     );
     if (existAccount) {
-      throw new Error("Account have existed");
+      throw new Error("AccountId have existed");
     }
+    const keyring = await HDKeyring.restore({
+      walletId,
+      token,
+      mnemonic: hdWallet.mnemonic,
+    });
     const newEncryptedKeyPair = (await keyring.derive(
       accountId,
       index,
@@ -325,5 +332,30 @@ export class KeyringManager {
     await this.#storage.setHDWallet(newHdWallet, AccountMethod.ADD);
 
     return await this.getWallet(walletId);
+  }
+
+  async getPrivateKey({
+    walletId,
+    coinType,
+    accountId,
+  }: {
+    walletId: string;
+    coinType: CoinType;
+    accountId: string;
+  }) {
+    const wallet = await this.#storage.getHDWallet(walletId);
+    const account = wallet.accountsMap[coinType].find(
+      (item) => item.accountId === accountId,
+    );
+    if (!account) {
+      throw new Error("Account not found " + accountId);
+    }
+    const token = this.#getToken();
+    if (!token) {
+      throw new Error(ERROR_CODE.NOT_AUTH);
+    }
+    const encryptedPrivateKey = account.privateKey;
+    const privateKey = decryptStr(token, encryptedPrivateKey);
+    return privateKey;
   }
 }

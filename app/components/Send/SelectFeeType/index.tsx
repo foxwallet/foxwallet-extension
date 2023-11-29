@@ -13,25 +13,26 @@ import { BasicModal } from "../../Custom/Modal";
 import { promisifyChooseDialogWrapper } from "../../../common/utils/dialog";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
 import { useMemo } from "react";
+import { AleoFeeMethod } from "core/coins/ALEO/types/FeeMethod";
 
 interface Props {
   isOpen: boolean;
-  onConfirm: (data: AleoTransferMethod) => void;
+  onConfirm: (data: AleoFeeMethod) => void;
   onCancel: () => void;
 }
 
-const SelectTransferMethodDrawer = (props: Props) => {
+const SelectFeeTypeDrawer = (props: Props) => {
   const { isOpen, onConfirm, onCancel } = props;
 
   const transferMethods = useMemo(() => {
-    return Object.values(AleoTransferMethod);
+    return Object.values(AleoFeeMethod);
   }, []);
 
   return (
     <Drawer isOpen={isOpen} placement="bottom" onClose={onCancel}>
       <DrawerOverlay />
       <DrawerContent bg={"white"} px="6" py="4">
-        <DrawerCloseButton position={"absolute"} top={5} right={6} />
+        <DrawerCloseButton position={"absolute"} top={6} right={6} />
         <DrawerHeader
           display={"flex"}
           justifyContent={"center"}
@@ -60,8 +61,30 @@ const SelectTransferMethodDrawer = (props: Props) => {
       </DrawerContent>
     </Drawer>
   );
+
+  return (
+    <BasicModal
+      isOpen={isOpen}
+      onClose={onCancel}
+      title={"Fee Method"}
+      body={
+        <Flex direction={"column"}>
+          {transferMethods.map((method) => (
+            <Button
+              key={method}
+              flex={1}
+              mx="2"
+              mt="2"
+              onClick={() => onConfirm(method)}
+            >
+              {method}
+            </Button>
+          ))}
+        </Flex>
+      }
+    />
+  );
 };
 
-export const showSelectTransferMethodDialog = promisifyChooseDialogWrapper(
-  SelectTransferMethodDrawer,
-);
+export const showSelectFeeTypeDialog =
+  promisifyChooseDialogWrapper(SelectFeeTypeDrawer);

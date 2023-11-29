@@ -15,9 +15,10 @@ import {
   AleoTxStatus,
   type AleoSendTxParams,
   type AleoTransaction,
-  type AleoPendingTxInfo,
+  type AleoLocalTxInfo,
 } from "core/coins/ALEO/types/Tranaction";
 import { AleoRpcService } from "core/coins/ALEO/service/instances/rpc";
+import { NATIVE_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
 
 export class AleoTxWorker {
   rpcService: AleoRpcService;
@@ -242,8 +243,9 @@ export class AleoTxWorker {
     priorityFee,
     feeRecord: feeRecordStr,
     timestamp,
+    amount,
   }: AleoSendTxParams): Promise<null | AleoTransaction> {
-    const pendingTxInfo: AleoPendingTxInfo = {
+    const pendingTxInfo: AleoLocalTxInfo = {
       localId,
       programId,
       functionName,
@@ -253,6 +255,7 @@ export class AleoTxWorker {
       feeRecord: feeRecordStr,
       status: AleoTxStatus.QUEUED,
       timestamp,
+      amount,
     };
     try {
       const startTime = performance.now();
@@ -269,7 +272,7 @@ export class AleoTxWorker {
       );
 
       pendingTxInfo.status = AleoTxStatus.GENERATING_PROVER_FILES;
-      await this.storage.setAddressPendingTx(chainId, address, pendingTxInfo);
+      await this.storage.setAddressLocalTx(chainId, address, pendingTxInfo);
 
       const startProverTime = performance.now();
       const { proverFile, verifierFile } = await this.getProverKeyPair(
@@ -295,7 +298,7 @@ export class AleoTxWorker {
         await this.getProverKeyPair(
           privateKeyObj,
           chainId,
-          "credits.aleo",
+          NATIVE_TOKEN_PROGRAM_ID,
           feeMethod,
           feeInputs,
         );
@@ -303,7 +306,7 @@ export class AleoTxWorker {
       this.log("===> after getFeeProverKeyPair ", totalFeeProverTiime);
 
       pendingTxInfo.status = AleoTxStatus.GENERATING_TRANSACTION;
-      await this.storage.setAddressPendingTx(chainId, address, pendingTxInfo);
+      await this.storage.setAddressLocalTx(chainId, address, pendingTxInfo);
 
       const imports = await this.getProgramImports(chainId, programId);
       const feeRecord = feeRecordStr
@@ -329,7 +332,7 @@ export class AleoTxWorker {
       this.log("===> before submitTransaction ", tx.toString());
 
       pendingTxInfo.status = AleoTxStatus.BROADCASTING;
-      await this.storage.setAddressPendingTx(chainId, address, pendingTxInfo);
+      await this.storage.setAddressLocalTx(chainId, address, pendingTxInfo);
 
       const result = await this.submitTransaction(tx);
       const totalTime = performance.now() - startTime;
@@ -339,7 +342,7 @@ export class AleoTxWorker {
         pendingTxInfo.status = AleoTxStatus.COMPLETED;
         const txObj: AleoTransaction = JSON.parse(tx.toString());
         pendingTxInfo.transaction = txObj;
-        await this.storage.setAddressPendingTx(chainId, address, pendingTxInfo);
+        await this.storage.setAddressLocalTx(chainId, address, pendingTxInfo);
         return JSON.parse(tx.toString());
       }
       return null;
@@ -347,7 +350,7 @@ export class AleoTxWorker {
       this.error("===> sendTransaction error ", err);
       pendingTxInfo.status = AleoTxStatus.FAILED;
       pendingTxInfo.error = (err as Error).message;
-      await this.storage.setAddressPendingTx(chainId, address, pendingTxInfo);
+      await this.storage.setAddressLocalTx(chainId, address, pendingTxInfo);
       return null;
     }
   }

@@ -1,3 +1,4 @@
+import { Transaction } from "aleo/index";
 import {
   type PopupServerMethod,
   type IPopupServer,
@@ -5,6 +6,7 @@ import {
   type RegenerateWalletProps,
   type ImportHDWalletProps,
   type AddAccountProps,
+  AleoSendTxProps,
 } from "../../scripts/background/servers/IWalletServer";
 import {
   type DisplayWallet,
@@ -20,6 +22,7 @@ import {
 import { PortName } from "../types/port";
 import { logger } from "./logger";
 import { type IPort, Port } from "./port";
+import { AleoTransaction } from "core/coins/ALEO/types/Tranaction";
 
 export interface IClient {
   _connect: () => void;
@@ -106,8 +109,8 @@ export class PopupServerClient implements IClient, IPopupServer {
     return await this.#send("initPassword", params);
   }
 
-  async hasAuth(): Promise<boolean> {
-    return await this.#send("hasAuth", {});
+  async hasAuth(params: { checkExpire?: boolean }): Promise<boolean> {
+    return await this.#send("hasAuth", params);
   }
 
   async login(params: { password: string }): Promise<boolean> {
@@ -144,9 +147,9 @@ export class PopupServerClient implements IClient, IPopupServer {
     return await this.#send("getAllWallet", {});
   }
 
-  // async getBalance(params: GetBalanceProps): Promise<GetBalanceResp> {
-  //   return await this.#send("getBalance", params);
-  // }
+  async sendAleoTransaction(params: AleoSendTxProps): Promise<AleoTransaction> {
+    return await this.#send("sendAleoTransaction", params);
+  }
 
   async #send<T, R>(method: PopupServerMethod, payload: T): Promise<R> {
     return await new Promise<R>((resolve, reject) => {

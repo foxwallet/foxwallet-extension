@@ -58,18 +58,6 @@ function OnboardCreateWalletScreen() {
     }
   }, []);
 
-  // useEffect(() => {
-  //   async function main() {
-  //     const balance = await popupServerClient.getBalance({
-  //       chainId: "testnet3",
-  //       address:
-  //         "aleo1xs53pjftr8vst9ev2drwdu0kyyj2f4fxx93j3n30hfr8dqjnwq8qyvka7t",
-  //     });
-  //     console.log("===> balance: ", balance);
-  //   }
-  //   main();
-  // }, []);
-
   const regenerateWallet = useCallback(async () => {
     const walletId = walletIdRef.current;
     const wallet = await popupServerClient.regenerateWallet({

@@ -1,3 +1,4 @@
+import { Transaction } from "aleo/index";
 import { AuthManager } from "../store/vault/managers/auth/AuthManager";
 import { KeyringManager } from "../store/vault/managers/keyring/KeyringManager";
 import { DisplayKeyring, DisplayWallet } from "../store/vault/types/keyring";
@@ -7,7 +8,9 @@ import {
   type IPopupServer,
   ImportHDWalletProps,
   AddAccountProps,
+  AleoSendTxProps,
 } from "./IWalletServer";
+import { sendTransaction } from "../../../../offscreen/offscreen_helper";
 export class PopupWalletServer implements IPopupServer {
   authManager: AuthManager;
   keyringManager: KeyringManager;
@@ -26,8 +29,8 @@ export class PopupWalletServer implements IPopupServer {
     return true;
   }
 
-  async hasAuth(): Promise<boolean> {
-    return this.authManager.hasAuth();
+  async hasAuth(params: { checkExpire?: boolean }): Promise<boolean> {
+    return this.authManager.hasAuth(params.checkExpire);
   }
 
   async login(params: { password: string }): Promise<boolean> {
@@ -62,6 +65,23 @@ export class PopupWalletServer implements IPopupServer {
 
   async getAllWallet(): Promise<DisplayKeyring> {
     return await this.keyringManager.getAllWallet();
+  }
+
+  async sendAleoTransaction(params: AleoSendTxProps): Promise<Transaction> {
+    const { walletId, accountId, coinType, ...rest } = params;
+    const pk = await this.keyringManager.getPrivateKey({
+      walletId,
+      coinType,
+      accountId,
+    });
+    const tx = await sendTransaction({
+      ...rest,
+      privateKey: pk,
+    });
+    if (tx.payload.error) {
+      throw new Error(tx.payload.error);
+    }
+    return tx.payload.data;
   }
 
   // async getBalance({

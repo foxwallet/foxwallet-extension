@@ -76,6 +76,11 @@ export class VaultStorage {
     return hdWallet;
   }
 
+  async getAllHDWallets() {
+    const keyring = (await this.getKeyring()) || {};
+    return keyring[WalletType.HD] || [];
+  }
+
   async isHDWalletExist(walletId: string) {
     const keyring = (await this.getKeyring()) || {};
     const hdWallets = keyring[WalletType.HD] || [];

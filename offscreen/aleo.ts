@@ -26,6 +26,7 @@ import {
   type WorkerSyncTask,
 } from "core/coins/ALEO/types/SyncTask";
 import { AleoRpcService } from "core/coins/ALEO/service/instances/rpc";
+import { AleoTxAddressType } from "core/coins/ALEO/types/History";
 
 export class AleoWorker {
   rpcService: AleoRpcService;
@@ -312,7 +313,7 @@ export class AleoWorker {
     return {
       program: "credits.aleo",
       function: transition.function,
-      txType: "send",
+      txType: AleoTxAddressType.SEND,
       address: receiverAddress,
       amount: amount?.toString(),
       receivedRecords,
@@ -346,7 +347,7 @@ export class AleoWorker {
             return {
               program: "credits.aleo",
               function: transition.function,
-              txType: "receive",
+              txType: AleoTxAddressType.RECEIVE,
               receivedRecords: [record],
             };
           }
@@ -360,7 +361,7 @@ export class AleoWorker {
           return {
             program: "credits.aleo",
             function: transition.function,
-            txType: "receive",
+            txType: AleoTxAddressType.RECEIVE,
             amount: amount.toString(),
           };
         }
@@ -376,7 +377,7 @@ export class AleoWorker {
             return {
               program: "credits.aleo",
               function: transition.function,
-              txType: "receive",
+              txType: AleoTxAddressType.RECEIVE,
               address: senderAddress,
               amount: amount.toString(),
             };
@@ -401,7 +402,7 @@ export class AleoWorker {
             return {
               program: "credits.aleo",
               function: transition.function,
-              txType: "receive",
+              txType: AleoTxAddressType.RECEIVE,
               address: senderAddress,
               amount: amount.toString(),
               receivedRecords: [record],
@@ -447,7 +448,7 @@ export class AleoWorker {
         return {
           program: transition.program,
           function: transition.function,
-          txType: "send",
+          txType: AleoTxAddressType.SEND,
           // snarkvm/ledger/src/helpers, split transaction will subtract 10000 from total supply
           amount: "10000",
           receivedRecords: records,
@@ -506,7 +507,12 @@ export class AleoWorker {
     if (transition.program === "credits.aleo") {
       return this.parseSenderCreditTransition(transition, viewKey, skTag);
     } else {
-      return this.parseCustomTransition(transition, viewKey, skTag, "send");
+      return this.parseCustomTransition(
+        transition,
+        viewKey,
+        skTag,
+        AleoTxAddressType.SEND,
+      );
     }
   };
 
@@ -534,7 +540,16 @@ export class AleoWorker {
         address,
       );
     } else {
-      return this.parseCustomTransition(transition, viewKey, skTag, "receive");
+      const result = this.parseCustomTransition(
+        transition,
+        viewKey,
+        skTag,
+        AleoTxAddressType.RECEIVE,
+      );
+      if (result.receivedRecords.length === 0) {
+        return undefined;
+      }
+      return result;
     }
   };
 
@@ -553,7 +568,7 @@ export class AleoWorker {
       );
     });
     const nonEmptyTransitions = parsedTransitions.filter(
-      (parsedTransition) => !!parsedTransition?.receivedRecords?.length,
+      (parsedTransition) => !!parsedTransition,
     ) as Array<TxInfo & { receivedRecords?: RecordDetail[] }>;
     return nonEmptyTransitions;
   };

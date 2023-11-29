@@ -3,6 +3,7 @@ import {
   type BackgroundMessage,
   MessageOrigin,
   OffscreenMethod,
+  OffscreenMessage,
 } from "@/common/types/offscreen";
 import type { AleoSendTxParams } from "core/coins/ALEO/types/Tranaction";
 import { nanoid } from "nanoid";
@@ -93,7 +94,8 @@ export async function sendTransaction(params: AleoSendTxParams) {
     origin: MessageOrigin.BACKGROUND_TO_OFFSCREEN,
     payload: params,
   };
-  const sendTxResp = await chrome.runtime.sendMessage(messsage);
+  const sendTxResp: OffscreenMessage =
+    await chrome.runtime.sendMessage(messsage);
   logger.log("===> sendTx resp: ", sendTxResp);
   return sendTxResp;
 }

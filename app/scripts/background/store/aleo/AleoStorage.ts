@@ -12,7 +12,7 @@ import {
 import { ProvingKey, VerifyingKey } from "aleo_wasm";
 import { ProverKeyPair } from "core/coins/ALEO/types/ProverKeyPair";
 import {
-  AleoPendingTxInfo,
+  AleoLocalTxInfo,
   AleoTransaction,
   AleoTxWithTime,
 } from "core/coins/ALEO/types/Tranaction";
@@ -190,7 +190,7 @@ export class AleoStorage implements IAleoStorage {
     return await instance.setItem(address, { ...info });
   }
 
-  async getAddressPendingTxIds(chainId: string, address: string) {
+  async getAddressLocalTxIds(chainId: string, address: string) {
     const instance = this.getAleoStorageInstance(
       chainId,
       address,
@@ -199,11 +199,11 @@ export class AleoStorage implements IAleoStorage {
     return await instance.keys();
   }
 
-  async getAddressPendingTx(
+  async getAddressLocalTx(
     chainId: string,
     address: string,
     localId: string,
-  ): Promise<AleoPendingTxInfo | null> {
+  ): Promise<AleoLocalTxInfo | null> {
     const instance = this.getAleoStorageInstance(
       chainId,
       address,
@@ -212,17 +212,30 @@ export class AleoStorage implements IAleoStorage {
     return await instance.getItem(localId);
   }
 
-  async setAddressPendingTx(
+  async setAddressLocalTx(
     chainId: string,
     address: string,
-    info: AleoPendingTxInfo,
-  ) {
+    info: AleoLocalTxInfo,
+  ): Promise<void> {
     const instance = this.getAleoStorageInstance(
       chainId,
       address,
       StorageKey.LOCAL_TX,
     );
-    return await instance.setItem(info.localId, { ...info });
+    await instance.setItem(info.localId, { ...info });
+  }
+
+  async removeAddressLocalTx(
+    chainId: string,
+    address: string,
+    localId: string,
+  ): Promise<void> {
+    const instance = this.getAleoStorageInstance(
+      chainId,
+      address,
+      StorageKey.LOCAL_TX,
+    );
+    await instance.removeItem(localId);
   }
 
   async getProgramContent(

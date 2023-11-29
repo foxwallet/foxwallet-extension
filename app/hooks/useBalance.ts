@@ -10,8 +10,19 @@ export interface Balance {
   total: bigint;
 }
 
-export const useBalance = (uniqueId: ChainUniqueId, address: string) => {
-  const coinService = useCoinService(uniqueId);
+/**
+ *
+ * @param uniqueId ChainUniqueId
+ * @param address string
+ * @param refreshInterval the refresh interval, should be greater than SYNS_BLOCK_INTERVAL
+ * @returns {Balance} balance
+ */
+export const useBalance = (
+  uniqueId: ChainUniqueId,
+  address: string,
+  refreshInterval?: number,
+) => {
+  const { coinService } = useCoinService(uniqueId);
 
   const key = `/balance/${uniqueId}/${address}`;
   const fetchBalance = useCallback(async () => {
@@ -24,7 +35,7 @@ export const useBalance = (uniqueId: ChainUniqueId, address: string) => {
     mutate: getBalance,
     isLoading: loadingBalance,
   } = useSWR(key, fetchBalance, {
-    refreshInterval: 3000,
+    refreshInterval: refreshInterval,
   });
 
   const res = useMemo(() => {
