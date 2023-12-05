@@ -6,21 +6,18 @@ import {
   type ServerPayload,
 } from "../../../common/types/message";
 import { logger } from "../../../common/utils/logger";
-import {
-  type ContentWalletServer,
-  contentWalletServer,
-} from "../servers/ContentServer";
+import { type ContentWalletServer } from "../servers/ContentServer";
 import { PortName } from "../../../common/types/port";
 import { executeServerMethod } from "../servers/IWalletServer";
 
 export class ContentServerHandler implements IHandler {
   contentServer: ContentWalletServer;
 
-  constructor() {
+  constructor(contentWalletServer: ContentWalletServer) {
     this.contentServer = contentWalletServer;
   }
 
-  wrapContentResp(rawResp: ServerPayload, id: number) {
+  wrapContentResp(rawResp: ServerPayload, id: string) {
     return {
       id,
       payload: rawResp,
@@ -37,13 +34,14 @@ export class ContentServerHandler implements IHandler {
         logger.error("ContentServerHandler Invalid origin ", msg.origin);
         return;
       }
+      const siteInfo = msg.siteInfo;
       const resp = this.wrapContentResp(
-        await executeServerMethod(this.contentServer[method](payload)),
+        await executeServerMethod(
+          this.contentServer[method](payload, siteInfo) as any,
+        ),
         id,
       );
       port.postMessage(resp);
     });
   }
 }
-
-export const contentServerHandler = new ContentServerHandler();

@@ -53,7 +53,7 @@ export default function OnboardImportWallet() {
                   });
                   const coinType = CoinType.ALEO;
                   const account = wallet.accountsMap[coinType][0];
-                  dispatch.account.setSelectedAccount({
+                  await dispatch.account.setSelectedAccount({
                     selectedAccount: {
                       walletId: wallet.walletId,
                       coinType,

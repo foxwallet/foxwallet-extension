@@ -39,9 +39,8 @@ export class KeyringManager {
     await initAleoWasm();
   }
 
-  async reset() {
-    // this.#hdKeyrings = {};
-  }
+  // TODO: reset
+  async reset() {}
 
   #getToken() {
     const token = this.#authManager.getToken();
@@ -79,8 +78,10 @@ export class KeyringManager {
     return this.#formatDisplayWallet(await this.#storage.getHDWallet(walletId));
   }
 
-  async getAllWallet(): Promise<DisplayKeyring> {
-    this.#getToken();
+  async getAllWallet(noAuth?: boolean): Promise<DisplayKeyring> {
+    if (!noAuth) {
+      this.#getToken();
+    }
     const keyrings = (await this.#storage.getKeyring()) || {};
     const hdWallets = (keyrings[WalletType.HD] || []).map((item) =>
       this.#formatDisplayWallet(item),
@@ -357,5 +358,17 @@ export class KeyringManager {
     const encryptedPrivateKey = account.privateKey;
     const privateKey = decryptStr(token, encryptedPrivateKey);
     return privateKey;
+  }
+
+  async hasWallet() {
+    const keyring = await this.#storage.getKeyring();
+    if (
+      !keyring ||
+      !keyring[WalletType.HD] ||
+      keyring[WalletType.HD]?.length === 0
+    ) {
+      return false;
+    }
+    return true;
   }
 }

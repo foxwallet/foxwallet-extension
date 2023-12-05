@@ -1,6 +1,8 @@
 import localForage from "localforage";
 import { type Cache } from "swr";
 import { logger } from "./logger";
+import { ChainUniqueId } from "core/types/ChainUniqueId";
+import { CoinType } from "core/types";
 
 // both background service and popup run in the same extension context, so the indexedDB is the same
 export const appStorageInstance = localForage.createInstance({
@@ -18,30 +20,33 @@ export const aleoBlockStorageInstance = localForage.createInstance({
   driver: localForage.INDEXEDDB,
 });
 
-const aleoBlockStorageMap = new Map<string, LocalForage>();
-
 export enum StorageKey {
   BLOCK = "block",
   INFO = "info",
   LOCAL_TX = "local_tx",
 }
 
-export const getAleoStorageInstance = (
-  chainId: string,
-  address: string,
-  prefix: StorageKey,
-) => {
-  const key = `${chainId}-${prefix}-${address}`;
-  const existInstance = aleoBlockStorageMap.get(key);
-  if (existInstance) {
-    return existInstance;
-  }
-  const newInstance = aleoBlockStorageInstance.createInstance({
-    name: chainId,
-    storeName: `${prefix}-${address}`,
+export const createDappHistoryStorage = (coinType: CoinType) => {
+  return localForage.createInstance({
+    driver: localForage.INDEXEDDB,
+    name: "dapp",
+    storeName: coinType,
   });
-  aleoBlockStorageMap.set(key, newInstance);
-  return newInstance;
+};
+
+export const dappRequestStorage = localForage.createInstance({
+  driver: localForage.INDEXEDDB,
+  name: "dapp",
+  storeName: "wallet_request",
+});
+
+// To remember the selected account
+export const createAccountSettingStorage = (coinType: CoinType) => {
+  return localForage.createInstance({
+    driver: localForage.INDEXEDDB,
+    name: "fox_wallet",
+    storeName: `${coinType}_account_setting`,
+  });
 };
 
 const swrStorageInstance = localForage.createInstance({

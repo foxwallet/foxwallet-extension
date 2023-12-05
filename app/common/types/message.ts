@@ -1,4 +1,8 @@
-import { type PopupServerMethod } from "../../scripts/background/servers/IWalletServer";
+import { SiteInfo } from "@/scripts/content/host";
+import {
+  type ContentServerMethod,
+  type PopupServerMethod,
+} from "../../scripts/background/servers/IWalletServer";
 import { type PortName } from "./port";
 
 export enum MessageType {
@@ -12,10 +16,6 @@ export enum WalletModule {
   ASSETS = "assets",
 }
 
-export enum ContentServerMethod {
-  connect = "connect",
-}
-
 export type ServerMessage<T = any> =
   | {
       type: MessageType.KEEP_ALIVE;
@@ -24,17 +24,18 @@ export type ServerMessage<T = any> =
     }
   | {
       type: MessageType.REQUEST;
-      id: number;
+      id: string;
       origin: PortName.POPUP_TO_BACKGROUND;
       method: PopupServerMethod;
       payload: T;
     }
   | {
       type: MessageType.REQUEST;
-      id: number;
+      id: string;
       origin: PortName.CONTENT_TO_BACKGROUND;
       method: ContentServerMethod;
       payload: T;
+      siteInfo: SiteInfo;
     };
 
 export interface ServerPayload<T = any> {
@@ -43,6 +44,6 @@ export interface ServerPayload<T = any> {
 }
 
 export interface ServerResp<T = any> {
-  id: number;
+  id: string;
   payload: ServerPayload<T>;
 }

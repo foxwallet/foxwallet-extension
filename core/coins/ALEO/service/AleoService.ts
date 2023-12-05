@@ -39,7 +39,7 @@ const CREDITS_MAPPING_NAME = "account";
 
 const mutex = new Mutex();
 
-const SYNS_BLOCK_INTERVAL = 4000;
+const SYNS_BLOCK_INTERVAL = 1000;
 
 // only for popup thread
 export class AleoService {
@@ -256,7 +256,7 @@ export class AleoService {
         address,
       );
     console.log("===> public balance: ", balance);
-    if (!balance) {
+    if (!balance || balance === "null") {
       return 0n;
     }
     return parseU64(balance);

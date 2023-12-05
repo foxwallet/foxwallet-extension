@@ -1,16 +1,21 @@
 import { CoinType } from "core/types";
+import { type ServerPayload } from "../../../common/types/message";
 import {
-  ServerMessage,
-  type ServerPayload,
-  ContentServerMethod,
-} from "../../../common/types/message";
-import { DisplayKeyring, DisplayWallet } from "../store/vault/types/keyring";
+  DisplayKeyring,
+  DisplayWallet,
+  SelectedAccount,
+} from "../store/vault/types/keyring";
 import { logger } from "../../../common/utils/logger";
 import { ChainUniqueId } from "core/types/ChainUniqueId";
 import {
   AleoSendTxParams,
   AleoTransaction,
+  AleoTxStatus,
 } from "core/coins/ALEO/types/Tranaction";
+import { DecryptPermission } from "../types/permission";
+import { CustomRecord } from "core/coins/ALEO/types/Record";
+import { AleoDeployment } from "core/coins/ALEO/types/Deployment";
+import { SiteInfo } from "@/scripts/content/host";
 
 export type PopupServerMethod = keyof IPopupServer;
 
@@ -32,6 +37,14 @@ export interface AddAccountProps {
   walletId: string;
   coin: CoinType;
   accountId: string;
+}
+
+export interface GetSelectedAccountProps {
+  coinType: CoinType;
+}
+
+export interface SetSelectedAccountProps {
+  selectAccount: SelectedAccount;
 }
 
 export interface GetBalanceProps {
@@ -102,13 +115,189 @@ export interface IPopupServer {
 
   addAccount: (params: AddAccountProps) => Promise<DisplayWallet>;
 
+  getSelectedAccount(
+    params: GetSelectedAccountProps,
+  ): Promise<SelectedAccount | null>;
+
+  setSelectedAccount(params: SetSelectedAccountProps): Promise<SelectedAccount>;
+
   getAllWallet: () => Promise<DisplayKeyring>;
 
   sendAleoTransaction(params: AleoSendTxProps): Promise<AleoTransaction>;
+
+  onRequestFinish(params: RequestFinfishProps): Promise<void>;
+}
+
+export interface ConnectProps {
+  decryptPermission: DecryptPermission;
+  network: string;
+  programs?: string[];
+}
+
+export interface DecrtptProps {
+  cipherText: string;
+  tpk?: string;
+  programId?: string;
+  functionName?: string;
+  index?: number;
+}
+
+export interface RequestRecordsProps {
+  program: string;
+  filter?: RecordFilter;
+}
+
+export interface RequestRecordBody {
+  id: string;
+  owner: string;
+  program_id: string;
+  spent: boolean;
+  data: CustomRecord;
+  recordName: string;
+}
+
+export type RequestRecordPlaintextBody = RequestRecordBody & {
+  plaintext: string;
+};
+
+export interface RequestRecordsResp {
+  records: RequestRecordBody[];
+}
+
+export type RequestRecordsPlaintextResp = {
+  records: RequestRecordPlaintextBody[];
+};
+
+export interface TransitionParam {
+  program: string;
+  functionName: string;
+  inputs: any[];
+}
+
+export interface TransactionParam {
+  address: string;
+  chainId: string;
+  transitions: TransitionParam[];
+  fee: number;
+  feePrivate: boolean;
+}
+
+export interface RequestTxProps {
+  transaction: TransactionParam;
+}
+export interface RequestTxResp {
+  transactionId: string;
+}
+
+export interface SignMessageProps {
+  message: string;
+}
+
+export interface SignMessageResp {
+  signature: string;
+}
+
+export interface RequestBulkTxsProps {
+  transactions: TransactionParam[];
+}
+
+export interface RequestBulkTxsResp {
+  transactionIds: string[];
+}
+
+export interface RequestDeployProps {
+  deployment: AleoDeployment;
+}
+
+export interface RequestDeployResp {
+  transactionId: string;
+}
+
+export interface TransactionStatusProps {
+  transactionId: string;
+}
+
+export interface TransactionStatusResp {
+  status: string;
+}
+
+export enum TxOrder {
+  ASC = "asc",
+  DESC = "desc",
+}
+
+export interface RequestTxHistoryProps {
+  program: string;
+  order?: TxOrder;
+}
+
+export interface TxHistoryBody {
+  id: string;
+  transactionId: string;
+}
+
+export interface RequestTxHistoryResp {
+  transactions: TxHistoryBody[];
+}
+
+export type ContentServerMethod = keyof IContentServer;
+
+export interface RequestFinfishProps {
+  requestId: string;
+  error?: string;
+  data?: any;
 }
 
 export interface IContentServer {
-  connect: (params: any) => Promise<any>;
+  connect: (
+    params: ConnectProps,
+    siteInfo?: SiteInfo,
+  ) => Promise<string | null>;
+  disconnect: (
+    params: { network: string; address: string },
+    siteInfo?: SiteInfo,
+  ) => Promise<boolean>;
+  decrypt: (params: DecrtptProps, siteInfo?: SiteInfo) => Promise<string>;
+  requestRecords: (
+    params: RequestRecordsProps,
+    siteInfo?: SiteInfo,
+  ) => Promise<RequestRecordsResp>;
+  requestRecordPlaintexts: (
+    params: RequestRecordsProps,
+    siteInfo?: SiteInfo,
+  ) => Promise<RequestRecordsPlaintextResp>;
+  requestTransaction: (
+    params: RequestTxProps,
+    siteInfo?: SiteInfo,
+  ) => Promise<RequestTxResp>;
+  signMessage: (
+    params: SignMessageProps,
+    siteInfo?: SiteInfo,
+  ) => Promise<SignMessageResp>;
+  requestExecution: (
+    params: RequestTxProps,
+    siteInfo?: SiteInfo,
+  ) => Promise<RequestTxResp>;
+  requestBulkTransactions: (
+    params: RequestBulkTxsProps,
+    siteInfo?: SiteInfo,
+  ) => Promise<RequestBulkTxsResp>;
+  requestDeploy: (
+    params: RequestDeployProps,
+    siteInfo?: SiteInfo,
+  ) => Promise<RequestDeployResp>;
+  transactionStatus: (
+    params: TransactionStatusProps,
+    siteInfo?: SiteInfo,
+  ) => Promise<TransactionStatusResp>;
+  getExecution: (
+    params: TransactionStatusProps,
+    siteInfo?: SiteInfo,
+  ) => Promise<TransactionStatusResp>;
+  requestTransactionHistory: (
+    params: RequestTxHistoryProps,
+    siteInfo?: SiteInfo,
+  ) => Promise<RequestTxHistoryResp>;
 }
 
 export async function executeServerMethod<T>(

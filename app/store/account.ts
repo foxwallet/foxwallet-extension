@@ -2,6 +2,7 @@ import { createModel } from "@rematch/core";
 import { type RootModel } from "./index";
 import type { DisplayAccount } from "@/scripts/background/store/vault/types/keyring";
 import { CoinType } from "core/types";
+import { clients } from "@/hooks/useClient";
 
 type SelectedAccount = DisplayAccount & {
   walletId: string;
@@ -29,12 +30,38 @@ export const account = createModel<RootModel>()({
     ...DEFAULT_ACCOUNT_MODEL,
   },
   reducers: {
-    setSelectedAccount(state, payload: { selectedAccount: SelectedAccount }) {
+    _setSelectedAccount(state, payload: { selectedAccount: SelectedAccount }) {
       return {
         ...state,
         selectedAccount: payload.selectedAccount,
       };
     },
   },
-  effects: (dispatch) => ({}),
+  effects: (dispatch) => ({
+    async setSelectedAccount({
+      selectedAccount,
+    }: {
+      selectedAccount: SelectedAccount;
+    }) {
+      await clients.popupServerClient.setSelectedAccount({
+        selectAccount: selectedAccount,
+      });
+      dispatch.account._setSelectedAccount({
+        selectedAccount: selectedAccount,
+      });
+    },
+
+    async getSelectedAccount(coinType: CoinType) {
+      const account = await clients.popupServerClient.getSelectedAccount({
+        coinType,
+      });
+      if (account) {
+        dispatch.account._setSelectedAccount({
+          selectedAccount: account,
+        });
+        return account;
+      }
+      return account;
+    },
+  }),
 });

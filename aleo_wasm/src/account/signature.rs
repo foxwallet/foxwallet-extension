@@ -16,7 +16,7 @@
 
 use crate::{
     account::{Address, PrivateKey},
-    types::SignatureNative,
+    types::{SignatureNative, ToBytes},
 };
 
 use core::{fmt, ops::Deref, str::FromStr};
@@ -61,6 +61,10 @@ impl Signature {
     #[allow(clippy::inherent_to_string_shadow_display)]
     pub fn to_string(&self) -> String {
         self.0.to_string()
+    }
+
+    pub fn to_hex(&self) -> String {
+        hex::encode(self.0.to_bytes_le().unwrap())
     }
 }
 

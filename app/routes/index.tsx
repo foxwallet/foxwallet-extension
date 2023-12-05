@@ -4,6 +4,10 @@ import { CheckOnboard } from "../components/Onboard/CheckOnboard";
 import { CheckAuth } from "@/components/Onboard/CheckAuth";
 
 const MainPage = lazy(async () => await import("../pages/Main"));
+const SendAleo = lazy(async () => await import("../pages/SendAleo"));
+const Receive = lazy(async () => await import("../pages/Receive"));
+const ConnectDapp = lazy(async () => await import("../pages/ConnectDapp"));
+
 const OnboardHome = lazy(async () => await import("../pages/OnboardHome"));
 const OnboardCreateWallet = lazy(
   async () => await import("../pages/OnboardCreateWallet"),
@@ -11,8 +15,6 @@ const OnboardCreateWallet = lazy(
 const OnboardImportWallet = lazy(
   async () => await import("../pages/OnboardImportWallet"),
 );
-const Send = lazy(async () => await import("../pages/Send"));
-const Receive = lazy(async () => await import("../pages/Receive"));
 
 // 加上 onboard 和 lock 逻辑
 export const routesConfig: RouteObject[] = [
@@ -36,11 +38,15 @@ export const routesConfig: RouteObject[] = [
       },
       {
         path: "send_aleo",
-        element: <Send />,
+        element: <SendAleo />,
       },
       {
         path: "receive",
         element: <Receive />,
+      },
+      {
+        path: "connect/:requestId",
+        element: <ConnectDapp />,
       },
     ],
   },

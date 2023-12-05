@@ -11,6 +11,7 @@ export const useAuth = () => {
   const getAuth = useCallback(async () => {
     setLoading(true);
     try {
+      console.log("===> before getAuth");
       const hasAuth = await popupServerClient.hasAuth({ checkExpire: true });
       console.log("===> hasAuth: ", hasAuth);
       dispatch.user.setHasAuth({ hasAuth });

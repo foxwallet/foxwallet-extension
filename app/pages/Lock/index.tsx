@@ -37,9 +37,6 @@ function Lock() {
     try {
       const res = await login(password);
       setIsPasswordValid(res);
-      if (res) {
-        navigate("/main");
-      }
     } catch (err) {
       console.log("===> Lock login: ", err);
       setIsPasswordValid(false);

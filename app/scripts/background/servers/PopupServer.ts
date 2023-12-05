@@ -1,7 +1,12 @@
 import { Transaction } from "aleo/index";
 import { AuthManager } from "../store/vault/managers/auth/AuthManager";
 import { KeyringManager } from "../store/vault/managers/keyring/KeyringManager";
-import { DisplayKeyring, DisplayWallet } from "../store/vault/types/keyring";
+import {
+  DisplayKeyring,
+  DisplayWallet,
+  SelectedAccount,
+  WalletType,
+} from "../store/vault/types/keyring";
 import {
   CreateWalletProps,
   RegenerateWalletProps,
@@ -9,28 +14,167 @@ import {
   ImportHDWalletProps,
   AddAccountProps,
   AleoSendTxProps,
+  SetSelectedAccountProps,
+  GetSelectedAccountProps,
+  RequestFinfishProps,
+  ConnectProps,
 } from "./IWalletServer";
 import { sendTransaction } from "../../../../offscreen/offscreen_helper";
+import { AccountSettingStorage } from "../store/account/AccountStorage";
+import { DappStorage } from "../store/dapp/DappStorage";
+import { CoinType } from "core/types";
+import browser from "webextension-polyfill";
+import { nanoid } from "nanoid";
+import { DappRequest } from "../types/dapp";
+import { createPopup } from "../helper/popup";
+import { AleoConnectHistory } from "../types/connect";
+import { SiteInfo } from "@/scripts/content/host";
+
+export type OnRequestFinishCallback = (
+  error: null | Error,
+  data: any,
+) => void | Promise<void>;
+
 export class PopupWalletServer implements IPopupServer {
   authManager: AuthManager;
   keyringManager: KeyringManager;
+  accountSettingStorage: AccountSettingStorage;
+  dappStorage: DappStorage;
+  popupRequestIdMap: Array<{ popupId: number; requestId: string }> = [];
+  requestIdCallbackMap: { [requestId in string]?: OnRequestFinishCallback } =
+    {};
 
-  constructor(authManager: AuthManager, keyringManager: KeyringManager) {
+  constructor(
+    authManager: AuthManager,
+    keyringManager: KeyringManager,
+    dappStorage: DappStorage,
+    accountSettingStorage: AccountSettingStorage,
+  ) {
     this.authManager = authManager;
     this.keyringManager = keyringManager;
+    this.dappStorage = dappStorage;
+    this.accountSettingStorage = accountSettingStorage;
+    browser.windows.onRemoved.addListener(this.onRemovePopup.bind(this));
+  }
+
+  findRequestIdByPopupId(popupId: number) {
+    const item = this.popupRequestIdMap.find(
+      (item) => item.popupId === popupId,
+    );
+    if (item) {
+      return item.requestId;
+    }
+    return null;
+  }
+
+  removeItemByPopupId(popupId: number) {
+    const index = this.popupRequestIdMap.findIndex(
+      (item) => item.popupId === popupId,
+    );
+    if (index >= 0) {
+      this.popupRequestIdMap.splice(index, 1);
+    }
+  }
+
+  removeItemByRequestId(requestId: string) {
+    const index = this.popupRequestIdMap.findIndex(
+      (item) => item.requestId === requestId,
+    );
+    if (index >= 0) {
+      this.popupRequestIdMap.splice(index, 1);
+    }
+  }
+
+  addItem(popupId: number, requestId: string) {
+    const existIndex = this.popupRequestIdMap.findIndex(
+      (item) => item.popupId === popupId,
+    );
+    if (existIndex >= 0) {
+      this.popupRequestIdMap[existIndex] = { popupId, requestId };
+    } else {
+      this.popupRequestIdMap.push({ popupId, requestId });
+    }
+  }
+
+  async onRemovePopup(windowId: number) {
+    const requestId = this.findRequestIdByPopupId(windowId);
+    console.log("===> onRemovePopup: ", windowId, requestId);
+    if (requestId) {
+      this.removeItemByPopupId(windowId);
+      await this.dappStorage.removeDappRequest(requestId);
+      const params = {
+        requestId,
+        error: "user cancel",
+      };
+      this.onRequestFinish(params);
+    }
+  }
+
+  async createConnectPopup(params: ConnectProps, siteInfo: SiteInfo) {
+    const requestId = nanoid();
+    const request: DappRequest = {
+      id: requestId,
+      type: "connect",
+      coinType: CoinType.ALEO,
+      siteInfo,
+      payload: params,
+    };
+    await this.dappStorage.setDappRequest(request);
+    return new Promise<string | null>(async (resolve, reject) => {
+      console.log("===> createConnectPopup: ", requestId);
+      const popup = await createPopup(`/connect/${requestId}`);
+      const popupId = popup.id;
+      if (popupId) {
+        this.addItem(popupId, requestId);
+        this.requestIdCallbackMap[requestId] = async (error, data: string) => {
+          console.log("===> requestIdCallbackMap: ", error, data);
+          if (error) {
+            reject(error);
+            return;
+          }
+          const connectHistory: AleoConnectHistory = {
+            site: siteInfo,
+            ...params,
+            lastConnectTime: Date.now(),
+          };
+          await this.dappStorage.addConnectHistory(
+            CoinType.ALEO,
+            data,
+            connectHistory,
+          );
+          await browser.windows.remove(popupId);
+          resolve(data);
+          return;
+        };
+      } else {
+        resolve(null);
+      }
+    });
+  }
+
+  async onRequestFinish(params: RequestFinfishProps): Promise<void> {
+    const { requestId, error, data } = params;
+    const callback = this.requestIdCallbackMap[requestId];
+    if (callback) {
+      callback(error ? new Error(error) : null, data);
+      delete this.requestIdCallbackMap[requestId];
+      await this.dappStorage.removeDappRequest(requestId);
+    }
+    this.removeItemByRequestId(requestId);
   }
 
   async initPassword(params: { password: string }): Promise<boolean> {
-    // if (this.authManager.getToken()) {
-    //   throw new Error("Password already inited");
-    // }
+    if (this.authManager.getToken()) {
+      throw new Error("Password already inited");
+    }
     await this.authManager.initPassword(params.password);
     await this.keyringManager.reset();
     return true;
   }
 
   async hasAuth(params: { checkExpire?: boolean }): Promise<boolean> {
-    return this.authManager.hasAuth(params.checkExpire);
+    const result = this.authManager.hasAuth(params.checkExpire);
+    return result;
   }
 
   async login(params: { password: string }): Promise<boolean> {
@@ -63,6 +207,40 @@ export class PopupWalletServer implements IPopupServer {
     return await this.keyringManager.addNewAccount(params);
   }
 
+  async getSelectedAccount(
+    params: GetSelectedAccountProps,
+  ): Promise<SelectedAccount | null> {
+    const selectedAccount = await this.accountSettingStorage.getSelectedAccount(
+      params.coinType,
+    );
+    if (selectedAccount) {
+      return selectedAccount;
+    }
+    const existKeyring = await this.keyringManager.getAllWallet(true);
+    const existWallet = existKeyring[WalletType.HD]?.[0];
+    if (existWallet) {
+      const existAccount = existWallet.accountsMap[params.coinType][0];
+      if (existAccount) {
+        const newSelectedAccount = {
+          walletId: existWallet.walletId,
+          coinType: params.coinType,
+          ...existAccount,
+        };
+        await this.setSelectedAccount({ selectAccount: newSelectedAccount });
+        return newSelectedAccount;
+      }
+    }
+    return null;
+  }
+
+  async setSelectedAccount(
+    params: SetSelectedAccountProps,
+  ): Promise<SelectedAccount> {
+    return await this.accountSettingStorage.setSelectedAccount(
+      params.selectAccount,
+    );
+  }
+
   async getAllWallet(): Promise<DisplayKeyring> {
     return await this.keyringManager.getAllWallet();
   }
@@ -83,42 +261,4 @@ export class PopupWalletServer implements IPopupServer {
     }
     return tx.payload.data;
   }
-
-  // async getBalance({
-  //   uniqueId,
-  //   address,
-  // }: GetBalanceProps): Promise<GetBalanceResp> {
-  //   switch (uniqueId) {
-  //     case InnerChainUniqueId.ALEO_TESTNET_3:
-  //       const [privateBalance, publicBalance] = await Promise.all([
-  //         this.aleoService.getPrivateBalance(address),
-  //         this.aleoService.getPublicBalance(address),
-  //       ]);
-  //       return {
-  //         privateBalance: {
-  //           type: SerializeType.BIG_INT,
-  //           value: privateBalance.toString(),
-  //         },
-  //         publicBalance: {
-  //           type: SerializeType.BIG_INT,
-  //           value: publicBalance.toString(),
-  //         },
-  //         total: {
-  //           type: SerializeType.BIG_INT,
-  //           value: (privateBalance + publicBalance).toString(),
-  //         },
-  //       };
-  //     default:
-  //       throw new Error("Unsupported chain");
-  //   }
-  // }
-
-  // async getRecords({
-  //   chainId,
-  //   address,
-  //   programId,
-  //   recordFilter,
-  // }: AleoRecordsProps) {
-  //   return await this.aleoService.getRecords(address, programId, recordFilter);
-  // }
 }

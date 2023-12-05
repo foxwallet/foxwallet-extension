@@ -6,9 +6,10 @@
   "author": "",
   "license": "MIT",
   "scripts": {
-    "dev": "npm run clean && vite build --mode development && vite --mode development",
-    "build:dev": "npm run clean && node ./scripts/predev.js && vite build --mode development",
-    "build:prod": "npm run clean && node ./scripts/prerelease.js && vite build",
+    "dev": "npm run clean && yarn build:dapp && vite build --mode development && vite --mode development",
+    "build:dev": "npm run clean && node ./scripts/predev.js && yarn build:dapp &&  vite build --mode development",
+    "build:prod": "npm run clean && node ./scripts/prerelease.js && yarn build:dapp && vite build",
+    "build:dapp": "vite build --config vite-injector.config.ts",
     "clean": "rimraf dist/ && rimraf node_modules/aleo_wasm/",
     "wasm": "cd aleo_wasm && RUSTFLAGS='-C link-arg=--max-memory=4294967296' wasm-pack build --release --target web",
     "lint": "eslint --ext .ts,.js --max-warnings=0 .",
