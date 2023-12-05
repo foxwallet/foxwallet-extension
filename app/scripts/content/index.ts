@@ -9,7 +9,6 @@ import { getSiteInfo } from "./host";
 const inject = () => {
   const script = document.createElement("script");
   const url = chrome.runtime.getURL("injector.js");
-  console.log("===> inject url: ", url);
   script.setAttribute("src", url);
   script.setAttribute("type", "module");
   const container = document.head || document.documentElement;

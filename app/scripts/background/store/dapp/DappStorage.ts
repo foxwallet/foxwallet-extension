@@ -8,7 +8,6 @@ import { uniqBy } from "lodash";
 import { DappRequest } from "../../types/dapp";
 import { CoinType } from "core/types";
 
-// 地址和 dapp 的映射，还包括 permission
 export class DappStorage {
   #dappHistoryMap = new Map<CoinType, LocalForage>();
   #dappRequestInstance: LocalForage;

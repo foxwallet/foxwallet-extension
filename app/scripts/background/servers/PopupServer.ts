@@ -98,7 +98,6 @@ export class PopupWalletServer implements IPopupServer {
 
   async onRemovePopup(windowId: number) {
     const requestId = this.findRequestIdByPopupId(windowId);
-    console.log("===> onRemovePopup: ", windowId, requestId);
     if (requestId) {
       this.removeItemByPopupId(windowId);
       await this.dappStorage.removeDappRequest(requestId);
@@ -121,13 +120,11 @@ export class PopupWalletServer implements IPopupServer {
     };
     await this.dappStorage.setDappRequest(request);
     return new Promise<string | null>(async (resolve, reject) => {
-      console.log("===> createConnectPopup: ", requestId);
       const popup = await createPopup(`/connect/${requestId}`);
       const popupId = popup.id;
       if (popupId) {
         this.addItem(popupId, requestId);
         this.requestIdCallbackMap[requestId] = async (error, data: string) => {
-          console.log("===> requestIdCallbackMap: ", error, data);
           if (error) {
             reject(error);
             return;

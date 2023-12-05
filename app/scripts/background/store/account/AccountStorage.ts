@@ -10,7 +10,7 @@ import { CoinType } from "core/types";
 import { DisplayAccount, SelectedAccount } from "../vault/types/keyring";
 
 const SELECTED_ACCOUNT_KEY = "selectedAccount";
-// 地址和 dapp 的映射，还包括 permission
+
 export class AccountSettingStorage {
   #accountSettingMap: Map<CoinType, LocalForage>;
 

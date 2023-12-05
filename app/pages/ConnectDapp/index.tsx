@@ -38,7 +38,6 @@ function ConnectAleoDappScreen() {
   }, [dappRequest]);
 
   const onConnect = useCallback(() => {
-    console.log("===> onConnect: ", requestId, selectedAccount?.address);
     if (requestId && selectedAccount?.address) {
       popupServerClient.onRequestFinish({
         requestId,
