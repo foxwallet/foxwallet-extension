@@ -25,6 +25,7 @@ export interface RecordDetail {
   // spentTransitionId?: string;
   tag: string;
   commitment: string;
+  recordName?: string;
 }
 
 export type RecordDetailWithBlockInfo = RecordDetail & TxMetadata;

@@ -34,6 +34,7 @@ import {
   AleoTxAddressType,
 } from "../types/History";
 import { Mutex } from "async-mutex";
+import { Program } from "aleo_wasm";
 
 const CREDITS_MAPPING_NAME = "account";
 
@@ -324,35 +325,120 @@ export class AleoService {
     };
   }
 
+  parseProgram = (programStr: string): Program => {
+    try {
+      const program = Program.fromString(programStr);
+      return program;
+    } catch (err) {
+      throw new Error("Invalid program " + programStr);
+    }
+  };
+
+  @AutoSwitch({ serviceType: AutoSwitchServiceType.RPC })
+  async getProgramContent(chainId: string, programId: string) {
+    const cache = await this.aleoStorage.getProgramContent(chainId, programId);
+    console.log("===> getProgramContent cache: ", cache?.length);
+    if (cache) {
+      return cache;
+    }
+    const program = await this.rpcService.currInstance().getProgram(programId);
+    console.log("===> getProgramContent: ", program.length);
+    if (program) {
+      await this.aleoStorage.setProgramContent(chainId, programId, program);
+    }
+    return program;
+  }
+
+  async getProgram(
+    chainId: string,
+    programId: string,
+  ): Promise<Program | null> {
+    const programStr = await this.getProgramContent(chainId, programId);
+    if (programStr) {
+      return this.parseProgram(programStr);
+    }
+    return null;
+  }
+
+  private async getRecordsWithName(
+    programId: string,
+    records: { [commitment in string]?: RecordDetailWithSpent },
+  ) {
+    let program: Program | null = null;
+    let changed = false;
+
+    for (const [commitment, record] of Object.entries(records)) {
+      try {
+        if (!record) {
+          continue;
+        }
+        if (!record.recordName) {
+          if (!program) {
+            program = await this.getProgram(this.chainId, programId);
+            if (!program) {
+              throw new Error("Can't get program " + programId);
+            }
+          }
+          const recordName = program.matchRecordPlaintext(record.plaintext);
+          record.recordName = recordName;
+          changed = true;
+        }
+      } catch (err) {
+        console.error("===> getRecordsWithName error: ", err);
+      } finally {
+        records[commitment] = record;
+      }
+    }
+    return { records, changed };
+  }
+
   async getRecords(
     address: string,
     programId: string,
     recordFilter: RecordFilter,
+    withRecordName?: boolean,
   ): Promise<RecordDetailWithSpent[]> {
     const result = await this.debounceSyncBlocks(address);
 
     if (!result) {
       return [];
     }
+    let recordsMap = result.recordsMap[programId] ?? {};
+    if (withRecordName) {
+      const { records: recordWithName, changed } =
+        await this.getRecordsWithName(
+          programId,
+          result.recordsMap[programId] || {},
+        );
+      recordsMap = recordWithName;
+      if (changed) {
+        const newResult: typeof result = {
+          ...result,
+          recordsMap: {
+            ...result.recordsMap,
+            [programId]: recordWithName,
+          },
+        };
+        await this.aleoStorage.setAddressInfo(this.chainId, address, newResult);
+      }
+    }
 
-    const records = Object.values(result.recordsMap[programId] ?? {}).filter(
-      (item) => {
-        if (!item) {
-          return false;
+    const records = Object.values(recordsMap ?? {}).filter((item) => {
+      if (!item) {
+        return false;
+      }
+      switch (recordFilter) {
+        case RecordFilter.SPENT: {
+          return item.spent;
         }
-        switch (recordFilter) {
-          case RecordFilter.SPENT: {
-            return item.spent;
-          }
-          case RecordFilter.UNSPENT: {
-            return !item.spent;
-          }
-          case RecordFilter.ALL: {
-            return true;
-          }
+        case RecordFilter.UNSPENT: {
+          return !item.spent;
         }
-      },
-    ) as RecordDetailWithSpent[];
+        case RecordFilter.ALL: {
+          return true;
+        }
+      }
+    }) as RecordDetailWithSpent[];
     if (programId !== NATIVE_TOKEN_PROGRAM_ID) {
       return records;
     } else {

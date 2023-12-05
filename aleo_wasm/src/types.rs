@@ -33,8 +33,11 @@ pub use snarkvm_console::{
         ValueType,
         Future,
         Argument,
+        StructType,
+        RecordType,
     },
     types::Field,
+    prelude::{Itertools},
 };
 pub use snarkvm_ledger_block::{Execution, Transaction};
 pub use snarkvm_ledger_query::Query;
@@ -89,3 +92,9 @@ pub type VerifyingKeyNative = VerifyingKey<CurrentNetwork>;
 pub type FutureNative = Future<CurrentNetwork>;
 pub type ArgumentNative = Argument<CurrentNetwork>;
 pub type GraphKeyNative = GraphKey<CurrentNetwork>;
+pub type EntryTypeNative = EntryType<CurrentNetwork>;
+pub type PlaintextTypeNative = PlaintextType<CurrentNetwork>;
+pub type StructTypeNative = StructType<CurrentNetwork>;
+pub type RecordTypeNative = RecordType<CurrentNetwork>;
+
+pub use indexmap::{IndexMap, IndexSet};

@@ -27,7 +27,7 @@ export class BaseProvider {
     }
   };
 
-  send<T>(method: ContentServerMethod, payload: any) {
+  send<T>(method: ContentServerMethod, payload: any, metadata: any = {}) {
     return new Promise<T | undefined>((resolve, reject) => {
       const id = nanoid();
       const customEvent = new CustomEvent<RequestParams>(FOX_DAPP_REQUEST, {
@@ -35,6 +35,7 @@ export class BaseProvider {
           id,
           method,
           payload,
+          metadata,
         },
       });
       const callback = (error?: string, data?: T) => {

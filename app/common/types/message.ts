@@ -1,5 +1,6 @@
 import { SiteInfo } from "@/scripts/content/host";
 import {
+  SiteMetadata,
   type ContentServerMethod,
   type PopupServerMethod,
 } from "../../scripts/background/servers/IWalletServer";
@@ -35,7 +36,7 @@ export type ServerMessage<T = any> =
       origin: PortName.CONTENT_TO_BACKGROUND;
       method: ContentServerMethod;
       payload: T;
-      siteInfo: SiteInfo;
+      siteMetadata: SiteMetadata;
     };
 
 export interface ServerPayload<T = any> {

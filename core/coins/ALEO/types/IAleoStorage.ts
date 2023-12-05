@@ -58,4 +58,12 @@ export interface IAleoStorage {
     address: string,
     localId: string,
   ): Promise<void>;
+
+  getProgramContent(chainId: string, programId: string): Promise<string | null>;
+
+  setProgramContent(
+    chainId: string,
+    programId: string,
+    program: string,
+  ): Promise<void>;
 }

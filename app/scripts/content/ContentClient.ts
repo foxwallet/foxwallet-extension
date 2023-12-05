@@ -20,6 +20,7 @@ import {
   RequestTxResp,
   SignMessageProps,
   SignMessageResp,
+  SiteMetadata,
   TransactionStatusProps,
   TransactionStatusResp,
 } from "../background/servers/IWalletServer";
@@ -126,7 +127,11 @@ export class ContentClient implements IClient {
     }
   }
 
-  async send<T>(method: ContentServerMethod, payload: T, siteInfo: SiteInfo) {
+  async send<T>(
+    method: ContentServerMethod,
+    payload: T,
+    siteMetadata: SiteMetadata,
+  ) {
     return await new Promise<{ error: string | null; data: any }>(
       (resolve, reject) => {
         const id = nanoid();
@@ -136,7 +141,7 @@ export class ContentClient implements IClient {
           origin: PortName.CONTENT_TO_BACKGROUND,
           method,
           payload,
-          siteInfo,
+          siteMetadata,
         };
         const callback = (error: string | null, data: any) => {
           resolve({ error, data });

@@ -29,9 +29,12 @@ window.addEventListener(
     if (!detail) {
       throw new Error("Invalid event detail");
     }
-    const { id, method, payload } = detail;
+    const { id, method, payload, metadata } = detail;
     const siteInfo = getSiteInfo();
-    const result = await contentClient.send(method, payload, siteInfo);
+    const result = await contentClient.send(method, payload, {
+      siteInfo,
+      ...metadata,
+    });
     const customEvent = new CustomEvent(FOX_DAPP_RESP, {
       detail: {
         id,

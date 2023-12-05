@@ -12,4 +12,5 @@ export interface RequestParams {
   id: string;
   method: ContentServerMethod;
   payload: any;
+  metadata: any;
 }

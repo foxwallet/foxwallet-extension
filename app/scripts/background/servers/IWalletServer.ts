@@ -248,55 +248,61 @@ export interface RequestFinfishProps {
   data?: any;
 }
 
+export interface SiteMetadata {
+  siteInfo: SiteInfo;
+  network: string | null;
+  address: string | null;
+}
+
 export interface IContentServer {
   connect: (
     params: ConnectProps,
-    siteInfo?: SiteInfo,
+    siteMetadata?: SiteMetadata,
   ) => Promise<string | null>;
-  disconnect: (
-    params: { network: string; address: string },
-    siteInfo?: SiteInfo,
-  ) => Promise<boolean>;
-  decrypt: (params: DecrtptProps, siteInfo?: SiteInfo) => Promise<string>;
+  disconnect: (params: {}, siteMetadata?: SiteMetadata) => Promise<boolean>;
+  decrypt: (
+    params: DecrtptProps,
+    siteMetadata?: SiteMetadata,
+  ) => Promise<string>;
   requestRecords: (
     params: RequestRecordsProps,
-    siteInfo?: SiteInfo,
+    siteMetadata?: SiteMetadata,
   ) => Promise<RequestRecordsResp>;
   requestRecordPlaintexts: (
     params: RequestRecordsProps,
-    siteInfo?: SiteInfo,
+    siteMetadata?: SiteMetadata,
   ) => Promise<RequestRecordsPlaintextResp>;
   requestTransaction: (
     params: RequestTxProps,
-    siteInfo?: SiteInfo,
+    siteMetadata?: SiteMetadata,
   ) => Promise<RequestTxResp>;
   signMessage: (
     params: SignMessageProps,
-    siteInfo?: SiteInfo,
+    siteMetadata?: SiteMetadata,
   ) => Promise<SignMessageResp>;
   requestExecution: (
     params: RequestTxProps,
-    siteInfo?: SiteInfo,
+    siteMetadata?: SiteMetadata,
   ) => Promise<RequestTxResp>;
   requestBulkTransactions: (
     params: RequestBulkTxsProps,
-    siteInfo?: SiteInfo,
+    siteMetadata?: SiteMetadata,
   ) => Promise<RequestBulkTxsResp>;
   requestDeploy: (
     params: RequestDeployProps,
-    siteInfo?: SiteInfo,
+    siteMetadata?: SiteMetadata,
   ) => Promise<RequestDeployResp>;
   transactionStatus: (
     params: TransactionStatusProps,
-    siteInfo?: SiteInfo,
+    siteMetadata?: SiteMetadata,
   ) => Promise<TransactionStatusResp>;
   getExecution: (
     params: TransactionStatusProps,
-    siteInfo?: SiteInfo,
+    siteMetadata?: SiteMetadata,
   ) => Promise<TransactionStatusResp>;
   requestTransactionHistory: (
     params: RequestTxHistoryProps,
-    siteInfo?: SiteInfo,
+    siteMetadata?: SiteMetadata,
   ) => Promise<RequestTxHistoryResp>;
 }
 

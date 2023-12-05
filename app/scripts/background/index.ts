@@ -1,3 +1,4 @@
+import { coinServiceEntry } from "@/services/coin/CoinService";
 import { PortName } from "../../common/types/port";
 import { Connection } from "../../common/utils/connection";
 import { offscreen } from "./aleo";
@@ -22,6 +23,7 @@ const authManager = new AuthManager();
 const keyringManager = new KeyringManager(authManager);
 keyringManager.init();
 const dappStorage = new DappStorage();
+const coinService = coinServiceEntry;
 
 export const popupWalletServer = new PopupWalletServer(
   authManager,
@@ -38,6 +40,7 @@ export const contentWalletServer = new ContentWalletServer(
   dappStorage,
   accountSettingStorage,
   popupWalletServer,
+  coinService,
 );
 
 const contentServerHandler = new ContentServerHandler(contentWalletServer);

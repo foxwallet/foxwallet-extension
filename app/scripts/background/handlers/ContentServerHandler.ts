@@ -34,10 +34,10 @@ export class ContentServerHandler implements IHandler {
         logger.error("ContentServerHandler Invalid origin ", msg.origin);
         return;
       }
-      const siteInfo = msg.siteInfo;
+      const siteMetadata = msg.siteMetadata;
       const resp = this.wrapContentResp(
         await executeServerMethod(
-          this.contentServer[method](payload, siteInfo) as any,
+          this.contentServer[method](payload, siteMetadata) as any,
         ),
         id,
       );

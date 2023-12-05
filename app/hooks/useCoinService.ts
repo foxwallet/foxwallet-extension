@@ -1,3 +1,4 @@
+import { coinServiceEntry } from "@/services/coin/CoinService";
 import { ALEO_CHAIN_CONFIGS } from "core/coins/ALEO/config/chains";
 import { coinBasicFactory } from "core/coins/CoinBasicFactory";
 import { CoinServiceEntry } from "core/coins/CoinServiceEntry";
@@ -16,13 +17,6 @@ export const useCoinBasic = (uniqueId: ChainUniqueId) => {
 
   return coinBasic;
 };
-
-// If support user config, get chain config map from redux
-const ChainConfigMap = {
-  [InnerChainUniqueId.ALEO_TESTNET_3]: ALEO_CHAIN_CONFIGS.TEST_NET_3,
-};
-
-export const coinServiceEntry = new CoinServiceEntry(ChainConfigMap);
 
 export const useCoinService = (uniqueId: ChainUniqueId) => {
   const coinService = useMemo(() => {

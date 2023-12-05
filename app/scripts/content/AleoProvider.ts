@@ -1,5 +1,8 @@
 import { AleoDeployment } from "core/coins/ALEO/types/Deployment";
-import { TransactionParam } from "../background/servers/IWalletServer";
+import {
+  ContentServerMethod,
+  TransactionParam,
+} from "../background/servers/IWalletServer";
 import { BaseProvider } from "./BaseProvider";
 import { DecryptPermission } from "../background/types/permission";
 import { hexToUint8Array, uint8ArrayToHex } from "@/common/utils/buffer";
@@ -41,10 +44,7 @@ export class AleoProvider extends BaseProvider {
     if (!this.#publicKey || !this.network) {
       throw new Error("Connect before disconnect");
     }
-    const result = await this.send<boolean>("disconnect", {
-      address: this.#publicKey,
-      network: this.network,
-    });
+    const result = await this.send<boolean>("disconnect", {});
     this.#publicKey = null;
     this.#network = null;
     return result;
@@ -112,5 +112,12 @@ export class AleoProvider extends BaseProvider {
     }
     const signature = hexToUint8Array(res.signature);
     return { signature };
+  }
+
+  send<T>(method: ContentServerMethod, payload: any) {
+    return super.send<T>(method, payload, {
+      address: this.#publicKey,
+      network: this.#network,
+    });
   }
 }
