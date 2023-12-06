@@ -68,7 +68,8 @@ function OnboardHomeScreen() {
       if (addressType === AleoTxAddressType.SEND) {
         return (
           <Flex key={txId} mt={2}>
-            {statusPrefix}&nbsp;Call&nbsp;{programId}&nbsp;{functionName}
+            {statusPrefix}&nbsp;Call&nbsp;{programId}&nbsp;
+            {functionName}
           </Flex>
         );
       }
@@ -88,6 +89,22 @@ function OnboardHomeScreen() {
         Total balance:&nbsp;
         <TokenNum
           amount={balance?.total || 0n}
+          decimals={nativeCurrency.decimals}
+          symbol={nativeCurrency.symbol}
+        />
+      </Flex>
+      <Flex>
+        Private balance:&nbsp;
+        <TokenNum
+          amount={balance?.privateBalance || 0n}
+          decimals={nativeCurrency.decimals}
+          symbol={nativeCurrency.symbol}
+        />
+      </Flex>
+      <Flex>
+        Public balance:&nbsp;
+        <TokenNum
+          amount={balance?.publicBalance || 0n}
           decimals={nativeCurrency.decimals}
           symbol={nativeCurrency.symbol}
         />

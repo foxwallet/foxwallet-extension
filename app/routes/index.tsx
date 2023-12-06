@@ -7,6 +7,7 @@ const MainPage = lazy(async () => await import("../pages/Main"));
 const SendAleo = lazy(async () => await import("../pages/SendAleo"));
 const Receive = lazy(async () => await import("../pages/Receive"));
 const ConnectDapp = lazy(async () => await import("../pages/ConnectDapp"));
+const RequestTx = lazy(async () => await import("../pages/RequestTx"));
 
 const OnboardHome = lazy(async () => await import("../pages/OnboardHome"));
 const OnboardCreateWallet = lazy(
@@ -47,6 +48,10 @@ export const routesConfig: RouteObject[] = [
       {
         path: "connect/:requestId",
         element: <ConnectDapp />,
+      },
+      {
+        path: "request_tx/:requestId",
+        element: <RequestTx />,
       },
     ],
   },

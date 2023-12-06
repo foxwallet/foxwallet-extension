@@ -86,6 +86,11 @@ export type AleoSendTxProps = Omit<AleoSendTxParams, "privateKey"> & {
   accountId: string;
 };
 
+export type AleoRequestTxProps = Omit<AleoSendTxParams, "privateKey"> & {
+  coinType: CoinType;
+  uniqueId: ChainUniqueId;
+};
+
 // interface PopupClientEventListeners {
 //   lock: () => void;
 // }
@@ -168,10 +173,20 @@ export type RequestRecordsPlaintextResp = {
   records: RequestRecordPlaintextBody[];
 };
 
+export type InputItem =
+  | string
+  | {
+      id: string;
+      owner: string;
+      program_id: string;
+      spent: boolean;
+      data: object;
+    };
+
 export interface TransitionParam {
   program: string;
   functionName: string;
-  inputs: any[];
+  inputs: InputItem[];
 }
 
 export interface TransactionParam {

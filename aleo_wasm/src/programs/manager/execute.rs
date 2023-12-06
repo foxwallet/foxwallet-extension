@@ -142,7 +142,7 @@ impl ProgramManager {
         fee_proving_key: Option<ProvingKey>,
         fee_verifying_key: Option<VerifyingKey>,
     ) -> Result<Transaction, String> {
-        log(&format!("Executing function: {function} on-chain"));
+        log(&format!("ProgramManager Executing function: {function} on-chain"));
         // let fee_microcredits = match &fee_record {
         //     Some(fee_record) => Self::validate_amount(fee_credits, fee_record, true)?,
         //     None => (fee_credits as u64) * 1_000_000,
@@ -151,12 +151,12 @@ impl ProgramManager {
         let mut process_native = ProcessNative::load_web().map_err(|err| err.to_string())?;
         let process = &mut process_native;
 
-        log("Check program imports are valid and add them to the process");
+        log("ProgramManager Check program imports are valid and add them to the process");
         let program_native = ProgramNative::from_str(program).map_err(|e| e.to_string())?;
         ProgramManager::resolve_imports(process, &program_native, imports)?;
         let rng = &mut StdRng::from_entropy();
 
-        log("Executing program");
+        log("ProgramManager Executing program");
         let (_, mut trace) = execute_program!(
             process,
             process_inputs!(inputs),
@@ -168,11 +168,11 @@ impl ProgramManager {
             rng
         );
 
-        log("Preparing inclusion proofs for execution");
+        log("ProgramManager Preparing inclusion proofs for execution");
         let query = QueryNative::from(url);
         trace.prepare_async(query).await.map_err(|err| err.to_string())?;
 
-        log("Proving execution");
+        log("ProgramManager Proving execution");
         let program = ProgramNative::from_str(program).map_err(|err| err.to_string())?;
         let locator = program.id().to_string().add("/").add(function);
         let execution = trace
@@ -180,7 +180,7 @@ impl ProgramManager {
             .map_err(|e| e.to_string())?;
         let execution_id = execution.to_execution_id().map_err(|e| e.to_string())?;
 
-        log("Executing fee");
+        log("ProgramManager Executing fee");
         let fee = execute_fee!(
             process,
             private_key,
@@ -197,7 +197,7 @@ impl ProgramManager {
         // Verify the execution
         process.verify_execution(&execution).map_err(|err| err.to_string())?;
 
-        log("Creating execution transaction");
+        log("ProgramManager Creating execution transaction");
         let transaction = TransactionNative::from_execution(execution, Some(fee)).map_err(|err| err.to_string())?;
         Ok(Transaction::from(transaction))
     }

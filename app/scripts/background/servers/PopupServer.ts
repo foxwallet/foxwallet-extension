@@ -18,6 +18,8 @@ import {
   GetSelectedAccountProps,
   RequestFinfishProps,
   ConnectProps,
+  RequestTxProps,
+  AleoRequestTxProps,
 } from "./IWalletServer";
 import { sendTransaction } from "../../../../offscreen/offscreen_helper";
 import { AccountSettingStorage } from "../store/account/AccountStorage";
@@ -63,6 +65,16 @@ export class PopupWalletServer implements IPopupServer {
     );
     if (item) {
       return item.requestId;
+    }
+    return null;
+  }
+
+  findPopupIdByRequestId(requestId: string) {
+    const item = this.popupRequestIdMap.find(
+      (item) => item.requestId === requestId,
+    );
+    if (item) {
+      return item.popupId;
     }
     return null;
   }
@@ -126,6 +138,10 @@ export class PopupWalletServer implements IPopupServer {
         this.addItem(popupId, requestId);
         this.requestIdCallbackMap[requestId] = async (error, data: string) => {
           if (error) {
+            const popupId = this.findPopupIdByRequestId(requestId);
+            if (popupId) {
+              browser.windows.remove(popupId);
+            }
             reject(error);
             return;
           }
@@ -149,12 +165,60 @@ export class PopupWalletServer implements IPopupServer {
     });
   }
 
+  async createRequestTxPopup(params: AleoRequestTxProps, siteInfo: SiteInfo) {
+    const { coinType, address, localId } = params;
+    const requestId = nanoid();
+    const request: DappRequest = {
+      id: requestId,
+      type: "requestTransaction",
+      coinType: CoinType.ALEO,
+      siteInfo,
+      payload: params,
+    };
+    await this.dappStorage.setDappRequest(request);
+    return new Promise<string | null>(async (resolve, reject) => {
+      const popup = await createPopup(`/request_tx/${requestId}`);
+      const popupId = popup.id;
+      if (popupId) {
+        this.addItem(popupId, requestId);
+        this.requestIdCallbackMap[requestId] = async (error, data: string) => {
+          if (error) {
+            const popupId = this.findPopupIdByRequestId(requestId);
+            if (popupId) {
+              browser.windows.remove(popupId);
+            }
+            reject(error);
+            return;
+          }
+          const pk = await this.keyringManager.getPrivateKeyByAddress({
+            coinType,
+            address,
+          });
+          if (!pk) {
+            reject(new Error("Get private key failed"));
+            return;
+          }
+          await browser.windows.remove(popupId);
+
+          sendTransaction({
+            ...params,
+            privateKey: pk,
+          });
+          resolve(localId);
+          return;
+        };
+      } else {
+        resolve(null);
+      }
+    });
+  }
+
   async onRequestFinish(params: RequestFinfishProps): Promise<void> {
     const { requestId, error, data } = params;
     const callback = this.requestIdCallbackMap[requestId];
     if (callback) {
-      callback(error ? new Error(error) : null, data);
       delete this.requestIdCallbackMap[requestId];
+      callback(error ? new Error(error) : null, data);
       await this.dappStorage.removeDappRequest(requestId);
     }
     this.removeItemByRequestId(requestId);

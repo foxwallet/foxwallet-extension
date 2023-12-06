@@ -349,7 +349,7 @@ export class AleoTxWorker {
     } catch (err) {
       this.error("===> sendTransaction error ", err);
       pendingTxInfo.status = AleoTxStatus.FAILED;
-      pendingTxInfo.error = (err as Error).message;
+      pendingTxInfo.error = (err as Error).toString();
       await this.storage.setAddressLocalTx(chainId, address, pendingTxInfo);
       return null;
     }

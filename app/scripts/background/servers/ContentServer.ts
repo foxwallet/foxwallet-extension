@@ -24,6 +24,7 @@ import {
   RequestFinfishProps,
   SiteMetadata,
   RecordFilter,
+  AleoRequestTxProps,
 } from "./IWalletServer";
 import { ALEO_CHAIN_CONFIGS } from "core/coins/ALEO/config/chains";
 import { DappRequest } from "../types/dapp";
@@ -41,6 +42,11 @@ import { DecryptPermission } from "../types/permission";
 import { ViewKey } from "aleo_wasm";
 import { CoinServiceEntry } from "core/coins/CoinServiceEntry";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
+import {
+  AleoLocalTxInfo,
+  AleoTxStatus,
+} from "core/coins/ALEO/types/Tranaction";
+import { AleoLocalHistoryItem } from "core/coins/ALEO/types/History";
 
 export class ContentWalletServer implements IContentServer {
   authManager: AuthManager;
@@ -163,6 +169,22 @@ export class ContentWalletServer implements IContentServer {
     return null;
   };
 
+  private checkPermissionExist = async (
+    address: string,
+    chainId: string,
+    siteInfo: SiteInfo,
+  ) => {
+    const permission = await this.getDecryptPermission(
+      address,
+      chainId,
+      siteInfo,
+    );
+    if (!permission) {
+      throw new Error("No permission");
+    }
+    return true;
+  };
+
   decrypt = async (
     params: DecrtptProps,
     siteMetadata?: SiteMetadata,
@@ -206,7 +228,7 @@ export class ContentWalletServer implements IContentServer {
     siteMetadata?: SiteMetadata,
   ): Promise<RequestRecordsResp> => {
     const { address, network, siteInfo } = this.checkSiteMetadata(siteMetadata);
-    await this.getDecryptPermission(address, network, siteInfo);
+    await this.checkPermissionExist(address, network, siteInfo);
     switch (network) {
       case "testnet3": {
         const { program, filter } = params;
@@ -230,25 +252,191 @@ export class ContentWalletServer implements IContentServer {
       }
     }
   };
-  requestRecordPlaintexts = (
+
+  requestRecordPlaintexts = async (
     params: RequestRecordsProps,
-  ): Promise<RequestRecordsPlaintextResp> => {};
-  requestTransaction = (params: RequestTxProps): Promise<RequestTxResp> => {};
+    siteMetadata?: SiteMetadata,
+  ): Promise<RequestRecordsPlaintextResp> => {
+    const { address, network, siteInfo } = this.checkSiteMetadata(siteMetadata);
+    await this.checkPermissionExist(address, network, siteInfo);
+    switch (network) {
+      case "testnet3": {
+        const { program, filter } = params;
+        const records = await this.coinService
+          .getInstance(InnerChainUniqueId.ALEO_TESTNET_3)
+          .getRecords(address, program, filter || RecordFilter.ALL);
+        const formatRecords = records.map((record) => {
+          return {
+            id: record.commitment,
+            owner: address,
+            program_id: record.programId,
+            spent: record.spent,
+            data: record.content,
+            recordName: record.recordName!,
+            plaintext: record.plaintext,
+          };
+        });
+        return { records: formatRecords };
+      }
+      default: {
+        throw new Error("Unknown network " + network);
+      }
+    }
+  };
+
+  requestTransaction = async (
+    params: RequestTxProps,
+    siteMetadata?: SiteMetadata,
+  ): Promise<RequestTxResp> => {
+    const { address, network, siteInfo } = this.checkSiteMetadata(siteMetadata);
+    await this.checkPermissionExist(address, network, siteInfo);
+    switch (network) {
+      case "testnet3": {
+        const { transaction } = params;
+        const { transitions, fee, feePrivate } = transaction;
+        if (transitions.length > 1) {
+          throw new Error("Don't support multiple transitions currently");
+        }
+        if (transitions.length === 0) {
+          throw new Error("Empty transitions");
+        }
+
+        const { program, functionName, inputs } = transitions[0];
+
+        const isFeeRequired = !(
+          program === "credits.aleo" && functionName === "split"
+        );
+
+        if (!fee && isFeeRequired) {
+          throw new Error("Need base fee");
+        }
+        if (!program || !functionName) {
+          throw new Error("Need programId and functionName");
+        }
+        if (!program.endsWith(".aleo")) {
+          throw new Error("Wrong programId");
+        }
+        const [{ formatInputs, feeRecord }, priorityFee] = await Promise.all([
+          this.coinService
+            .getInstance(InnerChainUniqueId.ALEO_TESTNET_3)
+            .formatRequestTransactionInputsAndFee(address, inputs, BigInt(fee)),
+          this.coinService
+            .getInstance(InnerChainUniqueId.ALEO_TESTNET_3)
+            .getPriorityFee(),
+        ]);
+        let feeStr: string | null = null;
+        if (feePrivate && isFeeRequired) {
+          if (!feeRecord) {
+            throw new Error("Can't found record to pay fee");
+          }
+          feeStr = feeRecord.plaintext;
+        }
+        const localId = nanoid();
+        const txParams: AleoRequestTxProps = {
+          address,
+          localId,
+          chainId: network,
+          programId: program,
+          functionName,
+          inputs: formatInputs,
+          baseFee: fee.toString(),
+          priorityFee: priorityFee.toString(),
+          feeRecord: feeStr,
+          timestamp: Date.now(),
+          uniqueId: InnerChainUniqueId.ALEO_TESTNET_3,
+          coinType: CoinType.ALEO,
+        };
+        const txInfo: AleoLocalTxInfo = {
+          ...txParams,
+          status: AleoTxStatus.QUEUED,
+        };
+        await this.coinService
+          .getInstance(InnerChainUniqueId.ALEO_TESTNET_3)
+          .setAddressLocalTx(address, txInfo);
+        const transactionId = await this.popupServer.createRequestTxPopup(
+          txParams,
+          siteInfo,
+        );
+        if (!transactionId) {
+          await this.coinService
+            .getInstance(InnerChainUniqueId.ALEO_TESTNET_3)
+            .removeAddressLocalTx(address, localId);
+          throw new Error("requestTransaction failed");
+        }
+        return {
+          transactionId,
+        };
+      }
+      default: {
+        throw new Error("Unknown network " + network);
+      }
+    }
+  };
   signMessage = (params: SignMessageProps): Promise<SignMessageResp> => {};
-  requestExecution = (params: RequestTxProps): Promise<RequestTxResp> => {};
+  requestExecution = async (params: RequestTxProps): Promise<RequestTxResp> => {
+    return await this.requestTransaction(params);
+  };
   requestBulkTransactions = (
     params: RequestBulkTxsProps,
   ): Promise<RequestBulkTxsResp> => {};
   requestDeploy = (
     params: RequestDeployProps,
   ): Promise<RequestDeployResp> => {};
-  transactionStatus = (
+
+  transactionStatus = async (
     params: TransactionStatusProps,
-  ): Promise<TransactionStatusResp> => {};
-  getExecution = (
+    siteMetadata?: SiteMetadata,
+  ): Promise<TransactionStatusResp> => {
+    const { address, network, siteInfo } = this.checkSiteMetadata(siteMetadata);
+    await this.checkPermissionExist(address, network, siteInfo);
+    switch (network) {
+      case "testnet3": {
+        const { transactionId } = params;
+        const tx = await this.coinService
+          .getInstance(InnerChainUniqueId.ALEO_TESTNET_3)
+          .getLocalTxInfo(address, transactionId);
+        if (!tx) {
+          throw new Error("Can't found transaction");
+        }
+        const { status } = tx;
+        return {
+          status,
+        };
+      }
+      default: {
+        throw new Error("Unknown network " + network);
+      }
+    }
+  };
+
+  getExecution = async (
     params: TransactionStatusProps,
-  ): Promise<TransactionStatusResp> => {};
-  requestTransactionHistory = (
+  ): Promise<TransactionStatusResp> => {
+    return await this.transactionStatus(params);
+  };
+
+  requestTransactionHistory = async (
     params: RequestTxHistoryProps,
-  ): Promise<RequestTxHistoryResp> => {};
+    siteMetadata?: SiteMetadata,
+  ): Promise<RequestTxHistoryResp> => {
+    const { address, network, siteInfo } = this.checkSiteMetadata(siteMetadata);
+    await this.checkPermissionExist(address, network, siteInfo);
+    switch (network) {
+      case "testnet3": {
+        const { program } = params;
+        const txs = await this.coinService
+          .getInstance(InnerChainUniqueId.ALEO_TESTNET_3)
+          .getTxHistory(address, program);
+        return {
+          transactions: txs.map((item, i) => ({
+            id: (item as AleoLocalHistoryItem).localId || i.toString(),
+            transactionId: item.txId!,
+          })),
+        };
+      }
+      default: {
+        throw new Error("Unknown network " + network);
+      }
+    }
+  };
 }

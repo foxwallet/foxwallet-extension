@@ -246,9 +246,13 @@ export class AleoStorage implements IAleoStorage {
     return await instance.getItem("content");
   }
 
-  async setProgramContent(chainId: string, programId: string, program: string) {
+  async setProgramContent(
+    chainId: string,
+    programId: string,
+    program: string,
+  ): Promise<void> {
     const instance = this.getAleoProgramStorageInstance(chainId, programId);
-    return await instance.setItem("content", program);
+    await instance.setItem("content", program);
   }
 
   private async calculateSHA1(data: Uint8Array): Promise<string> {

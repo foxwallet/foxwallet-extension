@@ -360,6 +360,51 @@ export class KeyringManager {
     return privateKey;
   }
 
+  async getPrivateKeyByAddress({
+    coinType,
+    address,
+  }: {
+    coinType: CoinType;
+    address: string;
+  }) {
+    const keyring = await this.#storage.getKeyring();
+    if (!keyring) {
+      throw new Error("Empty keyring");
+    }
+    const token = this.#getToken();
+    if (!token) {
+      throw new Error(ERROR_CODE.NOT_AUTH);
+    }
+    const { HD: hdWallets, SIMPLE: simpleWallets } = keyring;
+    if (hdWallets) {
+      for (const wallet of hdWallets) {
+        const account = wallet.accountsMap[coinType].find(
+          (item) => item.address === address,
+        );
+        if (!account) {
+          throw new Error("Account not found " + address);
+        }
+        const encryptedPrivateKey = account.privateKey;
+        const privateKey = decryptStr(token, encryptedPrivateKey);
+        return privateKey;
+      }
+    }
+    if (simpleWallets) {
+      for (const wallet of simpleWallets) {
+        const account = wallet.accountsMap[coinType].find(
+          (item) => item.address === address,
+        );
+        if (!account) {
+          throw new Error("Account not found " + address);
+        }
+        const encryptedPrivateKey = account.privateKey;
+        const privateKey = decryptStr(token, encryptedPrivateKey);
+        return privateKey;
+      }
+    }
+    return null;
+  }
+
   async getViewKey({
     coinType,
     address,
