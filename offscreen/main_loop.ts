@@ -101,6 +101,9 @@ export class MainLoop {
       this.workerList[i] = aleoWorker;
       console.log("===> spawen worker: ", i);
     }
+  }
+
+  async initTxWorker() {
     if (!this.txWorker) {
       const aleoWorker = await this.createAleoWorker();
       await aleoWorker.initWasm();
@@ -699,7 +702,7 @@ export class MainLoop {
   }
 
   async sendTransaction(params: AleoSendTxParams) {
-    await this.initWorker();
+    await this.initTxWorker();
     this.txTaskQuene.push(params);
     void this.executeTxTask();
   }

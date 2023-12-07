@@ -11,13 +11,13 @@ import {
   AleoTxAddressType,
 } from "core/coins/ALEO/types/History";
 import { AleoTxStatus } from "core/coins/ALEO/types/Tranaction";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 
 function OnboardHomeScreen() {
   const navigate = useNavigate();
   const { selectedAccount, uniqueId } = useCurrAccount();
-  const { coinService, nativeCurrency } = useCoinService(uniqueId);
+  const { nativeCurrency } = useCoinService(uniqueId);
   const { balance, loadingBalance } = useBalance(
     uniqueId,
     selectedAccount.address,

@@ -5,7 +5,7 @@ import // type AleoWorkerMessage,
 // type SyncBlockParams,
 // type TaskParams,
 "../offscreen/aleo.di";
-import { MainLoop } from "./mainLoop";
+import { MainLoop } from "./main_loop";
 import { ReserveChainConfigs } from "core/env";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import {
@@ -20,6 +20,15 @@ browser.runtime.onMessage.addListener(handleMessages);
 
 let mainLoop: MainLoop;
 
+const getMainLoop = () => {
+  if (!mainLoop) {
+    mainLoop = MainLoop.getInstace(
+      ReserveChainConfigs[InnerChainUniqueId.ALEO_TESTNET_3].rpcList,
+    );
+  }
+  return mainLoop;
+};
+
 function handleMessages(
   message: BackgroundMessage,
   sender: browser.Runtime.MessageSender,
@@ -32,10 +41,8 @@ function handleMessages(
 
   switch (message.type) {
     case OffscreenMethod.INIT_WORKER: {
-      mainLoop = MainLoop.getInstace(
-        ReserveChainConfigs[InnerChainUniqueId.ALEO_TESTNET_3].rpcList,
-      );
-      void mainLoop.loop();
+      const main = getMainLoop();
+      void main.loop();
       sendResponse({
         type: OffscreenMessageType.RESPONSE,
         origin: MessageOrigin.OFFSCREEN_TO_BACKGROUND,
@@ -44,8 +51,9 @@ function handleMessages(
       break;
     }
     case OffscreenMethod.SEND_TX: {
+      const main = getMainLoop();
       const params = message.payload;
-      mainLoop
+      main
         .sendTransaction(params)
         .then((resp) => {
           sendResponse({
