@@ -18,7 +18,7 @@ function OnboardHomeScreen() {
   const navigate = useNavigate();
   const { selectedAccount, uniqueId } = useCurrAccount();
   const { nativeCurrency } = useCoinService(uniqueId);
-  const { balance, loadingBalance } = useBalance(
+  const { balance, loadingBalance, error } = useBalance(
     uniqueId,
     selectedAccount.address,
     4000,
@@ -109,6 +109,7 @@ function OnboardHomeScreen() {
           symbol={nativeCurrency.symbol}
         />
       </Flex>
+      {!!error && <Flex>{error.toString()}</Flex>}
       <Flex>
         <Button isDisabled={!haveBalance} onClick={onClickSend} mr="2" flex="1">
           Send

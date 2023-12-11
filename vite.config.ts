@@ -22,6 +22,7 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       input: {
         offscreen: "./offscreen.html",
+        // offscreen_tx: "./offscreen_tx.html",
       },
       output: {
         entryFileNames: "[name].js",

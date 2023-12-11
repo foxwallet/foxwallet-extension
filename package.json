@@ -7,7 +7,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "npm run clean && yarn build:dapp && vite build --mode development && vite --mode development",
-    "build:dev": "npm run clean && node ./scripts/predev.js && yarn build:dapp &&  vite build --mode development",
+    "build:dev": "npm run clean && node ./scripts/predev.js && yarn build:dapp &&  vite build --mode development && cd offscreen_tx && npx rollup -c && cd .. && cp ./offscreen_tx.html ./dist/offscreen_tx.html",
     "build:prod": "npm run clean && node ./scripts/prerelease.js && yarn build:dapp && vite build",
     "build:dapp": "vite build --config vite-injector.config.ts",
     "clean": "rimraf dist/ && rimraf node_modules/aleo_wasm/",
@@ -22,6 +22,7 @@
     ]
   },
   "dependencies": {
+    "@aleohq/sdk": "^0.6.9",
     "@chakra-ui/react": "^2.8.0",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
@@ -82,6 +83,10 @@
     "@babel/preset-react": "^7.22.15",
     "@babel/preset-typescript": "^7.18.6",
     "@crxjs/vite-plugin": "1.0.13",
+    "@rollup/plugin-alias": "^5.1.0",
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.5",
     "@types/chrome": "^0.0.246",
     "@types/randombytes": "^2.0.0",
     "@types/react": "^18.2.0",
@@ -90,6 +95,7 @@
     "@typescript-eslint/eslint-plugin": "^6.7.0",
     "@typescript-eslint/parser": "^5.30.5",
     "@vitejs/plugin-react": "^4.0.4",
+    "@web/rollup-plugin-import-meta-assets": "^2.2.1",
     "autoprefixer": "^10.4.15",
     "babel-loader": "^8.2.5",
     "copy-webpack-plugin": "^11.0.0",
@@ -115,6 +121,7 @@
     "postcss": "^8.4.28",
     "prettier": "^3.0.3",
     "rimraf": "^5.0.1",
+    "rollup": "^4.6.1",
     "sass": "^1.66.1",
     "shx": "^0.3.4",
     "stream-browserify": "^3.0.0",

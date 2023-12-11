@@ -1,4 +1,4 @@
-import { Transaction } from "aleo/index";
+import { Transaction } from "./AleoTransaction";
 
 export interface AleoSendTxParams {
   privateKey: string;

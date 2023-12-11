@@ -1,4 +1,3 @@
-import { Transaction } from "aleo/index";
 import {
   type PopupServerMethod,
   type IPopupServer,

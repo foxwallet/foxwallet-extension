@@ -21,7 +21,7 @@ import {
   RequestTxProps,
   AleoRequestTxProps,
 } from "./IWalletServer";
-import { sendTransaction } from "../../../../offscreen/offscreen_helper";
+import { sendTransaction } from "../../../../offscreen_tx/src/offscreen_helper";
 import { AccountSettingStorage } from "../store/account/AccountStorage";
 import { DappStorage } from "../store/dapp/DappStorage";
 import { CoinType } from "core/types";
@@ -317,7 +317,8 @@ export class PopupWalletServer implements IPopupServer {
       ...rest,
       privateKey: pk,
     });
-    if (tx.payload.error) {
+    console.log("===> sendAleoTransaction resp: ", tx);
+    if (tx.payload?.error) {
       throw new Error(tx.payload.error);
     }
     return tx.payload.data;

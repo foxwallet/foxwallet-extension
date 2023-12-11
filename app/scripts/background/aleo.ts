@@ -21,7 +21,11 @@ const onOffscreenMessage = (
   sender: browser.Runtime.MessageSender,
   sendResponse: (data: any) => void,
 ) => {
-  if (message.origin !== MessageOrigin.OFFSCREEN_TO_BACKGROUND) {
+  console.log("===> onOffscreenMessage: ", message);
+  if (
+    message.origin !== MessageOrigin.OFFSCREEN_TO_BACKGROUND &&
+    message.origin !== MessageOrigin.OFFSCREEN_TX_TO_BACKGROUND
+  ) {
     return;
   }
   const { type, payload } = message;

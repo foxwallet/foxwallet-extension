@@ -2,15 +2,12 @@ import {
   StorageKey,
   aleoAccountStorageInstance,
   aleoBlockStorageInstance,
-} from "@/common/utils/indexeddb";
-import { IAleoStorage } from "core/coins/ALEO/types/IAleoStorage";
-import { AleoSyncAccount } from "core/coins/ALEO/types/AleoSyncAccount";
-import {
-  AleoAddressInfo,
-  SyncBlockResultWithDuration,
-} from "core/coins/ALEO/types/SyncTask";
-import { ProverKeyPair } from "core/coins/ALEO/types/ProverKeyPair";
-import { AleoLocalTxInfo } from "core/coins/ALEO/types/Tranaction";
+} from "./indexeddb";
+import { IAleoStorage } from "./types";
+import { AleoSyncAccount } from "./types";
+import { AleoAddressInfo, SyncBlockResultWithDuration } from "./types";
+import { ProverKeyPair } from "./types";
+import { AleoLocalTxInfo } from "./types";
 
 export class AleoStorage implements IAleoStorage {
   static instance: AleoStorage;

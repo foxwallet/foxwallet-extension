@@ -18,12 +18,7 @@
     "strictPropertyInitialization": false,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "types": ["@types/chrome"],
-    "paths": {
-      "@/*": ["./app/*"],
-      "core/*": ["./core/*"],
-      "aleo/*": ["./aleo/*"]
-    }
+    "types": ["@types/chrome"]
   },
-  "include": ["./app", "./core", "./offscreen", "./offscreen_tx"]
+  "include": ["./src"]
 }

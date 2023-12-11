@@ -1,6 +1,8 @@
 export enum MessageOrigin {
   OFFSCREEN_TO_BACKGROUND = "offscreen_to_background",
+  OFFSCREEN_TX_TO_BACKGROUND = "offscreen_tx_to_background",
   BACKGROUND_TO_OFFSCREEN = "background_to_offscreen",
+  BACKGROUND_TO_OFFSCREEN_TX = "background_to_offscreen_tx",
 }
 
 export interface OffscreenMessagePayload<T = any> {
