@@ -1,12 +1,6 @@
 import browser from "webextension-polyfill";
 import { logger } from "@/common/utils/logger";
-import // type AleoWorkerMessage,
-// AleoWorkerMethod,
-// type SyncBlockParams,
-// type TaskParams,
-"./aleo.di";
 import { MainLoop } from "./main_loop";
-import { ReserveChainConfigs } from "core/env";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import {
   MessageOrigin,
@@ -15,6 +9,7 @@ import {
   type OffscreenMessage,
   OffscreenMessageType,
 } from "@/common/types/offscreen";
+import { ReserveChainConfigs } from "../env";
 
 browser.runtime.onMessage.addListener(handleMessages);
 
@@ -49,36 +44,6 @@ function handleMessages(
         payload: { error: null, data: null },
       });
       break;
-    }
-    case OffscreenMethod.SEND_TX: {
-      const main = getMainLoop();
-      const params = message.payload;
-      main
-        .sendTransaction(params)
-        .then((resp) => {
-          sendResponse({
-            type: OffscreenMessageType.RESPONSE,
-            origin: MessageOrigin.OFFSCREEN_TO_BACKGROUND,
-            payload: {
-              error: null,
-              data: resp,
-            },
-          });
-        })
-        .catch((err) => {
-          logger.log(`==> ${message.type} err: `, err);
-          if (err instanceof Error) {
-            sendResponse({
-              type: OffscreenMessageType.RESPONSE,
-              origin: MessageOrigin.OFFSCREEN_TO_BACKGROUND,
-              payload: {
-                error: err.message,
-                data: null,
-              },
-            });
-          }
-        });
-      return true;
     }
     default: {
       logger.warn(`Unexpected message type received'.`);

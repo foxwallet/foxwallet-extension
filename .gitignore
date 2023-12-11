@@ -20,7 +20,7 @@ dist-ssr
 .DS_Store
 
 coverage/
-env.ts
+env/
 @aleohq/aleo_wasm/target
 @aleohq/aleo_wasm/pkg
 @aleohq/aleo_wasm/pkg-parallel

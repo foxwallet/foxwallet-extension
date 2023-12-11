@@ -1,8 +1,4 @@
 import * as browser from "webextension-polyfill";
-// import { MainLoop } from "./main_loop";
-// import { wrap } from "comlink";
-import { ReserveChainConfigs } from "./env";
-import { InnerChainUniqueId } from "./types";
 import {
   MessageOrigin,
   type BackgroundMessage,

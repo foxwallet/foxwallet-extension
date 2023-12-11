@@ -1,5 +1,8 @@
-import type { AutoSwitchServiceType } from "../types/retry";
 import { sleep } from "./sleep";
+
+export enum AutoSwitchServiceType {
+  RPC = "rpc",
+}
 
 export const isNetworkError = (err: any) => {
   if (err?.message && typeof err.message === "string") {

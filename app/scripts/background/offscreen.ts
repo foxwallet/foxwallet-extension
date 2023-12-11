@@ -1,3 +1,4 @@
+import { ReserveChainConfigs } from "../../../env";
 import {
   type BackgroundMessage,
   MessageOrigin,
@@ -93,7 +94,10 @@ export async function sendTransaction(params: AleoSendTxParams) {
   const messsage: BackgroundMessage = {
     type: OffscreenMethod.SEND_TX,
     origin: MessageOrigin.BACKGROUND_TO_OFFSCREEN_TX,
-    payload: params,
+    payload: {
+      ...params,
+      rpcList: ReserveChainConfigs.ALEO_TESTNET_3.rpcList,
+    },
   };
   const sendTxResp: OffscreenMessage =
     await chrome.runtime.sendMessage(messsage);

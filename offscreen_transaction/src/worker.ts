@@ -1,9 +1,6 @@
 import { initThreadPool } from "@aleohq/wasm";
-import { expose } from "comlink";
-import type { LogFunc } from "./aleo.di";
 import type { AleoSendTxParams } from "../../core/coins/ALEO/types/Tranaction";
-import { AleoTxWorker } from "./aleo_tx";
-import { ReserveChainConfigs } from "./env";
+import { AleoTxWorker } from "./transaction";
 
 let aleoTxWorker: AleoTxWorker | null = null;
 let inited = false;
@@ -26,7 +23,8 @@ async function sendTransaction(params: AleoSendTxParams) {
 
 addEventListener("message", async (event) => {
   try {
-    initAleoTxWorker(ReserveChainConfigs.aleo_testnet_3.rpcList, true);
+    const { rpcList } = event.data.payload;
+    initAleoTxWorker(rpcList, true);
     const result = await sendTransaction(event.data.payload);
     postMessage({ data: result, error: null });
   } catch (err) {

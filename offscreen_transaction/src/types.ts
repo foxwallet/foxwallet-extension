@@ -309,10 +309,6 @@ export interface ProverKeyPair {
   verifierSha1: string;
 }
 
-export enum AutoSwitchServiceType {
-  RPC = "rpc",
-}
-
 export type Block = {
   block_hash: string;
   previous_hash: string;
@@ -376,5 +372,5 @@ export interface BackgroundMessage<T = any> {
 }
 
 export enum InnerChainUniqueId {
-  ALEO_TESTNET_3 = "aleo_testnet_3",
+  ALEO_TESTNET_3 = "ALEO_TESTNET_3",
 }

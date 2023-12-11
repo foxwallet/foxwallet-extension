@@ -1,4 +1,4 @@
-import { AutoSwitchService } from "@/common/utils/retry";
+import { AutoSwitchService } from "../../../../utils/retry";
 import { AleoRpc } from "../api/rpc";
 
 export class AleoRpcService extends AutoSwitchService<string, AleoRpc> {

@@ -1,6 +1,5 @@
-import { AutoSwitch } from "@/common/utils/retry";
-import { AutoSwitchServiceType } from "@/common/types/retry";
-import { sleep } from "@/common/utils/sleep";
+import { AutoSwitch, AutoSwitchServiceType } from "core/utils/retry";
+import { sleep } from "core/utils/sleep";
 import { type WorkerAPI } from "./worker";
 import { proxy, wrap } from "comlink";
 import {
@@ -23,10 +22,6 @@ import {
   TaskPriority,
 } from "core/coins/ALEO/types/SyncTask";
 import { ALEO_CHAIN_CONFIGS } from "core/coins/ALEO/config/chains";
-import type {
-  AleoSendTxParams,
-  AleoTransaction,
-} from "core/coins/ALEO/types/Tranaction";
 import { AleoRpcService } from "core/coins/ALEO/service/instances/rpc";
 
 // larger limit
@@ -45,9 +40,6 @@ export class MainLoop {
   syncTaskQuene: Array<TaskParamWithRange & { syncParams: SyncBlockParams[] }>;
   workerList: WorkerAPI[];
   taskInProcess: Array<Promise<void> | undefined>;
-  txWorker: WorkerAPI;
-  txTaskInProcess: Promise<AleoTransaction | null> | undefined;
-  txTaskQuene: AleoSendTxParams[];
   aleoStorage: AleoStorage;
 
   static getInstace(rpcList: string[]) {
@@ -67,8 +59,6 @@ export class MainLoop {
     this.workerList = [];
     this.taskInProcess = new Array<Promise<void> | undefined>(WORKER_NUMBER);
     this.aleoStorage = AleoStorage.getInstance();
-    this.txTaskInProcess = undefined;
-    this.txTaskQuene = [];
   }
 
   async sendMessage(message: OffscreenMessage) {
@@ -100,19 +90,6 @@ export class MainLoop {
       await aleoWorker.initAleoWorker(i, this.rpcList, ENABLE_MEASURE);
       this.workerList[i] = aleoWorker;
       console.log("===> spawen worker: ", i);
-    }
-  }
-
-  async initTxWorker() {
-    if (!this.txWorker) {
-      const aleoWorker = await this.createAleoWorker();
-      await aleoWorker.initWasm();
-      await aleoWorker.initAleoTxWorker(
-        WORKER_NUMBER,
-        this.rpcList,
-        ENABLE_MEASURE,
-      );
-      this.txWorker = aleoWorker;
     }
   }
 
@@ -685,25 +662,5 @@ export class MainLoop {
       await sleep(2000);
       void this.loop();
     }
-  }
-
-  async executeTxTask() {
-    while (this.txTaskQuene.length > 0 || this.txTaskInProcess) {
-      if (this.txTaskInProcess) {
-        // TODO: send notification to user when tx is finished
-        await this.txTaskInProcess;
-        this.txTaskInProcess = undefined;
-      }
-      const txParams = this.txTaskQuene.shift();
-      if (txParams) {
-        this.txTaskInProcess = this.txWorker.sendTransaction(txParams);
-      }
-    }
-  }
-
-  async sendTransaction(params: AleoSendTxParams) {
-    await this.initTxWorker();
-    this.txTaskQuene.push(params);
-    void this.executeTxTask();
   }
 }

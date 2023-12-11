@@ -10,16 +10,15 @@ import {
   WalletType,
 } from "./types/keyring";
 import browser from "webextension-polyfill";
-import { ReserveChainConfigs } from "core/env";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
-import { AutoSwitch } from "@/common/utils/retry";
-import { AutoSwitchServiceType } from "@/common/types/retry";
+import { AutoSwitch, AutoSwitchServiceType } from "core/utils/retry";
 import { logger } from "@/common/utils/logger";
 import { TaskPriority } from "core/coins/ALEO/types/SyncTask";
 import { AleoStorage } from "../aleo/AleoStorage";
 import { ALEO_CHAIN_CONFIGS } from "core/coins/ALEO/config/chains";
 import { AleoSyncAccount } from "core/coins/ALEO/types/AleoSyncAccount";
 import { AleoRpcService } from "core/coins/ALEO/service/instances/rpc";
+import { ReserveChainConfigs } from "../../../../../env";
 
 export class VaultStorage {
   #storage: browser.Storage.LocalStorageArea;

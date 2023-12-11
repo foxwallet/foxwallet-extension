@@ -4,8 +4,7 @@ import { IAleoStorage } from "../types/IAleoStorage";
 import { AleoAddressInfo, RecordDetailWithSpent } from "../types/SyncTask";
 import { parseU64 } from "../utils/num";
 import { logger } from "@/common/utils/logger";
-import { AutoSwitch } from "@/common/utils/retry";
-import { AutoSwitchServiceType } from "@/common/types/retry";
+import { AutoSwitch, AutoSwitchServiceType } from "core/utils/retry";
 import {
   InputItem,
   RecordFilter,

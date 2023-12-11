@@ -10,7 +10,7 @@ import { CreatePasswordStep } from "../../components/Onboard/CreatePassword";
 import { ImportMnemonicStep } from "../../components/Onboard/ImportMnemonic";
 import { showMessageToast } from "../../components/Custom/ErrorToast";
 import { usePopupDispatch } from "@/hooks/useStore";
-import { sleep } from "@/common/utils/sleep";
+import { sleep } from "core/utils/sleep";
 import { useNavigate } from "react-router-dom";
 import { CoinType } from "core/types";
 

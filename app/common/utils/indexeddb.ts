@@ -1,7 +1,6 @@
 import localForage from "localforage";
 import { type Cache } from "swr";
 import { logger } from "./logger";
-import { ChainUniqueId } from "core/types/ChainUniqueId";
 import { CoinType } from "core/types";
 
 // both background service and popup run in the same extension context, so the indexedDB is the same

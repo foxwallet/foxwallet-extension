@@ -1,38 +1,32 @@
-import { shuffle } from "@/common/utils/array";
-import type { AleoProgramImportsMap, LogFunc } from "./aleo.di";
+import type { AleoProgramImportsMap } from "./aleo.di";
 import {
   PrivateKey,
   Program,
   ProgramManager,
   RecordPlaintext,
   Transaction,
-  Field,
   ProvingKey,
   VerifyingKey,
-} from "aleo_wasm";
-import { AleoStorage } from "@/scripts/background/store/aleo/AleoStorage";
-import { AutoSwitch } from "@/common/utils/retry";
-import { AutoSwitchServiceType } from "@/common/types/retry";
+} from "@aleohq/wasm";
+import { AleoStorage } from "./AleoStorage";
+import { AutoSwitch } from "./utils/retry";
+import { AutoSwitchServiceType } from "./utils/retry";
 import {
   AleoTxStatus,
   type AleoSendTxParams,
   type AleoTransaction,
   type AleoLocalTxInfo,
-} from "core/coins/ALEO/types/Tranaction";
-import { AleoRpcService } from "core/coins/ALEO/service/instances/rpc";
-import { NATIVE_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
+} from "./types";
+import { AleoRpcService } from "./instances/rpc";
+
+const NATIVE_TOKEN_PROGRAM_ID = "credits.aleo";
 
 export class AleoTxWorker {
   rpcService: AleoRpcService;
   storage: AleoStorage;
-  static logger: LogFunc | undefined;
   private measureMap: {
     [process in string]?: { time: number; count: number; max: number };
   } = {};
-
-  static setLogger(logger: LogFunc) {
-    AleoTxWorker.logger = logger;
-  }
 
   constructor(
     private workerId: number,
@@ -46,22 +40,6 @@ export class AleoTxWorker {
 
   get getWorkerId() {
     return this.workerId;
-  }
-
-  log(...args: any[]) {
-    if (AleoTxWorker.logger) {
-      AleoTxWorker.logger("log", ` workerId ${this.workerId} `, ...args);
-    } else {
-      console.log("===> worker's logger is not set");
-    }
-  }
-
-  error(...args: any[]) {
-    if (AleoTxWorker.logger) {
-      AleoTxWorker.logger("error", ` workerId ${this.workerId} `, ...args);
-    } else {
-      console.log("===> worker's logger is not set");
-    }
   }
 
   parsePrivateKey = (privateKeyStr: string): PrivateKey => {
@@ -94,12 +72,12 @@ export class AleoTxWorker {
   @AutoSwitch({ serviceType: AutoSwitchServiceType.RPC })
   async getProgramContent(chainId: string, programId: string) {
     const cache = await this.storage.getProgramContent(chainId, programId);
-    this.log("===> getProgramContent cache: ", cache?.length);
+    console.log("===> getProgramContent cache: ", cache?.length);
     if (cache) {
       return cache;
     }
     const program = await this.rpcService.currInstance().getProgram(programId);
-    this.log("===> getProgramContent: ", program.length);
+    console.log("===> getProgramContent: ", program.length);
     if (program) {
       await this.storage.setProgramContent(chainId, programId, program);
     }
@@ -130,7 +108,7 @@ export class AleoTxWorker {
       );
     }
     const importList = programObj.getImports() as string[];
-    this.log("===> getProgramImports: ", importList);
+    console.log("===> getProgramImports: ", importList);
     for (let i = 0; i < importList.length; i++) {
       const importId = importList[i];
       if (!imports[importId]) {
@@ -175,16 +153,20 @@ export class AleoTxWorker {
       );
     }
     const imports = await this.getProgramImports(chainId, program);
-    this.log("===> before inner synthesizeKeypair: ", programId, functionName);
+    console.log(
+      "===> before inner synthesizeKeypair: ",
+      programId,
+      functionName,
+    );
     const startTime = performance.now();
-    const keyPair = await ProgramManager.synthesizeKeypair(
+    const keyPair = await ProgramManager.synthesizeKeyPair(
       privateKey,
       programStr,
       functionName,
       inputs,
       imports,
     );
-    this.log(
+    console.log(
       "===> after inner synthesizeKeypair: ",
       performance.now() - startTime,
       programId,
@@ -208,7 +190,7 @@ export class AleoTxWorker {
       programId,
       functionName,
     );
-    this.log("===> getProverKeyPair cacheKey: ", !!cachedKey);
+    console.log("===> getProverKeyPair cacheKey: ", !!cachedKey);
     if (cachedKey) {
       return {
         proverFile: ProvingKey.fromBytes(cachedKey.proverFile),
@@ -267,7 +249,7 @@ export class AleoTxWorker {
       if (!programStr) {
         throw new Error("Get program content failed " + programId);
       }
-      this.log(
+      console.log(
         "===> before getProverKeyPair ",
         programId,
         functionName,
@@ -286,7 +268,7 @@ export class AleoTxWorker {
         inputs,
       );
       const totalProverTiime = performance.now() - startProverTime;
-      this.log("===> after getProverKeyPair ", totalProverTiime);
+      console.log("===> after getProverKeyPair ", totalProverTiime);
       const baseFeeStr = `${baseFee}u64`;
       const priorityFeeStr = `${priorityFee}u64`;
       const feeMethod = feeRecordStr ? "fee_private" : "fee_public";
@@ -295,7 +277,7 @@ export class AleoTxWorker {
       const feeInputs = feeRecordStr
         ? [feeRecordStr, baseFeeStr, priorityFeeStr, placeHolderExecutionId]
         : [baseFeeStr, priorityFeeStr, placeHolderExecutionId];
-      this.log("===> before getFeeProverKeyPair ");
+      console.log("===> before getFeeProverKeyPair ");
       const startFeeProverTime = performance.now();
       const { proverFile: feeProverFile, verifierFile: feeVerifierKey } =
         await this.getProverKeyPair(
@@ -306,7 +288,7 @@ export class AleoTxWorker {
           feeInputs,
         );
       const totalFeeProverTiime = performance.now() - startFeeProverTime;
-      this.log("===> after getFeeProverKeyPair ", totalFeeProverTiime);
+      console.log("===> after getFeeProverKeyPair ", totalFeeProverTiime);
 
       pendingTxInfo.status = AleoTxStatus.GENERATING_TRANSACTION;
       await this.storage.setAddressLocalTx(chainId, address, pendingTxInfo);
@@ -315,7 +297,7 @@ export class AleoTxWorker {
       const feeRecord = feeRecordStr
         ? this.parseRecord(feeRecordStr)
         : undefined;
-      this.log("===> before buildExecutionTransaction ");
+      console.log("===> before buildExecutionTransaction ");
       // TODO: regenerate tx when encounter inclusion error
       const tx = await ProgramManager.buildExecutionTransaction(
         privateKeyObj,
@@ -332,15 +314,15 @@ export class AleoTxWorker {
         feeProverFile,
         feeVerifierKey,
       );
-      this.log("===> before submitTransaction ", tx.toString());
+      console.log("===> before submitTransaction ", tx.toString());
 
       pendingTxInfo.status = AleoTxStatus.BROADCASTING;
       await this.storage.setAddressLocalTx(chainId, address, pendingTxInfo);
 
       const result = await this.submitTransaction(tx);
       const totalTime = performance.now() - startTime;
-      this.log("===> sendTransaction totalTime", totalTime);
-      this.log("===> sendTransaction tx: ", result);
+      console.log("===> sendTransaction totalTime", totalTime);
+      console.log("===> sendTransaction tx: ", result);
       if (result) {
         pendingTxInfo.status = AleoTxStatus.COMPLETED;
         const txObj: AleoTransaction = JSON.parse(tx.toString());
@@ -350,7 +332,7 @@ export class AleoTxWorker {
       }
       return null;
     } catch (err) {
-      this.error("===> sendTransaction error ", err);
+      console.error("===> sendTransaction error ", err);
       pendingTxInfo.status = AleoTxStatus.FAILED;
       pendingTxInfo.error = (err as Error).toString();
       await this.storage.setAddressLocalTx(chainId, address, pendingTxInfo);

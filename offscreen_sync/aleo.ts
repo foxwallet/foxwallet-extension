@@ -7,8 +7,7 @@ import {
   RecordCiphertext,
   Future,
 } from "aleo_wasm";
-import { AutoSwitch } from "@/common/utils/retry";
-import { AutoSwitchServiceType } from "@/common/types/retry";
+import { AutoSwitch, AutoSwitchServiceType } from "core/utils/retry";
 import { Measure, MeasureAsync } from "@/common/utils/measure";
 import { ALEO_BLOCK_RANGE } from "@/common/constants";
 import { shuffle } from "@/common/utils/array";

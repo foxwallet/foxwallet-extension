@@ -1,11 +1,11 @@
 import { CoinType } from "core/types";
 import { AleoConfig } from "../types/AleoConfig";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
-import { ReserveChainConfigs } from "core/env";
 import { ExplorerLanguages } from "core/types/ExplorerLanguages";
 // @ts-expect-error missing type
 import AleoLogo from "../../../assets/images/chains/aleo.webp";
 import { NATIVE_TOKEN_PROGRAM_ID } from "../constants";
+import { ReserveChainConfigs } from "../../../../env";
 
 export const ALEO_CHAIN_CONFIGS: { [key in string]: AleoConfig } = {
   TEST_NET_3: {

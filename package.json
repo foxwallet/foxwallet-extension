@@ -14,7 +14,7 @@
     "wasm": "cd @aleohq/aleo_wasm && RUSTFLAGS='-C link-arg=--max-memory=4294967296' wasm-pack build --release --target web",
     "lint": "eslint --ext .ts,.js --max-warnings=0 .",
     "format": "prettier --write .",
-    "postinstall": "rm -rf node_modules/@aleohq/wasm && cp -R @aleohq/wasm node_modules/@aleohq/wasm"
+    "postinstall": "rm -rf node_modules/@aleohq/wasm && mkdir node_modules/@aleohq && cp -R @aleohq/wasm node_modules/@aleohq/wasm"
   },
   "lint-staged": {
     "*.{ts,js,tsx,jsx}": [

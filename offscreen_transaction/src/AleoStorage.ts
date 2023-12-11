@@ -3,7 +3,7 @@ import {
   aleoAccountStorageInstance,
   aleoBlockStorageInstance,
 } from "./indexeddb";
-import { IAleoStorage } from "./types";
+import { IAleoStorage } from "../../core/coins/ALEO/types/IAleoStorage";
 import { AleoSyncAccount } from "./types";
 import { AleoAddressInfo, SyncBlockResultWithDuration } from "./types";
 import { ProverKeyPair } from "./types";
