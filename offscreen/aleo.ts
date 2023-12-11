@@ -7,7 +7,6 @@ import {
   RecordCiphertext,
   Future,
 } from "aleo_wasm";
-import * as aleo from "aleo/index";
 import { AutoSwitch } from "@/common/utils/retry";
 import { AutoSwitchServiceType } from "@/common/types/retry";
 import { Measure, MeasureAsync } from "@/common/utils/measure";
@@ -27,6 +26,7 @@ import {
 } from "core/coins/ALEO/types/SyncTask";
 import { AleoRpcService } from "core/coins/ALEO/service/instances/rpc";
 import { AleoTxAddressType } from "core/coins/ALEO/types/History";
+import type { Transition } from "core/coins/ALEO/types/AleoTransition";
 
 export class AleoWorker {
   rpcService: AleoRpcService;
@@ -198,7 +198,7 @@ export class AleoWorker {
 
   @Measure()
   parseSenderCreditTransition(
-    transition: aleo.Transition,
+    transition: Transition,
     viewKey: ViewKey,
     skTag: Field,
   ): TxInfo & {
@@ -324,7 +324,7 @@ export class AleoWorker {
 
   @Measure()
   parseReceiverCreditTransition(
-    transition: aleo.Transition,
+    transition: Transition,
     viewKey: ViewKey,
     skTag: Field,
     address: string,
@@ -416,7 +416,7 @@ export class AleoWorker {
 
   @Measure()
   parseSplitTransition(
-    transition: aleo.Transition,
+    transition: Transition,
     viewKey: ViewKey,
     skTag: Field,
   ):
@@ -461,7 +461,7 @@ export class AleoWorker {
 
   @Measure()
   parseCustomTransition(
-    transition: aleo.Transition,
+    transition: Transition,
     viewKey: ViewKey,
     skTag: Field,
     type: TxInfo["txType"],
@@ -500,7 +500,7 @@ export class AleoWorker {
   }
 
   private parseSenderExecuteTransition = (
-    transition: aleo.Transition,
+    transition: Transition,
     viewKey: ViewKey,
     skTag: Field,
   ) => {
@@ -517,7 +517,7 @@ export class AleoWorker {
   };
 
   private parseSenderExecuteTransitions = (
-    transitions: aleo.Transition[],
+    transitions: Transition[],
     viewKey: ViewKey,
     skTag: Field,
   ) => {
@@ -527,7 +527,7 @@ export class AleoWorker {
   };
 
   private parseReceiverExecuteTransition = (
-    transition: aleo.Transition,
+    transition: Transition,
     viewKey: ViewKey,
     skTag: Field,
     address: string,
@@ -554,7 +554,7 @@ export class AleoWorker {
   };
 
   private parseReceiverExecuteTransitions = (
-    transitions: aleo.Transition[],
+    transitions: Transition[],
     viewKey: ViewKey,
     skTag: Field,
     address: string,
@@ -575,7 +575,7 @@ export class AleoWorker {
 
   @Measure()
   parseFeeTransition(
-    transition: aleo.Transition,
+    transition: Transition,
     viewKey: ViewKey,
     skTag: Field,
     address: string,

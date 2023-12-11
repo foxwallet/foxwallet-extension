@@ -17,8 +17,7 @@ export default defineConfig(({ mode }) => ({
       // https://github.com/originjs/vite-plugins/issues/9#issuecomment-924668456
       transformMixedEsModules: true,
     },
-    // minify: mode === "production",
-    minify: false,
+    minify: mode === "production",
     rollupOptions: {
       input: {
         offscreen: "./offscreen.html",
@@ -75,7 +74,7 @@ export default defineConfig(({ mode }) => ({
       protocolImports: true,
     }),
     react(),
-    wasmPack(["./aleo_wasm"]),
+    wasmPack(["./@aleohq/aleo_wasm"]),
     crx({ manifest }),
   ],
 }));

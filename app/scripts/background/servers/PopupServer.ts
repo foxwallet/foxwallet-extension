@@ -1,4 +1,3 @@
-import { Transaction } from "aleo/index";
 import { AuthManager } from "../store/vault/managers/auth/AuthManager";
 import { KeyringManager } from "../store/vault/managers/keyring/KeyringManager";
 import {
@@ -31,6 +30,7 @@ import { DappRequest } from "../types/dapp";
 import { createPopup } from "../helper/popup";
 import { AleoConnectHistory } from "../types/connect";
 import { SiteInfo } from "@/scripts/content/host";
+import { Transaction } from "core/coins/ALEO/types/AleoTransaction";
 
 export type OnRequestFinishCallback = (
   error: null | Error,

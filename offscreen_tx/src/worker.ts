@@ -1,4 +1,4 @@
-import { initThreadPool } from "@aleohq/sdk";
+import { initThreadPool } from "@aleohq/wasm";
 import { expose } from "comlink";
 import type { LogFunc } from "./aleo.di";
 import type { AleoSendTxParams } from "../../core/coins/ALEO/types/Tranaction";

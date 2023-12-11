@@ -102,6 +102,13 @@ export async function sendTransaction(params: AleoSendTxParams) {
   const sendTxResp: OffscreenMessage =
     await chrome.runtime.sendMessage(messsage);
   console.log("===> sendTx resp: ", sendTxResp);
+  await closeOffscreenDocument(OFFSCREEN_TX_DOCUMENT_PATH);
+  console.log(
+    "===> closeOffscreenDocument after tx",
+    OFFSCREEN_TX_DOCUMENT_PATH,
+  );
+  await setupOffscreenDocument(OFFSCREEN_DOCUMENT_PATH);
+  console.log("===> setupOffscreenDocument after tx", OFFSCREEN_DOCUMENT_PATH);
   return sendTxResp;
 }
 
