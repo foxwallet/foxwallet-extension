@@ -18,12 +18,10 @@
     "strictPropertyInitialization": false,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "types": ["@types/chrome"],
-    "paths": {
-      "@/*": ["./app/*"],
-      "core/*": ["./core/*"],
-      "aleo/*": ["./aleo/*"]
-    }
+    "types": ["@types/chrome"]
   },
-  "include": ["./app", "./core", "./offscreen_sync"]
+  "include": [
+    "../offscreentransaction/src",
+    "../app/scripts/background/offscreen.ts"
+  ]
 }

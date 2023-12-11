@@ -1,20 +1,10 @@
-import { AleoWorker } from "../../../offscreen/aleo";
-import init from "aleo_wasm";
-import {
-  initWorker,
-  sendTransaction,
-  setupOffscreen,
-} from "../../../offscreen/offscreen_helper";
-import { Future } from "aleo_wasm";
-import { parseU64 } from "../../../offscreen/helper";
 import browser from "webextension-polyfill";
 import {
   MessageOrigin,
   OffscreenMessage,
   OffscreenMessageType,
 } from "@/common/types/offscreen";
-import { nanoid } from "nanoid";
-import { AleoSendTxParams } from "core/coins/ALEO/types/Tranaction";
+import { syncBlocks } from "./offscreen";
 
 const onOffscreenMessage = (
   message: OffscreenMessage,
@@ -41,5 +31,5 @@ const onOffscreenMessage = (
 
 export async function offscreen() {
   browser.runtime.onMessage.addListener(onOffscreenMessage);
-  await initWorker();
+  await syncBlocks();
 }

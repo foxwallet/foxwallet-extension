@@ -4,7 +4,7 @@ import // type AleoWorkerMessage,
 // AleoWorkerMethod,
 // type SyncBlockParams,
 // type TaskParams,
-"../offscreen/aleo.di";
+"./aleo.di";
 import { MainLoop } from "./main_loop";
 import { ReserveChainConfigs } from "core/env";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";

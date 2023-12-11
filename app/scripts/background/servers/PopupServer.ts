@@ -20,7 +20,7 @@ import {
   RequestTxProps,
   AleoRequestTxProps,
 } from "./IWalletServer";
-import { sendTransaction } from "../../../../offscreen_tx/src/offscreen_helper";
+import { sendTransaction } from "../offscreen";
 import { AccountSettingStorage } from "../store/account/AccountStorage";
 import { DappStorage } from "../store/dapp/DappStorage";
 import { CoinType } from "core/types";

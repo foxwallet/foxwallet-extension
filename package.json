@@ -7,7 +7,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "npm run clean && yarn build:dapp && vite build --mode development && vite --mode development",
-    "build:dev": "npm run clean && node ./scripts/predev.js && yarn build:dapp &&  vite build --mode development && cd offscreen_tx && npx rollup -c && cd .. && cp ./offscreen_tx.html ./dist/offscreen_tx.html",
+    "build:dev": "npm run clean && node ./scripts/predev.js && yarn build:dapp &&  vite build --mode development && cd offscreen_transaction && npx rollup -c && cd .. && cp ./offscreen_tx.html ./dist/offscreen_tx.html",
     "build:prod": "npm run clean && node ./scripts/prerelease.js && yarn build:dapp && vite build",
     "build:dapp": "vite build --config vite-injector.config.ts",
     "clean": "rimraf dist/ && rimraf node_modules/aleo_wasm/",

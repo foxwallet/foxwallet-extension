@@ -1,15 +1,14 @@
-import { logger } from "@/common/utils/logger";
 import {
   type BackgroundMessage,
   MessageOrigin,
   OffscreenMethod,
   OffscreenMessage,
-} from "@/common/types/offscreen";
-import type { AleoSendTxParams } from "core/coins/ALEO/types/Tranaction";
-import { nanoid } from "nanoid";
+} from "../../../offscreen_transaction/src/types";
+import type { AleoSendTxParams } from "../../../offscreen_transaction/src/types";
+import * as browser from "webextension-polyfill";
 
-const OFFSCREEN_DOCUMENT_PATH = "/offscreen.html";
 const OFFSCREEN_TX_DOCUMENT_PATH = "/offscreen_tx.html";
+const OFFSCREEN_DOCUMENT_PATH = "/offscreen.html";
 
 // A global promise to avoid concurrency issues
 let creating: Promise<void> | null;
@@ -19,7 +18,7 @@ async function hasDocument(path: string) {
     // @ts-expect-error getContexts not in type
     const contexts = await chrome.runtime.getContexts({
       contextTypes: ["OFFSCREEN_DOCUMENT"],
-      documentUrls: [chrome.runtime.getURL(path)],
+      documentUrls: [browser.runtime.getURL(path)],
     });
     return contexts.length > 0;
   } else {
@@ -34,7 +33,7 @@ async function hasDocument(path: string) {
 
 async function setupOffscreenDocument(path: string) {
   try {
-    const has = await hasDocument(OFFSCREEN_DOCUMENT_PATH);
+    const has = await hasDocument(path);
     if (!has) {
       // create offscreen document
       if (creating) {
@@ -60,73 +59,51 @@ async function setupOffscreenDocument(path: string) {
   }
 }
 
-export async function closeOffscreenDocument() {
-  const has = await hasDocument(OFFSCREEN_DOCUMENT_PATH);
-  console.log(
-    "===> closeOffscreenDocument has: ",
-    has,
-    OFFSCREEN_DOCUMENT_PATH,
-  );
+async function closeOffscreenDocument(path: string) {
+  const has = await hasDocument(path);
   if (!has) {
     return;
   }
   await chrome.offscreen.closeDocument();
 }
 
-export async function setupOffscreen() {
+export async function syncBlocks() {
+  console.log("===> initWorker setupOffscreenDocument");
   await setupOffscreenDocument(OFFSCREEN_DOCUMENT_PATH);
-}
-
-export async function initWorker() {
-  logger.log("===> initWorker setupOffscreenDocument");
-  await setupOffscreenDocument(OFFSCREEN_DOCUMENT_PATH);
-  logger.log("===> initWorker sendMessage");
+  console.log("===> initWorker sendMessage");
   const messsage: BackgroundMessage = {
     type: OffscreenMethod.INIT_WORKER,
-    origin: MessageOrigin.BACKGROUND_TO_OFFSCREEN,
+    origin: MessageOrigin.BACKGROUND_TO_OFFSCREEN_TX,
     payload: null,
   };
   const initResp = await chrome.runtime.sendMessage(messsage);
-  logger.log("===> initWorker resp: ", initResp);
+  console.log("===> initWorker resp: ", initResp);
   return initResp;
 }
 
 export async function sendTransaction(params: AleoSendTxParams) {
-  logger.log("===> initWorker setupOffscreenDocument");
+  console.log("===> sendTransaction closeOffscreenTxDocument");
+  await closeOffscreenDocument(OFFSCREEN_DOCUMENT_PATH);
+  console.log(
+    "===> initWorker setupOffscreenDocument ",
+    OFFSCREEN_TX_DOCUMENT_PATH,
+  );
   await setupOffscreenDocument(OFFSCREEN_TX_DOCUMENT_PATH);
-  logger.log("===> initWorker sendMessage");
+  console.log("===> initWorker sendMessage");
   const messsage: BackgroundMessage = {
     type: OffscreenMethod.SEND_TX,
-    origin: MessageOrigin.BACKGROUND_TO_OFFSCREEN,
+    origin: MessageOrigin.BACKGROUND_TO_OFFSCREEN_TX,
     payload: params,
   };
   const sendTxResp: OffscreenMessage =
     await chrome.runtime.sendMessage(messsage);
-  logger.log("===> sendTx resp: ", sendTxResp);
+  console.log("===> sendTx resp: ", sendTxResp);
+  await closeOffscreenDocument(OFFSCREEN_TX_DOCUMENT_PATH);
+  console.log(
+    "===> closeOffscreenDocument after tx",
+    OFFSCREEN_TX_DOCUMENT_PATH,
+  );
+  syncBlocks();
+  console.log("===> setupOffscreenDocument after tx", OFFSCREEN_DOCUMENT_PATH);
   return sendTxResp;
 }
-
-// export async function syncBlocks(params: SyncBlockParams) {
-//   logger.log("===> syncBlocks setupOffscreenDocument");
-//   await setupOffscreenDocument(OFFSCREEN_DOCUMENT_PATH);
-//   logger.log("===> syncBlocks sendMessage");
-//   const blocksInfo = await chrome.runtime.sendMessage({
-//     type: AleoWorkerMethod.SYNC_BLOCKS,
-//     target: "offscreen",
-//     params,
-//   });
-//   logger.log("===> syncBlocks resp: ", blocksInfo);
-//   return blocksInfo;
-// }
-
-// export async function getPrivateKey() {
-//   logger.log("===> getPrivateKey setupOffscreenDocument");
-//   await setupOffscreenDocument(OFFSCREEN_DOCUMENT_PATH);
-//   logger.log("===> getPrivateKey sendMessage");
-//   const privateKey = await chrome.runtime.sendMessage({
-//     type: AleoWorkerMethod.GET_PRIVATE_KEY,
-//     target: "offscreen",
-//   });
-//   logger.log("===> getPrivateKey resp: ", privateKey);
-//   return privateKey;
-// }

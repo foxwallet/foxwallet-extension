@@ -5,11 +5,11 @@ import commonJs from "@rollup/plugin-commonjs";
 
 export default {
   input: {
-    offscreen: "./src/offscreen.ts",
+    index: "./src/index.ts",
     worker: "./src/worker.ts",
   },
   output: {
-    dir: "../dist/offscreen_tx",
+    dir: "../dist/offscreen_transaction",
     format: "es",
     sourcemap: true,
   },
@@ -18,7 +18,7 @@ export default {
     commonJs(),
     typescript(),
     importMetaAssets({
-      exclude: "./src/offscreen.ts",
+      exclude: "./src/index.ts",
     }),
   ],
 };
