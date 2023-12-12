@@ -388,10 +388,13 @@ export class ContentWalletServer implements IContentServer {
   requestExecution = async (params: RequestTxProps): Promise<RequestTxResp> => {
     return await this.requestTransaction(params);
   };
+
   requestBulkTransactions = async (
     params: RequestBulkTxsProps,
     siteMetadata?: SiteMetadata,
-  ): Promise<RequestBulkTxsResp> => {};
+  ): Promise<RequestBulkTxsResp> => {
+    throw new Error("Method not implemented due to security concern.");
+  };
 
   requestDeploy = async (
     params: RequestDeployProps,
