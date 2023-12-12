@@ -10,6 +10,8 @@ export const ViewPort = (props: PropsWithChildren) => {
     <Box
       w={isInTab ? "full" : `${POPUP_WIDTH}px`}
       h={isInTab ? "full" : `${POPUP_HEIGHT}px`}
+      display={"flex"}
+      flexDirection={"column"}
       {...props}
     />
   );

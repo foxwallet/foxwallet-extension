@@ -1,3 +1,4 @@
+import { AleoRequestDeploymentParams } from "core/coins/ALEO/types/Deployment";
 import { ReserveChainConfigs } from "../../../env";
 import {
   type BackgroundMessage,
@@ -74,7 +75,7 @@ export async function syncBlocks() {
   console.log("===> initWorker sendMessage");
   const messsage: BackgroundMessage = {
     type: OffscreenMethod.INIT_WORKER,
-    origin: MessageOrigin.BACKGROUND_TO_OFFSCREEN_TX,
+    origin: MessageOrigin.BACKGROUND_TO_OFFSCREEN,
     payload: null,
   };
   const initResp = await chrome.runtime.sendMessage(messsage);
@@ -96,7 +97,37 @@ export async function sendTransaction(params: AleoSendTxParams) {
     origin: MessageOrigin.BACKGROUND_TO_OFFSCREEN_TX,
     payload: {
       ...params,
-      rpcList: ReserveChainConfigs.ALEO_TESTNET_3.rpcList,
+      rpcList: ReserveChainConfigs.ALEO_TESTNET3.rpcList,
+    },
+  };
+  const sendTxResp: OffscreenMessage =
+    await chrome.runtime.sendMessage(messsage);
+  console.log("===> sendTx resp: ", sendTxResp);
+  await closeOffscreenDocument(OFFSCREEN_TX_DOCUMENT_PATH);
+  console.log(
+    "===> closeOffscreenDocument after tx",
+    OFFSCREEN_TX_DOCUMENT_PATH,
+  );
+  syncBlocks();
+  console.log("===> setupOffscreenDocument after tx", OFFSCREEN_DOCUMENT_PATH);
+  return sendTxResp;
+}
+
+export async function sendDeployment(params: AleoRequestDeploymentParams) {
+  console.log("===> sendTransaction closeOffscreenTxDocument");
+  await closeOffscreenDocument(OFFSCREEN_DOCUMENT_PATH);
+  console.log(
+    "===> initWorker setupOffscreenDocument ",
+    OFFSCREEN_TX_DOCUMENT_PATH,
+  );
+  await setupOffscreenDocument(OFFSCREEN_TX_DOCUMENT_PATH);
+  console.log("===> initWorker sendMessage");
+  const messsage: BackgroundMessage = {
+    type: OffscreenMethod.DEPLOY,
+    origin: MessageOrigin.BACKGROUND_TO_OFFSCREEN_TX,
+    payload: {
+      ...params,
+      rpcList: ReserveChainConfigs.ALEO_TESTNET3.rpcList,
     },
   };
   const sendTxResp: OffscreenMessage =

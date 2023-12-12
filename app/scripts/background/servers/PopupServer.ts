@@ -19,8 +19,10 @@ import {
   ConnectProps,
   RequestTxProps,
   AleoRequestTxProps,
+  SignMessageProps,
+  AleoRequestDeploymentProps,
 } from "./IWalletServer";
-import { sendTransaction } from "../offscreen";
+import { sendDeployment, sendTransaction } from "../offscreen";
 import { AccountSettingStorage } from "../store/account/AccountStorage";
 import { DappStorage } from "../store/dapp/DappStorage";
 import { CoinType } from "core/types";
@@ -31,6 +33,14 @@ import { createPopup } from "../helper/popup";
 import { AleoConnectHistory } from "../types/connect";
 import { SiteInfo } from "@/scripts/content/host";
 import { Transaction } from "core/coins/ALEO/types/AleoTransaction";
+import { PrivateKey } from "aleo_wasm";
+import { hexToUint8Array } from "@/common/utils/buffer";
+import {
+  AleoLocalTxInfo,
+  AleoTxStatus,
+} from "core/coins/ALEO/types/Tranaction";
+import { CoinServiceEntry } from "core/coins/CoinServiceEntry";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 
 export type OnRequestFinishCallback = (
   error: null | Error,
@@ -45,17 +55,20 @@ export class PopupWalletServer implements IPopupServer {
   popupRequestIdMap: Array<{ popupId: number; requestId: string }> = [];
   requestIdCallbackMap: { [requestId in string]?: OnRequestFinishCallback } =
     {};
+  coinService: CoinServiceEntry;
 
   constructor(
     authManager: AuthManager,
     keyringManager: KeyringManager,
     dappStorage: DappStorage,
     accountSettingStorage: AccountSettingStorage,
+    coinService: CoinServiceEntry,
   ) {
     this.authManager = authManager;
     this.keyringManager = keyringManager;
     this.dappStorage = dappStorage;
     this.accountSettingStorage = accountSettingStorage;
+    this.coinService = coinService;
     browser.windows.onRemoved.addListener(this.onRemovePopup.bind(this));
   }
 
@@ -190,6 +203,13 @@ export class PopupWalletServer implements IPopupServer {
             reject(error);
             return;
           }
+          const txInfo: AleoLocalTxInfo = {
+            ...params,
+            status: AleoTxStatus.QUEUED,
+          };
+          await this.coinService
+            .getInstance(InnerChainUniqueId.ALEO_TESTNET3)
+            .setAddressLocalTx(address, txInfo);
           const pk = await this.keyringManager.getPrivateKeyByAddress({
             coinType,
             address,
@@ -209,6 +229,123 @@ export class PopupWalletServer implements IPopupServer {
         };
       } else {
         resolve(null);
+      }
+    });
+  }
+
+  async createRequestDeployPopup(
+    params: AleoRequestDeploymentProps,
+    siteInfo: SiteInfo,
+  ) {
+    const { coinType, address, localId } = params;
+    const requestId = nanoid();
+    const request: DappRequest = {
+      id: requestId,
+      type: "requestDeploy",
+      coinType: CoinType.ALEO,
+      siteInfo,
+      payload: params,
+    };
+    await this.dappStorage.setDappRequest(request);
+    return new Promise<string | null>(async (resolve, reject) => {
+      const popup = await createPopup(`/request_deploy/${requestId}`);
+      const popupId = popup.id;
+      if (popupId) {
+        this.addItem(popupId, requestId);
+        this.requestIdCallbackMap[requestId] = async (error, data: string) => {
+          if (error) {
+            const popupId = this.findPopupIdByRequestId(requestId);
+            if (popupId) {
+              browser.windows.remove(popupId);
+            }
+            reject(error);
+            return;
+          }
+          const txInfo: AleoLocalTxInfo = {
+            ...params,
+            functionName: "",
+            inputs: [],
+            status: AleoTxStatus.QUEUED,
+            deploy: true,
+          };
+          await this.coinService
+            .getInstance(InnerChainUniqueId.ALEO_TESTNET3)
+            .setAddressLocalTx(address, txInfo);
+          const pk = await this.keyringManager.getPrivateKeyByAddress({
+            coinType,
+            address,
+          });
+          if (!pk) {
+            reject(new Error("Get private key failed"));
+            return;
+          }
+          await browser.windows.remove(popupId);
+
+          sendDeployment({
+            ...params,
+            privateKey: pk,
+          });
+          resolve(localId);
+          return;
+        };
+      } else {
+        resolve(null);
+      }
+    });
+  }
+
+  async creatSignMessagePopup(
+    params: SignMessageProps,
+    address: string,
+    siteInfo: SiteInfo,
+  ) {
+    const { message } = params;
+    const requestId = nanoid();
+    const request: DappRequest = {
+      id: requestId,
+      type: "signMessage",
+      coinType: CoinType.ALEO,
+      siteInfo,
+      payload: params,
+    };
+    await this.dappStorage.setDappRequest(request);
+    return new Promise<string | null>(async (resolve, reject) => {
+      try {
+        const popup = await createPopup(`/sign_message/${requestId}`);
+        const popupId = popup.id;
+        if (popupId) {
+          this.addItem(popupId, requestId);
+          this.requestIdCallbackMap[requestId] = async (
+            error,
+            data: string,
+          ) => {
+            if (error) {
+              const popupId = this.findPopupIdByRequestId(requestId);
+              if (popupId) {
+                browser.windows.remove(popupId);
+              }
+              reject(error);
+              return;
+            }
+            const messageArray = hexToUint8Array(message);
+            const pk = await this.keyringManager.getPrivateKeyByAddress({
+              coinType: CoinType.ALEO,
+              address,
+            });
+            if (!pk) {
+              reject(new Error("Get private key failed"));
+              return;
+            }
+            await browser.windows.remove(popupId);
+            const privateKey = PrivateKey.from_string(pk);
+            const signature = privateKey.sign(messageArray).to_hex();
+            resolve(signature);
+          };
+        } else {
+          resolve(null);
+        }
+      } catch (err) {
+        reject(err);
       }
     });
   }

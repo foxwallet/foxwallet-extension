@@ -13,6 +13,14 @@ import {
 import { AleoTxStatus } from "core/coins/ALEO/types/Tranaction";
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  Tabs,
+  TabList,
+  Tab,
+  TabPanels,
+  TabPanel,
+  TabIndicator,
+} from "@chakra-ui/react";
 
 function OnboardHomeScreen() {
   const navigate = useNavigate();
@@ -84,48 +92,78 @@ function OnboardHomeScreen() {
   );
 
   return (
-    <Content>
-      <Flex>
-        Total balance:&nbsp;
-        <TokenNum
-          amount={balance?.total || 0n}
-          decimals={nativeCurrency.decimals}
-          symbol={nativeCurrency.symbol}
-        />
-      </Flex>
-      <Flex>
-        Private balance:&nbsp;
-        <TokenNum
-          amount={balance?.privateBalance || 0n}
-          decimals={nativeCurrency.decimals}
-          symbol={nativeCurrency.symbol}
-        />
-      </Flex>
-      <Flex>
-        Public balance:&nbsp;
-        <TokenNum
-          amount={balance?.publicBalance || 0n}
-          decimals={nativeCurrency.decimals}
-          symbol={nativeCurrency.symbol}
-        />
-      </Flex>
-      {!!error && <Flex>{error.toString()}</Flex>}
-      <Flex>
-        <Button isDisabled={!haveBalance} onClick={onClickSend} mr="2" flex="1">
-          Send
-        </Button>
-        <Button onClick={onClickReceive} ml="4" flex={"1"}>
-          Receive
-        </Button>
-      </Flex>
-      {history && (
-        <Flex maxH={400} overflowY={"auto"} direction={"column"}>
-          {history.map((item) => {
-            return renderHistoryItem(item);
-          })}
-        </Flex>
-      )}
-    </Content>
+    <Flex flexDirection={"column"} flex={1} alignItems={"stretch"}>
+      <Tabs variant={"unstyled"} flex={1}>
+        <TabPanels>
+          <TabPanel>
+            <Content>
+              <Flex>
+                Total balance:&nbsp;
+                <TokenNum
+                  amount={balance?.total || 0n}
+                  decimals={nativeCurrency.decimals}
+                  symbol={nativeCurrency.symbol}
+                />
+              </Flex>
+              <Flex>
+                Private balance:&nbsp;
+                <TokenNum
+                  amount={balance?.privateBalance || 0n}
+                  decimals={nativeCurrency.decimals}
+                  symbol={nativeCurrency.symbol}
+                />
+              </Flex>
+              <Flex>
+                Public balance:&nbsp;
+                <TokenNum
+                  amount={balance?.publicBalance || 0n}
+                  decimals={nativeCurrency.decimals}
+                  symbol={nativeCurrency.symbol}
+                />
+              </Flex>
+              {!!error && <Flex>{error.toString()}</Flex>}
+              <Flex>
+                <Button
+                  isDisabled={!haveBalance}
+                  onClick={onClickSend}
+                  mr="2"
+                  flex="1"
+                >
+                  Send
+                </Button>
+                <Button onClick={onClickReceive} ml="4" flex={"1"}>
+                  Receive
+                </Button>
+              </Flex>
+              {history && (
+                <Flex maxH={400} overflowY={"auto"} direction={"column"}>
+                  {history.map((item) => {
+                    return renderHistoryItem(item);
+                  })}
+                </Flex>
+              )}
+            </Content>
+          </TabPanel>
+          <TabPanel>
+            <Content>Settings</Content>
+          </TabPanel>
+        </TabPanels>
+        <TabList
+          position={"absolute"}
+          bottom={0}
+          left={0}
+          right={0}
+          height={50}
+        >
+          <Tab flex={1} justifyContent={"center"} alignItems={"center"}>
+            Wallet
+          </Tab>
+          <Tab flex={1} justifyContent={"center"} alignItems={"center"}>
+            Settings
+          </Tab>
+        </TabList>
+      </Tabs>
+    </Flex>
   );
 }
 

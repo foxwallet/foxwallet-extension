@@ -29,7 +29,7 @@ export class VaultStorage {
     this.#storage = walletStorageInstance;
     this.#aleoStorage = AleoStorage.getInstance();
     this.rpcService = new AleoRpcService({
-      configs: ReserveChainConfigs[InnerChainUniqueId.ALEO_TESTNET_3].rpcList,
+      configs: ReserveChainConfigs[InnerChainUniqueId.ALEO_TESTNET3].rpcList,
     });
   }
 

@@ -660,7 +660,7 @@ export class MainLoop {
       });
       // sleep & retry
       await sleep(2000);
-      void this.loop();
+      return this.loop();
     }
   }
 }

@@ -5,3 +5,16 @@ export interface AleoDeployment {
   fee: number;
   feePrivate: boolean;
 }
+
+export interface AleoRequestDeploymentParams {
+  privateKey: string;
+  chainId: string;
+  address: string;
+  localId: string;
+  program: string;
+  programId: string;
+  baseFee: string;
+  priorityFee: string;
+  feeRecord: string | null;
+  timestamp: number;
+}

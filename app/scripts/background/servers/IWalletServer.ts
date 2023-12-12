@@ -14,7 +14,10 @@ import {
 } from "core/coins/ALEO/types/Tranaction";
 import { DecryptPermission } from "../types/permission";
 import { CustomRecord } from "core/coins/ALEO/types/Record";
-import { AleoDeployment } from "core/coins/ALEO/types/Deployment";
+import {
+  AleoDeployment,
+  AleoRequestDeploymentParams,
+} from "core/coins/ALEO/types/Deployment";
 import { SiteInfo } from "@/scripts/content/host";
 
 export type PopupServerMethod = keyof IPopupServer;
@@ -91,15 +94,13 @@ export type AleoRequestTxProps = Omit<AleoSendTxParams, "privateKey"> & {
   uniqueId: ChainUniqueId;
 };
 
-// interface PopupClientEventListeners {
-//   lock: () => void;
-// }
-
-// export type PopupClientEvent = keyof PopupClientEventListeners;
-
-// type PopupClientListenerMap = {
-//   [T in PopupClientEvent]: PopupClientEventListeners[T][];
-// };
+export type AleoRequestDeploymentProps = Omit<
+  AleoRequestDeploymentParams,
+  "privateKey"
+> & {
+  coinType: CoinType;
+  uniqueId: ChainUniqueId;
+};
 
 export interface IPopupServer {
   initPassword: (params: { password: string }) => Promise<boolean>;

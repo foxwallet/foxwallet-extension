@@ -30,6 +30,7 @@ export const popupWalletServer = new PopupWalletServer(
   keyringManager,
   dappStorage,
   accountSettingStorage,
+  coinService,
 );
 
 const popupServerHandler = new PopupServerHandler(popupWalletServer);

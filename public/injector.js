@@ -71,7 +71,7 @@ function S(s) {
     throw new Error("Hex string must have an even number of characters");
   const e = new Uint8Array(s.length / 2);
   for (let t = 0; t < e.length; t++) {
-    const n = parseInt(s.substr(t * 2, 2), 16);
+    const n = parseInt(s.slice(t * 2, t * 2 + 2), 16);
     if (isNaN(n))
       throw new Error("Invalid hex string");
     e[t] = n;

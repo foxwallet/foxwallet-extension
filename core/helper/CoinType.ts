@@ -5,7 +5,7 @@ export const convertChainUniqueIdToCoinType = (
   uniqueId: ChainUniqueId,
 ): CoinType => {
   switch (uniqueId) {
-    case InnerChainUniqueId.ALEO_TESTNET_3:
+    case InnerChainUniqueId.ALEO_TESTNET3:
       return CoinType.ALEO;
     default: {
       throw new Error("unknown uniqueId: " + uniqueId);

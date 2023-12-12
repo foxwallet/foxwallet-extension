@@ -16,6 +16,7 @@ import {
   type AleoSendTxParams,
   type AleoTransaction,
   type AleoLocalTxInfo,
+  AleoRequestDeploymentParams,
 } from "./types";
 import { AleoRpcService } from "./instances/rpc";
 
@@ -323,6 +324,103 @@ export class AleoTxWorker {
       const totalTime = performance.now() - startTime;
       console.log("===> sendTransaction totalTime", totalTime);
       console.log("===> sendTransaction tx: ", result);
+      if (result) {
+        pendingTxInfo.status = AleoTxStatus.COMPLETED;
+        const txObj: AleoTransaction = JSON.parse(tx.toString());
+        pendingTxInfo.transaction = txObj;
+        await this.storage.setAddressLocalTx(chainId, address, pendingTxInfo);
+        return JSON.parse(tx.toString());
+      }
+      return null;
+    } catch (err) {
+      console.error("===> sendTransaction error ", err);
+      pendingTxInfo.status = AleoTxStatus.FAILED;
+      pendingTxInfo.error = (err as Error).toString();
+      await this.storage.setAddressLocalTx(chainId, address, pendingTxInfo);
+      return null;
+    }
+  }
+
+  async deploy({
+    privateKey,
+    chainId,
+    address,
+    localId,
+    program,
+    programId,
+    baseFee,
+    priorityFee,
+    feeRecord: feeRecordStr,
+    timestamp,
+  }: AleoRequestDeploymentParams) {
+    const pendingTxInfo: AleoLocalTxInfo = {
+      localId,
+      programId,
+      functionName: "",
+      inputs: [],
+      baseFee,
+      priorityFee,
+      feeRecord: feeRecordStr,
+      status: AleoTxStatus.QUEUED,
+      timestamp,
+    };
+    try {
+      const startTime = performance.now();
+      const privateKeyObj = this.parsePrivateKey(privateKey);
+      const programObj = this.parseProgram(program);
+
+      pendingTxInfo.status = AleoTxStatus.GENERATING_PROVER_FILES;
+      await this.storage.setAddressLocalTx(chainId, address, pendingTxInfo);
+
+      const baseFeeStr = `${baseFee}u64`;
+      const priorityFeeStr = `${priorityFee}u64`;
+      const feeMethod = feeRecordStr ? "fee_private" : "fee_public";
+      const placeHolderExecutionId =
+        "1143400038019697993839685533973968560341409464418545224213773009891993380112field";
+      const feeInputs = feeRecordStr
+        ? [feeRecordStr, baseFeeStr, priorityFeeStr, placeHolderExecutionId]
+        : [baseFeeStr, priorityFeeStr, placeHolderExecutionId];
+      console.log("===> before getFeeProverKeyPair ");
+      const startFeeProverTime = performance.now();
+      const { proverFile: feeProverFile, verifierFile: feeVerifierKey } =
+        await this.getProverKeyPair(
+          privateKeyObj,
+          chainId,
+          NATIVE_TOKEN_PROGRAM_ID,
+          feeMethod,
+          feeInputs,
+        );
+      const totalFeeProverTiime = performance.now() - startFeeProverTime;
+      console.log("===> after getFeeProverKeyPair ", totalFeeProverTiime);
+
+      pendingTxInfo.status = AleoTxStatus.GENERATING_TRANSACTION;
+      await this.storage.setAddressLocalTx(chainId, address, pendingTxInfo);
+
+      const imports = await this.getProgramImports(chainId, programObj);
+      const feeRecord = feeRecordStr
+        ? this.parseRecord(feeRecordStr)
+        : undefined;
+      console.log("===> before buildExecutionTransaction ");
+      // TODO: regenerate tx when encounter inclusion error
+      const tx = await ProgramManager.buildDeploymentTransaction(
+        privateKeyObj,
+        program,
+        BigInt(baseFee),
+        BigInt(priorityFee),
+        feeRecord,
+        this.rpcService.currConfig(),
+        imports,
+        feeProverFile,
+        feeVerifierKey,
+      );
+      console.log("===> before submitTransaction ", tx.toString());
+
+      pendingTxInfo.status = AleoTxStatus.BROADCASTING;
+      await this.storage.setAddressLocalTx(chainId, address, pendingTxInfo);
+
+      const result = await this.submitTransaction(tx);
+      const totalTime = performance.now() - startTime;
+      console.log("===> sendTransaction totalTime", totalTime, result);
       if (result) {
         pendingTxInfo.status = AleoTxStatus.COMPLETED;
         const txObj: AleoTransaction = JSON.parse(tx.toString());

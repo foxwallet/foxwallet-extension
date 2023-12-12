@@ -8,6 +8,8 @@ const SendAleo = lazy(async () => await import("../pages/SendAleo"));
 const Receive = lazy(async () => await import("../pages/Receive"));
 const ConnectDapp = lazy(async () => await import("../pages/ConnectDapp"));
 const RequestTx = lazy(async () => await import("../pages/RequestTx"));
+const SignMessage = lazy(async () => await import("../pages/SignMessage"));
+const Deployment = lazy(async () => await import("../pages/Deployment"));
 
 const OnboardHome = lazy(async () => await import("../pages/OnboardHome"));
 const OnboardCreateWallet = lazy(
@@ -52,6 +54,14 @@ export const routesConfig: RouteObject[] = [
       {
         path: "request_tx/:requestId",
         element: <RequestTx />,
+      },
+      {
+        path: "sign_message/:requestId",
+        element: <SignMessage />,
+      },
+      {
+        path: "request_deploy/:requestId",
+        element: <Deployment />,
       },
     ],
   },

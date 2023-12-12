@@ -10,7 +10,7 @@ export function hexToUint8Array(hexString: string): Uint8Array {
   }
   const arrayBuffer = new Uint8Array(hexString.length / 2);
   for (let i = 0; i < arrayBuffer.length; i++) {
-    const byteValue = parseInt(hexString.substr(i * 2, 2), 16);
+    const byteValue = parseInt(hexString.slice(i * 2, i * 2 + 2), 16);
     if (isNaN(byteValue)) {
       throw new Error("Invalid hex string");
     }

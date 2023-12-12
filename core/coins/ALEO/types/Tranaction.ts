@@ -25,6 +25,7 @@ export type AleoLocalTxInfo = Omit<
   status: AleoTxStatus;
   timestamp: number;
   transaction?: AleoTransaction;
+  deploy?: boolean;
 };
 
 export type AleoTxWithTime = Transaction & {

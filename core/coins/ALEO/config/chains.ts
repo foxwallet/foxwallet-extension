@@ -10,11 +10,11 @@ import { ReserveChainConfigs } from "../../../../env";
 export const ALEO_CHAIN_CONFIGS: { [key in string]: AleoConfig } = {
   TEST_NET_3: {
     coinType: CoinType.ALEO,
-    uniqueId: InnerChainUniqueId.ALEO_TESTNET_3,
+    uniqueId: InnerChainUniqueId.ALEO_TESTNET3,
     logo: AleoLogo,
     chainId: "testnet3",
     chainName: "Aleo Testnet3",
-    rpcList: ReserveChainConfigs[InnerChainUniqueId.ALEO_TESTNET_3].rpcList,
+    rpcList: ReserveChainConfigs[InnerChainUniqueId.ALEO_TESTNET3].rpcList,
     nativeCurrency: {
       name: "Aleo",
       decimals: 6,

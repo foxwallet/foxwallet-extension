@@ -15,5 +15,5 @@ export const useCurrAccount = () => {
     dispatch.account.getSelectedAccount(CoinType.ALEO);
   }, []);
 
-  return { selectedAccount, uniqueId: InnerChainUniqueId.ALEO_TESTNET_3 };
+  return { selectedAccount, uniqueId: InnerChainUniqueId.ALEO_TESTNET3 };
 };

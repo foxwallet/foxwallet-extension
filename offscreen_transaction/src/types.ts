@@ -363,6 +363,7 @@ export interface OffscreenMessage<T = any> {
 export enum OffscreenMethod {
   INIT_WORKER = "init_worker",
   SEND_TX = "send_tx",
+  DEPLOY = "deploy",
 }
 
 export interface BackgroundMessage<T = any> {
@@ -372,5 +373,18 @@ export interface BackgroundMessage<T = any> {
 }
 
 export enum InnerChainUniqueId {
-  ALEO_TESTNET_3 = "ALEO_TESTNET_3",
+  ALEO_TESTNET3 = "ALEO_TESTNET3",
+}
+
+export interface AleoRequestDeploymentParams {
+  privateKey: string;
+  chainId: string;
+  address: string;
+  localId: string;
+  program: string;
+  programId: string;
+  baseFee: string;
+  priorityFee: string;
+  feeRecord: string | null;
+  timestamp: number;
 }
