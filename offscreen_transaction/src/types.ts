@@ -12,7 +12,7 @@ export interface AleoSyncAccount {
   priority: TaskPriority;
   height?: number;
 }
-export interface SyncBlockParams {
+export interface SyncRecordParams {
   viewKey: string;
   address: string;
   begin: number;
@@ -33,8 +33,6 @@ export interface RecordDetail {
   commitment: string;
   recordName?: string;
 }
-
-export type RecordDetailWithBlockInfo = RecordDetail & TxMetadata;
 
 export type RecordDetailWithSpent = RecordDetail &
   TxMetadata & {
@@ -82,9 +80,9 @@ export interface FutureJSON {
 
 export type BlockSpentTags = Omit<TxMetadata, "txId"> & { tags: string[] };
 
-// export interface SyncBlockResp {
+// export interface SyncRecordResp {
 //   range: number[];
-//   recordsMap: { [key in string]?: RecordDetailWithBlockInfo[] };
+//   recordsMap: { [key in string]?: RecordDetail[] };
 //   txInfoList: AleoTxHistoryItem[];
 //   spentRecordTags?: BlockSpentTags[];
 //   measureMap: {
@@ -92,16 +90,16 @@ export type BlockSpentTags = Omit<TxMetadata, "txId"> & { tags: string[] };
 //   };
 // }
 
-export type SyncBlockResp = SyncBlockParams & SyncBlockResult;
+export type SyncRecordResp = SyncRecordParams & SyncBlockResult;
 
 export interface SyncBlockResult {
-  recordsMap: { [program in string]?: RecordDetailWithBlockInfo[] };
+  recordsMap: { [program in string]?: RecordDetail[] };
   spentRecordTags: BlockSpentTags[];
   txInfoList: AleoTxHistoryItem[];
   range: number[];
 }
 
-export type SyncBlockResultWithDuration = SyncBlockResult & {
+export type SyncRecordResultWithDuration = SyncBlockResult & {
   measure: {
     totalTime: number;
     requestTime: number;
@@ -117,10 +115,10 @@ export type AleoAddressInfo = {
   range: number[];
 };
 
-export interface AddressSyncBlockResp {
+export interface AddressSyncRecordResp {
   chainId: string;
   addressResultMap: {
-    [x in string]: SyncBlockResp;
+    [x in string]: SyncRecordResp;
   };
   measureMap: {
     [key in string]: { time: number; max: number; count: number };
@@ -142,7 +140,7 @@ export interface TaskParamWithRange {
 }
 
 export type WorkerSyncTask = TaskParamWithRange & {
-  syncParams: SyncBlockParams[];
+  syncParams: SyncRecordParams[];
 };
 
 export interface AleoSendTxParams {
@@ -234,72 +232,6 @@ export enum AleoTxStatus {
   REJECTED = "Rejected",
   FINALIZD = "Finalized",
   FAILED = "Failed",
-}
-
-export interface IAleoStorage {
-  getAccountsAddress(chainId: string): Promise<string[]>;
-  getAccountInfo(
-    chainId: string,
-    address: string,
-  ): Promise<AleoSyncAccount | undefined>;
-
-  setAccountInfo(
-    chainId: string,
-    account: AleoSyncAccount,
-  ): Promise<AleoSyncAccount>;
-
-  getAleoBlockRanges(chainId: string, address: string): Promise<string[]>;
-  setAleoBlocks(
-    chainId: string,
-    address: string,
-    key: string,
-    blockInfo: SyncBlockResultWithDuration,
-  ): Promise<SyncBlockResultWithDuration>;
-
-  getAleoBlockInfo(
-    chainId: string,
-    address: string,
-    key: string,
-  ): Promise<SyncBlockResultWithDuration | null>;
-
-  getAddressInfo(
-    chainId: string,
-    address: string,
-  ): Promise<AleoAddressInfo | null>;
-
-  setAddressInfo(
-    chainId: string,
-    address: string,
-    info: AleoAddressInfo,
-  ): Promise<AleoAddressInfo>;
-
-  setAddressLocalTx(
-    chainId: string,
-    address: string,
-    info: AleoLocalTxInfo,
-  ): Promise<void>;
-
-  getAddressLocalTxIds(chainId: string, address: string): Promise<string[]>;
-
-  getAddressLocalTx(
-    chainId: string,
-    address: string,
-    localId: string,
-  ): Promise<AleoLocalTxInfo | null>;
-
-  removeAddressLocalTx(
-    chainId: string,
-    address: string,
-    localId: string,
-  ): Promise<void>;
-
-  getProgramContent(chainId: string, programId: string): Promise<string | null>;
-
-  setProgramContent(
-    chainId: string,
-    programId: string,
-    program: string,
-  ): Promise<void>;
 }
 
 export interface ProverKeyPair {

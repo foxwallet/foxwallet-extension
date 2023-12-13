@@ -7,7 +7,7 @@ import { IAleoStorage } from "core/coins/ALEO/types/IAleoStorage";
 import { AleoSyncAccount } from "core/coins/ALEO/types/AleoSyncAccount";
 import {
   AleoAddressInfo,
-  SyncBlockResultWithDuration,
+  SyncRecordResultWithDuration,
 } from "core/coins/ALEO/types/SyncTask";
 import { ProverKeyPair } from "core/coins/ALEO/types/ProverKeyPair";
 import { AleoLocalTxInfo } from "core/coins/ALEO/types/Tranaction";
@@ -18,7 +18,6 @@ export class AleoStorage implements IAleoStorage {
   #aleoBlockStorage: LocalForage;
   #aleoBlockStorageMap = new Map<string, LocalForage>();
   #aleoAccountStorage: LocalForage;
-  #aleoAccountStorageMap = new Map<string, LocalForage>();
   #aleoProgramStorageMap = new Map<string, LocalForage>();
 
   static getInstance() {
@@ -32,20 +31,6 @@ export class AleoStorage implements IAleoStorage {
     this.#aleoAccountStorage = aleoAccountStorageInstance;
     this.#aleoBlockStorage = aleoBlockStorageInstance;
   }
-
-  private getAleoAccountInstance = (chainId: string) => {
-    const key = `aleo-${chainId}`;
-    const existInstance = this.#aleoAccountStorageMap.get(key);
-    if (existInstance) {
-      return existInstance;
-    }
-    const newInstance = this.#aleoAccountStorage.createInstance({
-      name: "fox_wallet",
-      storeName: key,
-    });
-    this.#aleoAccountStorageMap.set(key, newInstance);
-    return newInstance;
-  };
 
   private getAleoStorageInstance = (
     chainId: string,
@@ -82,16 +67,13 @@ export class AleoStorage implements IAleoStorage {
     return newInstance;
   };
 
-  async getAccountsAddress(chainId: string): Promise<string[]> {
-    const instance = this.getAleoAccountInstance(chainId);
+  async getAccountsAddress(): Promise<string[]> {
+    const instance = this.#aleoAccountStorage;
     return await instance.keys();
   }
 
-  async getAccountInfo(
-    chainId: string,
-    address: string,
-  ): Promise<AleoSyncAccount | undefined> {
-    const instance = this.getAleoAccountInstance(chainId);
+  async getAccountInfo(address: string): Promise<AleoSyncAccount | undefined> {
+    const instance = this.#aleoAccountStorage;
 
     const store = (await instance.getItem(address)) as
       | AleoSyncAccount
@@ -99,63 +81,60 @@ export class AleoStorage implements IAleoStorage {
     return store;
   }
 
-  async setAccountInfo(
-    chainId: string,
-    account: AleoSyncAccount,
-  ): Promise<AleoSyncAccount> {
-    const instance = this.getAleoAccountInstance(chainId);
+  async setAccountInfo(account: AleoSyncAccount): Promise<AleoSyncAccount> {
+    const instance = this.#aleoAccountStorage;
     return await instance.setItem(account.address, account);
   }
 
-  async removeAccount(chainId: string, address: string) {
-    const instance = this.getAleoAccountInstance(chainId);
+  async removeAccount(address: string) {
+    const instance = this.#aleoAccountStorage;
     return await instance.removeItem(address);
   }
 
-  async getAleoBlockRanges(
+  async getAleoRecordRanges(
     chainId: string,
     address: string,
   ): Promise<string[]> {
     const instance = this.getAleoStorageInstance(
       chainId,
       address,
-      StorageKey.BLOCK,
+      StorageKey.RECORD,
     );
     return await instance.keys();
   }
 
-  async setAleoBlocks(
+  async setAleoRecords(
     chainId: string,
     address: string,
     key: string,
-    blockInfo: SyncBlockResultWithDuration,
-  ): Promise<SyncBlockResultWithDuration> {
+    blockInfo: SyncRecordResultWithDuration,
+  ): Promise<SyncRecordResultWithDuration> {
     const instance = this.getAleoStorageInstance(
       chainId,
       address,
-      StorageKey.BLOCK,
+      StorageKey.RECORD,
     );
     return await instance.setItem(key, blockInfo);
   }
 
-  async removeAleoBlock(chainId: string, address: string, key: string) {
+  async removeAleoRecords(chainId: string, address: string, key: string) {
     const instance = this.getAleoStorageInstance(
       chainId,
       address,
-      StorageKey.BLOCK,
+      StorageKey.RECORD,
     );
     return await instance.removeItem(key);
   }
 
-  async getAleoBlockInfo(
+  async getAleoRecordsInfo(
     chainId: string,
     address: string,
     key: string,
-  ): Promise<SyncBlockResultWithDuration | null> {
+  ): Promise<SyncRecordResultWithDuration | null> {
     const instance = this.getAleoStorageInstance(
       chainId,
       address,
-      StorageKey.BLOCK,
+      StorageKey.RECORD,
     );
     return await instance.getItem(key);
   }

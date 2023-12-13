@@ -4,7 +4,7 @@ import { useClient } from "./useClient";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useCoinService } from "./useCoinService";
 import { RecordFilter } from "@/scripts/background/servers/IWalletServer";
-import { convertChainUniqueIdToCoinType } from "core/helper/CoinType";
+import { chainUniqueIdToCoinType } from "core/helper/CoinType";
 import { CoinType } from "core/types";
 import { set } from "lodash";
 import { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
@@ -18,7 +18,7 @@ export const useRecords = (
 ) => {
   const { coinService } = useCoinService(uniqueId);
   const coinType = useMemo(() => {
-    return convertChainUniqueIdToCoinType(uniqueId);
+    return chainUniqueIdToCoinType(uniqueId);
   }, [uniqueId]);
   const [loading, setLoading] = useState(false);
   const [records, setRecords] = useState<RecordDetailWithSpent[]>([]);

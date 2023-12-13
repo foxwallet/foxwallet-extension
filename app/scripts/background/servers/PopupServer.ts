@@ -21,6 +21,8 @@ import {
   AleoRequestTxProps,
   SignMessageProps,
   AleoRequestDeploymentProps,
+  GetSelectedUniqueIdProps,
+  SetSelectedUniqueIdProps,
 } from "./IWalletServer";
 import { sendDeployment, sendTransaction } from "../offscreen";
 import { AccountSettingStorage } from "../store/account/AccountStorage";
@@ -40,7 +42,8 @@ import {
   AleoTxStatus,
 } from "core/coins/ALEO/types/Tranaction";
 import { CoinServiceEntry } from "core/coins/CoinServiceEntry";
-import { InnerChainUniqueId } from "core/types/ChainUniqueId";
+import { ChainUniqueId, InnerChainUniqueId } from "core/types/ChainUniqueId";
+import { DEFAULT_UNIQUE_ID_MAP } from "core/constants";
 
 export type OnRequestFinishCallback = (
   error: null | Error,
@@ -437,6 +440,22 @@ export class PopupWalletServer implements IPopupServer {
     return await this.accountSettingStorage.setSelectedAccount(
       params.selectAccount,
     );
+  }
+
+  async getSelectedUniqueId(
+    params: GetSelectedUniqueIdProps,
+  ): Promise<ChainUniqueId> {
+    const { coinType } = params;
+    const selectedUniqueId =
+      await this.accountSettingStorage.getSelectedUniqueId(coinType);
+    return selectedUniqueId;
+  }
+
+  async setSelectedUniqueId(
+    params: SetSelectedUniqueIdProps,
+  ): Promise<ChainUniqueId> {
+    const { uniqueId } = params;
+    return await this.accountSettingStorage.setSelectedUniqueId(uniqueId);
   }
 
   async getAllWallet(): Promise<DisplayKeyring> {

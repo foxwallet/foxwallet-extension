@@ -6,7 +6,7 @@ export enum TaskPriority {
   LOW = 2,
 }
 
-export interface SyncBlockParams {
+export interface SyncRecordParams {
   viewKey: string;
   address: string;
   begin: number;
@@ -16,25 +16,29 @@ export interface SyncBlockParams {
 }
 
 export interface RecordDetail {
+  id: number;
+  commitment: string;
   programId: string;
+  functionName: string;
   plaintext: string;
+  ciphertext: string;
   content: { [key in string]: any };
   nonce: string;
-  // check spent or not
-  // serialNumber: string;
-  // spentTransitionId?: string;
   tag: string;
-  commitment: string;
+  transactionId: string;
+  transitionId: string;
+  transactionIndex: number;
+  transitionIndex: number;
+  outputIndex: number;
+  height: number;
+  timestamp: number;
   recordName?: string;
 }
 
-export type RecordDetailWithBlockInfo = RecordDetail & TxMetadata;
-
-export type RecordDetailWithSpent = RecordDetail &
-  TxMetadata & {
-    spent: boolean;
-    parsedContent?: { [key in string]: any };
-  };
+export type RecordDetailWithSpent = RecordDetail & {
+  spent: boolean;
+  parsedContent?: { [key in string]: any };
+};
 
 export interface FeeInfo {
   feeType: "fee_public" | "fee_private";
@@ -69,11 +73,9 @@ export interface FutureJSON {
   arguments: string[];
 }
 
-export type BlockSpentTags = Omit<TxMetadata, "txId"> & { tags: string[] };
-
-// export interface SyncBlockResp {
+// export interface SyncRecordResp {
 //   range: number[];
-//   recordsMap: { [key in string]?: RecordDetailWithBlockInfo[] };
+//   recordsMap: { [key in string]?: RecordDetail[] };
 //   txInfoList: AleoTxHistoryItem[];
 //   spentRecordTags?: BlockSpentTags[];
 //   measureMap: {
@@ -81,16 +83,14 @@ export type BlockSpentTags = Omit<TxMetadata, "txId"> & { tags: string[] };
 //   };
 // }
 
-export type SyncBlockResp = SyncBlockParams & SyncBlockResult;
+export type SyncRecordResp = SyncRecordParams & SyncRecordResult;
 
-export interface SyncBlockResult {
-  recordsMap: { [program in string]?: RecordDetailWithBlockInfo[] };
-  spentRecordTags: BlockSpentTags[];
-  txInfoList: AleoTxHistoryItem[];
+export interface SyncRecordResult {
+  recordsMap: { [program in string]?: RecordDetail[] };
   range: number[];
 }
 
-export type SyncBlockResultWithDuration = SyncBlockResult & {
+export type SyncRecordResultWithDuration = SyncRecordResult & {
   measure: {
     totalTime: number;
     requestTime: number;
@@ -101,15 +101,13 @@ export type AleoAddressInfo = {
   recordsMap: {
     [program in string]?: { [commitment in string]?: RecordDetailWithSpent };
   };
-  spentRecordTags: string[];
-  txInfoList: AleoTxHistoryItem[];
   range: number[];
 };
 
-export interface AddressSyncBlockResp {
+export interface AddressSyncRecordResp {
   chainId: string;
   addressResultMap: {
-    [x in string]: SyncBlockResp;
+    [x in string]: SyncRecordResp;
   };
   measureMap: {
     [key in string]: { time: number; max: number; count: number };
@@ -131,5 +129,5 @@ export interface TaskParamWithRange {
 }
 
 export type WorkerSyncTask = TaskParamWithRange & {
-  syncParams: SyncBlockParams[];
+  syncParams: SyncRecordParams[];
 };

@@ -1,8 +1,6 @@
 import localForage from "localforage";
 
 export enum StorageKey {
-  BLOCK = "block",
-  INFO = "info",
   LOCAL_TX = "local_tx",
 }
 

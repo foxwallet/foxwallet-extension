@@ -1,3 +1,4 @@
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import {
   type PopupServerMethod,
   type IPopupServer,
@@ -9,6 +10,8 @@ import {
   GetSelectedAccountProps,
   SetSelectedAccountProps,
   RequestFinfishProps,
+  GetSelectedUniqueIdProps,
+  SetSelectedUniqueIdProps,
 } from "../../scripts/background/servers/IWalletServer";
 import {
   type DisplayWallet,
@@ -157,6 +160,18 @@ export class PopupServerClient implements IClient, IPopupServer {
     params: SetSelectedAccountProps,
   ): Promise<SelectedAccount> {
     return await this.#send("setSelectedAccount", params);
+  }
+
+  async getSelectedUniqueId(
+    params: GetSelectedUniqueIdProps,
+  ): Promise<InnerChainUniqueId> {
+    return await this.#send("getSelectedUniqueId", params);
+  }
+
+  async setSelectedUniqueId(
+    params: SetSelectedUniqueIdProps,
+  ): Promise<InnerChainUniqueId> {
+    return await this.#send("setSelectedUniqueId", params);
   }
 
   async getAllWallet(): Promise<DisplayKeyring> {

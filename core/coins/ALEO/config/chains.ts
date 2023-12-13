@@ -8,13 +8,15 @@ import { NATIVE_TOKEN_PROGRAM_ID } from "../constants";
 import { ReserveChainConfigs } from "../../../../env";
 
 export const ALEO_CHAIN_CONFIGS: { [key in string]: AleoConfig } = {
-  TEST_NET_3: {
+  TESTNET3: {
     coinType: CoinType.ALEO,
     uniqueId: InnerChainUniqueId.ALEO_TESTNET3,
     logo: AleoLogo,
     chainId: "testnet3",
     chainName: "Aleo Testnet3",
     rpcList: ReserveChainConfigs[InnerChainUniqueId.ALEO_TESTNET3].rpcList,
+    syncApiList:
+      ReserveChainConfigs[InnerChainUniqueId.ALEO_TESTNET3].syncApiList,
     nativeCurrency: {
       name: "Aleo",
       decimals: 6,

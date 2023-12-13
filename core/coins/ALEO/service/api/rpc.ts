@@ -1,32 +1,13 @@
+import { get, post } from "@/common/utils/request";
 import { Block } from "../../types/AleoBlock";
 import { Transaction } from "../../types/AleoTransaction";
-
-async function get(url: URL | string) {
-  try {
-    const response = await fetch(url);
-    return response;
-  } catch (err) {
-    throw new Error("network error: " + (err as Error).message);
-  }
-}
-
-async function post(url: URL | string, options: RequestInit) {
-  try {
-    options.method = "POST";
-    const response = await fetch(url, options);
-    return response;
-  } catch (err) {
-    throw new Error("network error: " + (err as Error).message);
-  }
-}
-
 export class AleoRpc {
   host: string;
   chainId: string;
 
-  constructor(host: string) {
+  constructor(host: string, chainId: string) {
     this.host = host;
-    this.chainId = "testnet3";
+    this.chainId = chainId;
   }
 
   /**

@@ -37,6 +37,7 @@ import {
 } from "../types/History";
 import { Mutex } from "async-mutex";
 import { Program } from "aleo_wasm";
+import { AleoApiService } from "./instances/sync";
 
 const CREDITS_MAPPING_NAME = "account";
 
@@ -44,12 +45,15 @@ const mutex = new Mutex();
 
 const SYNS_BLOCK_INTERVAL = 1000;
 
+const GET_SPENT_TAGS_SIZE = 500;
+
 // only for popup thread
 export class AleoService {
   config: AleoConfig;
   chainId: string;
   private aleoStorage: IAleoStorage;
   private rpcService: AleoRpcService;
+  private apiService: AleoApiService;
   private cachedSyncBlock: AleoAddressInfo | null = null;
   private lastSyncBlockTime: number = 0;
 
@@ -57,10 +61,40 @@ export class AleoService {
     this.config = config;
     this.chainId = config.chainId;
     this.aleoStorage = storage;
-    this.rpcService = new AleoRpcService({ configs: config.rpcList });
+    this.rpcService = new AleoRpcService({
+      configs: config.rpcList.map((item) => ({
+        url: item,
+        chainId: config.chainId,
+      })),
+    });
+    this.apiService = new AleoApiService({
+      configs: config.syncApiList.map((item) => ({
+        url: item,
+        chainId: config.chainId,
+      })),
+    });
   }
 
-  private syncBlocks = async (
+  @AutoSwitch({ serviceType: AutoSwitchServiceType.API })
+  private async getSpentTagsInRange(tags: string[]) {
+    return await this.apiService.currInstance().getSpentTags(tags);
+  }
+
+  private async getSpentTags(tags: string[]) {
+    if (tags.length <= GET_SPENT_TAGS_SIZE) {
+      const spentTags = await this.apiService.currInstance().getSpentTags(tags);
+      return spentTags;
+    }
+    const result: string[] = [];
+    for (let i = 0; i < tags.length; i += GET_SPENT_TAGS_SIZE) {
+      const subTags = tags.slice(i, i + GET_SPENT_TAGS_SIZE);
+      const subSpentTags = await this.getSpentTagsInRange(subTags);
+      result.push(...subSpentTags);
+    }
+    return result;
+  }
+
+  private syncRecords = async (
     address: string,
   ): Promise<AleoAddressInfo | null> => {
     const release = await mutex.acquire();
@@ -70,7 +104,7 @@ export class AleoService {
         address,
       );
 
-      const blockRanges = await this.aleoStorage.getAleoBlockRanges(
+      const blockRanges = await this.aleoStorage.getAleoRecordRanges(
         this.chainId,
         address,
       );
@@ -89,15 +123,11 @@ export class AleoService {
           [commitment in string]?: RecordDetailWithSpent;
         };
       } = addressInfo?.recordsMap ?? {};
-      const allSpentRecordTagsSet = addressInfo?.spentRecordTags
-        ? new Set(addressInfo.spentRecordTags)
-        : new Set<string>();
-      const allTxInfoList = addressInfo?.txInfoList ?? [];
       let [existBegin, existEnd] = addressInfo?.range ?? [];
 
       for (let i = 0; i < blockRanges.length; i += 1) {
         const blockRange = blockRanges[i];
-        const blockInfo = await this.aleoStorage.getAleoBlockInfo(
+        const blockInfo = await this.aleoStorage.getAleoRecordsInfo(
           this.chainId,
           address,
           blockRange,
@@ -112,7 +142,7 @@ export class AleoService {
           );
           continue;
         }
-        const { recordsMap, txInfoList, spentRecordTags, range } = blockInfo;
+        const { recordsMap, range } = blockInfo;
         const [blockBegin, blockEnd] = range;
         if (existBegin !== undefined && existEnd !== undefined) {
           existBegin = Math.min(existBegin, blockBegin);
@@ -120,13 +150,6 @@ export class AleoService {
         } else {
           existBegin = blockBegin;
           existEnd = blockEnd;
-        }
-        if (spentRecordTags) {
-          for (const spentRecordTag of spentRecordTags) {
-            for (const tag of spentRecordTag.tags) {
-              allSpentRecordTagsSet.add(tag);
-            }
-          }
         }
         for (const [programId, records] of Object.entries(recordsMap)) {
           if (!records || records.length === 0) {
@@ -148,35 +171,6 @@ export class AleoService {
           }
           allRecordsMap[programId] = newRecords;
         }
-        allTxInfoList.push(...txInfoList);
-      }
-      for (const [programId, recordsMap] of Object.entries(allRecordsMap)) {
-        if (!recordsMap) {
-          continue;
-        }
-        const records = Object.values(recordsMap);
-        if (!records || records.length === 0) {
-          continue;
-        }
-        for (const [commitment, record] of Object.entries(recordsMap)) {
-          if (!record) {
-            continue;
-          }
-          if (record.spent) {
-            allSpentRecordTagsSet.delete(record.tag);
-            continue;
-          }
-          const spent = allSpentRecordTagsSet.has(record.tag);
-          if (spent) {
-            allSpentRecordTagsSet.delete(record.tag);
-          }
-          recordsMap[commitment] = {
-            ...record,
-            spent,
-          };
-        }
-
-        allRecordsMap[programId] = recordsMap;
       }
       const creditsRecords = allRecordsMap[NATIVE_TOKEN_PROGRAM_ID];
       if (creditsRecords) {
@@ -194,17 +188,50 @@ export class AleoService {
 
       const result = {
         recordsMap: allRecordsMap,
-        txInfoList: uniqBy(allTxInfoList, (tx) => tx.txId).sort(
-          (tx1, tx2) => tx2.height - tx1.height,
-        ),
-        spentRecordTags: Array.from(allSpentRecordTagsSet),
         range: [existBegin, existEnd],
       };
-
-      console.log("===> syncBlocks result: ", result);
-
+      console.log("===> syncRecords result: ", result);
       await this.aleoStorage.setAddressInfo(this.chainId, address, result);
-
+      const unspentRecordTagsMap = Object.entries(allRecordsMap).reduce(
+        (
+          res: { [key in string]: { programId: string; commitment: string } },
+          [programId, curr],
+        ) => {
+          if (!curr) {
+            return res;
+          }
+          for (const [commitment, record] of Object.entries(curr)) {
+            if (!record) {
+              continue;
+            }
+            if (!record.spent) {
+              res[record.tag] = {
+                programId,
+                commitment,
+              };
+            }
+          }
+          return res;
+        },
+        {},
+      );
+      const unspentTags = Object.keys(unspentRecordTagsMap);
+      const spentTags = await this.getSpentTags(unspentTags);
+      if (spentTags.length > 0) {
+        for (const tag of spentTags) {
+          const { programId, commitment } = unspentRecordTagsMap[tag];
+          const record = allRecordsMap[programId]?.[commitment];
+          if (record) {
+            record.spent = true;
+            allRecordsMap[programId]![commitment] = record;
+          }
+        }
+        const result = {
+          recordsMap: allRecordsMap,
+          range: [existBegin, existEnd],
+        };
+        await this.aleoStorage.setAddressInfo(this.chainId, address, result);
+      }
       return result;
     } finally {
       release();
@@ -218,7 +245,7 @@ export class AleoService {
       !this.cachedSyncBlock ||
       Date.now() - this.lastSyncBlockTime > SYNS_BLOCK_INTERVAL
     ) {
-      this.cachedSyncBlock = await this.syncBlocks(address);
+      this.cachedSyncBlock = await this.syncRecords(address);
       this.lastSyncBlockTime = Date.now();
     }
     return this.cachedSyncBlock;
@@ -470,52 +497,7 @@ export class AleoService {
     limit: number = 1000,
     program?: string,
   ): Promise<AleoOnChainHistoryItem[]> {
-    const result = await this.debounceSyncBlocks(address);
-
-    if (!result) {
-      return [];
-    }
-
-    if (program) {
-      return result.txInfoList
-        .filter((item) => {
-          return (
-            item.transitions[item.transitions.length - 1].program === program
-          );
-        })
-        .slice(0, limit)
-        .map((txInfo) => {
-          const lastTransition =
-            txInfo.transitions[txInfo.transitions.length - 1];
-          return {
-            type: AleoHistoryType.ON_CHAIN,
-            txId: txInfo.txId,
-            programId: lastTransition.program,
-            functionName: lastTransition.function,
-            amount: lastTransition.amount,
-            height: txInfo.height,
-            timestamp: txInfo.timestamp,
-            addressType: lastTransition.txType,
-            status: AleoTxStatus.FINALIZD,
-          };
-        });
-    } else {
-      return result.txInfoList.slice(0, limit).map((txInfo) => {
-        const lastTransition =
-          txInfo.transitions[txInfo.transitions.length - 1];
-        return {
-          type: AleoHistoryType.ON_CHAIN,
-          txId: txInfo.txId,
-          programId: lastTransition.program,
-          functionName: lastTransition.function,
-          amount: lastTransition.amount,
-          height: txInfo.height,
-          timestamp: txInfo.timestamp,
-          addressType: lastTransition.txType,
-          status: AleoTxStatus.FINALIZD,
-        };
-      });
-    }
+    return [];
   }
 
   @AutoSwitch({ serviceType: AutoSwitchServiceType.RPC })

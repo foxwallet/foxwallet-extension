@@ -1,10 +1,15 @@
 import { AutoSwitchService } from "../../../../utils/retry";
 import { AleoRpc } from "../api/rpc";
 
-export class AleoRpcService extends AutoSwitchService<string, AleoRpc> {
-  getInstanceList(requestUrls: string[]): AleoRpc[] {
-    return requestUrls.map((rpcUrl) => {
-      return new AleoRpc(rpcUrl);
+interface RpcConfig {
+  url: string;
+  chainId: string;
+}
+
+export class AleoRpcService extends AutoSwitchService<RpcConfig, AleoRpc> {
+  getInstanceList(config: RpcConfig[]): AleoRpc[] {
+    return config.map(({ url, chainId }) => {
+      return new AleoRpc(url, chainId);
     });
   }
 }

@@ -1,9 +1,7 @@
 import { CoinType } from "core/types";
 import { ChainUniqueId, InnerChainUniqueId } from "core/types/ChainUniqueId";
 
-export const convertChainUniqueIdToCoinType = (
-  uniqueId: ChainUniqueId,
-): CoinType => {
+export const chainUniqueIdToCoinType = (uniqueId: ChainUniqueId): CoinType => {
   switch (uniqueId) {
     case InnerChainUniqueId.ALEO_TESTNET3:
       return CoinType.ALEO;

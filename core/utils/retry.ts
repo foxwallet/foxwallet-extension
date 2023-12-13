@@ -2,6 +2,7 @@ import { sleep } from "./sleep";
 
 export enum AutoSwitchServiceType {
   RPC = "rpc",
+  API = "api",
 }
 
 export const isNetworkError = (err: any) => {
@@ -172,6 +173,10 @@ export abstract class AutoSwitchService<C, T> {
   }
 
   abstract getInstanceList(configs: C[]): T[];
+
+  instances() {
+    return this._instanceList;
+  }
 
   async broadcast<R>(func: (instance: T) => Promise<R>) {
     return await Promise.all(

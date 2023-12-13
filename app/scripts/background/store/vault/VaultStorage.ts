@@ -10,27 +10,18 @@ import {
   WalletType,
 } from "./types/keyring";
 import browser from "webextension-polyfill";
-import { InnerChainUniqueId } from "core/types/ChainUniqueId";
-import { AutoSwitch, AutoSwitchServiceType } from "core/utils/retry";
-import { logger } from "@/common/utils/logger";
 import { TaskPriority } from "core/coins/ALEO/types/SyncTask";
 import { AleoStorage } from "../aleo/AleoStorage";
 import { ALEO_CHAIN_CONFIGS } from "core/coins/ALEO/config/chains";
 import { AleoSyncAccount } from "core/coins/ALEO/types/AleoSyncAccount";
-import { AleoRpcService } from "core/coins/ALEO/service/instances/rpc";
-import { ReserveChainConfigs } from "../../../../../env";
 
 export class VaultStorage {
   #storage: browser.Storage.LocalStorageArea;
   #aleoStorage: AleoStorage;
-  rpcService: AleoRpcService;
 
   constructor() {
     this.#storage = walletStorageInstance;
     this.#aleoStorage = AleoStorage.getInstance();
-    this.rpcService = new AleoRpcService({
-      configs: ReserveChainConfigs[InnerChainUniqueId.ALEO_TESTNET3].rpcList,
-    });
   }
 
   async getCipher() {
@@ -87,11 +78,6 @@ export class VaultStorage {
     return !!hdWallet;
   }
 
-  @AutoSwitch({ serviceType: AutoSwitchServiceType.RPC })
-  async getLatestHeight() {
-    return await this.rpcService.currInstance().getLatestHeight();
-  }
-
   async addHDWallet(newHdWallet: HDWallet, method: AccountMethod) {
     const keyring = (await this.getKeyring()) || {};
     const hdWallets = keyring[WalletType.HD] || [];
@@ -107,16 +93,11 @@ export class VaultStorage {
       case AccountMethod.CREATE: {
         const aleoAccount = newHdWallet.accountsMap[CoinType.ALEO][0];
         if (aleoAccount) {
-          const chainId = ALEO_CHAIN_CONFIGS.TEST_NET_3.chainId;
-          const otherAccounts =
-            await this.#aleoStorage.getAccountsAddress(chainId);
+          const otherAccounts = await this.#aleoStorage.getAccountsAddress();
           for (const otherAccount of otherAccounts) {
-            const info = await this.#aleoStorage.getAccountInfo(
-              chainId,
-              otherAccount,
-            );
+            const info = await this.#aleoStorage.getAccountInfo(otherAccount);
             if (info) {
-              await this.#aleoStorage.setAccountInfo(chainId, {
+              await this.#aleoStorage.setAccountInfo({
                 ...info,
                 priority: TaskPriority.LOW,
               });
@@ -129,15 +110,7 @@ export class VaultStorage {
             viewKey: aleoAccount.viewKey,
             priority: TaskPriority.MEDIUM,
           };
-          this.getLatestHeight()
-            .then((height) => {
-              item.height = height;
-              this.#aleoStorage.setAccountInfo(chainId, item);
-            })
-            .catch((err) => {
-              logger.error("===> VaultStorage getLatestHeight error: ", err);
-              this.#aleoStorage.setAccountInfo(chainId, item);
-            });
+          this.#aleoStorage.setAccountInfo(item);
         }
         break;
       }
@@ -145,16 +118,11 @@ export class VaultStorage {
         const aleoAccount = newHdWallet.accountsMap[CoinType.ALEO][0];
         if (aleoAccount) {
           // const otherAccounts = await this.#aleoStorage.keys();
-          const chainId = ALEO_CHAIN_CONFIGS.TEST_NET_3.chainId;
-          const otherAccounts =
-            await this.#aleoStorage.getAccountsAddress(chainId);
+          const otherAccounts = await this.#aleoStorage.getAccountsAddress();
           for (const otherAccount of otherAccounts) {
-            const info = await this.#aleoStorage.getAccountInfo(
-              chainId,
-              otherAccount,
-            );
+            const info = await this.#aleoStorage.getAccountInfo(otherAccount);
             if (info) {
-              await this.#aleoStorage.setAccountInfo(chainId, {
+              await this.#aleoStorage.setAccountInfo({
                 ...info,
                 priority: TaskPriority.LOW,
               });
@@ -168,7 +136,7 @@ export class VaultStorage {
             address: aleoAccount.address,
             priority: TaskPriority.MEDIUM,
           };
-          this.#aleoStorage.setAccountInfo(chainId, item);
+          this.#aleoStorage.setAccountInfo(item);
         }
         break;
       }
@@ -188,24 +156,19 @@ export class VaultStorage {
         ...keyring,
         [WalletType.HD]: [...hdWallets],
       });
-      const chainId = ALEO_CHAIN_CONFIGS.TEST_NET_3.chainId;
       switch (method) {
         case AccountMethod.REGENERATE: {
           const oldAccount = oldWallet.accountsMap[CoinType.ALEO][0];
           if (oldAccount) {
-            await this.#aleoStorage.removeAccount(chainId, oldAccount.address);
+            await this.#aleoStorage.removeAccount(oldAccount.address);
           }
           const aleoAccount = hdWallet.accountsMap[CoinType.ALEO][0];
           if (aleoAccount) {
-            const otherAccounts =
-              await this.#aleoStorage.getAccountsAddress(chainId);
+            const otherAccounts = await this.#aleoStorage.getAccountsAddress();
             for (const otherAccount of otherAccounts) {
-              const info = await this.#aleoStorage.getAccountInfo(
-                chainId,
-                otherAccount,
-              );
+              const info = await this.#aleoStorage.getAccountInfo(otherAccount);
               if (info) {
-                await this.#aleoStorage.setAccountInfo(chainId, {
+                await this.#aleoStorage.setAccountInfo({
                   ...info,
                   priority: TaskPriority.LOW,
                 });
@@ -218,16 +181,7 @@ export class VaultStorage {
               address: aleoAccount.address,
               priority: TaskPriority.MEDIUM,
             };
-
-            this.getLatestHeight()
-              .then((height) => {
-                item.height = height;
-                this.#aleoStorage.setAccountInfo(chainId, item);
-              })
-              .catch((err) => {
-                logger.error("===> VaultStorage getLatestHeight error: ", err);
-                this.#aleoStorage.setAccountInfo(chainId, item);
-              });
+            this.#aleoStorage.setAccountInfo(item);
           }
           break;
         }
@@ -235,15 +189,11 @@ export class VaultStorage {
           const length = hdWallet.accountsMap[CoinType.ALEO].length;
           const aleoAccount = hdWallet.accountsMap[CoinType.ALEO][length - 1];
           if (aleoAccount) {
-            const otherAccounts =
-              await this.#aleoStorage.getAccountsAddress(chainId);
+            const otherAccounts = await this.#aleoStorage.getAccountsAddress();
             for (const otherAccount of otherAccounts) {
-              const info = await this.#aleoStorage.getAccountInfo(
-                chainId,
-                otherAccount,
-              );
+              const info = await this.#aleoStorage.getAccountInfo(otherAccount);
               if (info) {
-                await this.#aleoStorage.setAccountInfo(chainId, {
+                await this.#aleoStorage.setAccountInfo({
                   ...info,
                   priority: TaskPriority.LOW,
                 });
@@ -257,7 +207,7 @@ export class VaultStorage {
               address: aleoAccount.address,
               priority: TaskPriority.MEDIUM,
             };
-            this.#aleoStorage.setAccountInfo(chainId, item);
+            this.#aleoStorage.setAccountInfo(item);
           }
           break;
         }

@@ -3,5 +3,6 @@ import { NativeToken, NativeTokenWithAddress } from "core/types/Token";
 
 export type AleoConfig = CoinConfig & {
   chainId: string;
+  syncApiList: string[];
   nativeCurrency: NativeTokenWithAddress;
 };

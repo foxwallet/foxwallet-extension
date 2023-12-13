@@ -18,7 +18,7 @@ const keepAliveConnection = new Connection(
 );
 keepAliveConnection.connect();
 
-const accountSettingStorage = new AccountSettingStorage();
+const accountSettingStorage = AccountSettingStorage.getInstance();
 const authManager = new AuthManager();
 const keyringManager = new KeyringManager(authManager);
 keyringManager.init();

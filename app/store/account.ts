@@ -3,6 +3,7 @@ import { type RootModel } from "./index";
 import type { DisplayAccount } from "@/scripts/background/store/vault/types/keyring";
 import { CoinType } from "core/types";
 import { clients } from "@/hooks/useClient";
+import { DEFAULT_UNIQUE_ID_MAP } from "core/constants";
 
 type SelectedAccount = DisplayAccount & {
   walletId: string;
@@ -45,6 +46,10 @@ export const account = createModel<RootModel>()({
     }) {
       await clients.popupServerClient.setSelectedAccount({
         selectAccount: selectedAccount,
+      });
+      const uniqueId = DEFAULT_UNIQUE_ID_MAP[selectedAccount.coinType];
+      await clients.popupServerClient.setSelectedUniqueId({
+        uniqueId,
       });
       dispatch.account._setSelectedAccount({
         selectedAccount: selectedAccount,

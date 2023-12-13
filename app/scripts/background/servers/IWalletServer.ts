@@ -55,6 +55,14 @@ export interface GetBalanceProps {
   address: string;
 }
 
+export interface GetSelectedUniqueIdProps {
+  coinType: CoinType;
+}
+
+export interface SetSelectedUniqueIdProps {
+  uniqueId: ChainUniqueId;
+}
+
 // export enum SerializeType {
 //   BIG_INT = "big_int",
 // }
@@ -126,6 +134,10 @@ export interface IPopupServer {
   ): Promise<SelectedAccount | null>;
 
   setSelectedAccount(params: SetSelectedAccountProps): Promise<SelectedAccount>;
+
+  getSelectedUniqueId(params: GetSelectedUniqueIdProps): Promise<ChainUniqueId>;
+
+  setSelectedUniqueId(params: SetSelectedUniqueIdProps): Promise<ChainUniqueId>;
 
   getAllWallet: () => Promise<DisplayKeyring>;
 

@@ -1,32 +1,26 @@
 import { AleoSyncAccount } from "./AleoSyncAccount";
-import { AleoAddressInfo, SyncBlockResultWithDuration } from "./SyncTask";
+import { AleoAddressInfo, SyncRecordResultWithDuration } from "./SyncTask";
 import { AleoLocalTxInfo } from "./Tranaction";
 
 export interface IAleoStorage {
-  getAccountsAddress(chainId: string): Promise<string[]>;
-  getAccountInfo(
-    chainId: string,
-    address: string,
-  ): Promise<AleoSyncAccount | undefined>;
+  getAccountsAddress(): Promise<string[]>;
+  getAccountInfo(address: string): Promise<AleoSyncAccount | undefined>;
 
-  setAccountInfo(
-    chainId: string,
-    account: AleoSyncAccount,
-  ): Promise<AleoSyncAccount>;
+  setAccountInfo(account: AleoSyncAccount): Promise<AleoSyncAccount>;
 
-  getAleoBlockRanges(chainId: string, address: string): Promise<string[]>;
-  setAleoBlocks(
+  getAleoRecordRanges(chainId: string, address: string): Promise<string[]>;
+  setAleoRecords(
     chainId: string,
     address: string,
     key: string,
-    blockInfo: SyncBlockResultWithDuration,
-  ): Promise<SyncBlockResultWithDuration>;
+    blockInfo: SyncRecordResultWithDuration,
+  ): Promise<SyncRecordResultWithDuration>;
 
-  getAleoBlockInfo(
+  getAleoRecordsInfo(
     chainId: string,
     address: string,
     key: string,
-  ): Promise<SyncBlockResultWithDuration | null>;
+  ): Promise<SyncRecordResultWithDuration | null>;
 
   getAddressInfo(
     chainId: string,

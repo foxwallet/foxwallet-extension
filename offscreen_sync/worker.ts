@@ -13,12 +13,12 @@ async function initWasm() {
 
 async function initAleoWorker(
   id: number,
-  rpcList: string[],
+  apiList: string[],
   enableMeasure: boolean,
 ) {
   if (!aleoWorker) {
     workerId = id;
-    aleoWorker = new AleoWorker(id, rpcList, enableMeasure);
+    aleoWorker = new AleoWorker(id, apiList, enableMeasure);
   }
   return true;
 }
@@ -28,11 +28,11 @@ async function getPrivateKey() {
   return privateKey.to_string();
 }
 
-async function syncBlocks(params: WorkerSyncTask) {
+async function syncRecords(params: WorkerSyncTask) {
   if (!aleoWorker) {
     throw new Error("aleoWorker not init");
   }
-  return await aleoWorker.beginSyncBlockTask(params);
+  return await aleoWorker.beginSyncRecordTask(params);
 }
 
 async function setLogger(cb: LogFunc) {
@@ -47,7 +47,7 @@ const workerAPI = {
   initWasm,
   initAleoWorker,
   getPrivateKey,
-  syncBlocks,
+  syncRecords,
   setLogger,
   getWorkerId,
 };
