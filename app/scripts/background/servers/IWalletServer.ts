@@ -38,7 +38,7 @@ export type ImportHDWalletProps = {
 
 export interface AddAccountProps {
   walletId: string;
-  coin: CoinType;
+  coinType: CoinType;
   accountId: string;
 }
 

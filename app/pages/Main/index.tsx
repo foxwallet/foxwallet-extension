@@ -22,137 +22,16 @@ import {
   TabIndicator,
 } from "@chakra-ui/react";
 import { useSyncProgress } from "@/hooks/useSyncProgress";
+import { WalletTab } from "./WalletTab";
+import { SettingTab } from "./SettingTab";
 
 function OnboardHomeScreen() {
-  const navigate = useNavigate();
-  const { selectedAccount, uniqueId } = useCurrAccount();
-  const { nativeCurrency } = useCoinService(uniqueId);
-  const { balance, loadingBalance, error } = useBalance(
-    uniqueId,
-    selectedAccount.address,
-    4000,
-  );
-  const { progress } = useSyncProgress(uniqueId, selectedAccount.address);
-  const { history, loading: loadingHistory } = useTxHistory(
-    uniqueId,
-    selectedAccount.address,
-    4000,
-  );
-
-  const haveBalance = !loadingBalance && !!balance?.total && balance.total > 0;
-
-  const onClickSend = useCallback(() => {
-    navigate("/send_aleo");
-  }, [navigate]);
-
-  const onClickReceive = useCallback(() => {
-    navigate("/receive");
-  }, [navigate]);
-
-  const renderHistoryItem = useCallback(
-    (item: AleoHistoryItem) => {
-      const { status, programId, functionName, addressType, amount, txId } =
-        item;
-
-      const statusPrefix = status === AleoTxStatus.FINALIZD ? "" : status;
-
-      if (programId === NATIVE_TOKEN_PROGRAM_ID) {
-        return (
-          <Flex key={txId} mt={2}>
-            {statusPrefix}&nbsp;
-            {functionName.startsWith("transfer")
-              ? functionName.slice(9)
-              : functionName}
-            &nbsp;
-            {addressType}&nbsp;
-            {amount && (
-              <TokenNum
-                amount={BigInt(amount)}
-                decimals={nativeCurrency.decimals}
-                symbol={nativeCurrency.symbol}
-              />
-            )}
-          </Flex>
-        );
-      }
-      if (addressType === AleoTxAddressType.SEND) {
-        return (
-          <Flex key={txId} mt={2}>
-            {statusPrefix}&nbsp;Call&nbsp;{programId}&nbsp;
-            {functionName}
-          </Flex>
-        );
-      }
-      return (
-        <Flex key={txId} mt={2}>
-          {statusPrefix}&nbsp;Received from&nbsp;{programId}&nbsp;
-          {functionName}
-        </Flex>
-      );
-    },
-    [nativeCurrency],
-  );
-
   return (
     <Flex flexDirection={"column"} flex={1} alignItems={"stretch"}>
       <Tabs variant={"unstyled"} flex={1}>
         <TabPanels>
-          <TabPanel>
-            <Content>
-              <Flex>
-                Progress:&nbsp;
-                {progress}
-              </Flex>
-              <Flex>
-                Total balance:&nbsp;
-                <TokenNum
-                  amount={balance?.total || 0n}
-                  decimals={nativeCurrency.decimals}
-                  symbol={nativeCurrency.symbol}
-                />
-              </Flex>
-              <Flex>
-                Private balance:&nbsp;
-                <TokenNum
-                  amount={balance?.privateBalance || 0n}
-                  decimals={nativeCurrency.decimals}
-                  symbol={nativeCurrency.symbol}
-                />
-              </Flex>
-              <Flex>
-                Public balance:&nbsp;
-                <TokenNum
-                  amount={balance?.publicBalance || 0n}
-                  decimals={nativeCurrency.decimals}
-                  symbol={nativeCurrency.symbol}
-                />
-              </Flex>
-              {!!error && <Flex>{error.toString()}</Flex>}
-              <Flex>
-                <Button
-                  isDisabled={!haveBalance}
-                  onClick={onClickSend}
-                  mr="2"
-                  flex="1"
-                >
-                  Send
-                </Button>
-                <Button onClick={onClickReceive} ml="4" flex={"1"}>
-                  Receive
-                </Button>
-              </Flex>
-              {history && (
-                <Flex maxH={400} overflowY={"auto"} direction={"column"}>
-                  {history.map((item) => {
-                    return renderHistoryItem(item);
-                  })}
-                </Flex>
-              )}
-            </Content>
-          </TabPanel>
-          <TabPanel>
-            <Content>Settings</Content>
-          </TabPanel>
+          <WalletTab />
+          <SettingTab />
         </TabPanels>
         <TabList
           position={"absolute"}

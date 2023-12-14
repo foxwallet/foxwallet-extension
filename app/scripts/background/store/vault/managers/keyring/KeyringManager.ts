@@ -281,12 +281,12 @@ export class KeyringManager {
 
   async addNewAccount({
     walletId,
-    coin,
+    coinType,
     accountId,
   }: AddAccountProps): Promise<DisplayWallet> {
     const token = this.#getToken();
     const hdWallet = await this.#storage.getHDWallet(walletId);
-    const index = hdWallet.accountsMap[coin].length;
+    const index = hdWallet.accountsMap[coinType].length;
     // let keyring = this.#hdKeyrings[walletId];
     // let hdWallet = this.#storage.getHDWallet(walletId);
     // if (!hdWallet) {
@@ -298,7 +298,7 @@ export class KeyringManager {
     //   this.#hdKeyrings[walletId] = keyring;
     //   logger.log("===> addNewAccount wallet: ", keyring);
     // }
-    const existAccount = hdWallet.accountsMap[coin].some(
+    const existAccount = hdWallet.accountsMap[coinType].some(
       (item) => item.accountId === accountId,
     );
     if (existAccount) {
@@ -312,7 +312,7 @@ export class KeyringManager {
     const newEncryptedKeyPair = (await keyring.derive(
       accountId,
       index,
-      coin,
+      coinType,
       token,
     )) as EncryptedKeyPairWithViewKey;
     // TODO: use i18n
@@ -321,8 +321,8 @@ export class KeyringManager {
       ...hdWallet,
       accountsMap: {
         ...hdWallet.accountsMap,
-        [coin]: [
-          ...hdWallet.accountsMap[coin],
+        [coinType]: [
+          ...hdWallet.accountsMap[coinType],
           {
             ...newEncryptedKeyPair,
             accountName,

@@ -3,6 +3,7 @@ import { Navigate, Outlet, type RouteObject } from "react-router-dom";
 import { CheckOnboard } from "../components/Onboard/CheckOnboard";
 import { CheckAuth } from "@/components/Onboard/CheckAuth";
 
+// WalletTab
 const MainPage = lazy(async () => await import("../pages/Main"));
 const SendAleo = lazy(async () => await import("../pages/SendAleo"));
 const Receive = lazy(async () => await import("../pages/Receive"));
@@ -10,6 +11,9 @@ const ConnectDapp = lazy(async () => await import("../pages/ConnectDapp"));
 const RequestTx = lazy(async () => await import("../pages/RequestTx"));
 const SignMessage = lazy(async () => await import("../pages/SignMessage"));
 const Deployment = lazy(async () => await import("../pages/Deployment"));
+
+// SettingTab
+const ManageWallet = lazy(async () => await import("../pages/ManageWallet"));
 
 const OnboardHome = lazy(async () => await import("../pages/OnboardHome"));
 const OnboardCreateWallet = lazy(
