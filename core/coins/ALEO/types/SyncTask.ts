@@ -86,7 +86,9 @@ export interface FutureJSON {
 export type SyncRecordResp = SyncRecordParams & SyncRecordResult;
 
 export interface SyncRecordResult {
-  recordsMap: { [program in string]?: RecordDetail[] };
+  recordsMap: {
+    [program in string]?: { [commitment in string]?: RecordDetail };
+  };
   range: number[];
 }
 

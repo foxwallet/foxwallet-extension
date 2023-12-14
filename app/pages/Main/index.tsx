@@ -21,6 +21,7 @@ import {
   TabPanel,
   TabIndicator,
 } from "@chakra-ui/react";
+import { useSyncProgress } from "@/hooks/useSyncProgress";
 
 function OnboardHomeScreen() {
   const navigate = useNavigate();
@@ -31,6 +32,7 @@ function OnboardHomeScreen() {
     selectedAccount.address,
     4000,
   );
+  const { progress } = useSyncProgress(uniqueId, selectedAccount.address);
   const { history, loading: loadingHistory } = useTxHistory(
     uniqueId,
     selectedAccount.address,
@@ -97,6 +99,10 @@ function OnboardHomeScreen() {
         <TabPanels>
           <TabPanel>
             <Content>
+              <Flex>
+                Progress:&nbsp;
+                {progress}
+              </Flex>
               <Flex>
                 Total balance:&nbsp;
                 <TokenNum

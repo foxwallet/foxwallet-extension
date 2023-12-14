@@ -220,7 +220,10 @@ export class AleoWorker {
         `range must be less than ${ALEO_SYNC_RECORD_SIZE} begin: ${begin} end: ${end}`,
       );
     }
-    if (begin % ALEO_SYNC_RECORD_SIZE !== end % ALEO_SYNC_RECORD_SIZE) {
+    if (
+      Math.floor(begin / ALEO_SYNC_RECORD_SIZE) !==
+      Math.floor(end / ALEO_SYNC_RECORD_SIZE)
+    ) {
       throw new Error(
         `range must be in the same group begin: ${begin} end: ${end}`,
       );
@@ -257,20 +260,22 @@ export class AleoWorker {
             skTag,
             recordRawInfo,
           );
+          const resultMap = addressResultMap[address] ?? {
+            recordsMap: {},
+            ...syncParam,
+            range: [i === 0 ? begin : recordRawInfo.id, end],
+          };
 
           if (decryptedRecord) {
-            const resultMap = addressResultMap[address] ?? {
-              recordsMap: {},
-              ...syncParam,
-              range: [i === 0 ? begin : recordRawInfo.id, end],
-            };
             const { programId } = decryptedRecord;
-            resultMap.recordsMap[programId] = [
-              ...(resultMap.recordsMap[programId] ?? []),
-              decryptedRecord,
-            ];
-            addressResultMap[address] = resultMap;
+            resultMap.recordsMap[programId] = {
+              ...(resultMap.recordsMap[programId] ?? {}),
+              [decryptedRecord.commitment]: decryptedRecord,
+            };
           }
+
+          resultMap.range[0] = i === 0 ? begin : recordRawInfo.id;
+          addressResultMap[address] = resultMap;
 
           this.currIndex = recordRawInfo.id;
         });

@@ -4,6 +4,7 @@ import type { DisplayAccount } from "@/scripts/background/store/vault/types/keyr
 import { CoinType } from "core/types";
 import { clients } from "@/hooks/useClient";
 import { DEFAULT_UNIQUE_ID_MAP } from "core/constants";
+import { ChainUniqueId } from "core/types/ChainUniqueId";
 
 type SelectedAccount = DisplayAccount & {
   walletId: string;
@@ -12,6 +13,7 @@ type SelectedAccount = DisplayAccount & {
 
 interface AccountModel {
   selectedAccount: SelectedAccount;
+  selectedUniqueId: ChainUniqueId;
 }
 
 const DEFAULT_ACCOUNT_MODEL: AccountModel = {
@@ -23,6 +25,7 @@ const DEFAULT_ACCOUNT_MODEL: AccountModel = {
     walletId: "",
     coinType: CoinType.ALEO,
   },
+  selectedUniqueId: DEFAULT_UNIQUE_ID_MAP[CoinType.ALEO],
 };
 
 export const account = createModel<RootModel>()({
@@ -37,6 +40,12 @@ export const account = createModel<RootModel>()({
         selectedAccount: payload.selectedAccount,
       };
     },
+    _setSelectedUniqueId(state, payload: { uniqueId: ChainUniqueId }) {
+      return {
+        ...state,
+        selectedUniqueId: payload.uniqueId,
+      };
+    },
   },
   effects: (dispatch) => ({
     async setSelectedAccount({
@@ -47,26 +56,33 @@ export const account = createModel<RootModel>()({
       await clients.popupServerClient.setSelectedAccount({
         selectAccount: selectedAccount,
       });
-      const uniqueId = DEFAULT_UNIQUE_ID_MAP[selectedAccount.coinType];
-      await clients.popupServerClient.setSelectedUniqueId({
-        uniqueId,
-      });
       dispatch.account._setSelectedAccount({
         selectedAccount: selectedAccount,
       });
     },
 
-    async getSelectedAccount(coinType: CoinType) {
-      const account = await clients.popupServerClient.getSelectedAccount({
-        coinType,
+    async setSelectedUniqueId({ uniqueId }: { uniqueId: ChainUniqueId }) {
+      await clients.popupServerClient.setSelectedUniqueId({
+        uniqueId,
       });
+      dispatch.account._setSelectedUniqueId({ uniqueId });
+      return uniqueId;
+    },
+
+    async getSelectedAccount(coinType: CoinType) {
+      const [account, uniqueId] = await Promise.all([
+        clients.popupServerClient.getSelectedAccount({
+          coinType,
+        }),
+        clients.popupServerClient.getSelectedUniqueId({ coinType }),
+      ]);
       if (account) {
         dispatch.account._setSelectedAccount({
           selectedAccount: account,
         });
-        return account;
+        return { account, uniqueId };
       }
-      return account;
+      return { account, uniqueId };
     },
   }),
 });

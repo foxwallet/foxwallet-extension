@@ -18,7 +18,7 @@ let mainLoop: MainLoop;
 const getMainLoop = () => {
   if (!mainLoop) {
     mainLoop = MainLoop.getInstace(
-      ReserveChainConfigs[InnerChainUniqueId.ALEO_TESTNET3].rpcList,
+      ReserveChainConfigs[InnerChainUniqueId.ALEO_TESTNET3].syncApiList,
     );
   }
   return mainLoop;

@@ -5,8 +5,11 @@ import { useEffect } from "react";
 import { CoinType } from "core/types";
 
 export const useCurrAccount = () => {
-  const selectedAccount = usePopupSelector(
-    (state) => state.account.selectedAccount,
+  const { selectedAccount, selectedUniqueId } = usePopupSelector(
+    (state) => ({
+      selectedAccount: state.account.selectedAccount,
+      selectedUniqueId: state.account.selectedUniqueId,
+    }),
     isEqual,
   );
   const dispatch = usePopupDispatch();
@@ -15,5 +18,5 @@ export const useCurrAccount = () => {
     dispatch.account.getSelectedAccount(CoinType.ALEO);
   }, []);
 
-  return { selectedAccount, uniqueId: InnerChainUniqueId.ALEO_TESTNET3 };
+  return { selectedAccount, uniqueId: selectedUniqueId };
 };

@@ -57,7 +57,7 @@ export class AleoSyncApi {
     end: number,
   ): Promise<RecordRawInfo[]> {
     const info = await this.fetchData<SyncResp<RecordRawInfo[]>>(
-      `/sync/records?index=${start}`,
+      `/sync/records?index=${index}&start=${start}&end=${end}`,
     );
     if (info.status !== 0) {
       throw new Error(info.msg);
@@ -84,12 +84,15 @@ export class AleoSyncApi {
    * const latestHeight = networkClient.getLatestBlock();
    */
   async getSpentTags(tags: string[]): Promise<string[]> {
-    const resp = await this.postData<SyncResp<string[]>>(`/sync/tags`, {
-      tags,
-    });
+    const resp = await this.postData<SyncResp<{ spent: string[] }>>(
+      `/sync/tags`,
+      {
+        tags,
+      },
+    );
     if (resp.status !== 0) {
       throw new Error(resp.msg);
     }
-    return resp.data;
+    return resp.data.spent;
   }
 }

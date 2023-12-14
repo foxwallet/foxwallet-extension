@@ -27,6 +27,7 @@ import { AccountSettingStorage } from "@/scripts/background/store/account/Accoun
 import { CoinType } from "core/types";
 import { uniqueIdToAleoChainId } from "core/coins/ALEO/utils/chainId";
 import { AleoApiService } from "core/coins/ALEO/service/instances/sync";
+import { Mutex } from "async-mutex";
 
 // larger limit
 export const SYNC_TASK_QUENE_LIMIT = 100;
@@ -35,7 +36,12 @@ const ENABLE_MEASURE = true;
 
 const CHAIN_ID = ALEO_CHAIN_CONFIGS.TESTNET3.chainId;
 
-const WORKER_NUMBER = Math.max((navigator.hardwareConcurrency ?? 4) - 1, 4);
+const WORKER_NUMBER = Math.min(
+  Math.max((navigator.hardwareConcurrency ?? 4) - 1, 4),
+  8,
+);
+
+const mutex = new Mutex();
 
 export class MainLoop {
   static instance: MainLoop;
@@ -47,24 +53,24 @@ export class MainLoop {
   aleoStorage: AleoStorage;
   accountSettingStorage: AccountSettingStorage;
 
-  static getInstace(rpcList: string[]) {
+  static getInstace(apiList: string[]) {
     const cacheInstance = MainLoop.instance;
     if (cacheInstance) {
       return cacheInstance;
     }
-    const instance = new MainLoop(rpcList);
+    const instance = new MainLoop(apiList);
     MainLoop.instance = instance;
     return instance;
   }
 
-  private constructor(private rpcList: string[]) {
+  private constructor(private apiList: string[]) {
     this.onLine = navigator.onLine;
     this.syncTaskQuene = [];
     this.workerList = [];
     this.taskInProcess = new Array<Promise<void> | undefined>(WORKER_NUMBER);
     this.aleoStorage = AleoStorage.getInstance();
     this.apiService = new AleoApiService({
-      configs: ALEO_CHAIN_CONFIGS.TESTNET3.syncApiList.map((url) => ({
+      configs: apiList.map((url) => ({
         url,
         chainId: CHAIN_ID,
       })),
@@ -98,7 +104,7 @@ export class MainLoop {
     for (let i = this.workerList.length; i < WORKER_NUMBER; i++) {
       const aleoWorker = await this.createAleoWorker();
       await aleoWorker.initWasm();
-      await aleoWorker.initAleoWorker(i, this.rpcList, ENABLE_MEASURE);
+      await aleoWorker.initAleoWorker(i, this.apiList, ENABLE_MEASURE);
       this.workerList[i] = aleoWorker;
       console.log("===> spawen worker: ", i);
     }
@@ -279,11 +285,7 @@ export class MainLoop {
 
     return list.reduce<SyncRecordResult>(
       (prev: SyncRecordResult, curr: SyncRecordResult) => {
-        const {
-          recordsMap: lastRecordsMap,
-
-          range: lastRange,
-        } = prev;
+        const { recordsMap: lastRecordsMap, range: lastRange } = prev;
         const { recordsMap, range } = curr;
         for (const [key, value] of Object.entries(recordsMap)) {
           if (!value) {
@@ -291,9 +293,18 @@ export class MainLoop {
           }
           const existRecords = lastRecordsMap[key];
           if (!existRecords) {
-            lastRecordsMap[key] = [...value];
+            lastRecordsMap[key] = { ...value };
           } else {
-            lastRecordsMap[key] = [...existRecords, ...value];
+            for (let [commitment, record] of Object.entries(value)) {
+              if (!record) {
+                continue;
+              }
+              if (existRecords[commitment]) {
+                continue;
+              }
+              existRecords[commitment] = record;
+            }
+            lastRecordsMap[key] = existRecords;
           }
         }
         const merged = {
@@ -318,100 +329,105 @@ export class MainLoop {
       [key in string]: { time: number; max: number; count: number };
     },
   ): Promise<boolean> {
-    console.log("===> storeBlockResults batchId: ", batchId, results);
-    const formatResult = this.mergeBlocksResult(results);
-    if (!formatResult) {
-      console.error("===> store syncBlocksResult failed: ", formatResult);
-      return false;
-    }
-    console.log("===> storeBlockResults formatResult: ", formatResult);
-    const key = batchId.toString();
-    const batchStart = Number(batchId.split("-")[0]);
-    const existItem = await this.aleoStorage.getAleoRecordsInfo(
-      chainId,
-      address,
-      key,
-    );
-    console.log("===> storeBlockResults existItem: ", existItem);
-    if (!existItem) {
-      if (batchStart !== formatResult.range[0]) {
-        console.error(
-          "===> storeBlockResult batchStart error: set init block error ",
-          batchId,
-          formatResult,
-          await this.aleoStorage.getAleoRecordRanges(chainId, address),
-        );
+    const release = await mutex.acquire();
+    try {
+      console.log("===> storeBlockResults batchId: ", batchId, results);
+      const formatResult = this.mergeBlocksResult(results);
+      if (!formatResult) {
+        console.error("===> store syncBlocksResult failed: ", formatResult);
         return false;
       }
-      await this.aleoStorage.setAleoRecords(chainId, address, key, {
-        ...formatResult,
-        measure: {
-          totalTime: measureMap?.totalTime?.time ?? 0,
-          requestTime: measureMap?.getRecordsInRange?.time ?? 0,
-        },
-      });
-      return true;
-    } else {
-      const merged = this.mergeBlocksResult([existItem, formatResult]);
-      if (!merged) {
-        console.error(
-          "===> storeBlockResult merge failed: ",
-          batchId,
-          existItem,
-          formatResult,
-        );
-        return false;
-      }
-      const newRange = merged.range;
-      const newKey = `${newRange[0]}-${newRange[1]}`;
-      if (batchStart !== newRange[0]) {
-        console.error(
-          "===> storeBlockResult batchStart error: ",
-          batchId,
-          merged,
-          existItem,
-        );
-        return false;
-      }
-      const existMeasure = existItem.measure ?? {
-        totalTime: 0,
-        requestTime: 0,
-      };
-      const newTotalTime = measureMap?.totalTime?.time ?? 0;
-      const newRequestTime = measureMap?.getRecordsInRange?.time ?? 0;
-      const newMeasure = { totalTime: 0, requestTime: 0 };
-      if (newTotalTime > 0 && newRequestTime > 0) {
-        if (!existMeasure?.requestTime && !existMeasure?.totalTime) {
-          newMeasure.requestTime = newRequestTime;
-          newMeasure.totalTime = newTotalTime;
-        } else {
-          newMeasure.requestTime =
-            (existMeasure.requestTime + newRequestTime) / 2;
-          newMeasure.totalTime = (existMeasure.totalTime + newTotalTime) / 2;
-        }
-      }
-      console.log(
-        "===> storeBlockResult merged: ",
-        merged,
+      console.log("===> storeBlockResults formatResult: ", formatResult);
+      const key = batchId.toString();
+      const batchStart = Number(batchId.split("-")[0]);
+      const existItem = await this.aleoStorage.getAleoRecordsInfo(
+        chainId,
+        address,
         key,
-        newKey,
-        newRange,
       );
-      await this.aleoStorage.removeAleoRecords(chainId, address, key);
-      console.log("===> storeBlockResult remove: ", key);
-      await this.aleoStorage.setAleoRecords(chainId, address, newKey, {
-        ...merged,
-        range: newRange,
-        measure: newMeasure,
-      });
-      console.log(
-        "===> storeBlockResult setAleoRecords: ",
-        newKey,
-        merged,
-        newRange,
-        newMeasure,
-      );
-      return true;
+      console.log("===> storeBlockResults existItem: ", existItem);
+      if (!existItem) {
+        if (batchStart !== formatResult.range[0]) {
+          console.error(
+            "===> storeBlockResult batchStart error: set init block error ",
+            batchId,
+            formatResult,
+            await this.aleoStorage.getAleoRecordRanges(chainId, address),
+          );
+          return false;
+        }
+        await this.aleoStorage.setAleoRecords(chainId, address, key, {
+          ...formatResult,
+          measure: {
+            totalTime: measureMap?.totalTime?.time ?? 0,
+            requestTime: measureMap?.getRecordsInRange?.time ?? 0,
+          },
+        });
+        return true;
+      } else {
+        const merged = this.mergeBlocksResult([existItem, formatResult]);
+        if (!merged) {
+          console.error(
+            "===> storeBlockResult merge failed: ",
+            batchId,
+            existItem,
+            formatResult,
+          );
+          return false;
+        }
+        const newRange = merged.range;
+        const newKey = `${newRange[0]}-${newRange[1]}`;
+        if (batchStart !== newRange[0]) {
+          console.error(
+            "===> storeBlockResult batchStart error: ",
+            batchId,
+            merged,
+            existItem,
+          );
+          return false;
+        }
+        const existMeasure = existItem.measure ?? {
+          totalTime: 0,
+          requestTime: 0,
+        };
+        const newTotalTime = measureMap?.totalTime?.time ?? 0;
+        const newRequestTime = measureMap?.getRecordsInRange?.time ?? 0;
+        const newMeasure = { totalTime: 0, requestTime: 0 };
+        if (newTotalTime > 0 && newRequestTime > 0) {
+          if (!existMeasure?.requestTime && !existMeasure?.totalTime) {
+            newMeasure.requestTime = newRequestTime;
+            newMeasure.totalTime = newTotalTime;
+          } else {
+            newMeasure.requestTime =
+              (existMeasure.requestTime + newRequestTime) / 2;
+            newMeasure.totalTime = (existMeasure.totalTime + newTotalTime) / 2;
+          }
+        }
+        console.log(
+          "===> storeBlockResult merged: ",
+          merged,
+          key,
+          newKey,
+          newRange,
+        );
+        await this.aleoStorage.removeAleoRecords(chainId, address, key);
+        console.log("===> storeBlockResult remove: ", key);
+        await this.aleoStorage.setAleoRecords(chainId, address, newKey, {
+          ...merged,
+          range: newRange,
+          measure: newMeasure,
+        });
+        console.log(
+          "===> storeBlockResult setAleoRecords: ",
+          newKey,
+          merged,
+          newRange,
+          newMeasure,
+        );
+        return true;
+      }
+    } finally {
+      release();
     }
   }
 
@@ -444,6 +460,7 @@ export class MainLoop {
           // No task, return wait for other worker
           return;
         }
+        console.log("===> execute task: ", JSON.stringify(task));
         this.taskInProcess[workerId] = worker
           .syncRecords(task)
           .then(async (resp) => {

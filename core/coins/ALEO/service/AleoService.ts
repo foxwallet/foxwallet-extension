@@ -82,7 +82,7 @@ export class AleoService {
 
   private async getSpentTags(tags: string[]) {
     if (tags.length <= GET_SPENT_TAGS_SIZE) {
-      const spentTags = await this.apiService.currInstance().getSpentTags(tags);
+      const spentTags = await this.getSpentTagsInRange(tags);
       return spentTags;
     }
     const result: string[] = [];
@@ -92,6 +92,29 @@ export class AleoService {
       result.push(...subSpentTags);
     }
     return result;
+  }
+
+  public async getSyncProgress(address: string): Promise<number> {
+    const [recordRanges, latestRecordIndex] = await Promise.all([
+      this.aleoStorage.getAleoRecordRanges(this.chainId, address),
+      this.apiService.currInstance().getLatestRecordIndex(),
+    ]);
+
+    if (recordRanges.length === 0) {
+      return latestRecordIndex > 0 ? 0 : 100;
+    }
+    const finishRecordCount = recordRanges
+      .map((item) => {
+        const [start, end] = item.split("-");
+        return [parseInt(start), parseInt(end)];
+      })
+      .reduce((prev, curr) => {
+        return prev + curr[1] - curr[0] + 1;
+      }, 0);
+    return Math.min(
+      Math.floor((finishRecordCount / (latestRecordIndex + 1)) * 100),
+      100,
+    );
   }
 
   private syncRecords = async (
@@ -104,15 +127,15 @@ export class AleoService {
         address,
       );
 
-      const blockRanges = await this.aleoStorage.getAleoRecordRanges(
+      const recordRanges = await this.aleoStorage.getAleoRecordRanges(
         this.chainId,
         address,
       );
 
-      if (blockRanges.length === 0) {
+      if (recordRanges.length === 0) {
         return null;
       }
-      blockRanges.sort((range1, range2) => {
+      recordRanges.sort((range1, range2) => {
         const [start1] = range1.split("-");
         const [start2] = range2.split("-");
         return parseInt(start1) - parseInt(start2);
@@ -125,8 +148,8 @@ export class AleoService {
       } = addressInfo?.recordsMap ?? {};
       let [existBegin, existEnd] = addressInfo?.range ?? [];
 
-      for (let i = 0; i < blockRanges.length; i += 1) {
-        const blockRange = blockRanges[i];
+      for (let i = 0; i < recordRanges.length; i += 1) {
+        const blockRange = recordRanges[i];
         const blockInfo = await this.aleoStorage.getAleoRecordsInfo(
           this.chainId,
           address,
@@ -143,20 +166,23 @@ export class AleoService {
           continue;
         }
         const { recordsMap, range } = blockInfo;
-        const [blockBegin, blockEnd] = range;
+        const [recordBegin, recordEnd] = range;
         if (existBegin !== undefined && existEnd !== undefined) {
-          existBegin = Math.min(existBegin, blockBegin);
-          existEnd = Math.max(existEnd, blockEnd);
+          existBegin = Math.min(existBegin, recordBegin);
+          existEnd = Math.max(existEnd, recordEnd);
         } else {
-          existBegin = blockBegin;
-          existEnd = blockEnd;
+          existBegin = recordBegin;
+          existEnd = recordEnd;
         }
         for (const [programId, records] of Object.entries(recordsMap)) {
-          if (!records || records.length === 0) {
+          if (!records || Object.keys(records).length === 0) {
             continue;
           }
           const newRecords = allRecordsMap[programId] ?? {};
-          for (const record of records) {
+          for (const record of Object.values(records)) {
+            if (!record) {
+              continue;
+            }
             if (!record.tag) {
               logger.error("===> getBalance record.tag is null", record);
             }
