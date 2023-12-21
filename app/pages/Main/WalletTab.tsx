@@ -8,6 +8,7 @@ import { Button, Flex, Text } from "@chakra-ui/react";
 import { NATIVE_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
 import {
   AleoHistoryItem,
+  AleoLocalHistoryItem,
   AleoTxAddressType,
 } from "core/coins/ALEO/types/History";
 import { AleoTxStatus } from "core/coins/ALEO/types/Tranaction";
@@ -15,6 +16,52 @@ import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { TabPanel } from "@chakra-ui/react";
 import { useSyncProgress } from "@/hooks/useSyncProgress";
+import { NativeToken } from "core/types/Token";
+
+const HistoryItem = (props: {
+  item: AleoHistoryItem;
+  nativeCurrency: NativeToken;
+}) => {
+  const { item, nativeCurrency } = props;
+
+  const { status, programId, functionName, addressType, amount, txId } = item;
+
+  const statusPrefix = status === AleoTxStatus.FINALIZD ? "" : status;
+
+  if (programId === NATIVE_TOKEN_PROGRAM_ID) {
+    return (
+      <Flex key={txId} mt={2}>
+        {statusPrefix}&nbsp;
+        {functionName.startsWith("transfer")
+          ? functionName.slice(9)
+          : functionName}
+        &nbsp;
+        {addressType}&nbsp;
+        {amount && (
+          <TokenNum
+            amount={BigInt(amount)}
+            decimals={nativeCurrency.decimals}
+            symbol={nativeCurrency.symbol}
+          />
+        )}
+      </Flex>
+    );
+  }
+  if (addressType === AleoTxAddressType.SEND) {
+    return (
+      <Flex key={txId} mt={2}>
+        {statusPrefix}&nbsp;Call&nbsp;{programId}&nbsp;
+        {functionName}
+      </Flex>
+    );
+  }
+  return (
+    <Flex key={txId} mt={2}>
+      {statusPrefix}&nbsp;Received from&nbsp;{programId}&nbsp;
+      {functionName}
+    </Flex>
+  );
+};
 
 export const WalletTab = () => {
   const navigate = useNavigate();
@@ -41,50 +88,6 @@ export const WalletTab = () => {
   const onClickReceive = useCallback(() => {
     navigate("/receive");
   }, [navigate]);
-
-  const renderHistoryItem = useCallback(
-    (item: AleoHistoryItem) => {
-      const { status, programId, functionName, addressType, amount, txId } =
-        item;
-
-      const statusPrefix = status === AleoTxStatus.FINALIZD ? "" : status;
-
-      if (programId === NATIVE_TOKEN_PROGRAM_ID) {
-        return (
-          <Flex key={txId} mt={2}>
-            {statusPrefix}&nbsp;
-            {functionName.startsWith("transfer")
-              ? functionName.slice(9)
-              : functionName}
-            &nbsp;
-            {addressType}&nbsp;
-            {amount && (
-              <TokenNum
-                amount={BigInt(amount)}
-                decimals={nativeCurrency.decimals}
-                symbol={nativeCurrency.symbol}
-              />
-            )}
-          </Flex>
-        );
-      }
-      if (addressType === AleoTxAddressType.SEND) {
-        return (
-          <Flex key={txId} mt={2}>
-            {statusPrefix}&nbsp;Call&nbsp;{programId}&nbsp;
-            {functionName}
-          </Flex>
-        );
-      }
-      return (
-        <Flex key={txId} mt={2}>
-          {statusPrefix}&nbsp;Received from&nbsp;{programId}&nbsp;
-          {functionName}
-        </Flex>
-      );
-    },
-    [nativeCurrency],
-  );
 
   return (
     <TabPanel>
@@ -133,9 +136,13 @@ export const WalletTab = () => {
         </Flex>
         {history && (
           <Flex maxH={400} overflowY={"auto"} direction={"column"}>
-            {history.map((item) => {
-              return renderHistoryItem(item);
-            })}
+            {history.map((item) => (
+              <HistoryItem
+                item={item}
+                nativeCurrency={nativeCurrency}
+                key={item.txId || (item as AleoLocalHistoryItem).localId}
+              />
+            ))}
           </Flex>
         )}
       </Content>

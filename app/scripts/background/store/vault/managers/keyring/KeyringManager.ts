@@ -14,15 +14,20 @@ import {
   DisplayWallet,
   HDWallet,
   KeyringObj,
+  SimpleWallet,
   WalletType,
 } from "../../types/keyring";
 import { nanoid } from "nanoid";
 import { AuthManager } from "../auth/AuthManager";
-import { decryptStr } from "core/utils/encrypt";
+import { decryptStr, encryptStr } from "core/utils/encrypt";
 import { logger } from "../../../../../../common/utils/logger";
-import { AddAccountProps } from "../../../../servers/IWalletServer";
+import {
+  AddAccountProps,
+  ImportPrivateKeyProps,
+} from "../../../../servers/IWalletServer";
 import initAleoWasm from "aleo_wasm";
 import { ERROR_CODE } from "@/common/types/error";
+import { coinBasicFactory } from "core/coins/CoinBasicFactory";
 
 export class KeyringManager {
   #storage: VaultStorage;
@@ -74,8 +79,14 @@ export class KeyringManager {
     };
   }
 
-  async getWallet(walletId: string): Promise<DisplayWallet> {
+  async getHDWallet(walletId: string): Promise<DisplayWallet> {
     return this.#formatDisplayWallet(await this.#storage.getHDWallet(walletId));
+  }
+
+  async getSimpleWallet(walletId: string): Promise<DisplayWallet> {
+    return this.#formatDisplayWallet(
+      await this.#storage.getSimpleWallet(walletId),
+    );
   }
 
   async getAllWallet(noAuth?: boolean): Promise<DisplayKeyring> {
@@ -144,7 +155,7 @@ export class KeyringManager {
 
     await this.#storage.addHDWallet(newWallet, AccountMethod.CREATE);
     // this.#hdKeyrings[walletId] = newKeyring;
-    const wallet = await this.getWallet(walletId);
+    const wallet = await this.getHDWallet(walletId);
 
     if (revealMnemonic) {
       wallet.mnemonic = await decryptStr(token, newMnemonic);
@@ -204,7 +215,7 @@ export class KeyringManager {
 
     // this.#hdKeyrings[walletId] = keyring;
 
-    const wallet = await this.getWallet(walletId);
+    const wallet = await this.getHDWallet(walletId);
 
     if (revealMnemonic) {
       wallet.mnemonic = await decryptStr(token, newMnemonic);
@@ -274,9 +285,7 @@ export class KeyringManager {
     };
     await this.#storage.addHDWallet(newWallet, AccountMethod.IMPORT);
 
-    // this.#hdKeyrings[walletId] = newKeyring;
-
-    return await this.getWallet(walletId);
+    return await this.getHDWallet(walletId);
   }
 
   async addNewAccount({
@@ -287,17 +296,6 @@ export class KeyringManager {
     const token = this.#getToken();
     const hdWallet = await this.#storage.getHDWallet(walletId);
     const index = hdWallet.accountsMap[coinType].length;
-    // let keyring = this.#hdKeyrings[walletId];
-    // let hdWallet = this.#storage.getHDWallet(walletId);
-    // if (!hdWallet) {
-    //   keyring = await HDKeyring.restore({
-    //     walletId,
-    //     token,
-    //     mnemonic: hdWallet.mnemonic,
-    //   });
-    //   this.#hdKeyrings[walletId] = keyring;
-    //   logger.log("===> addNewAccount wallet: ", keyring);
-    // }
     const existAccount = hdWallet.accountsMap[coinType].some(
       (item) => item.accountId === accountId,
     );
@@ -332,7 +330,55 @@ export class KeyringManager {
     };
     await this.#storage.setHDWallet(newHdWallet, AccountMethod.ADD);
 
-    return await this.getWallet(walletId);
+    return await this.getHDWallet(walletId);
+  }
+
+  async importPrivateKey<T extends CoinType>({
+    walletId,
+    walletName,
+    coinType,
+    privateKey,
+    privateKeyType,
+  }: ImportPrivateKeyProps<T>) {
+    const token = this.#getToken();
+    const simpleWallets = await this.#storage.getAllSimpleWallets();
+    for (const wallet of simpleWallets) {
+      const account = wallet.accountsMap[coinType]?.[0];
+      if (!account) {
+        continue;
+      }
+      const existPrivateKey = await decryptStr(token, account.privateKey);
+      if (existPrivateKey === privateKey) {
+        throw new Error("PrivateKey exist!");
+      }
+    }
+    const account = await coinBasicFactory(coinType).deriveAccount(
+      privateKey,
+      privateKeyType,
+    );
+    const privateKeyObj = await encryptStr(token, privateKey);
+    if (!privateKeyObj) {
+      throw new Error("Encrypt privateKey failed");
+    }
+    const newSimpleWallet: SimpleWallet = {
+      walletType: WalletType.SIMPLE,
+      walletId,
+      walletName,
+      accountsMap: {
+        [CoinType.ALEO]: [
+          {
+            ...account,
+            index: 0,
+            accountId: nanoid(),
+            accountName: "Account 1",
+            privateKey: privateKeyObj,
+          },
+        ],
+      },
+    };
+    await this.#storage.addSimpleWallet(newSimpleWallet);
+
+    return await this.getSimpleWallet(walletId);
   }
 
   async getPrivateKey({

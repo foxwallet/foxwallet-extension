@@ -5,6 +5,7 @@ import {
   Cipher,
   HDWallet,
   KeyringObj,
+  SimpleWallet,
   Vault,
   VaultKeys,
   WalletType,
@@ -66,9 +67,26 @@ export class VaultStorage {
     return hdWallet;
   }
 
+  async getSimpleWallet(walletId: string) {
+    const keyring = (await this.getKeyring()) || {};
+    const simpleWallets = keyring[WalletType.SIMPLE] || [];
+    const simpleWallet = simpleWallets.find(
+      (item) => item.walletId === walletId,
+    );
+    if (!simpleWallet) {
+      throw new Error("simpleWallet not exists " + walletId);
+    }
+    return simpleWallet;
+  }
+
   async getAllHDWallets() {
     const keyring = (await this.getKeyring()) || {};
     return keyring[WalletType.HD] || [];
+  }
+
+  async getAllSimpleWallets() {
+    const keyring = (await this.getKeyring()) || {};
+    return keyring[WalletType.SIMPLE] || [];
   }
 
   async isHDWalletExist(walletId: string) {
@@ -213,6 +231,61 @@ export class VaultStorage {
         }
       }
     }
+  }
+
+  async addSimpleWallet(newSimpleWallet: SimpleWallet) {
+    const keyring = (await this.getKeyring()) || {};
+    const simpleWallets = keyring[WalletType.SIMPLE] || [];
+    if (
+      simpleWallets.some((item) => item.walletId === newSimpleWallet.walletId)
+    ) {
+      throw new Error("HDWallet already exists");
+    }
+    const newSimpleWallets = [...simpleWallets, newSimpleWallet];
+    await this.setKeyring({
+      ...keyring,
+      [WalletType.SIMPLE]: newSimpleWallets,
+    });
+    const aleoAccount = newSimpleWallet.accountsMap[CoinType.ALEO][0];
+    if (aleoAccount) {
+      const otherAccounts = await this.#aleoStorage.getAccountsAddress();
+      for (const otherAccount of otherAccounts) {
+        const info = await this.#aleoStorage.getAccountInfo(otherAccount);
+        if (info) {
+          await this.#aleoStorage.setAccountInfo({
+            ...info,
+            priority: TaskPriority.LOW,
+          });
+        }
+      }
+      const item: AleoSyncAccount = {
+        walletId: newSimpleWallet.walletId,
+        accountId: aleoAccount.accountId,
+        address: aleoAccount.address,
+        viewKey: aleoAccount.viewKey,
+        priority: TaskPriority.MEDIUM,
+      };
+      this.#aleoStorage.setAccountInfo(item);
+    }
+  }
+
+  async setSimpleWallet(simpleWallet: SimpleWallet) {
+    const keyring = (await this.getKeyring()) || {};
+    const simpleWallets = keyring[WalletType.SIMPLE] || [];
+    const oldWalletIndex = simpleWallets.findIndex(
+      (item) => item.walletId === simpleWallet.walletId,
+    );
+    if (oldWalletIndex > -1) {
+      const oldWallet = simpleWallets[oldWalletIndex];
+      simpleWallets[oldWalletIndex] = {
+        ...oldWallet,
+        ...simpleWallet,
+      };
+    }
+    await this.setKeyring({
+      ...keyring,
+      [WalletType.SIMPLE]: [...simpleWallets],
+    });
   }
 
   async getVault() {

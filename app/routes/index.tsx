@@ -14,6 +14,17 @@ const Deployment = lazy(async () => await import("../pages/Deployment"));
 
 // SettingTab
 const ManageWallet = lazy(async () => await import("../pages/ManageWallet"));
+const CreateWallet = lazy(async () => await import("../pages/CreateWallet"));
+const CreateMnemonic = lazy(
+  async () => await import("../pages/CreateMnemonic"),
+);
+const ImportMnemonic = lazy(
+  async () => await import("../pages/ImportMnemonic"),
+);
+const ImportPrivateKey = lazy(
+  async () => await import("../pages/ImportPrivateKey"),
+);
+const Language = lazy(async () => await import("../pages/Language"));
 
 const OnboardHome = lazy(async () => await import("../pages/OnboardHome"));
 const OnboardCreateWallet = lazy(
@@ -66,6 +77,30 @@ export const routesConfig: RouteObject[] = [
       {
         path: "request_deploy/:requestId",
         element: <Deployment />,
+      },
+      {
+        path: "manage_wallet",
+        element: <ManageWallet />,
+      },
+      {
+        path: "create_wallet",
+        element: <CreateWallet />,
+      },
+      {
+        path: "create_mnemonic",
+        element: <CreateMnemonic />,
+      },
+      {
+        path: "import_mnemonic",
+        element: <ImportMnemonic />,
+      },
+      {
+        path: "import_private_key",
+        element: <ImportPrivateKey />,
+      },
+      {
+        path: "manage_language",
+        element: <Language />,
       },
     ],
   },

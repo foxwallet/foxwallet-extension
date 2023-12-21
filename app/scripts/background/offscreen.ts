@@ -69,6 +69,10 @@ async function closeOffscreenDocument(path: string) {
   await chrome.offscreen.closeDocument();
 }
 
+export async function stopSync() {
+  await closeOffscreenDocument(OFFSCREEN_DOCUMENT_PATH);
+}
+
 export async function syncBlocks() {
   console.log("===> initWorker setupOffscreenDocument");
   await setupOffscreenDocument(OFFSCREEN_DOCUMENT_PATH);

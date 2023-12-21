@@ -1,22 +1,23 @@
-import { useCallback, useContext, useMemo, useRef, useState } from "react";
-import { PageWithHeader } from "../../layouts/Page";
-import { Body } from "../../layouts/Body";
-import { OnboardProgress } from "../../components/Onboard/OnboardProgress";
-import { ClientContext, useClient } from "../../hooks/useClient";
-import { logger } from "../../common/utils/logger";
-import { showMnemonicWarningDialog } from "../../components/Onboard/MnemonicWarningDialog";
-import { nanoid } from "nanoid";
-import { CreatePasswordStep } from "../../components/Onboard/CreatePassword";
-import { ImportMnemonicStep } from "../../components/Onboard/ImportMnemonic";
-import { showMessageToast } from "../../components/Custom/ErrorToast";
+import { H1, H3, H6 } from "@/common/theme/components/text";
+import { logger } from "@/common/utils/logger";
+import { showMessageToast } from "@/components/Custom/ErrorToast";
+import { WalletNameStep } from "@/components/Setting/WalletName";
+import { useClient } from "@/hooks/useClient";
+import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { usePopupDispatch } from "@/hooks/useStore";
-import { sleep } from "core/utils/sleep";
-import { useNavigate } from "react-router-dom";
+import { Body } from "@/layouts/Body";
+import { Content } from "@/layouts/Content";
+import { PageWithHeader } from "@/layouts/Page";
+import { TabPanel } from "@chakra-ui/react";
+import { AleoImportPKType } from "core/coins/ALEO/types/AleoAccount";
 import { CoinType } from "core/types";
+import { sleep } from "core/utils/sleep";
+import { nanoid } from "nanoid";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 
-const ImportWalletSteps = ["Create", "Import"];
-
-export default function OnboardImportWallet() {
+const CreateWalletScreen = () => {
   const [step, setStep] = useState(1);
   const walletNameRef = useRef("");
   const { popupServerClient } = useClient();
@@ -28,12 +29,10 @@ export default function OnboardImportWallet() {
     switch (step) {
       case 1:
         return (
-          <CreatePasswordStep
-            onConfirm={async (walletName, password) => {
+          <WalletNameStep
+            onConfirm={async (walletName) => {
               walletNameRef.current = walletName;
               walletIdRef.current = nanoid();
-              const res = await popupServerClient.initPassword({ password });
-              logger.log("===> import wallet PasswordStep: ", res);
               setStep((_step) => _step + 1);
             }}
           />
@@ -41,17 +40,19 @@ export default function OnboardImportWallet() {
       case 2:
         return (
           <ImportMnemonicStep
-            onConfirm={async (mnemonic) => {
+            onConfirm={async (privateKey) => {
               const walletId = walletIdRef.current;
               const walletName = walletNameRef.current;
-              if (walletId && walletName && mnemonic) {
+              if (walletId && walletName && privateKey) {
                 try {
-                  const wallet = await popupServerClient.importHDWallet({
+                  const coinType = CoinType.ALEO;
+                  const wallet = await popupServerClient.importPrivateKey({
                     walletId,
                     walletName,
-                    mnemonic,
+                    privateKey,
+                    coinType,
+                    privateKeyType: AleoImportPKType.ALEO_PK,
                   });
-                  const coinType = CoinType.ALEO;
                   const account = wallet.accountsMap[coinType][0];
                   await dispatch.account.setSelectedAccount({
                     selectedAccount: {
@@ -88,10 +89,9 @@ export default function OnboardImportWallet() {
         return true;
       }}
     >
-      <Body>
-        <OnboardProgress currStep={step} steps={ImportWalletSteps} />
-        {stepContent}
-      </Body>
+      <Body>{stepContent}</Body>
     </PageWithHeader>
   );
-}
+};
+
+export default CreateWalletScreen;

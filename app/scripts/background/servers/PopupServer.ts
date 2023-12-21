@@ -23,8 +23,15 @@ import {
   AleoRequestDeploymentProps,
   GetSelectedUniqueIdProps,
   SetSelectedUniqueIdProps,
+  ResyncAleoProps,
+  ImportPrivateKeyProps,
 } from "./IWalletServer";
-import { sendDeployment, sendTransaction } from "../offscreen";
+import {
+  sendDeployment,
+  sendTransaction,
+  stopSync,
+  syncBlocks,
+} from "../offscreen";
 import { AccountSettingStorage } from "../store/account/AccountStorage";
 import { DappStorage } from "../store/dapp/DappStorage";
 import { CoinType } from "core/types";
@@ -408,6 +415,12 @@ export class PopupWalletServer implements IPopupServer {
     return await this.keyringManager.addNewAccount(params);
   }
 
+  async importPrivateKey<T extends CoinType>(
+    params: ImportPrivateKeyProps<T>,
+  ): Promise<DisplayWallet> {
+    return await this.keyringManager.importPrivateKey(params);
+  }
+
   async getSelectedAccount(
     params: GetSelectedAccountProps,
   ): Promise<SelectedAccount | null> {
@@ -460,6 +473,19 @@ export class PopupWalletServer implements IPopupServer {
 
   async getAllWallet(): Promise<DisplayKeyring> {
     return await this.keyringManager.getAllWallet();
+  }
+
+  async rescanAleo(params: ResyncAleoProps): Promise<boolean> {
+    const { uniqueId, account } = params;
+    // stop sync
+    await stopSync();
+    // clear local data
+    await this.coinService
+      .getInstance(uniqueId)
+      .clearAddressLocalData(account.address);
+    // continue sync
+    await syncBlocks();
+    return true;
   }
 
   async sendAleoTransaction(params: AleoSendTxProps): Promise<Transaction> {

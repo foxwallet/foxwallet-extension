@@ -12,6 +12,8 @@ import {
   RequestFinfishProps,
   GetSelectedUniqueIdProps,
   SetSelectedUniqueIdProps,
+  ResyncAleoProps,
+  ImportPrivateKeyProps,
 } from "../../scripts/background/servers/IWalletServer";
 import {
   type DisplayWallet,
@@ -30,6 +32,7 @@ import { logger } from "./logger";
 import { type IPort, Port } from "./port";
 import { AleoTransaction } from "core/coins/ALEO/types/Tranaction";
 import { nanoid } from "nanoid";
+import { CoinType } from "core/types";
 
 export interface IClient {
   _connect: () => void;
@@ -150,6 +153,12 @@ export class PopupServerClient implements IClient, IPopupServer {
     return await this.#send("addAccount", params);
   }
 
+  async importPrivateKey<T extends CoinType>(
+    params: ImportPrivateKeyProps<T>,
+  ): Promise<DisplayWallet> {
+    return await this.#send("importPrivateKey", params);
+  }
+
   async getSelectedAccount(
     params: GetSelectedAccountProps,
   ): Promise<SelectedAccount | null> {
@@ -176,6 +185,10 @@ export class PopupServerClient implements IClient, IPopupServer {
 
   async getAllWallet(): Promise<DisplayKeyring> {
     return await this.#send("getAllWallet", {});
+  }
+
+  async rescanAleo(params: ResyncAleoProps): Promise<boolean> {
+    return await this.#send("rescanAleo", params);
   }
 
   async sendAleoTransaction(params: AleoSendTxProps): Promise<AleoTransaction> {

@@ -1,6 +1,7 @@
 import { CoinType } from "core/types";
 import { type ServerPayload } from "../../../common/types/message";
 import {
+  DisplayAccount,
   DisplayKeyring,
   DisplayWallet,
   SelectedAccount,
@@ -19,6 +20,7 @@ import {
   AleoRequestDeploymentParams,
 } from "core/coins/ALEO/types/Deployment";
 import { SiteInfo } from "@/scripts/content/host";
+import { ImportPrivateKeyTypeMap } from "core/types/CoinBasic";
 
 export type PopupServerMethod = keyof IPopupServer;
 
@@ -42,6 +44,14 @@ export interface AddAccountProps {
   accountId: string;
 }
 
+export interface ImportPrivateKeyProps<T extends CoinType> {
+  walletId: string;
+  walletName: string;
+  coinType: T;
+  privateKey: string;
+  privateKeyType: ImportPrivateKeyTypeMap[T];
+}
+
 export interface GetSelectedAccountProps {
   coinType: CoinType;
 }
@@ -61,6 +71,11 @@ export interface GetSelectedUniqueIdProps {
 
 export interface SetSelectedUniqueIdProps {
   uniqueId: ChainUniqueId;
+}
+
+export interface ResyncAleoProps {
+  uniqueId: ChainUniqueId;
+  account: DisplayAccount;
 }
 
 // export enum SerializeType {
@@ -129,6 +144,10 @@ export interface IPopupServer {
 
   addAccount: (params: AddAccountProps) => Promise<DisplayWallet>;
 
+  importPrivateKey<T extends CoinType>(
+    params: ImportPrivateKeyProps<T>,
+  ): Promise<DisplayWallet>;
+
   getSelectedAccount(
     params: GetSelectedAccountProps,
   ): Promise<SelectedAccount | null>;
@@ -140,6 +159,8 @@ export interface IPopupServer {
   setSelectedUniqueId(params: SetSelectedUniqueIdProps): Promise<ChainUniqueId>;
 
   getAllWallet: () => Promise<DisplayKeyring>;
+
+  rescanAleo(params: ResyncAleoProps): Promise<boolean>;
 
   sendAleoTransaction(params: AleoSendTxProps): Promise<AleoTransaction>;
 

@@ -11,7 +11,7 @@ import {
   AleoTxAddressType,
 } from "core/coins/ALEO/types/History";
 import { AleoTxStatus } from "core/coins/ALEO/types/Tranaction";
-import { useCallback } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Tabs,
@@ -24,11 +24,29 @@ import {
 import { useSyncProgress } from "@/hooks/useSyncProgress";
 import { WalletTab } from "./WalletTab";
 import { SettingTab } from "./SettingTab";
+import { useLocation } from "react-router-dom";
 
-function OnboardHomeScreen() {
+function MainScreen() {
+  const location = useLocation();
+
+  // 获取 URL 中的 Tab 索引
+  const tabIndex = parseInt(
+    new URLSearchParams(location.search).get("tab") || "0",
+  );
+
+  const navigate = useNavigate();
+  const handleTabsChange = useCallback((index: number) => {
+    navigate(`?tab=${index}`);
+  }, []);
+
   return (
     <Flex flexDirection={"column"} flex={1} alignItems={"stretch"}>
-      <Tabs variant={"unstyled"} flex={1}>
+      <Tabs
+        variant={"unstyled"}
+        flex={1}
+        defaultIndex={tabIndex}
+        onChange={handleTabsChange}
+      >
         <TabPanels>
           <WalletTab />
           <SettingTab />
@@ -40,10 +58,20 @@ function OnboardHomeScreen() {
           right={0}
           height={50}
         >
-          <Tab flex={1} justifyContent={"center"} alignItems={"center"}>
+          <Tab
+            flex={1}
+            justifyContent={"center"}
+            alignItems={"center"}
+            key={"wallet"}
+          >
             Wallet
           </Tab>
-          <Tab flex={1} justifyContent={"center"} alignItems={"center"}>
+          <Tab
+            flex={1}
+            justifyContent={"center"}
+            alignItems={"center"}
+            key={"setting"}
+          >
             Settings
           </Tab>
         </TabList>
@@ -52,4 +80,4 @@ function OnboardHomeScreen() {
   );
 }
 
-export default OnboardHomeScreen;
+export default MainScreen;

@@ -1,1 +1,34 @@
-{}
+{
+  "Setting": {
+    "ManageWallet": {
+      "title": "Wallet",
+      "create": "Create Wallet"
+    },
+    "CreateWallet": {
+      "selectType": "Select Type",
+      "createMnemonic": "Create new mnemonic",
+      "importMnemonic": "Import mnemonic",
+      "importPrivateKey": "Import private key"
+    },
+    "CreateMnemonic": {
+      "title": "Create Mnemonic"
+    },
+    "ImportMnemonic": {
+      "title": "Import Mnemonic"
+    },
+    "ImportPrivateKey": {
+      "title": "Import Private Key"
+    }
+  },
+  "Onboard": {
+    "CreateWallet": {
+      "walletName": "Wallet Name",
+      "walletNamePlaceholder": "Enter wallet name",
+      "dupWalletName": "Duplicate wallet name"
+    }
+  },
+  "Common": {
+    "confirm": "Confirm",
+    "cancel": "Cancel"
+  }
+}

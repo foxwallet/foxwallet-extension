@@ -28,6 +28,19 @@ class AleoBasic extends CoinBasic<CoinType.ALEO> {
     }
   }
 
+  public isValidPrivateKey(
+    privateKey: string,
+    pkType: AleoImportPKType,
+  ): boolean {
+    try {
+      const pkObj = PrivateKey.from_string(privateKey);
+      return !!pkObj;
+    } catch (err) {
+      logger.log("===> isValidPrivateKey failed: ", err);
+      return false;
+    }
+  }
+
   public serializeBuffer(keyBuffer: Buffer): string {
     return `${ALEO_PRIVATE_PREFIX}${bs58Encode(keyBuffer)}`;
   }
@@ -53,22 +66,22 @@ class AleoBasic extends CoinBasic<CoinType.ALEO> {
     }
   }
 
-  public deriveAleoViewKey(
-    privateKey: Buffer,
-    option: AleoAccountOption,
+  public deriveAccount(
+    privateKey: string,
+    pkType: AleoImportPKType,
   ): {
     viewKey: string;
     address: string;
+    publicKey: string;
   } {
-    const pk = PrivateKey.from_string(
-      `${ALEO_PRIVATE_PREFIX}${bs58Encode(privateKey)}`,
-    );
+    const pk = PrivateKey.from_string(privateKey);
 
     const viewKey = pk.to_view_key().to_string();
     const address = pk.to_address().to_string();
     return {
       viewKey,
       address,
+      publicKey: "",
     };
   }
 
@@ -78,10 +91,6 @@ class AleoBasic extends CoinBasic<CoinType.ALEO> {
         return privateKey;
       }
     }
-  }
-
-  public getPrivateKeyForSign(privateKey: string) {
-    return privateKey;
   }
 }
 

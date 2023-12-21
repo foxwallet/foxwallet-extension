@@ -959,6 +959,10 @@ export class AleoService {
     await this.aleoStorage.removeAddressLocalTx(this.chainId, address, localId);
   }
 
+  async clearAddressLocalData(adderss: string) {
+    await this.aleoStorage.clearAddressLocalData(this.chainId, adderss);
+  }
+
   formatRequestTransactionInputsAndFee = async (
     address: string,
     inputs: InputItem[],
