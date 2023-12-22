@@ -21,6 +21,6 @@ dist-ssr
 
 coverage/
 env/
-@aleohq/aleo_wasm/target
-@aleohq/aleo_wasm/pkg
-@aleohq/aleo_wasm/pkg-parallel
+**/target
+**/pkg
+**/pkg-parallel
