@@ -7,15 +7,15 @@
   ],
   "license": "GPL-3.0",
   "type": "module",
-  "main": "./dist/index.js",
-  "browser": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./src/index.js",
+  "browser": "./src/index.js",
+  "types": "./src/index.d.ts",
   "exports": {
-    ".": "./dist/index.js",
-    "./worker.js": "./dist/worker.js"
+    ".": "./src/index.js",
+    "./worker.js": "./src/worker.js"
   },
   "files": [
-    "dist",
+    "src",
     "LICENSE.md",
     "README.md"
   ],
@@ -34,7 +34,7 @@
   },
   "homepage": "https://github.com/AleoHQ/sdk#readme",
   "scripts": {
-    "build": "rimraf dist && rollup -c rollup.config.js && cpr js/types dist && rimraf dist/wasm*",
+    "build": "rimraf src && rollup -c rollup.config.js && cpr js/types src && rimraf src/wasm*",
     "prepublish": "yarn build",
     "test": "node test.js"
   },
