@@ -4,7 +4,7 @@ import { useCoinService } from "@/hooks/useCoinService";
 import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { useTxHistory } from "@/hooks/useTxHistory";
 import { Content } from "@/layouts/Content";
-import { Button, Flex, Text } from "@chakra-ui/react";
+import { Button, Flex } from "@chakra-ui/react";
 import { NATIVE_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
 import {
   AleoHistoryItem,
@@ -12,11 +12,13 @@ import {
   AleoTxAddressType,
 } from "core/coins/ALEO/types/History";
 import { AleoTxStatus } from "core/coins/ALEO/types/Tranaction";
-import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { TabPanel } from "@chakra-ui/react";
 import { useSyncProgress } from "@/hooks/useSyncProgress";
 import { NativeToken } from "core/types/Token";
+import { AccountInfoHeader } from "@/components/Wallet/AccountInfoHeader";
+import { BackupReminderView } from "@/components/Wallet/BackupReminderView";
+import { HomeTabList } from "@/components/Wallet/HomeTabList";
 
 const HistoryItem = (props: {
   item: AleoHistoryItem;
@@ -79,18 +81,11 @@ export const WalletTab = () => {
     4000,
   );
 
-  const haveBalance = !loadingBalance && !!balance?.total && balance.total > 0;
-
-  const onClickSend = useCallback(() => {
-    navigate("/send_aleo");
-  }, [navigate]);
-
-  const onClickReceive = useCallback(() => {
-    navigate("/receive");
-  }, [navigate]);
-
   return (
     <TabPanel>
+      <AccountInfoHeader />
+      <BackupReminderView />
+      <HomeTabList />
       <Content>
         <Flex>
           Progress:&nbsp;
@@ -121,19 +116,7 @@ export const WalletTab = () => {
           />
         </Flex>
         {!!error && <Flex>{error.toString()}</Flex>}
-        <Flex>
-          <Button
-            isDisabled={!haveBalance}
-            onClick={onClickSend}
-            mr="2"
-            flex="1"
-          >
-            Send
-          </Button>
-          <Button onClick={onClickReceive} ml="4" flex={"1"}>
-            Receive
-          </Button>
-        </Flex>
+
         {history && (
           <Flex maxH={400} overflowY={"auto"} direction={"column"}>
             {history.map((item) => (
