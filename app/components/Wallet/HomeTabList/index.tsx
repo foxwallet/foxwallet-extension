@@ -8,7 +8,17 @@ export const HomeTabList = () => {
         <Tab mr={6}>Asset</Tab>
       </TabList>
       <TabIndicator height="2px" bg="black" borderRadius="1px" />
-      <TabPanels>
+      <TabPanels
+        maxH={258}
+        overflowY="auto"
+        sx={{
+          scrollbarWidth: "none",
+          "::-webkit-scrollbar": {
+            display: "none",
+          },
+        }}
+        pt={2.5}
+      >
         <AssetList />
       </TabPanels>
     </Tabs>

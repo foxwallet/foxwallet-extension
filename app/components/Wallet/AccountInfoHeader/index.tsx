@@ -39,18 +39,6 @@ export const AccountInfoHeader = () => {
         icon: <IconSend />,
         onPress: () => navigate("/send_aleo"),
       },
-      {
-        title: "Buy",
-        icon: <IconBuyDisabled />,
-        disabled: true,
-        onPress: () => {},
-      },
-      {
-        title: "Swap",
-        icon: <IconSwapDisabled />,
-        disabled: true,
-        onPress: () => {},
-      },
     ],
     [navigate],
   );
@@ -106,7 +94,7 @@ export const AccountInfoHeader = () => {
         >
           {selectedAccount.address}
         </Text>
-        <Box ml={1} as="button" onClick={onCopyAddress}>
+        <Box as="button" onClick={onCopyAddress}>
           <IconCopy w={3} h={3} />
         </Box>
       </Flex>
@@ -130,7 +118,7 @@ export const AccountInfoHeader = () => {
           )}
         </Box>
       </Flex>
-      <Flex direction={"row"} align={"center"} justify={"space-between"} mt={6}>
+      <Flex direction={"row"} align={"center"} justify={"space-around"} mt={6}>
         {options.map(renderActionItem)}
       </Flex>
     </Box>

@@ -66,69 +66,11 @@ const HistoryItem = (props: {
 };
 
 export const WalletTab = () => {
-  const navigate = useNavigate();
-  const { selectedAccount, uniqueId } = useCurrAccount();
-  const { nativeCurrency } = useCoinService(uniqueId);
-  const { balance, loadingBalance, error } = useBalance(
-    uniqueId,
-    selectedAccount.address,
-    4000,
-  );
-  const { progress } = useSyncProgress(uniqueId, selectedAccount.address);
-  const { history, loading: loadingHistory } = useTxHistory(
-    uniqueId,
-    selectedAccount.address,
-    4000,
-  );
-
   return (
     <TabPanel>
       <AccountInfoHeader />
       <BackupReminderView />
       <HomeTabList />
-      <Content>
-        <Flex>
-          Progress:&nbsp;
-          {progress}
-        </Flex>
-        <Flex>
-          Total balance:&nbsp;
-          <TokenNum
-            amount={balance?.total || 0n}
-            decimals={nativeCurrency.decimals}
-            symbol={nativeCurrency.symbol}
-          />
-        </Flex>
-        <Flex>
-          Private balance:&nbsp;
-          <TokenNum
-            amount={balance?.privateBalance || 0n}
-            decimals={nativeCurrency.decimals}
-            symbol={nativeCurrency.symbol}
-          />
-        </Flex>
-        <Flex>
-          Public balance:&nbsp;
-          <TokenNum
-            amount={balance?.publicBalance || 0n}
-            decimals={nativeCurrency.decimals}
-            symbol={nativeCurrency.symbol}
-          />
-        </Flex>
-        {!!error && <Flex>{error.toString()}</Flex>}
-
-        {history && (
-          <Flex maxH={400} overflowY={"auto"} direction={"column"}>
-            {history.map((item) => (
-              <HistoryItem
-                item={item}
-                nativeCurrency={nativeCurrency}
-                key={item.txId || (item as AleoLocalHistoryItem).localId}
-              />
-            ))}
-          </Flex>
-        )}
-      </Content>
     </TabPanel>
   );
 };
