@@ -1,30 +1,16 @@
-import { TokenNum } from "@/components/Wallet/TokenNum";
-import { useBalance } from "@/hooks/useBalance";
-import { useCoinService } from "@/hooks/useCoinService";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
-import { useTxHistory } from "@/hooks/useTxHistory";
-import { Content } from "@/layouts/Content";
-import { Button, Flex, Text } from "@chakra-ui/react";
-import { NATIVE_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
-import {
-  AleoHistoryItem,
-  AleoTxAddressType,
-} from "core/coins/ALEO/types/History";
-import { AleoTxStatus } from "core/coins/ALEO/types/Tranaction";
-import { useCallback, useMemo, useState } from "react";
+import { Flex, Text, UseTabProps, useTab } from "@chakra-ui/react";
+import { useCallback, forwardRef } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Tabs,
-  TabList,
-  Tab,
-  TabPanels,
-  TabPanel,
-  TabIndicator,
-} from "@chakra-ui/react";
-import { useSyncProgress } from "@/hooks/useSyncProgress";
+import { Tabs, TabList, TabPanels } from "@chakra-ui/react";
 import { WalletTab } from "./WalletTab";
 import { SettingTab } from "./SettingTab";
 import { useLocation } from "react-router-dom";
+import {
+  IconSettingSelected,
+  IconSettingUnselected,
+  IconWalletSelected,
+  IconWalletUnselected,
+} from "@/components/Custom/Icon";
 
 function MainScreen() {
   const location = useLocation();
@@ -47,33 +33,34 @@ function MainScreen() {
         defaultIndex={tabIndex}
         onChange={handleTabsChange}
       >
-        <TabPanels>
+        <TabPanels h={"100%"}>
           <WalletTab />
           <SettingTab />
         </TabPanels>
         <TabList
-          position={"absolute"}
+          sx={{ position: "sticky" }}
           bottom={0}
           left={0}
           right={0}
-          height={50}
+          height={59}
+          bg={"white"}
+          borderTopWidth={1}
+          borderColor={"#E6E8EC"}
         >
-          <Tab
-            flex={1}
-            justifyContent={"center"}
-            alignItems={"center"}
+          <CustomTab
             key={"wallet"}
+            selectedIcon={<IconWalletSelected />}
+            unselectedIcon={<IconWalletUnselected />}
           >
             Wallet
-          </Tab>
-          <Tab
-            flex={1}
-            justifyContent={"center"}
-            alignItems={"center"}
+          </CustomTab>
+          <CustomTab
             key={"setting"}
+            selectedIcon={<IconSettingSelected />}
+            unselectedIcon={<IconSettingUnselected />}
           >
-            Settings
-          </Tab>
+            Setting
+          </CustomTab>
         </TabList>
       </Tabs>
     </Flex>
@@ -81,3 +68,25 @@ function MainScreen() {
 }
 
 export default MainScreen;
+
+const CustomTab = forwardRef<any, any>((props, ref) => {
+  const tabProps: any = useTab({ ...props, ref });
+  const { selectedIcon, unselectedIcon } = tabProps;
+  const isSelected = !!tabProps["aria-selected"];
+
+  return (
+    <Flex
+      {...tabProps}
+      flex={1}
+      direction={"column"}
+      align={"center"}
+      justify={"center"}
+      as={"button"}
+    >
+      {isSelected ? selectedIcon : unselectedIcon}
+      <Text fontWeight={500} color={"#000"} fontSize={12}>
+        {tabProps.children}
+      </Text>
+    </Flex>
+  );
+});
