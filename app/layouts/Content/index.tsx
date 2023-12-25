@@ -3,7 +3,7 @@ import { Flex } from "@chakra-ui/react";
 
 export const Content = (props: PropsWithChildren) => {
   return (
-    <Flex direction={"column"} flex={1} px="6" py={4}>
+    <Flex direction={"column"} flex={1} px={5} py={4}>
       {props.children}
     </Flex>
   );
