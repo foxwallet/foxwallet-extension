@@ -15,6 +15,7 @@ import { useBalance } from "@/hooks/useBalance";
 import React, { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
+import MiddleEllipsis from "@/components/Custom/MiddleEllipsis";
 
 export const AccountInfoHeader = () => {
   const navigate = useNavigate();
@@ -85,12 +86,26 @@ export const AccountInfoHeader = () => {
           color={"#777E90"}
           textOverflow={"ellipsis"}
         >
-          {selectedAccount.address}
+          <MiddleEllipsis>
+            <span className="ellipseMe">{selectedAccount.address}</span>
+          </MiddleEllipsis>
         </Text>
         <Box as="button" onClick={onCopyAddress}>
           <IconCopy w={3} h={3} />
         </Box>
       </Flex>
+      {/* for test */}
+      <div style={{ width: "350px", whiteSpace: "nowrap" }}>
+        <MiddleEllipsis>
+          <span>
+            Don't ellipse me.{" "}
+            <span className="ellipseMe">
+              I am some long text that should be ellipsed in the middle because
+              the end contains important stuff.
+            </span>
+          </span>
+        </MiddleEllipsis>
+      </div>
       <Flex direction={"row"} align={"center"} mt={2}>
         <Text fontSize={24} fontWeight={600}>
           {showBalance ? (
