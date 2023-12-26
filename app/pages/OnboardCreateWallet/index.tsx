@@ -106,6 +106,10 @@ function OnboardCreateWalletScreen() {
           <ConfirmMnemonicStep
             mnemonic={mnemonic}
             onConfirm={() => {
+              dispatch.account.changeWalletBackupedMnemonic({
+                walletId: walletIdRef.current,
+                backupedMnemonic: true,
+              });
               navigate("/main");
             }}
           />
