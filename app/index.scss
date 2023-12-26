@@ -1,4 +1,3 @@
-@import "./common/styles/tailwind.css";
 @import "./common//styles/font.css";
 @import "./common/styles/scrollbar.scss";
 
@@ -6,8 +5,35 @@ html {
   overflow: hidden;
 }
 
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.multiline-ellipsis-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.multiline-ellipsis-3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
 body {
-  @apply no-scrollbar;
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+
+  /* 确保隐藏滚动条的 WebKit 浏览器样式也应用于 body */
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
   background-color: rgba(239, 238, 238, 0.05);
   position: relative;
   font-size: 14px;
