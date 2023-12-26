@@ -88,10 +88,7 @@ export default function OnboardImportWallet() {
         return true;
       }}
     >
-      <Body>
-        <OnboardProgress currStep={step} steps={ImportWalletSteps} />
-        {stepContent}
-      </Body>
+      <Body>{stepContent}</Body>
     </PageWithHeader>
   );
 }

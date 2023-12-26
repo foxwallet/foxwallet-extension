@@ -126,9 +126,7 @@ export const ImportMnemonicStep = ({ onConfirm }: Props) => {
 
   return (
     <Content>
-      <H6 mb="2" color={"gray.600"}>
-        {"Seed phrase"}
-      </H6>
+      <H6 mb="2">{"Seed phrase"}</H6>
       <Textarea
         value={mnemonic}
         onChange={onInputChange}
@@ -137,8 +135,7 @@ export const ImportMnemonicStep = ({ onConfirm }: Props) => {
         size="md"
         resize={"none"}
         h={"150"}
-        borderColor={`${showError ? "red.500" : "gray.50"}`}
-        borderWidth={1}
+        borderColor={showError ? "red.500" : undefined}
       />
       <Flex flexWrap={"wrap"}>
         {matchWords.map((item) => {
@@ -146,14 +143,14 @@ export const ImportMnemonicStep = ({ onConfirm }: Props) => {
             <Box
               key={item}
               borderRadius={"md"}
-              bg={"orange.100"}
+              bg={"green.100"}
               px={"2"}
               py={"1"}
               mr={"2"}
               mt={"2"}
               onClick={() => onReplaceLastWord(item)}
             >
-              <Text color={"orange.500"}>{item}</Text>
+              <Text color={"green.700"}>{item}</Text>
             </Box>
           );
         })}
