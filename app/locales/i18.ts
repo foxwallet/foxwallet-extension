@@ -20,33 +20,33 @@ import { logger } from "@/common/utils/logger";
 export enum SupportLanguages {
   EN = "en",
   ZH = "zh",
-  ES = "es",
-  ID = "id",
-  RU = "ru",
-  UK = "uk",
-  MY = "my", // 缅甸语 Burmese
-  TR = "tr", // 土耳其语 Turkish
-  VI = "vi", // 越南语 Vietnamese
-  BN = "bn", // 孟加拉语 Bengali
-  HI = "hi", // 印地语 Hindi
-  UR = "ur", // 乌尔都语 Urdu
-  DE = "de", // 德语 Deutsch
+  // ES = "es",
+  // ID = "id",
+  // RU = "ru",
+  // UK = "uk",
+  // MY = "my", // 缅甸语 Burmese
+  // TR = "tr", // 土耳其语 Turkish
+  // VI = "vi", // 越南语 Vietnamese
+  // BN = "bn", // 孟加拉语 Bengali
+  // HI = "hi", // 印地语 Hindi
+  // UR = "ur", // 乌尔都语 Urdu
+  // DE = "de", // 德语 Deutsch
 }
 
 export const LanguageLabels: { [key in SupportLanguages]: string } = {
   [SupportLanguages.EN]: "English",
   [SupportLanguages.ZH]: "简体中文",
-  [SupportLanguages.ES]: "Español",
-  [SupportLanguages.DE]: "Deutsch",
-  [SupportLanguages.ID]: "Bahasa Indonesia",
-  [SupportLanguages.RU]: "Русский",
-  [SupportLanguages.UK]: "Українська",
-  [SupportLanguages.MY]: "ဗမာ",
-  [SupportLanguages.TR]: "Türkçe",
-  [SupportLanguages.VI]: "Tiếng Việt",
-  [SupportLanguages.BN]: "বাংলা",
-  [SupportLanguages.HI]: "हिंदी",
-  [SupportLanguages.UR]: "اُردُو",
+  // [SupportLanguages.ES]: "Español",
+  // [SupportLanguages.DE]: "Deutsch",
+  // [SupportLanguages.ID]: "Bahasa Indonesia",
+  // [SupportLanguages.RU]: "Русский",
+  // [SupportLanguages.UK]: "Українська",
+  // [SupportLanguages.MY]: "ဗမာ",
+  // [SupportLanguages.TR]: "Türkçe",
+  // [SupportLanguages.VI]: "Tiếng Việt",
+  // [SupportLanguages.BN]: "বাংলা",
+  // [SupportLanguages.HI]: "हिंदी",
+  // [SupportLanguages.UR]: "اُردُو",
 };
 
 // the translations

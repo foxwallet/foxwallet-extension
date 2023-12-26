@@ -1,3 +1,4 @@
+import { Icon, chakra } from "@chakra-ui/react";
 import CheckCircle from "@/common/assets/image/icon_check_circle.svg";
 import CheckLine from "@/common/assets/image/icon_check_line.svg";
 import CloseLine from "@/common/assets/image/icon_close_line.svg";
@@ -7,7 +8,6 @@ import Eye from "@/common/assets/image/icon_eye_on.svg";
 import Left from "@/common/assets/image/icon_left.svg";
 import Logo from "@/common/assets/image/onboard_logo.svg";
 import PreventScreenshot from "@/common/assets/image/icon_prevent_screenshot.svg";
-import { chakra } from "@chakra-ui/react";
 import ArrowRight from "@/common/assets/image/icon_arrow_right.svg";
 import LogoNew from "@/common/assets/image/icon_logo.svg";
 import Copy from "@/common/assets/image/icon_copy.svg";
@@ -23,32 +23,28 @@ import WalletUnselected from "@/common/assets/image/icon_wallet_unselected.svg";
 import SettingSelected from "@/common/assets/image/icon_setting_selected.svg";
 import SettingUnselected from "@/common/assets/image/icon_setting_unselected.svg";
 import Aleo from "@/common/assets/image/icon_aleo.svg";
+import FoxWallet from "@/common/assets/image/icon_foxwallet.svg";
+import ChevronLeft from "@/common/assets/image/icon_chevron_left.svg";
+import ChevronRight from "@/common/assets/image/icon_chevron_right.svg";
+import ChevronUp from "@/common/assets/image/icon_chevron_up.svg";
+import ChevronDown from "@/common/assets/image/icon_chevron_down.svg";
 
-// @ts-expect-error IconCheckCircle
 export const IconCheckCircle = chakra(CheckCircle);
 
-// @ts-expect-error IconCheckLine
 export const IconCheckLine = chakra(CheckLine);
 
-// @ts-expect-error IconCloseLine
 export const IconCloseLine = chakra(CloseLine);
 
-// @ts-expect-error IconEyeClose
 export const IconEyeClose = chakra(EyeClose);
 
-// @ts-expect-error IconEyeOn
 export const IconEyeOn = chakra(Eye);
 
-// @ts-expect-error IconLeft
 export const IconLeft = chakra(Left);
 
-// @ts-expect-error OnboardLogo
 export const OnboardLogo = chakra(Logo);
 
-// @ts-expect-error PreventScreenshot
 export const IconPreventScreenshot = chakra(PreventScreenshot);
 
-// @ts-expect-error CloseCircle
 export const IconCloseCircle = chakra(CloseCircle);
 
 export const IconArrowRight = chakra(ArrowRight);
@@ -66,3 +62,8 @@ export const IconWalletUnselected = chakra(WalletUnselected);
 export const IconSettingSelected = chakra(SettingSelected);
 export const IconSettingUnselected = chakra(SettingUnselected);
 export const IconAleo = chakra(Aleo);
+export const IconFoxWallet = chakra(FoxWallet);
+export const IconChevronLeft = chakra(ChevronLeft);
+export const IconChevronRight = chakra(ChevronRight);
+export const IconChevronUp = chakra(ChevronUp);
+export const IconChevronDown = chakra(ChevronDown);
