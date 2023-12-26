@@ -183,6 +183,14 @@ export class PopupServerClient implements IClient, IPopupServer {
     return await this.#send("setSelectedUniqueId", params);
   }
 
+  async getHDWallet(walletId: string): Promise<DisplayWallet> {
+    return await this.#send("getHDWallet", walletId);
+  }
+
+  async getSimpleWallet(walletId: string): Promise<DisplayWallet> {
+    return await this.#send("getSimpleWallet", walletId);
+  }
+
   async getAllWallet(): Promise<DisplayKeyring> {
     return await this.#send("getAllWallet", {});
   }

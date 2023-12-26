@@ -11,12 +11,16 @@ const ConnectDapp = lazy(async () => await import("../pages/ConnectDapp"));
 const RequestTx = lazy(async () => await import("../pages/RequestTx"));
 const SignMessage = lazy(async () => await import("../pages/SignMessage"));
 const Deployment = lazy(async () => await import("../pages/Deployment"));
+const TokenDetail = lazy(async () => await import("../pages/TokenDetail"));
 
 // SettingTab
 const ManageWallet = lazy(async () => await import("../pages/ManageWallet"));
 const CreateWallet = lazy(async () => await import("../pages/CreateWallet"));
 const CreateMnemonic = lazy(
   async () => await import("../pages/CreateMnemonic"),
+);
+const BackupMnemonic = lazy(
+  async () => await import("../pages/BackupMnemonic"),
 );
 const ImportMnemonic = lazy(
   async () => await import("../pages/ImportMnemonic"),
@@ -91,6 +95,10 @@ export const routesConfig: RouteObject[] = [
         element: <CreateMnemonic />,
       },
       {
+        path: "backup_mnemonic",
+        element: <BackupMnemonic />,
+      },
+      {
         path: "import_mnemonic",
         element: <ImportMnemonic />,
       },
@@ -101,6 +109,10 @@ export const routesConfig: RouteObject[] = [
       {
         path: "manage_language",
         element: <Language />,
+      },
+      {
+        path: "token_detail",
+        element: <TokenDetail />,
       },
     ],
   },

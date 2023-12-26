@@ -1,34 +1,38 @@
 import { Flex, Image, Box, Container } from "@chakra-ui/react";
 import { H5 } from "../../../common/theme/components/text";
 import { useNavigate } from "react-router-dom";
-import { IconLeft } from "../Icon";
+import { IconCloseLineBlack, IconLeft } from "../Icon";
 
-interface HeaderProps {
-  enableBack: boolean;
-  onBack?: () => boolean;
-  title: string;
+export enum HeaderLeftIconType {
+  Back,
+  Close,
 }
 
-export const Header = ({ enableBack, onBack, title }: HeaderProps) => {
+export interface HeaderProps {
+  enableBack?: boolean;
+  onBack?: () => boolean;
+  title: string;
+  backIconType?: HeaderLeftIconType;
+}
+
+export const Header = ({
+  enableBack = true,
+  onBack,
+  title,
+  backIconType = HeaderLeftIconType.Back,
+}: HeaderProps) => {
   const navigate = useNavigate();
   return (
     <Flex
       w={"full"}
-      mt={"1"}
-      py={"2"}
-      px={"4"}
+      py={3}
+      px={3}
       alignItems={"center"}
       justifyContent={"space-between"}
     >
       {enableBack ? (
         <Flex
-          bg={"gray.100"}
-          w={"6"}
-          h={"6"}
-          justifyContent={"center"}
-          alignItems={"center"}
-          borderRadius={"12"}
-          cursor={"pointer"}
+          as={"button"}
           onClick={() => {
             if (onBack) {
               const res = onBack();
@@ -40,7 +44,11 @@ export const Header = ({ enableBack, onBack, title }: HeaderProps) => {
             }
           }}
         >
-          <IconLeft w={"3"} h={"3"} />
+          {backIconType === HeaderLeftIconType.Back ? (
+            <IconLeft />
+          ) : (
+            <IconCloseLineBlack />
+          )}
         </Flex>
       ) : (
         <Box w={"6"} h={"6"} />

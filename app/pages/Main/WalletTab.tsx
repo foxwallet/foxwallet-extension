@@ -69,6 +69,7 @@ export const WalletTab = () => {
   return (
     <TabPanel>
       <AccountInfoHeader />
+      {/* todo */}
       <BackupReminderView />
       <HomeTabList />
     </TabPanel>
