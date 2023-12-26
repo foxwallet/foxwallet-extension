@@ -4,8 +4,10 @@ import { TokenNum } from "../TokenNum";
 import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { useCoinService } from "@/hooks/useCoinService";
 import { useBalance } from "@/hooks/useBalance";
+import { useNavigate } from "react-router-dom";
 
 export const AssetList = () => {
+  const navigate = useNavigate();
   const { selectedAccount, uniqueId } = useCurrAccount();
   const { nativeCurrency } = useCoinService(uniqueId);
   const { balance } = useBalance(uniqueId, selectedAccount.address, 4000);
@@ -15,9 +17,12 @@ export const AssetList = () => {
       <Flex
         w={"100%"}
         as="button"
-        py={2}
+        py={3}
+        px={5}
         align={"center"}
         justify={"space-between"}
+        _hover={{ background: "#F5F5F5" }}
+        onClick={() => navigate("/token_detail")}
       >
         <Flex align={"center"}>
           <IconAleo />

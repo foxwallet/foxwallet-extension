@@ -3,8 +3,8 @@ import { AssetList } from "../AssetList";
 
 export const HomeTabList = () => {
   return (
-    <Tabs variant={"unstyled"} px={5} py={3}>
-      <TabList>
+    <Tabs variant={"unstyled"} py={3}>
+      <TabList px={5}>
         <Tab mr={6}>Asset</Tab>
       </TabList>
       <TabIndicator height="2px" bg="black" borderRadius="1px" />

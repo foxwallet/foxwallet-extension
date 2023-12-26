@@ -11,9 +11,12 @@ type SelectedAccount = DisplayAccount & {
   coinType: CoinType;
 };
 
+type WalletBackupedMnemonicMap = { [walletId in string]: boolean };
+
 interface AccountModel {
   selectedAccount: SelectedAccount;
   selectedUniqueId: ChainUniqueId;
+  walletBackupMnemonicMap: WalletBackupedMnemonicMap;
 }
 
 const DEFAULT_ACCOUNT_MODEL: AccountModel = {
@@ -26,6 +29,7 @@ const DEFAULT_ACCOUNT_MODEL: AccountModel = {
     coinType: CoinType.ALEO,
   },
   selectedUniqueId: DEFAULT_UNIQUE_ID_MAP[CoinType.ALEO],
+  walletBackupMnemonicMap: {},
 };
 
 export const account = createModel<RootModel>()({
@@ -44,6 +48,19 @@ export const account = createModel<RootModel>()({
       return {
         ...state,
         selectedUniqueId: payload.uniqueId,
+      };
+    },
+    changeWalletBackupedMnemonic(
+      state,
+      payload: { walletId: string; backupedMnemonic: boolean },
+    ) {
+      const { walletId, backupedMnemonic } = payload;
+      return {
+        ...state,
+        walletBackupMnemonicMap: {
+          ...state.walletBackupMnemonicMap,
+          [walletId]: backupedMnemonic,
+        },
       };
     },
   },
