@@ -30,7 +30,7 @@ export function BaseCheckbox(props: CheckboxProps) {
           w="4"
           h="4"
           borderRadius={"50%"}
-          borderColor={checked ? "transparent" : "orange.500"}
+          borderColor={checked ? "transparent" : "green.500"}
           borderWidth={"2px"}
           position={"absolute"}
         />
