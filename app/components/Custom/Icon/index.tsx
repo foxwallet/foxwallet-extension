@@ -23,6 +23,11 @@ import WalletUnselected from "@/common/assets/image/icon_wallet_unselected.svg";
 import SettingSelected from "@/common/assets/image/icon_setting_selected.svg";
 import SettingUnselected from "@/common/assets/image/icon_setting_unselected.svg";
 import Aleo from "@/common/assets/image/icon_aleo.svg";
+import CloseLineBlack from "@/common/assets/image/icon_close_black.svg";
+import Warning from "@/common/assets/image/icon_warning.svg";
+import Share from "@/common/assets/image/icon_share.svg";
+import CopyBlack from "@/common/assets/image/icon_copy_black.svg";
+import CheckLineBlack from "@/common/assets/image/icon_check_line_black.svg";
 
 // @ts-expect-error IconCheckCircle
 export const IconCheckCircle = chakra(CheckCircle);
@@ -66,3 +71,8 @@ export const IconWalletUnselected = chakra(WalletUnselected);
 export const IconSettingSelected = chakra(SettingSelected);
 export const IconSettingUnselected = chakra(SettingUnselected);
 export const IconAleo = chakra(Aleo);
+export const IconCloseLineBlack = chakra(CloseLineBlack);
+export const IconWarning = chakra(Warning);
+export const IconShare = chakra(Share);
+export const IconCopyBlack = chakra(CopyBlack);
+export const IconCheckLineBlack = chakra(CheckLineBlack);

@@ -1,21 +1,20 @@
 import {
   IconArrowRight,
-  IconBuyDisabled,
   IconCopy,
   IconEyeClose,
   IconEyeOn,
   IconLogo,
   IconReceive,
   IconSend,
-  IconSwapDisabled,
 } from "@/components/Custom/Icon";
 import { useCurrAccount } from "@/hooks/useCurrAccount";
-import { Box, Flex, Text, useClipboard, useToast } from "@chakra-ui/react";
+import { Box, Flex, Text, useClipboard } from "@chakra-ui/react";
 import { TokenNum } from "../TokenNum";
 import { useCoinService } from "@/hooks/useCoinService";
 import { useBalance } from "@/hooks/useBalance";
 import React, { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
 
 export const AccountInfoHeader = () => {
   const navigate = useNavigate();
@@ -23,8 +22,8 @@ export const AccountInfoHeader = () => {
   const { nativeCurrency } = useCoinService(uniqueId);
   const { balance } = useBalance(uniqueId, selectedAccount.address, 4000);
 
+  const { showToast } = useCopyToast();
   const { onCopy } = useClipboard(selectedAccount.address);
-  const toast = useToast();
   const [showBalance, setShowBalance] = useState(true);
 
   const options: ActionButtonProps[] = useMemo(
@@ -45,14 +44,8 @@ export const AccountInfoHeader = () => {
 
   const onCopyAddress = useCallback(() => {
     onCopy();
-    toast({
-      title: "Account created.",
-      description: "We've created your account for you.",
-      status: "success",
-      duration: 1000,
-      isClosable: true,
-    });
-  }, [toast, onCopy]);
+    showToast();
+  }, [showToast, onCopy]);
 
   const renderActionItem = useCallback((item: ActionButtonProps) => {
     return <ActionButton {...item} />;

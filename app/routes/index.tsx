@@ -11,6 +11,7 @@ const ConnectDapp = lazy(async () => await import("../pages/ConnectDapp"));
 const RequestTx = lazy(async () => await import("../pages/RequestTx"));
 const SignMessage = lazy(async () => await import("../pages/SignMessage"));
 const Deployment = lazy(async () => await import("../pages/Deployment"));
+const TokenDetail = lazy(async () => await import("../pages/TokenDetail"));
 
 // SettingTab
 const ManageWallet = lazy(async () => await import("../pages/ManageWallet"));
@@ -101,6 +102,10 @@ export const routesConfig: RouteObject[] = [
       {
         path: "manage_language",
         element: <Language />,
+      },
+      {
+        path: "token_detail",
+        element: <TokenDetail />,
       },
     ],
   },

@@ -1,6 +1,6 @@
-import React, { type PropsWithChildren } from "react";
+import { type PropsWithChildren } from "react";
 import { Flex } from "@chakra-ui/react";
-import { Header } from "../../components/Custom/Header";
+import { Header, HeaderProps } from "../../components/Custom/Header";
 
 export const Page = (props: PropsWithChildren) => {
   return (
@@ -10,11 +10,7 @@ export const Page = (props: PropsWithChildren) => {
   );
 };
 
-type PageWithHeaderProps = {
-  enableBack: boolean;
-  onBack?: () => boolean;
-  title: string;
-} & PropsWithChildren;
+type PageWithHeaderProps = HeaderProps & PropsWithChildren;
 
 export const PageWithHeader = (props: PageWithHeaderProps) => {
   return (
