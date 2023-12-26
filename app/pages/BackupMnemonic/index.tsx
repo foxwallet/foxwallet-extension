@@ -90,7 +90,7 @@ const BackupMnemonicScreen = () => {
 
   const title = useMemo(() => {
     if (step === 1) return "Backup Seed Phrase";
-    return "Seed Phrase Verificatio";
+    return "Seed Phrase Verification";
   }, [step]);
 
   return (

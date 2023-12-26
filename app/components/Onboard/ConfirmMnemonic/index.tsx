@@ -23,7 +23,6 @@ import { logger } from "../../../common/utils/logger";
 import { nanoid } from "nanoid";
 import { DisplayWallet } from "../../../scripts/background/store/vault/types/keyring";
 import { Content } from "../../../layouts/Content";
-import { showMnemonicWarningDialog } from "../MnemonicWarningDialog";
 import { shuffle } from "../../../common/utils/array";
 import { useDataRef } from "../../../hooks/useDataRef";
 import { IconCloseCircle } from "../../Custom/Icon";

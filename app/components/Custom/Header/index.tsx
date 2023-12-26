@@ -25,7 +25,8 @@ export const Header = ({
   return (
     <Flex
       w={"full"}
-      py={3}
+      pt={4}
+      pb={2}
       px={3}
       alignItems={"center"}
       justifyContent={"space-between"}
@@ -45,20 +46,20 @@ export const Header = ({
           }}
         >
           {backIconType === HeaderLeftIconType.Back ? (
-            <IconLeft />
+            <IconLeft w={7} h={7} />
           ) : (
-            <IconCloseLineBlack />
+            <IconCloseLineBlack w={7} h={7} />
           )}
         </Flex>
       ) : (
-        <Box w={"6"} h={"6"} />
+        <Box w={"7"} h={"7"} />
       )}
       <H5
         whiteSpace={"nowrap"}
         overflow={"hidden"}
         textOverflow={"ellipsis"}
         mx={"2"}
-        fontWeight={"normal"}
+        fontWeight={"semibold"}
       >
         {title}
       </H5>

@@ -81,7 +81,7 @@ function OnboardHomeScreen() {
                   )
                 }
               >
-                <L1>{LanguageLabels[language]}</L1>
+                <L1 ml={2}>{LanguageLabels[language]}</L1>
               </MenuButton>
               <MenuList
                 borderStyle={"solid"}
@@ -143,7 +143,7 @@ function OnboardHomeScreen() {
           <B3
             textDecorationLine={"underline"}
             textDecorationColor={"green.500"}
-            color="green.500"
+            color="green.400"
             onClick={() => {
               browser.tabs.create({
                 url: "https://hc.foxwallet.com/terms-of-service",
@@ -156,7 +156,7 @@ function OnboardHomeScreen() {
           <B3
             textDecorationLine={"underline"}
             textDecorationColor={"green.500"}
-            color="green.500"
+            color="green.400"
             onClick={() => {
               browser.tabs.create({
                 url: "https://hc.foxwallet.com/privacy-policy",

@@ -21,7 +21,11 @@ import { useDispatch } from "react-redux";
 import { usePopupDispatch } from "@/hooks/useStore";
 import { CoinType } from "core/types";
 
-const CreateWalletSteps = ["Create", "Backup", "Confirm"];
+const CreateWalletSteps = [
+  "Create Wallet",
+  "Backup Mnemonic",
+  "Confirm Mnemonic",
+];
 
 function OnboardCreateWalletScreen() {
   const [step, setStep] = useState(1);
@@ -52,10 +56,7 @@ function OnboardCreateWalletScreen() {
         ...account,
       },
     });
-    const { confirmed } = await showMnemonicWarningDialog();
-    if (confirmed) {
-      setMnemonic(wallet.mnemonic ?? "");
-    }
+    setMnemonic(wallet.mnemonic ?? "");
   }, []);
 
   const regenerateWallet = useCallback(async () => {
@@ -115,7 +116,7 @@ function OnboardCreateWalletScreen() {
 
   return (
     <PageWithHeader
-      title="Create Wallet"
+      title={CreateWalletSteps[step - 1]}
       enableBack={step !== 2}
       onBack={() => {
         if (step > 1) {
@@ -126,10 +127,7 @@ function OnboardCreateWalletScreen() {
         }
       }}
     >
-      <Body>
-        <OnboardProgress currStep={step} steps={CreateWalletSteps} />
-        {stepContent}
-      </Body>
+      <Body>{stepContent}</Body>
     </PageWithHeader>
   );
 }

@@ -15,18 +15,17 @@ export const baseStyle = definePartsStyle({
 export const variantFilled = definePartsStyle((props) => {
   return {
     field: {
-      bg: mode("gray.50", "gray.800")(props),
-      border: "none",
+      bg: mode("white", "black")(props),
+      borderStyle: "solid",
+      borderWidth: "2px",
+      borderColor: mode("black", "white")(props),
       outline: "none",
       _placeholder: {
         color: mode("gray.300", "gray.400")(props),
         fontWeight: "bold",
       },
-      _hover: {
-        bg: mode("gray.100", "gray.700")(props),
-      },
       _invalid: {
-        border: "1px solid",
+        border: "2px solid",
         borderColor: "red.400",
       },
       _focus: {

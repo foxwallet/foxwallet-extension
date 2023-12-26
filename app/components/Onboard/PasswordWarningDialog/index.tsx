@@ -30,7 +30,7 @@ const PasswordWarningDialog = (props: Props) => {
           <Button flex={1} mr="2" onClick={onCancel}>
             Change
           </Button>
-          <Button flex={1} ml="2" colorScheme="normal" onClick={onConfirm}>
+          <Button flex={1} ml="2" colorScheme="secondary" onClick={onConfirm}>
             Still create
           </Button>
         </Flex>

@@ -10,15 +10,16 @@ import {
   GridItem,
   BoxProps,
   Button,
+  Link,
 } from "@chakra-ui/react";
 import { logger } from "../../../common/utils/logger";
 import { nanoid } from "nanoid";
 import { DisplayWallet } from "../../../scripts/background/store/vault/types/keyring";
 import { Content } from "../../../layouts/Content";
-import { showMnemonicWarningDialog } from "../MnemonicWarningDialog";
+import { IconPreventScreenshot } from "../../Custom/Icon";
 
 function Dot(props: BoxProps) {
-  return <Box w={2} h={2} borderRadius={4} bg={"gray.100"} {...props} />;
+  return <Box w={1.5} h={1.5} borderRadius={3} bg={"gray.500"} {...props} />;
 }
 
 function WordGrid({ words }: { words: string[] }) {
@@ -27,7 +28,6 @@ function WordGrid({ words }: { words: string[] }) {
       templateColumns="repeat(3, 1fr)"
       gap={2}
       alignSelf={"stretch"}
-      bg={"gray.50"}
       p={2}
       borderRadius={"lg"}
     >
@@ -38,14 +38,17 @@ function WordGrid({ words }: { words: string[] }) {
           px={2}
           py={2}
           borderRadius="lg"
-          bg={"gray.100"}
+          borderWidth={"1px"}
+          borderStyle={"solid"}
+          borderColor={"gray.100"}
           justifyContent={"center"}
           alignItems={"center"}
           flexWrap={"wrap"}
         >
-          <Text wordBreak={"break-word"} fontWeight={"bold"}>
-            {index + 1}.{word}
-          </Text>
+          <Flex wordBreak={"break-word"} alignItems={"center"}>
+            <Text color={"gray.400"}>{index + 1}.&nbsp;</Text>
+            {word}
+          </Flex>
         </GridItem>
       ))}
     </Grid>
@@ -65,6 +68,7 @@ export const BackupMnemonicStep = (props: {
   regenerateWallet: () => Promise<void>;
 }) => {
   const { mnemonic, onConfirm, createWallet, regenerateWallet } = props;
+  const [startBackup, setStartBackup] = useState(false);
   const wordList = useMemo(() => {
     if (!mnemonic) {
       return [];
@@ -82,25 +86,60 @@ export const BackupMnemonicStep = (props: {
 
   return (
     <Content>
-      <WordGrid words={wordList} />
+      <Flex position={"relative"}>
+        {!startBackup && (
+          <Flex
+            position={"absolute"}
+            left={0}
+            right={0}
+            top={0}
+            bottom={0}
+            flexDir={"column"}
+            justifyContent={"center"}
+            alignItems={"center"}
+            backdropFilter="blur(10px)"
+            onClick={() => setStartBackup(true)}
+          >
+            <IconPreventScreenshot w={"12"} h={"12"} mb={2} />
+            <Text mb={2} fontWeight={"bold"}>
+              {"Click here to display mnemonic phase"}
+            </Text>
+            <Text fontWeight={"bold"}>
+              {"Please confirm that the surroundings are safe"}
+            </Text>
+          </Flex>
+        )}
+        <WordGrid words={wordList} />
+      </Flex>
       <Flex
         flexDirection={"column"}
-        bg={"gray.50"}
         mt={4}
         borderRadius={"lg"}
+        borderStyle={"solid"}
+        borderWidth={"2px"}
+        borderColor={"gray.50"}
         p={2}
-        pt={1}
       >
         {tips.map((tip, index) => (
           <Flex mt={1} key={index}>
-            <Dot mt={1} />
-            <Text ml={2} fontSize={"smaller"} color={"gray.500"} maxW={"95%"}>
+            <Dot mt={2} />
+            <Text ml={2} fontSize={"sm"} color={"gray.600"} maxW={"95%"}>
               {tip}
             </Text>
           </Flex>
         ))}
       </Flex>
-      <Flex mt={8}>
+      <Flex justifyContent={"center"} mt={"5"}>
+        <Link
+          textDecorationLine={"underline"}
+          textDecorationColor={"green.600"}
+          color={"green.600"}
+          fontWeight={"bold"}
+        >
+          Remind me later
+        </Link>
+      </Flex>
+      <Flex mt={12}>
         <Button
           colorScheme="secondary"
           flex={1}

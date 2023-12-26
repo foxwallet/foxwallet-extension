@@ -116,7 +116,7 @@ export const buttonTheme = defineStyleConfig({
           bg: `${c}.700`,
         },
         _disabled: {
-          bg: "gray.300",
+          bg: "gray.500",
           cursor: "not-allowed",
         },
       };

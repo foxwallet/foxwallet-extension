@@ -92,14 +92,12 @@ export const CreatePasswordStep = (props: {
         title={"Wallet Name"}
         placeholder={"Enter wallet name"}
         container={{ mt: "2" }}
-        required
         value={walletName}
         onChange={onWalletNameChange}
       />
       <BaseInputGroup
         container={{ mt: 2 }}
         title={"Password"}
-        required
         inputProps={{
           placeholder: "No less than 6 characters",
           type: viewPass ? "text" : "password",
@@ -130,7 +128,7 @@ export const CreatePasswordStep = (props: {
       {passwordScore !== null && (
         <PasswordStrengthIndicator
           score={passwordScore}
-          justifyContent={"flex-end"}
+          justifyContent={"space-between"}
           alignItems={"center"}
         />
       )}
@@ -159,7 +157,7 @@ export const CreatePasswordStep = (props: {
               }}
             >
               {confirmPasswordCorrect ? (
-                <IconCheckLine w={"5"} h="full" stroke="green.500" />
+                <IconCheckLine w={"5"} h="full" stroke="green.600" />
               ) : (
                 <IconCloseLine w={"5"} h="full" fill="red.400" />
               )}
