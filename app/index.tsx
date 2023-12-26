@@ -42,9 +42,11 @@ ReactDOM.createRoot(
 ).render(
   <StrictMode>
     <ChakraBaseProvider theme={theme}>
-      <ViewPort>
-        <GlobalModal />
-      </ViewPort>
+      <Provider store={store}>
+        <ViewPort>
+          <GlobalModal />
+        </ViewPort>
+      </Provider>
     </ChakraBaseProvider>
   </StrictMode>,
 );

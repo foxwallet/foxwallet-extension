@@ -1,6 +1,10 @@
 import { createModel } from "@rematch/core";
 import { type RootModel } from "./index";
-import type { DisplayAccount } from "@/scripts/background/store/vault/types/keyring";
+import {
+  WalletType,
+  type DisplayAccount,
+  DisplayWallet,
+} from "@/scripts/background/store/vault/types/keyring";
 import { CoinType } from "core/types";
 import { clients } from "@/hooks/useClient";
 import { DEFAULT_UNIQUE_ID_MAP } from "core/constants";
@@ -17,6 +21,7 @@ interface AccountModel {
   selectedAccount: SelectedAccount;
   selectedUniqueId: ChainUniqueId;
   walletBackupMnemonicMap: WalletBackupedMnemonicMap;
+  walletInfo?: DisplayWallet;
 }
 
 const DEFAULT_ACCOUNT_MODEL: AccountModel = {
@@ -63,6 +68,12 @@ export const account = createModel<RootModel>()({
         },
       };
     },
+    _setCurrWalletInfo(state, payload: { walletInfo: DisplayWallet }) {
+      return {
+        ...state,
+        walletInfo: payload.walletInfo,
+      };
+    },
   },
   effects: (dispatch) => ({
     async setSelectedAccount({
@@ -100,6 +111,22 @@ export const account = createModel<RootModel>()({
         return { account, uniqueId };
       }
       return { account, uniqueId };
+    },
+
+    async getCurrWalletInfo(walletId: string) {
+      const wallets = await clients.popupServerClient.getAllWallet();
+      if (!wallets) return;
+
+      const hdWallets = wallets[WalletType.HD] ?? [];
+      const simpleWallets = wallets[WalletType.SIMPLE] ?? [];
+      const allWallets = [...hdWallets, ...simpleWallets];
+
+      const walletInfo = allWallets.find((w) => w.walletId === walletId);
+      if (walletInfo) {
+        dispatch.account._setCurrWalletInfo({ walletInfo });
+        return walletInfo;
+      }
+      return walletInfo;
     },
   }),
 });
