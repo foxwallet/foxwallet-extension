@@ -49,15 +49,15 @@ function MainScreen() {
         >
           <CustomTab
             key={"wallet"}
-            selectedIcon={<IconWalletSelected />}
-            unselectedIcon={<IconWalletUnselected />}
+            selected={<IconWalletSelected />}
+            unselected={<IconWalletUnselected />}
           >
             Wallet
           </CustomTab>
           <CustomTab
             key={"setting"}
-            selectedIcon={<IconSettingSelected />}
-            unselectedIcon={<IconSettingUnselected />}
+            selected={<IconSettingSelected />}
+            unselected={<IconSettingUnselected />}
           >
             Setting
           </CustomTab>
@@ -71,7 +71,7 @@ export default MainScreen;
 
 const CustomTab = forwardRef<any, any>((props, ref) => {
   const tabProps: any = useTab({ ...props, ref });
-  const { selectedIcon, unselectedIcon } = tabProps;
+  const { selected, unselected } = tabProps;
   const isSelected = !!tabProps["aria-selected"];
 
   return (
@@ -83,7 +83,7 @@ const CustomTab = forwardRef<any, any>((props, ref) => {
       justify={"center"}
       as={"button"}
     >
-      {isSelected ? selectedIcon : unselectedIcon}
+      {isSelected ? selected : unselected}
       <Text fontWeight={500} color={"#000"} fontSize={12}>
         {tabProps.children}
       </Text>

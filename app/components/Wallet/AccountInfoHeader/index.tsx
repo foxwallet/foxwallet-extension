@@ -16,12 +16,15 @@ import React, { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
+import { showWalletsDrawer } from "../WalletsDrawer";
+import { useCurrWallet } from "@/hooks/useWallets";
 
 export const AccountInfoHeader = () => {
   const navigate = useNavigate();
   const { selectedAccount, uniqueId } = useCurrAccount();
   const { nativeCurrency } = useCoinService(uniqueId);
   const { balance } = useBalance(uniqueId, selectedAccount.address, 4000);
+  const { walletInfo } = useCurrWallet();
 
   const { showToast } = useCopyToast();
   const { onCopy } = useClipboard(selectedAccount.address);
@@ -48,9 +51,12 @@ export const AccountInfoHeader = () => {
     showToast();
   }, [showToast, onCopy]);
 
-  const renderActionItem = useCallback((item: ActionButtonProps) => {
-    return <ActionButton {...item} />;
-  }, []);
+  const renderActionItem = useCallback(
+    (item: ActionButtonProps, index: number) => {
+      return <ActionButton key={`${item.title}${index}`} {...item} />;
+    },
+    [],
+  );
 
   return (
     <Box
@@ -62,7 +68,7 @@ export const AccountInfoHeader = () => {
       borderColor={"#E6E8EC"}
     >
       <Flex
-        onClick={() => alert("test")}
+        onClick={() => showWalletsDrawer()}
         as={"button"}
         direction={"row"}
         align={"center"}
@@ -70,27 +76,27 @@ export const AccountInfoHeader = () => {
         <IconLogo w={8} h={8} mr={1} />
         <Flex direction={"column"} align={"flex-start"}>
           <Text fontSize={12} lineHeight={4} color={"#000"} fontWeight={500}>
-            {selectedAccount.accountName}
+            {walletInfo?.walletName}
           </Text>
           <Text fontSize={10} color={"#777E90"} fontWeight={500}>
-            Aleo testnet
+            {selectedAccount.accountName}
           </Text>
         </Flex>
         <IconArrowRight w={18} h={18} />
       </Flex>
       <Flex mt={6} direction={"row"} align={"center"}>
-        <Text
-          maxW={128}
-          noOfLines={1}
-          fontSize={11}
-          color={"#777E90"}
-          textOverflow={"ellipsis"}
-        >
-          <MiddleEllipsisText text={selectedAccount.address} width={150} />
+        <Text maxW={128} noOfLines={1} fontSize={11} color={"#777E90"}>
+          <MiddleEllipsisText text={selectedAccount.address} width={128} />
         </Text>
-        <Box as="button" onClick={onCopyAddress}>
+        <Flex
+          justify={"center"}
+          align={"center"}
+          as="button"
+          px={2}
+          onClick={onCopyAddress}
+        >
           <IconCopy w={3} h={3} />
-        </Box>
+        </Flex>
       </Flex>
       <Flex direction={"row"} align={"center"} mt={2}>
         <Text fontSize={24} fontWeight={600}>
