@@ -471,6 +471,14 @@ export class PopupWalletServer implements IPopupServer {
     return await this.accountSettingStorage.setSelectedUniqueId(uniqueId);
   }
 
+  async getHDWallet(walletId: string): Promise<DisplayWallet> {
+    return await this.keyringManager.getHDWallet(walletId);
+  }
+
+  async getSimpleWallet(walletId: string): Promise<DisplayWallet> {
+    return await this.keyringManager.getSimpleWallet(walletId);
+  }
+
   async getAllWallet(): Promise<DisplayKeyring> {
     return await this.keyringManager.getAllWallet();
   }

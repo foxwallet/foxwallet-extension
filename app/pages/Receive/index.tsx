@@ -80,7 +80,7 @@ function ReceiveScreen() {
         >
           <Text
             noOfLines={3}
-            maxW={244}
+            maxW={274}
             color={"black"}
             fontSize={12}
             fontWeight={500}
@@ -98,18 +98,6 @@ function ReceiveScreen() {
             onClick={handleCopy}
           >
             <IconCopyBlack h={3.5} w={3.5} />
-          </Flex>
-          <Flex
-            as="button"
-            h={6}
-            w={6}
-            bg={"#E6E8EC"}
-            justify={"center"}
-            align={"center"}
-            borderRadius={12}
-            onClick={handleShare}
-          >
-            <IconShare h={3.5} w={3.5} />
           </Flex>
         </Flex>
       </Content>

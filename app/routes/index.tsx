@@ -19,6 +19,9 @@ const CreateWallet = lazy(async () => await import("../pages/CreateWallet"));
 const CreateMnemonic = lazy(
   async () => await import("../pages/CreateMnemonic"),
 );
+const BackupMnemonic = lazy(
+  async () => await import("../pages/BackupMnemonic"),
+);
 const ImportMnemonic = lazy(
   async () => await import("../pages/ImportMnemonic"),
 );
@@ -90,6 +93,10 @@ export const routesConfig: RouteObject[] = [
       {
         path: "create_mnemonic",
         element: <CreateMnemonic />,
+      },
+      {
+        path: "backup_mnemonic",
+        element: <BackupMnemonic />,
       },
       {
         path: "import_mnemonic",

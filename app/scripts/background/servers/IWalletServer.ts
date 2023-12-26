@@ -158,6 +158,10 @@ export interface IPopupServer {
 
   setSelectedUniqueId(params: SetSelectedUniqueIdProps): Promise<ChainUniqueId>;
 
+  getHDWallet(walletId: string): Promise<DisplayWallet>;
+
+  getSimpleWallet(walletId: string): Promise<DisplayWallet>;
+
   getAllWallet: () => Promise<DisplayKeyring>;
 
   rescanAleo(params: ResyncAleoProps): Promise<boolean>;
