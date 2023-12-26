@@ -1,31 +1,31 @@
 {
-  "Setting": {
-    "ManageWallet": {
-      "title": "Wallet",
-      "create": "Create Wallet"
-    },
-    "CreateWallet": {
-      "selectType": "Select Type",
+  "Wallet": {
+    "title": "Wallet",
+    "Create": {
+      "title": "Create Wallet",
       "createMnemonic": "Create new mnemonic",
-      "importMnemonic": "Import mnemonic",
-      "importPrivateKey": "Import private key"
-    },
-    "CreateMnemonic": {
-      "title": "Create Mnemonic"
-    },
-    "ImportMnemonic": {
-      "title": "Import Mnemonic"
-    },
-    "ImportPrivateKey": {
-      "title": "Import Private Key"
-    }
-  },
-  "Onboard": {
-    "CreateWallet": {
       "walletName": "Wallet Name",
       "walletNamePlaceholder": "Enter wallet name",
       "dupWalletName": "Duplicate wallet name"
+    },
+    "Import": {
+      "title": "Import Wallet",
+      "selectType": "Select Type",
+      "importMnemonic": "Import mnemonic",
+      "importPrivateKey": "Import private key"
     }
+  },
+  "Onboard": {
+    "Home": {
+      "slogan1": "The best Web3 wallet",
+      "slogan2": "Entrance to crypto world"
+    }
+  },
+  "Agreement": {
+    "content1": "I agree to FoxWallet's ",
+    "content2": "User Notice",
+    "and": " and ",
+    "content3": "Privacy Policy"
   },
   "Common": {
     "confirm": "Confirm",

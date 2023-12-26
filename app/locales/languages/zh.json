@@ -1,1 +1,35 @@
-{}
+{
+  "Wallet": {
+    "title": "钱包",
+    "Create": {
+      "title": "创建钱包",
+      "createMnemonic": "创建助记词",
+
+      "walletName": "钱包名称",
+      "walletNamePlaceholder": "输入钱包名称",
+      "dupWalletName": "钱包名称重复"
+    },
+    "Import": {
+      "title": "导入钱包",
+      "selectType": "选择类型",
+      "importMnemonic": "导入助记词",
+      "importPrivateKey": "导入私钥"
+    }
+  },
+  "Onboard": {
+    "Home": {
+      "slogan1": "最好用的 Web3 钱包",
+      "slogan2": "你的区块链世界入口"
+    }
+  },
+  "Agreement": {
+    "content1": "我同意 FoxWallet 的 ",
+    "content2": "用户须知",
+    "and": " 和 ",
+    "content3": "隐私条款"
+  },
+  "Common": {
+    "confirm": "确认",
+    "cancel": "取消"
+  }
+}

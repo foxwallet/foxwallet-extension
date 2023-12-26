@@ -80,8 +80,25 @@ export const buttonTheme = defineStyleConfig({
 
       if (c === "secondary") {
         return {
-          bg: `orange.100`,
-          color: "orange.400",
+          bg: `white`,
+          color: "black",
+          borderColor: "black",
+          borderWidth: "1px",
+          borderStyle: "solid",
+          _disabled: {
+            bg: "gray.300",
+            cursor: "not-allowed",
+          },
+        };
+      }
+
+      if (c === "menu") {
+        return {
+          bg: `white`,
+          color: "black",
+          borderColor: "black",
+          borderWidth: "1px",
+          borderStyle: "solid",
           _disabled: {
             bg: "gray.300",
             cursor: "not-allowed",
@@ -90,8 +107,8 @@ export const buttonTheme = defineStyleConfig({
       }
 
       return {
-        bg: `orange.400`,
-        color: "white",
+        bg: `black`,
+        color: "green.500",
         _hover: {
           bg: `${c}.600`,
         },

@@ -68,7 +68,7 @@ export const textStyles = {
 
   L1: {
     fontSize: "xs",
-    lineHeight: "3.5",
+    lineHeight: "2",
     fontWeight: "bold",
     letterSpacing: "wide",
   },
