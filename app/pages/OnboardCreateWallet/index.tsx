@@ -1,31 +1,16 @@
-import {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { PageWithHeader } from "../../layouts/Page";
 import { Body } from "../../layouts/Body";
-import { OnboardProgress } from "../../components/Onboard/OnboardProgress";
-import { ClientContext, useClient } from "../../hooks/useClient";
+import { useClient } from "../../hooks/useClient";
 import { CreatePasswordStep } from "../../components/Onboard/CreatePassword";
 import { BackupMnemonicStep } from "../../components/Onboard/BackupMnemonic";
 import { logger } from "../../common/utils/logger";
 import { ConfirmMnemonicStep } from "../../components/Onboard/ConfirmMnemonic";
-import { showMnemonicWarningDialog } from "../../components/Onboard/MnemonicWarningDialog";
 import { nanoid } from "nanoid";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
 import { usePopupDispatch } from "@/hooks/useStore";
 import { CoinType } from "core/types";
-
-const CreateWalletSteps = [
-  "Create Wallet",
-  "Backup Mnemonic",
-  "Confirm Mnemonic",
-];
+import { useTranslation } from "react-i18next";
 
 function OnboardCreateWalletScreen() {
   const [step, setStep] = useState(1);
@@ -114,6 +99,15 @@ function OnboardCreateWalletScreen() {
     }
   }, [step, mnemonic, createWallet, regenerateWallet]);
 
+  const { t } = useTranslation();
+  const CreateWalletSteps = useMemo(
+    () => [
+      t("Wallet:Create:title"),
+      t("Wallet:Create:backupMnemonic"),
+      t("Wallet:Create:confirmMnemonic"),
+    ],
+    [t],
+  );
   return (
     <PageWithHeader
       title={CreateWalletSteps[step - 1]}

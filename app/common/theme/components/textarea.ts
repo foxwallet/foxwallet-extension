@@ -14,10 +14,13 @@ export const textAreaTheme = defineStyleConfig({
       fontSize: "14",
       borderRadius: "lg",
       borderStyle: "solid",
-      borderWidth: "2px",
-      borderColor: mode("black", "white")(props),
+      borderWidth: "1.5px",
+      borderColor: mode("gray.100", "white")(props),
       "::placeholder": {
         color: mode("gray.600", "gray.300")(props),
+      },
+      _focus: {
+        borderColor: mode("black", "white")(props),
       },
     };
   },

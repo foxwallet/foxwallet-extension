@@ -4,10 +4,11 @@
     "Create": {
       "title": "创建钱包",
       "createMnemonic": "创建助记词",
-
       "walletName": "钱包名称",
       "walletNamePlaceholder": "输入钱包名称",
-      "dupWalletName": "钱包名称重复"
+      "dupWalletName": "钱包名称重复",
+      "backupMnemonic": "备份助记词",
+      "confirmMnemonic": "确认助记词"
     },
     "Import": {
       "title": "导入钱包",
@@ -31,5 +32,21 @@
   "Common": {
     "confirm": "确认",
     "cancel": "取消"
+  },
+  "Password": {
+    "title": "密码",
+    "enter": "输入密码",
+    "passwordPlaceholder": "不少于6个字符",
+    "confirmPasswordPlaceholder": "再次输入密码",
+    "warning": "FoxWallet 不会存储密码。一旦忘记密码，只能通过助记词恢复钱包。"
+  },
+  "Mnemonic": {
+    "backupTips1": "点击此处显示助记词",
+    "backupTips2": "请确认周围环境安全",
+    "later": "稍后提醒我",
+    "regenerate": "重新生成",
+    "title": "助记符",
+    "enterPlaceholder": "输入助记词，以空格分隔",
+    "checkTips": "请检查 \"{{WORD}}\""
   }
 }

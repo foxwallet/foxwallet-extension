@@ -26,6 +26,7 @@ import { Content } from "../../../layouts/Content";
 import { shuffle } from "../../../common/utils/array";
 import { useDataRef } from "../../../hooks/useDataRef";
 import { IconCloseLineGray } from "../../Custom/Icon";
+import { useTranslation } from "react-i18next";
 
 function WordGrid({ words }: { words: string[] }) {
   return (
@@ -64,14 +65,12 @@ export const ConfirmMnemonicStep = (props: {
   onConfirm: () => void;
   mnemonic: string;
 }) => {
+  const { t } = useTranslation();
   const { onConfirm, mnemonic } = props;
   const wordList = useMemo(() => {
     return mnemonic.split(" ");
   }, [mnemonic]);
   const targetWordList = useRef(wordList);
-  // const shuffleWordList = useMemo(() => {
-  //   return shuffle(wordList.slice(1));
-  // }, [wordList]);
   const [partialWordList, initialOtherWords, placeholderIndexList] =
     useMemo(() => {
       const otherWords: string[] = [];
@@ -270,7 +269,7 @@ export const ConfirmMnemonicStep = (props: {
       </Grid>
       <Flex position={"fixed"} bottom={10} left={4} right={4}>
         <Button flex={1} onClick={onConfirm} isDisabled={!isValid}>
-          {"Confirm"}
+          {t("Common:confirm")}
         </Button>
       </Flex>
     </Content>

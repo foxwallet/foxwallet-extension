@@ -17,19 +17,17 @@ export const variantFilled = definePartsStyle((props) => {
     field: {
       bg: mode("white", "black")(props),
       borderStyle: "solid",
-      borderWidth: "2px",
-      borderColor: mode("black", "white")(props),
+      borderWidth: "1.6px",
+      borderColor: mode("gray.50", "white")(props),
       outline: "none",
       _placeholder: {
-        color: mode("gray.300", "gray.400")(props),
-        fontWeight: "bold",
+        color: mode("gray.500", "gray.400")(props),
       },
       _invalid: {
-        border: "2px solid",
         borderColor: "red.400",
       },
       _focus: {
-        bg: mode("gray.50", "gray.800")(props),
+        borderColor: mode("black", "white")(props),
       },
     },
   };

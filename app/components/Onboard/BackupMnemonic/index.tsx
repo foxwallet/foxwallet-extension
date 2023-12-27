@@ -1,7 +1,4 @@
-import { useDispatch } from "react-redux";
-import { Dispatch } from "../../../store/store";
-import { clients, useClient } from "../../../hooks/useClient";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Box,
   Flex,
@@ -12,11 +9,10 @@ import {
   Button,
   Link,
 } from "@chakra-ui/react";
-import { logger } from "../../../common/utils/logger";
-import { nanoid } from "nanoid";
-import { DisplayWallet } from "../../../scripts/background/store/vault/types/keyring";
 import { Content } from "../../../layouts/Content";
 import { IconPreventScreenshot } from "../../Custom/Icon";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
 
 function Dot(props: BoxProps) {
   return <Box w={1.5} h={1.5} borderRadius={3} bg={"gray.500"} {...props} />;
@@ -67,6 +63,8 @@ export const BackupMnemonicStep = (props: {
   createWallet: () => Promise<void>;
   regenerateWallet: () => Promise<void>;
 }) => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
   const { mnemonic, onConfirm, createWallet, regenerateWallet } = props;
   const [startBackup, setStartBackup] = useState(false);
   const wordList = useMemo(() => {
@@ -102,11 +100,9 @@ export const BackupMnemonicStep = (props: {
           >
             <IconPreventScreenshot w={"8"} h={"8"} mb={2} />
             <Text mb={2} fontWeight={"bold"}>
-              {"Click here to display mnemonic phase"}
+              {t("Mnemonic:backupTips1")}
             </Text>
-            <Text fontWeight={"bold"}>
-              {"Please confirm that the surroundings are safe"}
-            </Text>
+            <Text fontWeight={"bold"}>{t("Mnemonic:backupTips2")}</Text>
           </Flex>
         )}
         <WordGrid words={wordList} />
@@ -135,8 +131,9 @@ export const BackupMnemonicStep = (props: {
           textDecorationColor={"green.600"}
           color={"green.600"}
           fontWeight={"bold"}
+          onClick={() => navigate("/main")}
         >
-          Remind me later
+          {t("Mnemonic:later")}
         </Link>
       </Flex>
       <Flex mt={12}>
@@ -147,10 +144,10 @@ export const BackupMnemonicStep = (props: {
           isDisabled={!mnemonic}
           onClick={regenerateWallet}
         >
-          {"Regenerate"}
+          {t("Mnemonic:regenerate")}
         </Button>
         <Button flex={1} isDisabled={!startBackup} onClick={() => onConfirm()}>
-          {"Confirm"}
+          {t("Common:confirm")}
         </Button>
       </Flex>
     </Content>

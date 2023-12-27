@@ -1,1 +1,52 @@
-{}
+{
+  "Wallet": {
+    "title": "Dompet",
+    "Create": {
+      "title": "Buat Dompet",
+      "createMnemonic": "Buat mnemonik baru",
+      "walletName": "Nama Dompet",
+      "walletNamePlaceholder": "Masukkan nama dompet",
+      "dupWalletName": "Nama dompet duplikat",
+      "backupMnemonic": "Mnemonik cadangan",
+      "confirmMnemonic": "Konfirmasikan mnemonik"
+    },
+    "Import": {
+      "title": "Impor Dompet",
+      "selectType": "Pilih tipe",
+      "importMnemonic": "Impor mnemonik",
+      "importPrivateKey": "Impor kunci pribadi"
+    }
+  },
+  "Onboard": {
+    "Home": {
+      "slogan1": "Dompet Web3 terbaik",
+      "slogan2": "Pintu masuk ke dunia kripto"
+    }
+  },
+  "Agreement": {
+    "content1": "Saya setuju dengan FoxWallet",
+    "content2": "Pemberitahuan Pengguna",
+    "and": "Dan",
+    "content3": "Kebijakan pribadi"
+  },
+  "Password": {
+    "title": "Kata sandi",
+    "enter": "Masukkan kata kunci",
+    "passwordPlaceholder": "Tidak kurang dari 6 karakter",
+    "confirmPasswordPlaceholder": "Masukkan kata sandi lagi",
+    "warning": "FoxWallet tidak akan menyimpan kata sandi. Setelah kata sandi terlupa, Anda hanya dapat memulihkan dompet melalui mnemonik."
+  },
+  "Mnemonic": {
+    "backupTips1": "Klik di sini untuk menampilkan fase mnemonik",
+    "backupTips2": "Harap konfirmasi bahwa lingkungan sekitar aman",
+    "later": "Ingatkan aku nanti",
+    "regenerate": "Diperbarui",
+    "title": "Mnemonik",
+    "enterPlaceholder": "Masukkan mnemonik, dipisahkan dengan spasi",
+    "checkTips": "Silakan periksa \"{{WORD}}\""
+  },
+  "Common": {
+    "confirm": "Mengonfirmasi",
+    "cancel": "Membatalkan"
+  }
+}

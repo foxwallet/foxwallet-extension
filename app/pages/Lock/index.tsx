@@ -5,17 +5,19 @@ import {
   IconEyeClose,
   IconEyeOn,
 } from "@/components/Custom/Icon";
-import { BaseInput, BaseInputGroup } from "@/components/Custom/Input";
+import { BaseInputGroup } from "@/components/Custom/Input";
 import { useAuth } from "@/hooks/useAuth";
-import { useBalance } from "@/hooks/useBalance";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
-import { Button, Flex, InputRightElement, Text } from "@chakra-ui/react";
+import { Button, Flex, Image, InputRightElement, Text } from "@chakra-ui/react";
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import WALLET_LOGO from "@/common/assets/image/logo.png";
+import { IconFoxWallet } from "@/components/Custom/Icon";
+import { useTranslation } from "react-i18next";
 
 // TODO: add reset
 // TODO: add biometric auth
 function Lock() {
+  const { t } = useTranslation();
   const [password, setPassword] = useState("");
   const [isPasswordValid, setIsPasswordValid] = useState(false);
   const [viewPass, setViewPass] = useState(false);
@@ -46,15 +48,23 @@ function Lock() {
   const passwordInvalid = !!password && !isPasswordValid;
 
   return (
-    <Flex direction={"column"} w={"full"} h={"full"} justifyContent={"center"}>
-      <H1 alignSelf={"center"}>Login</H1>
+    <Flex
+      direction={"column"}
+      w={"full"}
+      h={"full"}
+      justifyContent={"flex-start"}
+      pt={100}
+    >
+      <Flex justify={"center"} align={"center"} flexDir={"column"}>
+        <Image src={WALLET_LOGO} w={20} h={20} />
+        <IconFoxWallet w={138} h={20} />
+      </Flex>
       <BaseInputGroup
-        container={{ mt: 2, mx: 8, mb: 4 }}
-        title={"Password"}
-        required
+        container={{ mt: 10, mx: 6, mb: 4 }}
+        title={t("Password:title")}
         inputProps={{
           isInvalid: passwordInvalid,
-          placeholder: "Enter password",
+          placeholder: t("Password:enter"),
           type: viewPass ? "text" : "password",
           onChange: onPasswordChange,
         }}
@@ -82,8 +92,8 @@ function Lock() {
           </InputRightElement>
         }
       />
-      <Button isDisabled={!password} onClick={onConfirm} mx="8">
-        Confirm
+      <Button isDisabled={!password} onClick={onConfirm} mx="6" mt="20">
+        {t("Common:confirm")}
       </Button>
     </Flex>
   );

@@ -373,7 +373,10 @@ export class PopupWalletServer implements IPopupServer {
 
   async initPassword(params: { password: string }): Promise<boolean> {
     if (this.authManager.getToken()) {
-      throw new Error("Password already inited");
+      const existWallet = await this.keyringManager.getAllWallet();
+      if (existWallet[WalletType.HD] && existWallet[WalletType.HD].length > 0) {
+        throw new Error("Password already inited && wallets exist");
+      }
     }
     await this.authManager.initPassword(params.password);
     await this.keyringManager.reset();
@@ -381,6 +384,7 @@ export class PopupWalletServer implements IPopupServer {
   }
 
   async hasAuth(params: { checkExpire?: boolean }): Promise<boolean> {
+    console.log("===> popup server hasAuth: ", params);
     const result = this.authManager.hasAuth(params.checkExpire);
     return result;
   }

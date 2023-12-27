@@ -16,12 +16,14 @@ import { useDebounce } from "use-debounce";
 import { logger } from "../../../common/utils/logger";
 import { useDataRef } from "../../../hooks/useDataRef";
 import { WarningArea } from "../../Custom/WarningArea";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   onConfirm: (mnemonic: string) => void;
 };
 
 export const ImportMnemonicStep = ({ onConfirm }: Props) => {
+  const { t } = useTranslation();
   const [mnemonic, setMnemonic] = useState("");
   const mnemonicRef = useDataRef(mnemonic);
   const [debounceMnemonic] = useDebounce(mnemonic, 100, { trailing: true });
@@ -126,12 +128,12 @@ export const ImportMnemonicStep = ({ onConfirm }: Props) => {
 
   return (
     <Content>
-      <H6 mb="2">{"Seed phrase"}</H6>
+      <H6 mb="2">{t("Mnemonic:title")}</H6>
       <Textarea
         value={mnemonic}
         onChange={onInputChange}
         onKeyDown={handleKeyDown}
-        placeholder="Enter the seed phrase, separated by spaces"
+        placeholder={t("Mnemonic:enterPlaceholder")}
         size="md"
         resize={"none"}
         h={"150"}
@@ -158,7 +160,7 @@ export const ImportMnemonicStep = ({ onConfirm }: Props) => {
       {!!errorWord && (
         <WarningArea
           container={{ mt: "2" }}
-          content={`Please check "${errorWord}"`}
+          content={t("Mnemonic:checkTips", { WORD: errorWord })}
         />
       )}
       <Button
@@ -169,7 +171,7 @@ export const ImportMnemonicStep = ({ onConfirm }: Props) => {
         right={"4"}
         onClick={() => onConfirm(mnemonic.trim())}
       >
-        {"Confirm"}
+        {t("Common:confirm")}
       </Button>
     </Content>
   );

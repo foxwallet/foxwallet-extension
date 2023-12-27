@@ -1,1 +1,52 @@
-{}
+{
+  "Wallet": {
+    "title": "Billetera",
+    "Create": {
+      "title": "Crear billetera",
+      "createMnemonic": "Crear nuevo mnemotécnico",
+      "walletName": "Nombre de la billetera",
+      "walletNamePlaceholder": "Ingrese el nombre de la billetera",
+      "dupWalletName": "Nombre de billetera duplicado",
+      "backupMnemonic": "mnemotécnico de respaldo",
+      "confirmMnemonic": "Confirmar mnemónico"
+    },
+    "Import": {
+      "title": "Importar billetera",
+      "selectType": "Seleccione tipo",
+      "importMnemonic": "Importar mnemónico",
+      "importPrivateKey": "Importar clave privada"
+    }
+  },
+  "Onboard": {
+    "Home": {
+      "slogan1": "La mejor billetera Web3",
+      "slogan2": "Entrada al mundo criptográfico"
+    }
+  },
+  "Agreement": {
+    "content1": "Estoy de acuerdo con FoxWallet",
+    "content2": "Aviso al usuario",
+    "and": "y",
+    "content3": "política de privacidad"
+  },
+  "Password": {
+    "title": "Contraseña",
+    "enter": "Introducir la contraseña",
+    "passwordPlaceholder": "No menos de 6 caracteres",
+    "confirmPasswordPlaceholder": "Ingrese de nuevo la contraseña",
+    "warning": "FoxWallet no almacenará la contraseña. Una vez que se olvida la contraseña, solo podrá restaurar la billetera mediante el mnemotécnico."
+  },
+  "Mnemonic": {
+    "backupTips1": "Haga clic aquí para mostrar la fase mnemotécnica",
+    "backupTips2": "Por favor confirme que los alrededores son seguros.",
+    "later": "Recuérdame más tarde",
+    "regenerate": "Regenerado",
+    "title": "Mnemotécnico",
+    "enterPlaceholder": "Ingrese el mnemotécnico, separado por espacios.",
+    "checkTips": "Por favor marque \"{{WORD}}\""
+  },
+  "Common": {
+    "confirm": "Confirmar",
+    "cancel": "Cancelar"
+  }
+}
