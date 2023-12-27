@@ -100,7 +100,7 @@ export const BackupMnemonicStep = (props: {
             backdropFilter="blur(10px)"
             onClick={() => setStartBackup(true)}
           >
-            <IconPreventScreenshot w={"12"} h={"12"} mb={2} />
+            <IconPreventScreenshot w={"8"} h={"8"} mb={2} />
             <Text mb={2} fontWeight={"bold"}>
               {"Click here to display mnemonic phase"}
             </Text>
@@ -122,8 +122,8 @@ export const BackupMnemonicStep = (props: {
       >
         {tips.map((tip, index) => (
           <Flex mt={1} key={index}>
-            <Dot mt={2} />
-            <Text ml={2} fontSize={"sm"} color={"gray.600"} maxW={"95%"}>
+            <Dot mt={1.5} />
+            <Text ml={2} fontSize={"small"} color={"gray.600"} maxW={"95%"}>
               {tip}
             </Text>
           </Flex>
@@ -149,7 +149,7 @@ export const BackupMnemonicStep = (props: {
         >
           {"Regenerate"}
         </Button>
-        <Button flex={1} onClick={() => onConfirm()}>
+        <Button flex={1} isDisabled={!startBackup} onClick={() => onConfirm()}>
           {"Confirm"}
         </Button>
       </Flex>

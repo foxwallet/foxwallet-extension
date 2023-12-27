@@ -25,7 +25,7 @@ import { DisplayWallet } from "../../../scripts/background/store/vault/types/key
 import { Content } from "../../../layouts/Content";
 import { shuffle } from "../../../common/utils/array";
 import { useDataRef } from "../../../hooks/useDataRef";
-import { IconCloseCircle } from "../../Custom/Icon";
+import { IconCloseLineGray } from "../../Custom/Icon";
 
 function WordGrid({ words }: { words: string[] }) {
   return (
@@ -126,27 +126,37 @@ export const ConfirmMnemonicStep = (props: {
     [otherWordListRef, answerWordListRef],
   );
 
-  const isValid = useMemo(() => {
+  const [finishSelected, isValid] = useMemo(() => {
+    let havePlaceholder = answerWordList.some((item) => item === PLACEHOLDER);
+    if (havePlaceholder) {
+      return [false, false];
+    }
     for (let i = 0; i < answerWordList.length; i++) {
       if (answerWordList[i] !== targetWordList.current[i]) {
-        return false;
+        return [true, false];
       }
     }
-    return true;
+    return [true, true];
   }, [answerWordList, targetWordList]);
+
+  const containerBorderColor = useMemo(() => {
+    if (!finishSelected) {
+      return "black";
+    }
+    return isValid ? "green.600" : "red.300";
+  }, [finishSelected, isValid]);
 
   return (
     <Content>
       <Flex
-        bg={"gray.50"}
         p={2}
         borderRadius={"lg"}
         flexWrap={"wrap"}
         minH={12}
         alignItems={"flex-start"}
         justifyContent={"flex-start"}
-        borderColor={isValid ? "green.300" : "red.300"}
-        borderWidth={"1px"}
+        borderColor={containerBorderColor}
+        borderWidth={"1.5px"}
       >
         {answerWordList.map((word, index) => {
           const option = placeholderIndexList.includes(index);
@@ -154,11 +164,32 @@ export const ConfirmMnemonicStep = (props: {
           if (word === PLACEHOLDER) {
             return (
               <Box
+                display={"flex"}
                 key={index}
+                px={2}
+                py={2}
+                borderRadius="lg"
+                borderStyle={"solid"}
+                borderWidth={"2px"}
+                borderColor={"gray.100"}
+                justifyContent={"center"}
+                alignItems={"center"}
                 width={"32%"}
                 mr={(index + 1) % 3 === 0 ? "0" : "2%"}
                 mt={index >= 3 ? 2 : 0}
-              />
+                onClick={option ? () => onWordCancel(index) : undefined}
+              >
+                <Text
+                  wordBreak={"break-word"}
+                  fontWeight={"bold"}
+                  unselectable={"on"}
+                  color={"gray.300"}
+                  fontSize={"smaller"}
+                  lineHeight={"5"}
+                >
+                  {index + 1}.
+                </Text>
+              </Box>
             );
           }
 
@@ -169,7 +200,9 @@ export const ConfirmMnemonicStep = (props: {
               px={2}
               py={2}
               borderRadius="lg"
-              bg={"gray.100"}
+              borderStyle={"solid"}
+              borderWidth={"1.5px"}
+              borderColor={"gray.100"}
               justifyContent={"center"}
               alignItems={"center"}
               width={"32%"}
@@ -181,16 +214,28 @@ export const ConfirmMnemonicStep = (props: {
                 wordBreak={"break-word"}
                 fontWeight={"bold"}
                 unselectable={"on"}
+                color={"gray.300"}
+                fontSize={"smaller"}
+                lineHeight={"5"}
+              >
+                {index + 1}.&nbsp;
+              </Text>
+              <Text
+                wordBreak={"break-word"}
+                fontWeight={"bold"}
+                unselectable={"on"}
                 data-child={index}
+                lineHeight={"5"}
               >
                 {word}
               </Text>
-              {option && <IconCloseCircle w={4} h={4} />}
+              {option && <IconCloseLineGray w={3} h={3} />}
             </Box>
           );
         })}
       </Flex>
       <Grid
+        mt={4}
         templateColumns="repeat(3, 1fr)"
         gap={2}
         alignSelf={"stretch"}
@@ -204,7 +249,8 @@ export const ConfirmMnemonicStep = (props: {
             px={2}
             py={2}
             borderRadius="lg"
-            bg={"orange.100"}
+            borderColor={"gray.100"}
+            borderWidth={"2px"}
             justifyContent={"center"}
             alignItems={"center"}
             flexWrap={"wrap"}
@@ -214,7 +260,6 @@ export const ConfirmMnemonicStep = (props: {
             <Text
               wordBreak={"break-word"}
               fontWeight={"bold"}
-              color={"orange.500"}
               unselectable={"on"}
               data-child={index}
             >
