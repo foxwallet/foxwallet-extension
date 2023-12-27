@@ -1,1 +1,52 @@
-{}
+{
+  "Wallet": {
+    "title": "ပိုက်ဆံအိတ်",
+    "Create": {
+      "title": "Wallet ဖန်တီးပါ။",
+      "createMnemonic": "mnemonic အသစ်ကိုဖန်တီးပါ။",
+      "walletName": "ပိုက်ဆံအိတ်အမည်",
+      "walletNamePlaceholder": "ပိုက်ဆံအိတ်အမည်ထည့်ပါ။",
+      "dupWalletName": "ပိုက်ဆံအိတ်အမည်ကို ပွားပါ။",
+      "backupMnemonic": "mnemonic အရန်သိမ်းဆည်းပါ။",
+      "confirmMnemonic": "mnemonic ကိုအတည်ပြုပါ။"
+    },
+    "Import": {
+      "title": "ပိုက်ဆံအိတ်ကို တင်သွင်းပါ။",
+      "selectType": "အမျိုးအစားကို ရွေးပါ။",
+      "importMnemonic": "mnemonic တင်သွင်းပါ။",
+      "importPrivateKey": "သီးသန့်သော့ကို တင်သွင်းပါ။"
+    }
+  },
+  "Onboard": {
+    "Home": {
+      "slogan1": "အကောင်းဆုံး Web3 ပိုက်ဆံအိတ်",
+      "slogan2": "crypto ကမ္ဘာသို့ဝင်ပေါက်"
+    }
+  },
+  "Agreement": {
+    "content1": "FoxWallet ၏သဘောတူသည်။",
+    "content2": "အသုံးပြုသူသတိပေးချက်",
+    "and": "နှင့်",
+    "content3": "ကိုယ်ရေးအချက်အလက်မူဝါဒ"
+  },
+  "Password": {
+    "title": "စကားဝှက်",
+    "enter": "စကားဝှက်ထည့်ပါ။",
+    "passwordPlaceholder": "စာလုံး ၆ လုံးထက်မနည်း",
+    "confirmPasswordPlaceholder": "စကားဝှက်ကို ထပ်ထည့်ပါ။",
+    "warning": "FoxWallet သည် စကားဝှက်ကို သိမ်းဆည်းမည်မဟုတ်ပါ။ စကားဝှက်ကို မေ့သွားသည်နှင့်၊ သင်သည် mnemonic မှတဆင့် ပိုက်ဆံအိတ်ကိုသာ ပြန်လည်ရယူနိုင်သည်။"
+  },
+  "Mnemonic": {
+    "backupTips1": "mnemonic အဆင့်ကိုပြသရန် ဤနေရာကိုနှိပ်ပါ။",
+    "backupTips2": "ပတ်ဝန်းကျင် လုံခြုံကြောင်း အတည်ပြုပါ။",
+    "later": "ငါ့ကို နောက်မှသတိပေးပါ။",
+    "regenerate": "ပြန်ထုတ်ပါ။",
+    "title": "Mnemonic",
+    "enterPlaceholder": "နေရာလွတ်များဖြင့် ခြားထားသော mnemonic ကို ထည့်ပါ။",
+    "checkTips": "ကျေးဇူးပြု၍ \"{{WORD}}\" ကို စစ်ဆေးပါ"
+  },
+  "Common": {
+    "confirm": "အတည်ပြုပါ။",
+    "cancel": "မလုပ်တော့"
+  }
+}

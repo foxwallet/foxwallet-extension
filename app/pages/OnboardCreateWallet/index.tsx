@@ -1,27 +1,16 @@
-import {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { PageWithHeader } from "../../layouts/Page";
 import { Body } from "../../layouts/Body";
-import { OnboardProgress } from "../../components/Onboard/OnboardProgress";
-import { ClientContext, useClient } from "../../hooks/useClient";
+import { useClient } from "../../hooks/useClient";
 import { CreatePasswordStep } from "../../components/Onboard/CreatePassword";
 import { BackupMnemonicStep } from "../../components/Onboard/BackupMnemonic";
 import { logger } from "../../common/utils/logger";
 import { ConfirmMnemonicStep } from "../../components/Onboard/ConfirmMnemonic";
-import { showMnemonicWarningDialog } from "../../components/Onboard/MnemonicWarningDialog";
 import { nanoid } from "nanoid";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
 import { usePopupDispatch } from "@/hooks/useStore";
 import { CoinType } from "core/types";
-
-const CreateWalletSteps = ["Create", "Backup", "Confirm"];
+import { useTranslation } from "react-i18next";
 
 function OnboardCreateWalletScreen() {
   const [step, setStep] = useState(1);
@@ -52,10 +41,7 @@ function OnboardCreateWalletScreen() {
         ...account,
       },
     });
-    const { confirmed } = await showMnemonicWarningDialog();
-    if (confirmed) {
-      setMnemonic(wallet.mnemonic ?? "");
-    }
+    setMnemonic(wallet.mnemonic ?? "");
   }, []);
 
   const regenerateWallet = useCallback(async () => {
@@ -117,9 +103,18 @@ function OnboardCreateWalletScreen() {
     }
   }, [step, mnemonic, createWallet, regenerateWallet]);
 
+  const { t } = useTranslation();
+  const CreateWalletSteps = useMemo(
+    () => [
+      t("Wallet:Create:title"),
+      t("Wallet:Create:backupMnemonic"),
+      t("Wallet:Create:confirmMnemonic"),
+    ],
+    [t],
+  );
   return (
     <PageWithHeader
-      title="Create Wallet"
+      title={CreateWalletSteps[step - 1]}
       enableBack={step !== 2}
       onBack={() => {
         if (step > 1) {
@@ -130,10 +125,7 @@ function OnboardCreateWalletScreen() {
         }
       }}
     >
-      <Body>
-        <OnboardProgress currStep={step} steps={CreateWalletSteps} />
-        {stepContent}
-      </Body>
+      <Body>{stepContent}</Body>
     </PageWithHeader>
   );
 }
