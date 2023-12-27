@@ -1,4 +1,4 @@
-import { Flex, Image, Box, Container } from "@chakra-ui/react";
+import { Flex, Box } from "@chakra-ui/react";
 import { H5 } from "../../../common/theme/components/text";
 import { useNavigate } from "react-router-dom";
 import { IconCloseLineBlack, IconLeft } from "../Icon";
@@ -13,6 +13,7 @@ export interface HeaderProps {
   onBack?: () => boolean;
   title: string;
   backIconType?: HeaderLeftIconType;
+  rightIcon?: React.ReactNode;
 }
 
 export const Header = ({
@@ -20,6 +21,7 @@ export const Header = ({
   onBack,
   title,
   backIconType = HeaderLeftIconType.Back,
+  rightIcon,
 }: HeaderProps) => {
   const navigate = useNavigate();
   return (
@@ -63,7 +65,7 @@ export const Header = ({
       >
         {title}
       </H5>
-      <Box w={"6"} h={"6"} />
+      {!!rightIcon ? rightIcon : <Box w={"7"} h={"7"} />}
     </Flex>
   );
 };

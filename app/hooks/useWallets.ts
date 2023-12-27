@@ -1,13 +1,12 @@
-import { ChainUniqueId } from "core/types/ChainUniqueId";
 import { useClient } from "./useClient";
 import { useCallback, useEffect, useMemo } from "react";
 import useSWR from "swr";
 import { CoinType } from "core/types";
-import { useCurrAccount } from "./useCurrAccount";
 import { WalletType } from "@/scripts/background/store/vault/types/keyring";
 import { usePopupDispatch, usePopupSelector } from "./useStore";
 import { isEqual } from "lodash";
 import { useCoinBasic } from "./useCoinService";
+import { ChangeWalletNameProps } from "@/scripts/background/servers/IWalletServer";
 
 export const useWallets = () => {
   const { popupServerClient } = useClient();
@@ -32,8 +31,18 @@ export const useWallets = () => {
     [popupServerClient, getWallets],
   );
 
+  const flattenWalletList = useMemo(() => {
+    if (!wallets) {
+      return [];
+    }
+    const hdWallets = wallets[WalletType.HD] ?? [];
+    const simpleWallets = wallets[WalletType.SIMPLE] ?? [];
+    return [...hdWallets, ...simpleWallets];
+  }, [wallets]);
+
   return {
     wallets,
+    flattenWalletList,
     error,
     getWallets,
     addAccount,
@@ -42,6 +51,9 @@ export const useWallets = () => {
 };
 
 export const useCurrWallet = () => {
+  const { popupServerClient } = useClient();
+  const { getWallets } = useWallets();
+
   const { selectedAccount, walletInfo, uniqueId } = usePopupSelector(
     (state) => ({
       selectedAccount: state.account.selectedAccount,
@@ -61,8 +73,17 @@ export const useCurrWallet = () => {
     dispatch.account.getCurrWalletInfo(selectedAccount.walletId);
   }, [dispatch.account, selectedAccount.walletId]);
 
+  const changeWalletName = useCallback(
+    async (params: ChangeWalletNameProps) => {
+      await popupServerClient.changeWalletName(params);
+      getWallets();
+    },
+    [popupServerClient, getWallets],
+  );
+
   return {
     walletInfo,
     accountsInWallet,
+    changeWalletName,
   };
 };

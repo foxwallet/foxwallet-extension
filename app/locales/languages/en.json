@@ -15,6 +15,12 @@
       "selectType": "Select Type",
       "importMnemonic": "Import mnemonic",
       "importPrivateKey": "Import private key"
+    },
+    "Manage": {
+      "title": "Wallet",
+      "addWallet": "Add wallet",
+      "checkAccounts": "Check accounts",
+      "changeName": "Change wallet name"
     }
   },
   "Onboard": {
@@ -47,6 +53,7 @@
   },
   "Common": {
     "confirm": "Confirm",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "edit": "Edit"
   }
 }

@@ -46,6 +46,12 @@ export const AccountInfoHeader = () => {
     [navigate],
   );
 
+  const onChangeWallet = useCallback(() => {
+    showWalletsDrawer({
+      onManageWallet: () => navigate("/manage_wallet"),
+    });
+  }, [showWalletsDrawer, navigate]);
+
   const onCopyAddress = useCallback(() => {
     onCopy();
     showToast();
@@ -68,7 +74,7 @@ export const AccountInfoHeader = () => {
       borderColor={"#E6E8EC"}
     >
       <Flex
-        onClick={() => showWalletsDrawer()}
+        onClick={onChangeWallet}
         as={"button"}
         direction={"row"}
         align={"center"}
