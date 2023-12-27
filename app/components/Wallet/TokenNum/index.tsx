@@ -1,6 +1,6 @@
 import { L1 } from "@/common/theme/components/text";
 import { formatTokenNum } from "@/common/utils/num";
-import { Text } from "@chakra-ui/react";
+import { Text, chakra } from "@chakra-ui/react";
 import { BigNumber, utils } from "ethers";
 import { formatUnits } from "ethers/lib/utils";
 import { useMemo } from "react";

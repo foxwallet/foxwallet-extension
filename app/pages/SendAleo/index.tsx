@@ -1,6 +1,12 @@
 import { H6 } from "@/common/theme/components/text";
 import { ERROR_CODE } from "@/common/types/error";
+import {
+  IconAleo,
+  IconChevronRight,
+  IconQuestionCircle,
+} from "@/components/Custom/Icon";
 import { BaseInputGroup } from "@/components/Custom/Input";
+import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import { showSelectFeeTypeDialog } from "@/components/Send/SelectFeeType";
 import { showSelectRecordDialog } from "@/components/Send/SelectRecord";
 import { showSelectTransferMethodDialog } from "@/components/Send/SelectTransferMethod";
@@ -14,7 +20,9 @@ import { useRecords } from "@/hooks/useRecord";
 import { Content } from "@/layouts/Content";
 import { PageWithHeader } from "@/layouts/Page";
 import {
+  Box,
   Button,
+  Divider,
   Flex,
   InputRightElement,
   Select,
@@ -82,13 +90,21 @@ function SendScreen() {
   }, [transferMethod]);
 
   const onSelectTransferMethod = useCallback(async () => {
-    const { data } = await showSelectTransferMethodDialog();
+    const { data } = await showSelectTransferMethodDialog({
+      uniqueId,
+      address: selectedAccount.address,
+      selectedMethod: transferMethod,
+    });
     if (data) {
       setTransferMethod(data);
     }
-  }, []);
+  }, [transferMethod, selectedAccount, uniqueId]);
   useEffect(() => {
-    if (!loadingBalance && balance?.publicBalance === 0n) {
+    if (
+      !loadingBalance &&
+      balance?.publicBalance === 0n &&
+      balance?.privateBalance > 0n
+    ) {
       if (transferMethod.startsWith("transfer_public")) {
         setTransferMethod(AleoTransferMethod.PRIVATE);
       }
@@ -491,58 +507,46 @@ function SendScreen() {
     currFeeType,
   ]);
 
+  const transferMethodMap = useMemo(() => {
+    return {
+      [AleoTransferMethod.PUBLIC]: {
+        title: "Public transfer",
+      },
+      [AleoTransferMethod.PUBLIC_TO_PRIVATE]: {
+        title: "Public balance to private record",
+      },
+      [AleoTransferMethod.PRIVATE]: {
+        title: "Private transfer",
+      },
+      [AleoTransferMethod.PRIVATE_TO_PUBLIC]: {
+        title: "Private record to public balance",
+      },
+    };
+  }, []);
+
   return (
     <PageWithHeader enableBack title={"Send"}>
       <Content>
-        <Flex>
-          public balance:&nbsp;
-          {loadingBalance ? (
-            <Spinner />
-          ) : (
-            <TokenNum
-              amount={balance?.publicBalance || 0n}
-              decimals={nativeCurrency.decimals}
-              symbol={nativeCurrency.symbol}
-            />
-          )}
-        </Flex>
-        <Flex>
-          private balance:&nbsp;
-          {loadingBalance ? (
-            <Spinner />
-          ) : (
-            <TokenNum
-              amount={balance?.privateBalance || 0n}
-              decimals={nativeCurrency.decimals}
-              symbol={nativeCurrency.symbol}
-            />
-          )}
-        </Flex>
-        <Button mt="2" onClick={onSelectTransferMethod}>
-          {transferMethod}
-        </Button>
-        {isPrivateMethod &&
-          (!!currTransferRecord ? (
-            <Flex
-              textDecoration={"black"}
-              onClick={onSelectTransferRecord}
-              mt={2}
-            >
-              Using&nbsp;
-              <TokenNum
-                amount={currTransferRecord.parsedContent?.microcredits || 0n}
-                decimals={nativeCurrency.decimals}
-                symbol={nativeCurrency.symbol}
-              />
-              &nbsp;record to transfer.
+        <Flex flexDir={"column"} fontSize={"small"}>
+          <Flex justifyContent={"space-between"} align={"center"}>
+            <Text>From</Text>
+            <Box width={200}>
+              <MiddleEllipsisText text={selectedAccount.address} />
+            </Box>
+          </Flex>
+          <Flex justify={"space-between"} mt={2} align={"center"}>
+            <Text>Transfer Token</Text>
+            <Flex align={"center"}>
+              <IconAleo />
+              <Text ml={1} fontSize={"small"}>
+                ALEO
+              </Text>
             </Flex>
-          ) : (
-            <Text>No record to transfer.</Text>
-          ))}
+          </Flex>
+        </Flex>
+        <Divider bgColor={"gray.50"} h={"1px"} mt={3} mb={5} />
         <BaseInputGroup
-          container={{ mt: 2 }}
-          title={"Receiver"}
-          required
+          title={"To address"}
           inputProps={{
             placeholder: "Enter receiver address",
             onChange: onReceiverAddressChange,
@@ -550,15 +554,62 @@ function SendScreen() {
           }}
         />
 
+        <Flex flexDir={"column"} mt={5}>
+          <Flex justify={"space-between"}>
+            <Text fontWeight={"bold"}>Transfer Method</Text>
+            <Flex fontSize={"small"} color={"gray.500"}>
+              Balance:&nbsp;
+              <TokenNum
+                amount={
+                  (isPrivateMethod
+                    ? balance?.privateBalance
+                    : balance?.publicBalance) || 0n
+                }
+                decimals={nativeCurrency.decimals}
+                symbol={nativeCurrency.symbol}
+              />
+            </Flex>
+          </Flex>
+          <Flex
+            flexDir={"row"}
+            borderStyle={"solid"}
+            borderColor={"gray.50"}
+            borderWidth={"1.5px"}
+            borderRadius={"lg"}
+            px={4}
+            py={3}
+            mt={2}
+            onClick={onSelectTransferMethod}
+            justify={"space-between"}
+            align={"center"}
+          >
+            <Text>{transferMethodMap[transferMethod].title}</Text>
+            <IconChevronRight w={4} h={4} mr={-1} />
+          </Flex>
+        </Flex>
+
         <BaseInputGroup
-          container={{ mt: 2 }}
+          container={{ mt: 5 }}
           title={"Amount"}
-          required
           inputProps={{
             placeholder: "Enter amount",
             onChange: onAmountChange,
             isInvalid: !!amountStr && !amountValid,
           }}
+          headerRightElement={
+            <Flex fontSize={"small"} color={"gray.500"}>
+              Available:&nbsp;
+              <TokenNum
+                amount={
+                  (isPrivateMethod
+                    ? currTransferRecord.parsedContent?.microcredits
+                    : balance?.publicBalance) || 0n
+                }
+                decimals={nativeCurrency.decimals}
+                symbol={nativeCurrency.symbol}
+              />
+            </Flex>
+          }
           rightElement={
             <InputRightElement
               display={"flex"}
@@ -571,7 +622,39 @@ function SendScreen() {
             </InputRightElement>
           }
         />
-
+        <Flex align={"center"} mt={2}>
+          <IconQuestionCircle mr={1} />
+          {isPrivateMethod ? (
+            !!currTransferRecord ? (
+              <Flex
+                textDecoration={"black"}
+                onClick={onSelectTransferRecord}
+                fontSize={"smaller"}
+                color={"gray.500"}
+                mt={2}
+              >
+                Using&nbsp;
+                <TokenNum
+                  amount={currTransferRecord.parsedContent?.microcredits || 0n}
+                  decimals={nativeCurrency.decimals}
+                  symbol={nativeCurrency.symbol}
+                />
+                &nbsp;record to transfer.
+              </Flex>
+            ) : (
+              <Text>No record to transfer.</Text>
+            )
+          ) : (
+            <Text
+              onClick={onSelectTransferRecord}
+              fontSize={"smaller"}
+              color={"gray.500"}
+            >
+              Pay with public balance
+            </Text>
+          )}
+        </Flex>
+        {/*
         <Flex mt={2}>
           gasFee:&nbsp;
           <TokenNum
@@ -579,10 +662,10 @@ function SendScreen() {
             decimals={nativeCurrency.decimals}
             symbol={nativeCurrency.symbol}
           />
-        </Flex>
-        <Button mt="2" onClick={onSelectFeeType}>
+        </Flex> */}
+        {/* <Button mt="2" onClick={onSelectFeeType}>
           {currFeeType}
-        </Button>
+        </Button> */}
         {currFeeType === AleoFeeMethod.FEE_PRIVATE &&
           (!!currFeeRecord ? (
             <Flex textDecoration={"black"} onClick={onSelectFeeRecord} mt={2}>

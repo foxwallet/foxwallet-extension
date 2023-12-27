@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { chakra } from "@chakra-ui/react";
 
 function useCanvas(): CanvasRenderingContext2D {
   const ref = useRef<CanvasRenderingContext2D | null>(null);
@@ -124,4 +125,4 @@ function MiddleEllipsisText(props: TruncateProps) {
   );
 }
 
-export default MiddleEllipsisText;
+export default chakra(MiddleEllipsisText);
