@@ -680,7 +680,14 @@ function SendScreen() {
           ) : (
             <Text>No record to pay fee.</Text>
           ))}
-        <Button mt="2" isDisabled={!canSubmit} onClick={onConfirm}>
+        <Button
+          position={"absolute"}
+          bottom={6}
+          left={6}
+          right={6}
+          isDisabled={!canSubmit}
+          onClick={onConfirm}
+        >
           Submit
         </Button>
       </Content>
