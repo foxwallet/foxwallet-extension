@@ -1,1 +1,52 @@
-{}
+{
+  "Wallet": {
+    "title": "Cüzdan",
+    "Create": {
+      "title": "Cüzdan Oluştur",
+      "createMnemonic": "Yeni anımsatıcı oluştur",
+      "walletName": "Cüzdan Adı",
+      "walletNamePlaceholder": "Cüzdan adını girin",
+      "dupWalletName": "Yinelenen cüzdan adı",
+      "backupMnemonic": "Yedekleme anımsatıcısı",
+      "confirmMnemonic": "Anımsatıcıyı onayla"
+    },
+    "Import": {
+      "title": "Cüzdanı İçe Aktar",
+      "selectType": "Tür Seçin",
+      "importMnemonic": "Anımsatıcıyı içe aktar",
+      "importPrivateKey": "Özel anahtarı içe aktar"
+    }
+  },
+  "Onboard": {
+    "Home": {
+      "slogan1": "En iyi Web3 cüzdanı",
+      "slogan2": "Kripto dünyasına giriş"
+    }
+  },
+  "Agreement": {
+    "content1": "FoxWallet'i kabul ediyorum",
+    "content2": "Kullanıcı Bildirimi",
+    "and": "Ve",
+    "content3": "Gizlilik Politikası"
+  },
+  "Password": {
+    "title": "Şifre",
+    "enter": "Parolanı Gir",
+    "passwordPlaceholder": "En az 6 karakter",
+    "confirmPasswordPlaceholder": "Şifreyi tekrar girin",
+    "warning": "FoxWallet şifreyi saklamaz. Şifre unutulduğunda cüzdanı yalnızca anımsatıcı aracılığıyla geri yükleyebilirsiniz."
+  },
+  "Mnemonic": {
+    "backupTips1": "Anımsatıcı aşamayı görüntülemek için burayı tıklayın",
+    "backupTips2": "Lütfen çevrenin güvenli olduğundan emin olun",
+    "later": "Bana daha sonra hatırlat",
+    "regenerate": "Yenile",
+    "title": "anımsatıcı",
+    "enterPlaceholder": "Anımsatıcıyı boşluklarla ayırarak girin",
+    "checkTips": "Lütfen \"{{WORD}}\" ifadesini kontrol edin"
+  },
+  "Common": {
+    "confirm": "Onaylamak",
+    "cancel": "İptal etmek"
+  }
+}

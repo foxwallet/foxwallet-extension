@@ -15,10 +15,12 @@ import { getPasswordStrength } from "../../../common/utils/zxcvbn";
 import { PasswordStrengthIndicator } from "../PasswordStrengthIndicator";
 import { PASSWORD_MINIMUL_LENGTH } from "../../../common/constants";
 import { showPasswordWarningDialog } from "../PasswordWarningDialog";
+import { useTranslation } from "react-i18next";
 
 export const CreatePasswordStep = (props: {
   onConfirm: (walletName: string, password: string) => void;
 }) => {
+  const { t } = useTranslation();
   const [walletName, setWalletName] = useState("");
   const [viewPass, setViewPass] = useState(false);
   const [password, setPassword] = useState("");
@@ -89,19 +91,17 @@ export const CreatePasswordStep = (props: {
   return (
     <Content>
       <BaseInput
-        title={"Wallet Name"}
-        placeholder={"Enter wallet name"}
+        title={t("Wallet:Create:walletName")}
+        placeholder={t("Wallet:Create:walletNamePlaceholder")}
         container={{ mt: "2" }}
-        required
         value={walletName}
         onChange={onWalletNameChange}
       />
       <BaseInputGroup
         container={{ mt: 2 }}
-        title={"Password"}
-        required
+        title={t("Password:title")}
         inputProps={{
-          placeholder: "No less than 6 characters",
+          placeholder: t("Password:passwordPlaceholder"),
           type: viewPass ? "text" : "password",
           onChange: onPasswordChange,
           isInvalid: !!password && password.length < PASSWORD_MINIMUL_LENGTH,
@@ -130,7 +130,7 @@ export const CreatePasswordStep = (props: {
       {passwordScore !== null && (
         <PasswordStrengthIndicator
           score={passwordScore}
-          justifyContent={"flex-end"}
+          justifyContent={"space-between"}
           alignItems={"center"}
         />
       )}
@@ -138,7 +138,7 @@ export const CreatePasswordStep = (props: {
         container={{ mt: 2 }}
         inputProps={{
           isInvalid: showConfirmPasswordIndicator && !confirmPasswordCorrect,
-          placeholder: "Enter password again",
+          placeholder: t("Password:confirmPasswordPlaceholder"),
           type: viewPass ? "text" : "password",
           onChange: (event) => {
             setConfirmPassword(event.target.value);
@@ -159,7 +159,7 @@ export const CreatePasswordStep = (props: {
               }}
             >
               {confirmPasswordCorrect ? (
-                <IconCheckLine w={"5"} h="full" stroke="green.500" />
+                <IconCheckLine w={"5"} h="full" stroke="green.600" />
               ) : (
                 <IconCloseLine w={"5"} h="full" fill="red.400" />
               )}
@@ -171,7 +171,7 @@ export const CreatePasswordStep = (props: {
         container={{
           mt: 4,
         }}
-        content="FoxWallet won't store the password. Once the password is forgotten, you can only restore the wallet through the mnemonic."
+        content={t("Password:warning")}
       />
       <Flex
         position={"fixed"}
@@ -182,7 +182,7 @@ export const CreatePasswordStep = (props: {
         px={4}
       >
         <Button isDisabled={disableConfirm} onClick={onConfirm}>
-          Confirm
+          {t("Common:confirm")}
         </Button>
       </Flex>
     </Content>

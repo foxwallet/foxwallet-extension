@@ -85,9 +85,9 @@ export const AccountInfoHeader = () => {
         <IconArrowRight w={18} h={18} />
       </Flex>
       <Flex mt={6} direction={"row"} align={"center"}>
-        <Text maxW={128} noOfLines={1} fontSize={11} color={"#777E90"}>
+        <Box maxW={128} noOfLines={1} fontSize={11} color={"#777E90"}>
           <MiddleEllipsisText text={selectedAccount.address} width={128} />
-        </Text>
+        </Box>
         <Flex
           justify={"center"}
           align={"center"}
@@ -99,7 +99,7 @@ export const AccountInfoHeader = () => {
         </Flex>
       </Flex>
       <Flex direction={"row"} align={"center"} mt={2}>
-        <Text fontSize={24} fontWeight={600}>
+        <Box fontSize={24} fontWeight={600}>
           {showBalance ? (
             <TokenNum
               amount={balance?.total || 0n}
@@ -109,7 +109,7 @@ export const AccountInfoHeader = () => {
           ) : (
             "*****"
           )}
-        </Text>
+        </Box>
         <Box as="button" ml={1} onClick={() => setShowBalance((prev) => !prev)}>
           {showBalance ? (
             <IconEyeOn w={4} h={4} />

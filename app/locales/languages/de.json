@@ -1,1 +1,52 @@
-{}
+{
+  "Wallet": {
+    "title": "Geldbörse",
+    "Create": {
+      "title": "Wallet erstellen",
+      "createMnemonic": "Erstellen Sie eine neue Mnemonik",
+      "walletName": "Wallet-Name",
+      "walletNamePlaceholder": "Geben Sie den Wallet-Namen ein",
+      "dupWalletName": "Doppelter Wallet-Name",
+      "backupMnemonic": "Backup-Mnemonik",
+      "confirmMnemonic": "Mnemonik bestätigen"
+    },
+    "Import": {
+      "title": "Wallet importieren",
+      "selectType": "Art auswählen",
+      "importMnemonic": "Mnemonik importieren",
+      "importPrivateKey": "Privaten Schlüssel importieren"
+    }
+  },
+  "Onboard": {
+    "Home": {
+      "slogan1": "Die beste Web3-Wallet",
+      "slogan2": "Eintritt in die Kryptowelt"
+    }
+  },
+  "Agreement": {
+    "content1": "Ich stimme FoxWallet zu",
+    "content2": "Benutzerhinweis",
+    "and": "Und",
+    "content3": "Datenschutzrichtlinie"
+  },
+  "Password": {
+    "title": "Passwort",
+    "enter": "Passwort eingeben",
+    "passwordPlaceholder": "Nicht weniger als 6 Zeichen",
+    "confirmPasswordPlaceholder": "Passwort erneut eingeben",
+    "warning": "FoxWallet speichert das Passwort nicht. Sobald Sie das Passwort vergessen haben, können Sie das Wallet nur über die Mnemonik wiederherstellen."
+  },
+  "Mnemonic": {
+    "backupTips1": "Klicken Sie hier, um die mnemonische Phase anzuzeigen",
+    "backupTips2": "Bitte bestätigen Sie, dass die Umgebung sicher ist",
+    "later": "Erinnere mich später",
+    "regenerate": "Regenerieren",
+    "title": "Gedächtnisstütze",
+    "enterPlaceholder": "Geben Sie die Mnemonik ein, getrennt durch Leerzeichen",
+    "checkTips": "Bitte überprüfen Sie „{{WORD}}“"
+  },
+  "Common": {
+    "confirm": "Bestätigen",
+    "cancel": "Stornieren"
+  }
+}

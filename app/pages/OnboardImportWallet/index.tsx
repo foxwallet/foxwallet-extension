@@ -13,10 +13,12 @@ import { usePopupDispatch } from "@/hooks/useStore";
 import { sleep } from "core/utils/sleep";
 import { useNavigate } from "react-router-dom";
 import { CoinType } from "core/types";
+import { useTranslation } from "react-i18next";
 
 const ImportWalletSteps = ["Create", "Import"];
 
 export default function OnboardImportWallet() {
+  const { t } = useTranslation();
   const [step, setStep] = useState(1);
   const walletNameRef = useRef("");
   const { popupServerClient } = useClient();
@@ -78,7 +80,7 @@ export default function OnboardImportWallet() {
 
   return (
     <PageWithHeader
-      title="Import Wallet"
+      title={t("Wallet:Import:title")}
       enableBack={true}
       onBack={() => {
         if (step > 1) {
@@ -88,10 +90,7 @@ export default function OnboardImportWallet() {
         return true;
       }}
     >
-      <Body>
-        <OnboardProgress currStep={step} steps={ImportWalletSteps} />
-        {stepContent}
-      </Body>
+      <Body>{stepContent}</Body>
     </PageWithHeader>
   );
 }

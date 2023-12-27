@@ -37,6 +37,11 @@ export class AuthManager {
     }
     clearTimeout(this.#timerId);
     const now = Date.now();
+    console.log(
+      "===> AuthManager hasAuth: ",
+      this.#loginTimestamp,
+      now - this.#loginTimestamp >= EXPIRE_TIME,
+    );
     if (now - this.#loginTimestamp >= EXPIRE_TIME) {
       this.lock();
       return false;
@@ -45,6 +50,7 @@ export class AuthManager {
   }
 
   lock = () => {
+    console.log("===> AuthManager lock ");
     this.#token = undefined;
     this.#loginTimestamp = undefined;
     this.#timerId = undefined;
@@ -54,6 +60,7 @@ export class AuthManager {
     this.#loginTimestamp = Date.now();
     // @ts-expect-error setTimeout
     this.#timerId = setTimeout(this.lock, LOCK_TIME);
+    console.log("===> AuthManager timeoutLock: ", this.#loginTimestamp);
   };
 
   async login(password: string) {

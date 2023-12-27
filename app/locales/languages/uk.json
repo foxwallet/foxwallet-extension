@@ -1,1 +1,52 @@
-{}
+{
+  "Wallet": {
+    "title": "Гаманець",
+    "Create": {
+      "title": "Створити гаманець",
+      "createMnemonic": "Створити нову мнемосхему",
+      "walletName": "Назва гаманця",
+      "walletNamePlaceholder": "Введіть назву гаманця",
+      "dupWalletName": "Дубльована назва гаманця",
+      "backupMnemonic": "Резервна мнемоніка",
+      "confirmMnemonic": "Підтвердьте мнемоніку"
+    },
+    "Import": {
+      "title": "Імпорт гаманця",
+      "selectType": "Виберіть Тип",
+      "importMnemonic": "Імпорт мнемоніки",
+      "importPrivateKey": "Імпорт закритого ключа"
+    }
+  },
+  "Onboard": {
+    "Home": {
+      "slogan1": "Найкращий гаманець Web3",
+      "slogan2": "Вхід в криптосвіт"
+    }
+  },
+  "Agreement": {
+    "content1": "Я погоджуюся з FoxWallet",
+    "content2": "Повідомлення користувача",
+    "and": "і",
+    "content3": "Політика конфіденційності"
+  },
+  "Password": {
+    "title": "Пароль",
+    "enter": "Введіть пароль",
+    "passwordPlaceholder": "Не менше 6 символів",
+    "confirmPasswordPlaceholder": "Введіть пароль ще раз",
+    "warning": "FoxWallet не зберігатиме пароль. Якщо пароль забутий, відновити гаманець можна лише за допомогою мнемоніки."
+  },
+  "Mnemonic": {
+    "backupTips1": "Натисніть тут, щоб відобразити мнемонічний етап",
+    "backupTips2": "Підтвердьте, що оточення безпечне",
+    "later": "Нагадай мені пізніше",
+    "regenerate": "Регенерувати",
+    "title": "Мнемотехніка",
+    "enterPlaceholder": "Введіть мнемосхему, розділивши її пробілами",
+    "checkTips": "Перевірте \"{{WORD}}\""
+  },
+  "Common": {
+    "confirm": "Підтвердити",
+    "cancel": "Скасувати"
+  }
+}

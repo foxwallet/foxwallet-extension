@@ -16,12 +16,14 @@ import { useDebounce } from "use-debounce";
 import { logger } from "../../../common/utils/logger";
 import { useDataRef } from "../../../hooks/useDataRef";
 import { WarningArea } from "../../Custom/WarningArea";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   onConfirm: (mnemonic: string) => void;
 };
 
 export const ImportMnemonicStep = ({ onConfirm }: Props) => {
+  const { t } = useTranslation();
   const [mnemonic, setMnemonic] = useState("");
   const mnemonicRef = useDataRef(mnemonic);
   const [debounceMnemonic] = useDebounce(mnemonic, 100, { trailing: true });
@@ -126,19 +128,16 @@ export const ImportMnemonicStep = ({ onConfirm }: Props) => {
 
   return (
     <Content>
-      <H6 mb="2" color={"gray.600"}>
-        {"Seed phrase"}
-      </H6>
+      <H6 mb="2">{t("Mnemonic:title")}</H6>
       <Textarea
         value={mnemonic}
         onChange={onInputChange}
         onKeyDown={handleKeyDown}
-        placeholder="Enter the seed phrase, separated by spaces"
+        placeholder={t("Mnemonic:enterPlaceholder")}
         size="md"
         resize={"none"}
         h={"150"}
-        borderColor={`${showError ? "red.500" : "gray.50"}`}
-        borderWidth={1}
+        borderColor={showError ? "red.500" : undefined}
       />
       <Flex flexWrap={"wrap"}>
         {matchWords.map((item) => {
@@ -146,14 +145,14 @@ export const ImportMnemonicStep = ({ onConfirm }: Props) => {
             <Box
               key={item}
               borderRadius={"md"}
-              bg={"orange.100"}
+              bg={"green.100"}
               px={"2"}
               py={"1"}
               mr={"2"}
               mt={"2"}
               onClick={() => onReplaceLastWord(item)}
             >
-              <Text color={"orange.500"}>{item}</Text>
+              <Text color={"green.700"}>{item}</Text>
             </Box>
           );
         })}
@@ -161,7 +160,7 @@ export const ImportMnemonicStep = ({ onConfirm }: Props) => {
       {!!errorWord && (
         <WarningArea
           container={{ mt: "2" }}
-          content={`Please check "${errorWord}"`}
+          content={t("Mnemonic:checkTips", { WORD: errorWord })}
         />
       )}
       <Button
@@ -172,7 +171,7 @@ export const ImportMnemonicStep = ({ onConfirm }: Props) => {
         right={"4"}
         onClick={() => onConfirm(mnemonic.trim())}
       >
-        {"Confirm"}
+        {t("Common:confirm")}
       </Button>
     </Content>
   );
