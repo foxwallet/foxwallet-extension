@@ -10,7 +10,9 @@ export const WarningArea = (props: WarningAreaProps) => {
   const { content, container } = props;
   return (
     <Box bg={"red.50"} {...container} borderRadius={"lg"} px={"4"} py={"2"}>
-      <P4 color={"red.300"}>*{content}</P4>
+      <P4 color={"red.500"} lineHeight={1.5}>
+        *{content}
+      </P4>
     </Box>
   );
 };

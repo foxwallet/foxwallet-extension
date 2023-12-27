@@ -81,7 +81,7 @@ function OnboardHomeScreen() {
                   )
                 }
               >
-                <L1>{LanguageLabels[language]}</L1>
+                <L1 ml={2}>{LanguageLabels[language]}</L1>
               </MenuButton>
               <MenuList
                 borderStyle={"solid"}
@@ -90,8 +90,20 @@ function OnboardHomeScreen() {
                 borderColor={"black"}
                 paddingX={"3"}
                 paddingY={"2"}
+                bg={"white"}
               >
-                <MenuItem
+                {Object.values(SupportLanguages).map((item) => (
+                  <MenuItem
+                    key={item}
+                    onClick={() => changeLanguage(item)}
+                    fontSize={"xs"}
+                    fontWeight={"normal"}
+                    mt={1}
+                  >
+                    {LanguageLabels[item]}
+                  </MenuItem>
+                ))}
+                {/* <MenuItem
                   onClick={() => changeLanguage(SupportLanguages.EN)}
                   fontSize={"xs"}
                   fontWeight={"semibold"}
@@ -105,7 +117,7 @@ function OnboardHomeScreen() {
                   marginTop={"1"}
                 >
                   {LanguageLabels[SupportLanguages.ZH]}
-                </MenuItem>
+                </MenuItem> */}
               </MenuList>
             </>
           )}
@@ -143,7 +155,7 @@ function OnboardHomeScreen() {
           <B3
             textDecorationLine={"underline"}
             textDecorationColor={"green.500"}
-            color="green.500"
+            color="green.400"
             onClick={() => {
               browser.tabs.create({
                 url: "https://hc.foxwallet.com/terms-of-service",
@@ -156,7 +168,7 @@ function OnboardHomeScreen() {
           <B3
             textDecorationLine={"underline"}
             textDecorationColor={"green.500"}
-            color="green.500"
+            color="green.400"
             onClick={() => {
               browser.tabs.create({
                 url: "https://hc.foxwallet.com/privacy-policy",

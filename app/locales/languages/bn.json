@@ -1,1 +1,52 @@
-{}
+{
+  "Wallet": {
+    "title": "ওয়ালেট",
+    "Create": {
+      "title": "ওয়ালেট তৈরি করুন",
+      "createMnemonic": "নতুন মেমোনিক তৈরি করুন",
+      "walletName": "ওয়ালেটের নাম",
+      "walletNamePlaceholder": "ওয়ালেটের নাম লিখুন",
+      "dupWalletName": "ডুপ্লিকেট ওয়ালেট নাম",
+      "backupMnemonic": "ব্যাকআপ মেমোনিক",
+      "confirmMnemonic": "মেমোনিক নিশ্চিত করুন"
+    },
+    "Import": {
+      "title": "ওয়ালেট আমদানি করুন",
+      "selectType": "প্রকার নির্বাচন করুন",
+      "importMnemonic": "নিউমোনিক আমদানি করুন",
+      "importPrivateKey": "ব্যক্তিগত কী আমদানি করুন"
+    }
+  },
+  "Onboard": {
+    "Home": {
+      "slogan1": "সেরা Web3 ওয়ালেট",
+      "slogan2": "ক্রিপ্টো জগতে প্রবেশ"
+    }
+  },
+  "Agreement": {
+    "content1": "আমি FoxWallet এর সাথে সম্মত",
+    "content2": "ব্যবহারকারীর বিজ্ঞপ্তি",
+    "and": "এবং",
+    "content3": "গোপনীয়তা নীতি"
+  },
+  "Password": {
+    "title": "পাসওয়ার্ড",
+    "enter": "পাসওয়ার্ড লিখুন",
+    "passwordPlaceholder": "6 অক্ষরের কম নয়",
+    "confirmPasswordPlaceholder": "আবার পাসওয়ার্ড দিন",
+    "warning": "FoxWallet পাসওয়ার্ড সংরক্ষণ করবে না। একবার পাসওয়ার্ড ভুলে গেলে, আপনি শুধুমাত্র স্মৃতির মাধ্যমে ওয়ালেটটি পুনরুদ্ধার করতে পারেন।"
+  },
+  "Mnemonic": {
+    "backupTips1": "মেমোনিক ফেজ প্রদর্শন করতে এখানে ক্লিক করুন",
+    "backupTips2": "অনুগ্রহ করে নিশ্চিত করুন যে চারপাশ নিরাপদ",
+    "later": "আমাকে পরে মনে করিয়ে দিবেন",
+    "regenerate": "পুনর্জন্ম",
+    "title": "স্মৃতিসংক্রান্ত",
+    "enterPlaceholder": "স্পেস দ্বারা বিভক্ত, স্মারক লিখুন",
+    "checkTips": "অনুগ্রহ করে \"{{WORD}}\" চেক করুন"
+  },
+  "Common": {
+    "confirm": "নিশ্চিত করুন",
+    "cancel": "বাতিল করুন"
+  }
+}

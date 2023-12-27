@@ -22,11 +22,9 @@ export const BaseInput = chakra((props: BaseInputProps) => {
     <Flex direction={"column"} {...container}>
       {!!title && (
         <Flex>
-          <H6 mb={"2"} color={"gray.600"}>
-            {title}
-          </H6>
+          <H6 mb={"2"}>{title}</H6>
           {required ? (
-            <Text color={"orange.500"} ml={"1"}>
+            <Text color={"green.400"} ml={"1"}>
               *
             </Text>
           ) : null}
@@ -54,11 +52,9 @@ export const BaseInputGroup = (props: BaseInputGroupProps) => {
     <Flex direction={"column"} {...container}>
       {!!title && (
         <Flex>
-          <H6 mb={"2"} color={"gray.600"}>
-            {title}
-          </H6>
+          <H6 mb={"2"}>{title}</H6>
           {required ? (
-            <Text color={"orange.500"} ml={"1"}>
+            <Text color={"green.400"} ml={"1"}>
               *
             </Text>
           ) : null}

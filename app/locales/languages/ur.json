@@ -1,1 +1,52 @@
-{}
+{
+  "Wallet": {
+    "title": "پرس",
+    "Create": {
+      "title": "والیٹ بنائیں",
+      "createMnemonic": "نیا یادداشت بنائیں",
+      "walletName": "بٹوے کا نام",
+      "walletNamePlaceholder": "بٹوے کا نام درج کریں۔",
+      "dupWalletName": "ڈپلیکیٹ بٹوے کا نام",
+      "backupMnemonic": "یادداشت کا بیک اپ",
+      "confirmMnemonic": "یادداشت کی تصدیق کریں۔"
+    },
+    "Import": {
+      "title": "پرس درآمد کریں۔",
+      "selectType": "قسم منتخب کریں۔",
+      "importMnemonic": "یادداشت درآمد کریں۔",
+      "importPrivateKey": "نجی کلید درآمد کریں۔"
+    }
+  },
+  "Onboard": {
+    "Home": {
+      "slogan1": "بہترین Web3 والیٹ",
+      "slogan2": "کرپٹو دنیا میں داخلہ"
+    }
+  },
+  "Agreement": {
+    "content1": "میں FoxWallet سے اتفاق کرتا ہوں۔",
+    "content2": "صارف کا نوٹس",
+    "and": "اور",
+    "content3": "رازداری کی پالیسی"
+  },
+  "Password": {
+    "title": "پاس ورڈ",
+    "enter": "پاس ورڈ درج کریں",
+    "passwordPlaceholder": "6 حروف سے کم نہیں۔",
+    "confirmPasswordPlaceholder": "دوبارہ پاس ورڈ درج کریں۔",
+    "warning": "FoxWallet پاس ورڈ محفوظ نہیں کرے گا۔ پاس ورڈ بھول جانے کے بعد، آپ صرف یادداشت کے ذریعے والیٹ کو بحال کر سکتے ہیں۔"
+  },
+  "Mnemonic": {
+    "backupTips1": "یادداشت کا مرحلہ ظاہر کرنے کے لیے یہاں کلک کریں۔",
+    "backupTips2": "براہ کرم تصدیق کریں کہ آس پاس کے ماحول محفوظ ہیں۔",
+    "later": "مجھے بعد میں یاد کروانا",
+    "regenerate": "دوبارہ پیدا کرنا",
+    "title": "یادداشت کا",
+    "enterPlaceholder": "یادداشت داخل کریں، خالی جگہوں سے الگ",
+    "checkTips": "براہ کرم \"{{WORD}}\" کو چیک کریں"
+  },
+  "Common": {
+    "confirm": "تصدیق کریں۔",
+    "cancel": "منسوخ کریں۔"
+  }
+}

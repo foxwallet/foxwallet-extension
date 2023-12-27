@@ -1,7 +1,4 @@
-import { useDispatch } from "react-redux";
-import { Dispatch } from "../../../store/store";
-import { clients, useClient } from "../../../hooks/useClient";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Box,
   Flex,
@@ -10,15 +7,15 @@ import {
   GridItem,
   BoxProps,
   Button,
+  Link,
 } from "@chakra-ui/react";
-import { logger } from "../../../common/utils/logger";
-import { nanoid } from "nanoid";
-import { DisplayWallet } from "../../../scripts/background/store/vault/types/keyring";
 import { Content } from "../../../layouts/Content";
-import { showMnemonicWarningDialog } from "../MnemonicWarningDialog";
+import { IconPreventScreenshot } from "../../Custom/Icon";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
 
 function Dot(props: BoxProps) {
-  return <Box w={2} h={2} borderRadius={4} bg={"gray.100"} {...props} />;
+  return <Box w={1.5} h={1.5} borderRadius={3} bg={"gray.500"} {...props} />;
 }
 
 function WordGrid({ words }: { words: string[] }) {
@@ -27,7 +24,6 @@ function WordGrid({ words }: { words: string[] }) {
       templateColumns="repeat(3, 1fr)"
       gap={2}
       alignSelf={"stretch"}
-      bg={"gray.50"}
       p={2}
       borderRadius={"lg"}
     >
@@ -38,14 +34,17 @@ function WordGrid({ words }: { words: string[] }) {
           px={2}
           py={2}
           borderRadius="lg"
-          bg={"gray.100"}
+          borderWidth={"1px"}
+          borderStyle={"solid"}
+          borderColor={"gray.100"}
           justifyContent={"center"}
           alignItems={"center"}
           flexWrap={"wrap"}
         >
-          <Text wordBreak={"break-word"} fontWeight={"bold"}>
-            {index + 1}.{word}
-          </Text>
+          <Flex wordBreak={"break-word"} alignItems={"center"}>
+            <Text color={"gray.400"}>{index + 1}.&nbsp;</Text>
+            {word}
+          </Flex>
         </GridItem>
       ))}
     </Grid>
@@ -64,7 +63,10 @@ export const BackupMnemonicStep = (props: {
   createWallet: () => Promise<void>;
   regenerateWallet: () => Promise<void>;
 }) => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
   const { mnemonic, onConfirm, createWallet, regenerateWallet } = props;
+  const [startBackup, setStartBackup] = useState(false);
   const wordList = useMemo(() => {
     if (!mnemonic) {
       return [];
@@ -82,25 +84,59 @@ export const BackupMnemonicStep = (props: {
 
   return (
     <Content>
-      <WordGrid words={wordList} />
+      <Flex position={"relative"}>
+        {!startBackup && (
+          <Flex
+            position={"absolute"}
+            left={0}
+            right={0}
+            top={0}
+            bottom={0}
+            flexDir={"column"}
+            justifyContent={"center"}
+            alignItems={"center"}
+            backdropFilter="blur(10px)"
+            onClick={() => setStartBackup(true)}
+          >
+            <IconPreventScreenshot w={"8"} h={"8"} mb={2} />
+            <Text mb={2} fontWeight={"bold"}>
+              {t("Mnemonic:backupTips1")}
+            </Text>
+            <Text fontWeight={"bold"}>{t("Mnemonic:backupTips2")}</Text>
+          </Flex>
+        )}
+        <WordGrid words={wordList} />
+      </Flex>
       <Flex
         flexDirection={"column"}
-        bg={"gray.50"}
         mt={4}
         borderRadius={"lg"}
+        borderStyle={"solid"}
+        borderWidth={"2px"}
+        borderColor={"gray.50"}
         p={2}
-        pt={1}
       >
         {tips.map((tip, index) => (
           <Flex mt={1} key={index}>
-            <Dot mt={1} />
-            <Text ml={2} fontSize={"smaller"} color={"gray.500"} maxW={"95%"}>
+            <Dot mt={1.5} />
+            <Text ml={2} fontSize={"small"} color={"gray.600"} maxW={"95%"}>
               {tip}
             </Text>
           </Flex>
         ))}
       </Flex>
-      <Flex mt={8}>
+      <Flex justifyContent={"center"} mt={"5"}>
+        <Link
+          textDecorationLine={"underline"}
+          textDecorationColor={"green.600"}
+          color={"green.600"}
+          fontWeight={"bold"}
+          onClick={() => navigate("/main")}
+        >
+          {t("Mnemonic:later")}
+        </Link>
+      </Flex>
+      <Flex mt={12}>
         <Button
           colorScheme="secondary"
           flex={1}
@@ -108,10 +144,10 @@ export const BackupMnemonicStep = (props: {
           isDisabled={!mnemonic}
           onClick={regenerateWallet}
         >
-          {"Regenerate"}
+          {t("Mnemonic:regenerate")}
         </Button>
-        <Button flex={1} onClick={() => onConfirm()}>
-          {"Confirm"}
+        <Button flex={1} isDisabled={!startBackup} onClick={() => onConfirm()}>
+          {t("Common:confirm")}
         </Button>
       </Flex>
     </Content>
