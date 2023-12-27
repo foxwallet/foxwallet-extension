@@ -25,6 +25,7 @@ import {
   SetSelectedUniqueIdProps,
   ResyncAleoProps,
   ImportPrivateKeyProps,
+  ChangeWalletNameProps,
 } from "./IWalletServer";
 import {
   sendDeployment,
@@ -51,6 +52,7 @@ import {
 import { CoinServiceEntry } from "core/coins/CoinServiceEntry";
 import { ChainUniqueId, InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { DEFAULT_UNIQUE_ID_MAP } from "core/constants";
+import { clients } from "@/hooks/useClient";
 
 export type OnRequestFinishCallback = (
   error: null | Error,
@@ -516,5 +518,11 @@ export class PopupWalletServer implements IPopupServer {
       throw new Error(tx.payload.error);
     }
     return tx.payload.data;
+  }
+
+  async changeWalletName(
+    params: ChangeWalletNameProps,
+  ): Promise<DisplayWallet> {
+    return await this.keyringManager.changeWalletName(params);
   }
 }
