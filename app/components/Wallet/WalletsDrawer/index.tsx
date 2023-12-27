@@ -1,8 +1,12 @@
-import { Flex, Text } from "@chakra-ui/react";
+import { Box, Flex, Text } from "@chakra-ui/react";
 import { promisifyChooseDialogWrapper } from "../../../common/utils/dialog";
 import { BasicDrawer } from "@/components/Custom/Drawer";
 import { useCurrWallet } from "@/hooks/useWallets";
-import { IconAleo, IconCheckLineBlack } from "@/components/Custom/Icon";
+import {
+  IconAleo,
+  IconCheckLineBlack,
+  IconWallet,
+} from "@/components/Custom/Icon";
 import React, { useCallback } from "react";
 import { DisplayAccount } from "@/scripts/background/store/vault/types/keyring";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
@@ -54,14 +58,20 @@ interface Props {
   isOpen: boolean;
   onCancel: () => void;
   onConfirm: () => void;
+  onManageWallet: () => void;
 }
 
 const WalletsDrawer = (props: Props) => {
-  const { isOpen, onCancel, onConfirm } = props;
+  const { isOpen, onCancel, onConfirm, onManageWallet } = props;
 
   const { selectedAccount } = useCurrAccount();
   const { walletInfo, accountsInWallet } = useCurrWallet();
   const dispatch = usePopupDispatch();
+
+  const handleManageWallet = useCallback(() => {
+    onConfirm?.();
+    onManageWallet?.();
+  }, [onManageWallet, onConfirm]);
 
   const onSelectAccount = useCallback(
     (account: DisplayAccount) => {
@@ -98,6 +108,11 @@ const WalletsDrawer = (props: Props) => {
       isOpen={isOpen}
       onClose={onCancel}
       title={walletInfo!.walletName}
+      rightIcon={
+        <Box as="button" pr={1} onClick={handleManageWallet}>
+          <IconWallet />
+        </Box>
+      }
       body={
         <Flex flexDirection={"column"} px={1.5}>
           <Flex align={"center"} justify={"flex-start"}>

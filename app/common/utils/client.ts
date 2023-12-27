@@ -14,6 +14,7 @@ import {
   SetSelectedUniqueIdProps,
   ResyncAleoProps,
   ImportPrivateKeyProps,
+  ChangeWalletNameProps,
 } from "../../scripts/background/servers/IWalletServer";
 import {
   type DisplayWallet,
@@ -205,6 +206,12 @@ export class PopupServerClient implements IClient, IPopupServer {
 
   async onRequestFinish(params: RequestFinfishProps): Promise<void> {
     return await this.#send("onRequestFinish", params);
+  }
+
+  async changeWalletName(
+    params: ChangeWalletNameProps,
+  ): Promise<DisplayWallet> {
+    return await this.#send("changeWalletName", params);
   }
 
   async #send<T, R>(method: PopupServerMethod, payload: T): Promise<R> {

@@ -1,5 +1,4 @@
 import {
-  Box,
   Modal,
   ModalBody,
   type ModalBodyProps,
@@ -12,7 +11,7 @@ import {
 import { H6 } from "../../../common/theme/components/text";
 import { IconCloseLine } from "../Icon";
 
-interface ModalProps {
+interface BottomUpDrawerProps {
   title?: string;
   isOpen: boolean;
   hideClose?: boolean;
@@ -21,10 +20,9 @@ interface ModalProps {
   footer?: React.ReactNode;
   bodyStyle?: ModalBodyProps;
   footerStyle?: ModalFooterProps;
-  rightIcon?: React.ReactNode;
 }
 
-export function BasicDrawer(props: ModalProps) {
+export function BottomUpDrawer(props: BottomUpDrawerProps) {
   const {
     title,
     isOpen,
@@ -34,7 +32,6 @@ export function BasicDrawer(props: ModalProps) {
     footer,
     bodyStyle,
     footerStyle,
-    rightIcon,
   } = props;
 
   return (
@@ -49,9 +46,8 @@ export function BasicDrawer(props: ModalProps) {
       <ModalContent
         alignSelf={"flex-end"}
         bg={"white"}
-        px={2.5}
-        pt={2.5}
-        pb={5}
+        p={4}
+        borderTopRadius={8}
       >
         {(!!title || !hideClose) && (
           <ModalHeader
@@ -60,19 +56,14 @@ export function BasicDrawer(props: ModalProps) {
             alignItems={"center"}
             mb={4}
           >
-            {hideClose ? (
-              <Box w={6} h={6} />
-            ) : (
-              <IconCloseLine
-                w={6}
-                h={6}
-                cursor={"pointer"}
-                fill={"black"}
-                onClick={onClose}
-              />
-            )}
             {!!title && <H6>{title}</H6>}
-            {!!rightIcon ? rightIcon : <Box w={6} h={6} />}
+            <IconCloseLine
+              w={6}
+              h={6}
+              cursor={"pointer"}
+              fill={"black"}
+              onClick={onClose}
+            />
           </ModalHeader>
         )}
         <ModalBody {...bodyStyle}>{body}</ModalBody>
