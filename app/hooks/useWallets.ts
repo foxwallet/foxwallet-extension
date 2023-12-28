@@ -1,5 +1,5 @@
 import { useClient } from "./useClient";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { CoinType } from "core/types";
 import { WalletType } from "@/scripts/background/store/vault/types/keyring";
