@@ -125,11 +125,6 @@ export type AleoRequestDeploymentProps = Omit<
   uniqueId: ChainUniqueId;
 };
 
-export type ChangeWalletNameProps = {
-  walletId: string;
-  walletName: string;
-}
-
 export interface IPopupServer {
   initPassword: (params: { password: string }) => Promise<boolean>;
 
@@ -174,8 +169,6 @@ export interface IPopupServer {
   sendAleoTransaction(params: AleoSendTxProps): Promise<AleoTransaction>;
 
   onRequestFinish(params: RequestFinfishProps): Promise<void>;
-
-  changeWalletName(params: ChangeWalletNameProps): Promise<DisplayWallet>;
 }
 
 export interface ConnectProps {

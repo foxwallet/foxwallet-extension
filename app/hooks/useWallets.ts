@@ -1,89 +1,100 @@
 import { useClient } from "./useClient";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { CoinType } from "core/types";
 import { WalletType } from "@/scripts/background/store/vault/types/keyring";
 import { usePopupDispatch, usePopupSelector } from "./useStore";
 import { isEqual } from "lodash";
 import { useCoinBasic } from "./useCoinService";
-import { ChangeWalletNameProps } from "@/scripts/background/servers/IWalletServer";
 
 export const useWallets = () => {
   const { popupServerClient } = useClient();
 
+  const allWalletInfo = usePopupSelector(
+    (state) => state.account.allWalletInfo,
+    isEqual,
+  );
+  const dispatch = usePopupDispatch();
+
   const key = `/wallets`;
   const fetchWallets = useCallback(async () => {
+    dispatch.account.refreshAllWalletsToStore();
     return await popupServerClient.getAllWallet();
-  }, [popupServerClient]);
+  }, [popupServerClient, dispatch.account]);
 
   const {
-    data: wallets,
+    data: originWallets,
     error,
     mutate: getWallets,
     isLoading: loadingWallets,
   } = useSWR(key, fetchWallets);
 
-  const addAccount = useCallback(
-    async (walletId: string, coinType: CoinType, accountId: string) => {
-      await popupServerClient.addAccount({ walletId, coinType, accountId });
-      getWallets();
-    },
-    [popupServerClient, getWallets],
-  );
-
   const flattenWalletList = useMemo(() => {
-    if (!wallets) {
+    if (!originWallets) {
       return [];
     }
-    const hdWallets = wallets[WalletType.HD] ?? [];
-    const simpleWallets = wallets[WalletType.SIMPLE] ?? [];
-    return [...hdWallets, ...simpleWallets];
-  }, [wallets]);
+
+    const hdWallets = originWallets[WalletType.HD] ?? [];
+    const simpleWallets = originWallets[WalletType.SIMPLE] ?? [];
+    const allWallets = [...hdWallets, ...simpleWallets];
+    return allWallets.map((w) => ({
+      ...w,
+      ...(allWalletInfo[w.walletId] || {}),
+    }));
+  }, [originWallets, allWalletInfo]);
 
   return {
-    wallets,
+    originWallets,
     flattenWalletList,
     error,
     getWallets,
-    addAccount,
     loadingWallets,
   };
 };
 
 export const useCurrWallet = () => {
   const { popupServerClient } = useClient();
-  const { getWallets } = useWallets();
 
-  const { selectedAccount, walletInfo, uniqueId } = usePopupSelector(
+  const { selectedAccount, uniqueId, allWalletInfo } = usePopupSelector(
     (state) => ({
       selectedAccount: state.account.selectedAccount,
       uniqueId: state.account.selectedUniqueId,
-      walletInfo: state.account.walletInfo,
+      allWalletInfo: state.account.allWalletInfo,
     }),
     isEqual,
   );
   const coinBasic = useCoinBasic(uniqueId);
 
+  const selectedWallet = useMemo(
+    () => allWalletInfo[selectedAccount.walletId],
+    [allWalletInfo, selectedAccount.walletId],
+  );
+
   const accountsInWallet = useMemo(() => {
-    return walletInfo?.accountsMap[coinBasic.coinType] || [];
-  }, [walletInfo, coinBasic]);
+    return selectedWallet?.accountsMap[coinBasic.coinType] || [];
+  }, [selectedWallet, coinBasic]);
 
   const dispatch = usePopupDispatch();
-  useEffect(() => {
-    dispatch.account.getCurrWalletInfo(selectedAccount.walletId);
-  }, [dispatch.account, selectedAccount.walletId]);
 
   const changeWalletName = useCallback(
-    async (params: ChangeWalletNameProps) => {
-      await popupServerClient.changeWalletName(params);
-      getWallets();
+    async (walletId: string, walletName: string) => {
+      dispatch.account.changeWalletName({ walletId, walletName });
     },
-    [popupServerClient, getWallets],
+    [popupServerClient, dispatch.account],
+  );
+
+  const addAccount = useCallback(
+    async (walletId: string, coinType: CoinType, accountId: string) => {
+      await popupServerClient.addAccount({ walletId, coinType, accountId });
+      dispatch.account.refreshAllWalletsToStore();
+    },
+    [popupServerClient, dispatch.account],
   );
 
   return {
-    walletInfo,
+    selectedWallet,
     accountsInWallet,
+    addAccount,
     changeWalletName,
   };
 };

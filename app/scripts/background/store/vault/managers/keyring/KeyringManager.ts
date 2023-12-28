@@ -13,12 +13,14 @@ import {
   DisplayKeyring,
   DisplayWallet,
   HDWallet,
+  KeyringObj,
   SimpleWallet,
   WalletType,
 } from "../../types/keyring";
 import { nanoid } from "nanoid";
 import { AuthManager } from "../auth/AuthManager";
 import { decryptStr, encryptStr } from "core/utils/encrypt";
+import { logger } from "../../../../../../common/utils/logger";
 import {
   AddAccountProps,
   ImportPrivateKeyProps,
@@ -496,59 +498,5 @@ export class KeyringManager {
       return false;
     }
     return true;
-  }
-
-  async changeWalletName({
-    walletId,
-    walletName,
-  }: {
-    walletId: string;
-    walletName: string;
-  }): Promise<DisplayWallet | null> {
-    const keyring = await this.#storage.getKeyring();
-    if (!keyring) {
-      throw new Error("Empty keyring");
-    }
-
-    const token = this.#getToken();
-    if (!token) {
-      throw new Error(ERROR_CODE.NOT_AUTH);
-    }
-
-    const { HD: hdWallets, SIMPLE: simpleWallets } = keyring;
-    if (hdWallets) {
-      const oldWalletIndex = hdWallets.findIndex(
-        (w) => w.walletId === walletId,
-      );
-      if (oldWalletIndex < 0) {
-        throw new Error("Wallet doesn't exists");
-      }
-
-      const oldWallet = hdWallets[oldWalletIndex];
-      hdWallets[oldWalletIndex] = { ...oldWallet, walletName };
-      await this.#storage.setKeyring({
-        ...keyring,
-        [WalletType.HD]: [...hdWallets],
-      });
-      return await this.getHDWallet(walletId);
-    }
-
-    if (simpleWallets) {
-      const oldWalletIndex = simpleWallets.findIndex(
-        (w) => w.walletId === walletId,
-      );
-      if (oldWalletIndex < 0) {
-        throw new Error("Wallet doesn't exists");
-      }
-
-      const oldWallet = simpleWallets[oldWalletIndex];
-      simpleWallets[oldWalletIndex] = { ...oldWallet, walletName };
-      await this.#storage.setKeyring({
-        ...keyring,
-        [WalletType.SIMPLE]: [...simpleWallets],
-      });
-      return await this.getSimpleWallet(walletId);
-    }
-    return null;
   }
 }
