@@ -125,4 +125,4 @@ function MiddleEllipsisText(props: TruncateProps) {
   );
 }
 
-export default chakra(MiddleEllipsisText);
+export default MiddleEllipsisText;

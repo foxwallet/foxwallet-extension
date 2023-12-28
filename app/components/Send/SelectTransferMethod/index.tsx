@@ -95,7 +95,7 @@ const SelectTransferMethodDrawer = (props: Props) => {
             <Flex justify={"space-between"}>
               <Text color={"gray.500"}>Public Balance</Text>
               {loadingBalance ? (
-                <Spinner />
+                <Spinner w={2} h={2} />
               ) : (
                 <TokenNum
                   amount={balance?.publicBalance || 0n}
@@ -108,7 +108,7 @@ const SelectTransferMethodDrawer = (props: Props) => {
               <Text color={"gray.500"}>Private Record</Text>
               <Flex flexDir={"column"} align={"flex-end"}>
                 {loadingBalance ? (
-                  <Spinner />
+                  <Spinner w={2} h={2} />
                 ) : (
                   <TokenNum
                     amount={balance?.privateBalance || 0n}
