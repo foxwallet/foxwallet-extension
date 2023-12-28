@@ -17,9 +17,9 @@ const EditWalletNameDrawer = (props: Props) => {
   const { isOpen, onCancel, onConfirm } = props;
   const { t } = useTranslation();
   const { flattenWalletList } = useWallets();
-  const { walletInfo, changeWalletName } = useCurrWallet();
+  const { selectedWallet, changeWalletName } = useCurrWallet();
 
-  const [walletName, setWalletName] = useState(walletInfo?.walletName);
+  const [walletName, setWalletName] = useState(selectedWallet?.walletName);
 
   const onWalletNameChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,20 +32,18 @@ const EditWalletNameDrawer = (props: Props) => {
   const handleConfirmName = useCallback(async () => {
     if (!walletName) return;
 
-    await changeWalletName({
-      walletId: walletInfo!.walletId,
-      walletName,
-    });
+    await changeWalletName(selectedWallet!.walletId, walletName);
     onConfirm?.();
-  }, [onConfirm, walletName, changeWalletName, walletInfo?.walletId]);
+  }, [onConfirm, walletName, changeWalletName, selectedWallet?.walletId]);
 
   const dupWalletName = useMemo(() => {
     if (!walletName) return false;
     return flattenWalletList?.some(
       (item) =>
-        item.walletName === walletName && walletName !== walletInfo?.walletName,
+        item.walletName === walletName &&
+        walletName !== selectedWallet?.walletName,
     );
-  }, [flattenWalletList, walletName]);
+  }, [flattenWalletList, walletName, selectedWallet.walletName]);
 
   const isInvalidName = useMemo(() => {
     return !walletName || dupWalletName;
