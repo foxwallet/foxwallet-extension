@@ -12,16 +12,6 @@ import { WalletType } from "@/scripts/background/store/vault/types/keyring";
 function LanguageScreen() {
   const navigate = useNavigate();
   const { selectedAccount, uniqueId } = useCurrAccount();
-  const { wallets } = useWallets();
-
-  const allWallets = useMemo(() => {
-    if (!wallets) {
-      return [];
-    }
-    const hdWallets = wallets[WalletType.HD] ?? [];
-    const simpleWallets = wallets[WalletType.SIMPLE] ?? [];
-    return [...hdWallets, ...simpleWallets];
-  }, [wallets]);
 
   return (
     <PageWithHeader enableBack title="Receive">

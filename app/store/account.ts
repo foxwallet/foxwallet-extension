@@ -17,11 +17,13 @@ type SelectedAccount = DisplayAccount & {
 
 type WalletBackupedMnemonicMap = { [walletId in string]: boolean };
 
+type WalletInfoMap = { [walletId in string]: DisplayWallet };
+
 interface AccountModel {
   selectedAccount: SelectedAccount;
   selectedUniqueId: ChainUniqueId;
   walletBackupMnemonicMap: WalletBackupedMnemonicMap;
-  walletInfo?: DisplayWallet;
+  allWalletInfo: WalletInfoMap;
 }
 
 const DEFAULT_ACCOUNT_MODEL: AccountModel = {
@@ -35,6 +37,7 @@ const DEFAULT_ACCOUNT_MODEL: AccountModel = {
   },
   selectedUniqueId: DEFAULT_UNIQUE_ID_MAP[CoinType.ALEO],
   walletBackupMnemonicMap: {},
+  allWalletInfo: {},
 };
 
 export const account = createModel<RootModel>()({
@@ -68,10 +71,40 @@ export const account = createModel<RootModel>()({
         },
       };
     },
-    _setCurrWalletInfo(state, payload: { walletInfo: DisplayWallet }) {
+    _setAllWalletInfo(state, payload: { walletList: DisplayWallet[] }) {
+      const { walletList } = payload;
+      const oldAllWalletInfo = { ...state.allWalletInfo };
+      const allWalletInfo: WalletInfoMap = {};
+
+      walletList.map((w) => {
+        if (Object.keys(oldAllWalletInfo).includes(w.walletId)) {
+          allWalletInfo[w.walletId] = {
+            ...w,
+            // make sure using walletName in Redux store
+            walletName: oldAllWalletInfo[w.walletId].walletName || "",
+          };
+        } else {
+          allWalletInfo[w.walletId] = w;
+        }
+      });
+
       return {
         ...state,
-        walletInfo: payload.walletInfo,
+        allWalletInfo,
+      };
+    },
+    changeWalletName(state, payload: { walletId: string; walletName: string }) {
+      const { walletId, walletName } = payload;
+      const oldWallet = state.allWalletInfo[walletId];
+      return {
+        ...state,
+        allWalletInfo: {
+          ...state.allWalletInfo,
+          [walletId]: {
+            ...oldWallet,
+            walletName,
+          },
+        },
       };
     },
   },
@@ -113,20 +146,14 @@ export const account = createModel<RootModel>()({
       return { account, uniqueId };
     },
 
-    async getCurrWalletInfo(walletId: string) {
+    async refreshAllWalletsToStore() {
       const wallets = await clients.popupServerClient.getAllWallet();
       if (!wallets) return;
 
       const hdWallets = wallets[WalletType.HD] ?? [];
       const simpleWallets = wallets[WalletType.SIMPLE] ?? [];
-      const allWallets = [...hdWallets, ...simpleWallets];
-
-      const walletInfo = allWallets.find((w) => w.walletId === walletId);
-      if (walletInfo) {
-        dispatch.account._setCurrWalletInfo({ walletInfo });
-        return walletInfo;
-      }
-      return walletInfo;
+      const walletList = [...hdWallets, ...simpleWallets];
+      dispatch.account._setAllWalletInfo({ walletList });
     },
   }),
 });

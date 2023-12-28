@@ -65,7 +65,7 @@ const WalletsDrawer = (props: Props) => {
   const { isOpen, onCancel, onConfirm, onManageWallet } = props;
 
   const { selectedAccount } = useCurrAccount();
-  const { walletInfo, accountsInWallet } = useCurrWallet();
+  const { selectedWallet, accountsInWallet } = useCurrWallet();
   const dispatch = usePopupDispatch();
 
   const handleManageWallet = useCallback(() => {
@@ -77,7 +77,7 @@ const WalletsDrawer = (props: Props) => {
     (account: DisplayAccount) => {
       dispatch.account.setSelectedAccount({
         selectedAccount: {
-          walletId: walletInfo!.walletId,
+          walletId: selectedWallet!.walletId,
           coinType: CoinType.ALEO,
           ...account,
           accountName: account.accountName,
@@ -85,7 +85,7 @@ const WalletsDrawer = (props: Props) => {
       });
       onConfirm?.();
     },
-    [dispatch.account, walletInfo?.walletId],
+    [dispatch.account, selectedWallet?.walletId],
   );
 
   const renderAccountItem = useCallback(
@@ -107,7 +107,7 @@ const WalletsDrawer = (props: Props) => {
     <BasicDrawer
       isOpen={isOpen}
       onClose={onCancel}
-      title={walletInfo!.walletName}
+      title={selectedWallet!.walletName}
       rightIcon={
         <Box as="button" pr={1} onClick={handleManageWallet}>
           <IconWallet />

@@ -7,7 +7,6 @@ import { DisplayWallet } from "@/scripts/background/store/vault/types/keyring";
 import { useTranslation } from "react-i18next";
 import { IconCheckLineBlack } from "@/components/Custom/Icon";
 import { showEditWalletNameDrawer } from "@/components/Wallet/EditWalletNameDrawer";
-import { useClient } from "@/hooks/useClient";
 
 interface WalletListItemProps {
   wallet: DisplayWallet;
@@ -72,7 +71,7 @@ const WalletListItem: React.FC<WalletListItemProps> = ({
 function ManageWalletScreen() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { walletInfo } = useCurrWallet();
+  const { selectedWallet } = useCurrWallet();
   const { flattenWalletList } = useWallets();
 
   const onSelectWallet = useCallback((wallet: DisplayWallet) => {}, []);
@@ -83,7 +82,7 @@ function ManageWalletScreen() {
 
   const renderWalletItem = useCallback(
     (wallet: DisplayWallet, index: number) => {
-      const isSelected = walletInfo?.walletId === wallet.walletId;
+      const isSelected = selectedWallet?.walletId === wallet.walletId;
       return (
         <WalletListItem
           key={`${wallet.walletId}${index}`}
@@ -93,7 +92,7 @@ function ManageWalletScreen() {
         />
       );
     },
-    [walletInfo?.walletId],
+    [selectedWallet?.walletId],
   );
 
   return (

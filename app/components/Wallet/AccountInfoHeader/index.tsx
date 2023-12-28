@@ -24,7 +24,7 @@ export const AccountInfoHeader = () => {
   const { selectedAccount, uniqueId } = useCurrAccount();
   const { nativeCurrency } = useCoinService(uniqueId);
   const { balance } = useBalance(uniqueId, selectedAccount.address, 4000);
-  const { walletInfo } = useCurrWallet();
+  const { selectedWallet } = useCurrWallet();
 
   const { showToast } = useCopyToast();
   const { onCopy } = useClipboard(selectedAccount.address);
@@ -82,7 +82,7 @@ export const AccountInfoHeader = () => {
         <IconLogo w={8} h={8} mr={1} />
         <Flex direction={"column"} align={"flex-start"}>
           <Text fontSize={12} lineHeight={4} color={"#000"} fontWeight={500}>
-            {walletInfo?.walletName}
+            {selectedWallet?.walletName}
           </Text>
           <Text fontSize={10} color={"#777E90"} fontWeight={500}>
             {selectedAccount.accountName}
