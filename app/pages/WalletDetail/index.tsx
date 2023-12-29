@@ -7,6 +7,12 @@ import {
 } from "@/components/Custom/Icon";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import { showEditAccountNameDrawer } from "@/components/Wallet/EditAccountNameDrawer";
+import {
+  WalletOperateOption,
+  showEditWalletDrawer,
+} from "@/components/Wallet/EditWalletDrawer";
+import { useClient } from "@/hooks/useClient";
+import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
 import { useCurrWallet, useWallets } from "@/hooks/useWallets";
 import { PageWithHeader } from "@/layouts/Page";
@@ -17,6 +23,7 @@ import { isEqual } from "lodash";
 import { nanoid } from "nanoid";
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { useDispatch } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 
 interface AccountListItemProps {
@@ -105,9 +112,17 @@ const AccountListItem: React.FC<AccountListItemProps> = ({ account }) => {
 };
 
 const WalletDetailScreen = () => {
-  const { walletId } = useParams();
+  const navigate = useNavigate();
+  const { walletId = "" } = useParams();
   const { t } = useTranslation();
-  const { addAccount } = useWallets();
+  const { selectedWallet } = useCurrWallet();
+  const { addAccount, flattenWalletList } = useWallets();
+  const dispatch = usePopupDispatch();
+
+  const allWalletInfo = usePopupSelector(
+    (state) => state.account.allWalletInfo,
+    isEqual,
+  );
 
   const walletInfo = usePopupSelector((state) => {
     if (!walletId) {
@@ -117,7 +132,9 @@ const WalletDetailScreen = () => {
   }, isEqual);
 
   const accountList: SelectedAccount[] = useMemo(() => {
-    const list = walletInfo.accountsMap[CoinType.ALEO] || [];
+    if (!walletInfo) return [];
+
+    const list = walletInfo?.accountsMap[CoinType.ALEO] || [];
     return list.map((a) => ({
       ...a,
       walletId: walletId || "",
@@ -129,7 +146,61 @@ const WalletDetailScreen = () => {
     addAccount(walletId || "", CoinType.ALEO, nanoid());
   }, [addAccount, walletId]);
 
-  const onWalletMoreAction = useCallback(() => {}, []);
+  const onDeleteWallet = useCallback(async () => {
+    // todo show modal
+    await dispatch.account.deleteWallet(walletId);
+    if (selectedWallet.walletId !== walletId) {
+      navigate(-1);
+      return;
+    }
+
+    if (flattenWalletList.length > 0) {
+      const nextWallet = flattenWalletList[0];
+      const nextAccount = nextWallet.accountsMap[CoinType.ALEO][0];
+      if (!nextAccount) {
+        throw new Error("Wallet doesn't has any accounts");
+      }
+      dispatch.account.setSelectedAccount({
+        selectedAccount: {
+          ...nextAccount,
+          walletId: nextWallet.walletId,
+          coinType: CoinType.ALEO,
+        },
+      });
+      navigate(-1);
+    } else {
+      // todo
+      alert("there are no wallet");
+    }
+  }, [dispatch.account, walletId, navigate, flattenWalletList]);
+
+  const onWalletMoreAction = useCallback(() => {
+    showEditWalletDrawer({
+      wallet: walletInfo,
+      onClickOption: async (option) => {
+        switch (option) {
+          case WalletOperateOption.BackupMnemonic:
+            navigate(`/backup_mnemonic/${walletId}`);
+            break;
+          case WalletOperateOption.ExportPhrase:
+            navigate(`/export_seed_phrase/${walletId}`);
+            break;
+          case WalletOperateOption.Delete:
+            onDeleteWallet();
+            break;
+          default:
+            break;
+        }
+      },
+    });
+  }, [
+    showEditWalletDrawer,
+    walletInfo,
+    navigate,
+    walletId,
+    dispatch.account,
+    onDeleteWallet,
+  ]);
 
   const renderAccountItem = useCallback(
     (account: SelectedAccount, index: number) => {
@@ -145,7 +216,7 @@ const WalletDetailScreen = () => {
 
   return (
     <PageWithHeader
-      title={walletInfo.walletName}
+      title={walletInfo?.walletName}
       rightIcon={
         <Box
           as="button"

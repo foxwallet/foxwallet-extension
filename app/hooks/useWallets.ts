@@ -18,7 +18,7 @@ export const useWallets = () => {
 
   const key = `/wallets`;
   const fetchWallets = useCallback(async () => {
-    dispatch.account.refreshAllWalletsToStore();
+    dispatch.account.resyncAllWalletsToStore();
     return await popupServerClient.getAllWallet();
   }, [popupServerClient, dispatch.account]);
 
@@ -51,7 +51,7 @@ export const useWallets = () => {
           coinType,
           accountId,
         });
-        dispatch.account.refreshAllWalletsToStore();
+        dispatch.account.resyncAllWalletsToStore();
       } catch (e) {
         console.warn("add account error ", e);
       }

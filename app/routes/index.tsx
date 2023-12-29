@@ -30,6 +30,9 @@ const ImportPrivateKey = lazy(
   async () => await import("../pages/ImportPrivateKey"),
 );
 const Language = lazy(async () => await import("../pages/Language"));
+const ExportSeedPhrase = lazy(
+  async () => await import("../pages/ExportSeedPhrase"),
+);
 
 const OnboardHome = lazy(async () => await import("../pages/OnboardHome"));
 const OnboardCreateWallet = lazy(
@@ -96,7 +99,7 @@ export const routesConfig: RouteObject[] = [
         element: <CreateMnemonic />,
       },
       {
-        path: "backup_mnemonic",
+        path: "backup_mnemonic/:walletId",
         element: <BackupMnemonic />,
       },
       {
@@ -118,6 +121,10 @@ export const routesConfig: RouteObject[] = [
       {
         path: "wallet_detail/:walletId",
         element: <WalletDetail />,
+      },
+      {
+        path: "export_seed_phrase/:walletId",
+        element: <ExportSeedPhrase />,
       },
     ],
   },

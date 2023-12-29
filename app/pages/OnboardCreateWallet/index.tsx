@@ -32,6 +32,8 @@ function OnboardCreateWalletScreen() {
       walletId,
       revealMnemonic: true,
     });
+    await dispatch.account.resyncAllWalletsToStore();
+
     const coinType = CoinType.ALEO;
     const account = wallet.accountsMap[coinType][0];
     await dispatch.account.setSelectedAccount({

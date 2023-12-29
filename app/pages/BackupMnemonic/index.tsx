@@ -8,15 +8,15 @@ import { Body } from "@/layouts/Body";
 import { PageWithHeader } from "@/layouts/Page";
 import { CoinType } from "core/types";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const BackupMnemonicScreen = () => {
-  const { selectedAccount } = useCurrAccount();
+  const { walletId: walletIdFromRoute } = useParams();
 
   const [step, setStep] = useState(1);
   const [mnemonic, setMnemonic] = useState("");
   const { popupServerClient } = useClient();
-  const walletIdRef = useRef(selectedAccount.walletId);
+  const walletIdRef = useRef(walletIdFromRoute || "");
   const navigate = useNavigate();
   const dispatch = usePopupDispatch();
   const hasPopuped = useRef(false);

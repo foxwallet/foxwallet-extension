@@ -49,20 +49,24 @@ export const account = createModel<RootModel>()({
   reducers: {
     _setSelectedAccount(state, payload: { selectedAccount: SelectedAccount }) {
       let { selectedAccount } = payload;
-      const walletInStore = state.allWalletInfo[selectedAccount.walletId] || {};
-      const accountInStore = (
-        walletInStore.accountsMap[CoinType.ALEO] || []
-      ).find((a) => a.accountId === selectedAccount.accountId);
-      /**
-       * need to match accountName in allWalletInfo because we only store
-       * the properties unrelated to UI on the IndexedDB
-       */
-      if (accountInStore) {
-        selectedAccount = {
-          ...selectedAccount,
-          accountName: accountInStore.accountName,
-        };
+      const walletInStore = state.allWalletInfo[selectedAccount.walletId];
+
+      if (walletInStore) {
+        const accountInStore = (
+          walletInStore.accountsMap?.[CoinType.ALEO] || []
+        ).find((a) => a.accountId === selectedAccount.accountId);
+        /**
+         * need to match accountName in allWalletInfo because we only store
+         * the properties unrelated to UI on the IndexedDB
+         */
+        if (accountInStore) {
+          selectedAccount = {
+            ...selectedAccount,
+            accountName: accountInStore.accountName,
+          };
+        }
       }
+
       return {
         ...state,
         selectedAccount,
@@ -210,7 +214,7 @@ export const account = createModel<RootModel>()({
       return { account, uniqueId };
     },
 
-    async refreshAllWalletsToStore() {
+    async resyncAllWalletsToStore() {
       const wallets = await clients.popupServerClient.getAllWallet();
       if (!wallets) return;
 
@@ -218,6 +222,11 @@ export const account = createModel<RootModel>()({
       const simpleWallets = wallets[WalletType.SIMPLE] ?? [];
       const walletList = [...hdWallets, ...simpleWallets];
       dispatch.account._setAllWalletInfo({ walletList });
+    },
+
+    async deleteWallet(walletId: string) {
+      await clients.popupServerClient.deleteHDWallet(walletId);
+      dispatch.account.resyncAllWalletsToStore();
     },
   }),
 });

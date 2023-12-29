@@ -36,6 +36,8 @@ import ChevronDown from "@/common/assets/image/icon_chevron_down.svg";
 import Wallet from "@/common/assets/image/icon_wallet.svg";
 import Edit from "@/common/assets/image/icon_edit.svg";
 import More from "@/common/assets/image/icon_more.svg";
+import ExportPhrase from "@/common/assets/image/icon_export_phrase.svg";
+import Delete from "@/common/assets/image/icon_delete.svg";
 
 export const IconCheckCircle = chakra(CheckCircle);
 
@@ -83,3 +85,5 @@ export const IconChevronDown = chakra(ChevronDown);
 export const IconWallet = chakra(Wallet);
 export const IconEdit = chakra(Edit);
 export const IconMore = chakra(More);
+export const IconExportPhrase = chakra(ExportPhrase);
+export const IconDelete = chakra(Delete);

@@ -499,4 +499,36 @@ export class KeyringManager {
     }
     return true;
   }
+
+  async getHDMnemonic(walletId: string): Promise<string> {
+    const keyring = await this.#storage.getKeyring();
+    if (!keyring) {
+      throw new Error("Empty keyring");
+    }
+    const token = this.#getToken();
+    if (!token) {
+      throw new Error(ERROR_CODE.NOT_AUTH);
+    }
+    const { HD: hdWallets } = keyring;
+    if (hdWallets) {
+      const match = hdWallets.find((w) => w.walletId === walletId);
+      if (!match) {
+        throw new Error("Wallet not found");
+      }
+      return await decryptStr(token, match.mnemonic);
+    }
+    return "";
+  }
+
+  async deleteHDWallet(walletId: string): Promise<void> {
+    const keyring = await this.#storage.getKeyring();
+    if (!keyring) {
+      throw new Error("Empty keyring");
+    }
+    const token = this.#getToken();
+    if (!token) {
+      throw new Error(ERROR_CODE.NOT_AUTH);
+    }
+    return await this.#storage.deleteHDWallet(walletId);
+  }
 }
