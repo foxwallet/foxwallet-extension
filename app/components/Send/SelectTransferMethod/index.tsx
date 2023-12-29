@@ -23,6 +23,7 @@ import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { useCoinService } from "@/hooks/useCoinService";
 import { IconCheckLine } from "@/components/Custom/Icon";
 import { useRecords } from "@/hooks/useRecord";
+import { useTranslation } from "react-i18next";
 
 interface Props {
   isOpen: boolean;
@@ -39,15 +40,16 @@ const SelectTransferMethodDrawer = (props: Props) => {
   const { nativeCurrency } = useCoinService(uniqueId);
   const { balance, loadingBalance } = useBalance(uniqueId, address, 10000);
   const { records, loading: loadingRecords } = useRecords(uniqueId, address);
+  const { t } = useTranslation();
 
   const recordStr = useMemo(() => {
     if (!records) {
       return "";
     }
     if (records.length === 0) {
-      return "No records";
+      return t("Send:noRecordExist");
     }
-    return `${records.length} records, maximum`;
+    return t("Send:recordStatistics", { COUNT: records.length });
   }, [records]);
 
   const transferMethods = useMemo(() => {
@@ -57,25 +59,23 @@ const SelectTransferMethodDrawer = (props: Props) => {
   const transferMethodMap = useMemo(() => {
     return {
       [AleoTransferMethod.PUBLIC]: {
-        title: "Public transfer",
-        description: "Both the spender's and receiver's details are public.",
+        title: t("Send:publicTransfer"),
+        description: t("Send:publicTransferDesc"),
       },
       [AleoTransferMethod.PUBLIC_TO_PRIVATE]: {
-        title: "Public balance to private record",
-        description:
-          "The sender's address and sent amount are public, but the receiver's details are in privacy.",
+        title: t("Send:publicToPrivate"),
+        description: t("Send:publicToPrivateDesc"),
       },
       [AleoTransferMethod.PRIVATE]: {
-        title: "Private transfer",
-        description: "Sender's and receiver's details are in privacy.",
+        title: t("Send:privateTransfer"),
+        description: t("Send:privateTransferDesc"),
       },
       [AleoTransferMethod.PRIVATE_TO_PUBLIC]: {
-        title: "Private record to public balance",
-        description:
-          "The sender's details are in privacy, but the receiver's address and received amount are public.",
+        title: t("Send:privateToPublic"),
+        description: t("Send:privateToPublicDesc"),
       },
     };
-  }, []);
+  }, [t]);
 
   return (
     <Drawer isOpen={isOpen} placement="bottom" onClose={onCancel}>
@@ -88,12 +88,14 @@ const SelectTransferMethodDrawer = (props: Props) => {
           alignItems={"center"}
           fontWeight={"semibold"}
         >
-          Select Transfer Method
+          {t("Send:selectTransferMethod")}
         </DrawerHeader>
         <DrawerBody>
           <Flex flexDir={"column"} pt={2} mt={3} fontSize={"smaller"}>
             <Flex justify={"space-between"}>
-              <Text color={"gray.500"}>Public Balance</Text>
+              <Text color={"gray.500"}>{`${t("Send:public")} ${t(
+                "Send:balance",
+              )}`}</Text>
               {loadingBalance ? (
                 <Spinner w={2} h={2} />
               ) : (
@@ -105,7 +107,7 @@ const SelectTransferMethodDrawer = (props: Props) => {
               )}
             </Flex>
             <Flex justify={"space-between"} mt={2}>
-              <Text color={"gray.500"}>Private Record</Text>
+              <Text color={"gray.500"}>{t("Send:privateRecord")}</Text>
               <Flex flexDir={"column"} align={"flex-end"}>
                 {loadingBalance ? (
                   <Spinner w={2} h={2} />

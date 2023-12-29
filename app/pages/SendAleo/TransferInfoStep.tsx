@@ -10,9 +10,8 @@ import { showSelectRecordDialog } from "@/components/Send/SelectRecord";
 import { showSelectTransferMethodDialog } from "@/components/Send/SelectTransferMethod";
 import { TokenNum } from "@/components/Wallet/TokenNum";
 import { useBalance } from "@/hooks/useBalance";
-import { useCoinBasic, useCoinService } from "@/hooks/useCoinService";
+import { useCoinService } from "@/hooks/useCoinService";
 import { useCurrAccount } from "@/hooks/useCurrAccount";
-import { useAleoGasFee } from "@/hooks/useGasFee";
 import { useRecords } from "@/hooks/useRecord";
 import { Content } from "@/layouts/Content";
 import {
@@ -23,11 +22,11 @@ import {
   InputRightElement,
   Text,
 } from "@chakra-ui/react";
-import { AleoFeeMethod } from "core/coins/ALEO/types/FeeMethod";
 import { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
 import { parseUnits } from "ethers/lib/utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useDebounce } from "use-debounce";
 
 interface TransferInfoStepProps {
@@ -67,6 +66,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
     selectedAccount.address,
     10000,
   );
+  const { t } = useTranslation();
 
   const { records, loading: loadingRecords } = useRecords(
     uniqueId,
@@ -255,19 +255,19 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
   const transferMethodMap = useMemo(() => {
     return {
       [AleoTransferMethod.PUBLIC]: {
-        title: "Public transfer",
+        title: t("Send:publicTransfer"),
       },
       [AleoTransferMethod.PUBLIC_TO_PRIVATE]: {
-        title: "Public balance to private record",
+        title: t("Send:publicToPrivate"),
       },
       [AleoTransferMethod.PRIVATE]: {
-        title: "Private transfer",
+        title: t("Send:privateTransfer"),
       },
       [AleoTransferMethod.PRIVATE_TO_PUBLIC]: {
-        title: "Private record to public balance",
+        title: t("Send:privateToPublic"),
       },
     };
-  }, []);
+  }, [t]);
 
   const [showPrivateHint, setShowPrivateHint] = useState(false);
 
@@ -275,26 +275,26 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
     <Content>
       <Flex flexDir={"column"} fontSize={"small"}>
         <Flex justifyContent={"space-between"} align={"center"}>
-          <Text>From</Text>
+          <Text>{t("Send:from")}</Text>
           <Box width={200}>
             <MiddleEllipsisText text={selectedAccount.address} />
           </Box>
         </Flex>
         <Flex justify={"space-between"} mt={2} align={"center"}>
-          <Text>Transfer Token</Text>
+          <Text>{t("Send:transferToken")}</Text>
           <Flex align={"center"}>
             <IconAleo />
             <Text ml={1} fontSize={"small"}>
-              ALEO
+              {nativeCurrency.symbol}
             </Text>
           </Flex>
         </Flex>
       </Flex>
       <Divider bgColor={"gray.50"} h={"1px"} mt={3} mb={5} />
       <BaseInputGroup
-        title={"To address"}
+        title={t("Send:to")}
         inputProps={{
-          placeholder: "Enter receiver address",
+          placeholder: t("Send:toPlaceholder"),
           defaultValue: receiverAddress,
           onChange: onReceiverAddressChange,
           isInvalid: !!debounceReceiverAddress && !addressValid,
@@ -305,7 +305,8 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
         <Flex justify={"space-between"}>
           <Text fontWeight={"bold"}>Transfer Method</Text>
           <Flex fontSize={"small"} color={"gray.500"}>
-            {isPrivateMethod ? "Private" : "Public"}&nbsp;Balance:&nbsp;
+            {isPrivateMethod ? t("Send:private") : t("Send:public")}
+            &nbsp;Balance:&nbsp;
             <TokenNum
               amount={
                 (isPrivateMethod
@@ -337,16 +338,16 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
 
       <BaseInputGroup
         container={{ mt: 5 }}
-        title={"Amount"}
+        title={t("Send:amount")}
         inputProps={{
-          placeholder: "Enter amount",
+          placeholder: t("Send:amountPlaceholder"),
           defaultValue: amountStr,
           onChange: onAmountChange,
           isInvalid: !!amountStr && !amountValid,
         }}
         headerRightElement={
           <Flex fontSize={"small"} color={"gray.500"}>
-            Available:&nbsp;
+            {t("Send:available")}:&nbsp;
             <TokenNum
               amount={
                 (isPrivateMethod
@@ -393,8 +394,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
                     borderRight={"5px solid transparent"}
                     borderBottom={"8px solid black"}
                   />
-                  Due to Aleo's implementation, the maximum amount of a single
-                  transfer is limited by the vale of the record used.
+                  {t("Send:privateRecordExplain")}
                 </Flex>
               )}
               <Box
@@ -410,7 +410,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
                 align={"center"}
               >
                 <Flex fontSize={"smaller"} color={"gray.500"}>
-                  Pay with private record&nbsp; (
+                  {t("Send:payPrivateRecord")}&nbsp; (
                   <TokenNum
                     amount={
                       currTransferRecord.parsedContent?.microcredits || 0n
@@ -424,11 +424,11 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
               </Flex>
             </Flex>
           ) : (
-            <Text>No record to transfer.</Text>
+            <Text>{t("Send:noRecord")}</Text>
           )
         ) : (
           <Text fontSize={"smaller"} color={"gray.500"}>
-            Pay with public balance
+            {t("Send:payPublicBalance")}
           </Text>
         )}
       </Flex>
@@ -440,7 +440,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
         isDisabled={!canSubmit}
         onClick={onNext}
       >
-        Next
+        {t("Common:next")}
       </Button>
     </Content>
   );

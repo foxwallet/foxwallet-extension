@@ -47,6 +47,40 @@
   },
   "Common": {
     "confirm": "Mengonfirmasi",
-    "cancel": "Membatalkan"
+    "cancel": "Membatalkan",
+    "next": "Berikutnya"
+  },
+  "Send": {
+    "title": "Mengirim",
+    "from": "Dari",
+    "transferToken": "Mentransfer Token",
+    "to": "Untuk Mengatasi",
+    "toPlaceholder": "Masukkan alamat penerima",
+    "private": "Pribadi",
+    "public": "Publik",
+    "balance": "Keseimbangan",
+    "amount": "Jumlah",
+    "amountPlaceholder": "Masukan jumlah",
+    "available": "Tersedia",
+    "privateRecordExplain": "Karena penerapan Aleo, jumlah maksimum satu transfer dibatasi oleh nilai rekaman yang digunakan.",
+    "payPrivateRecord": "Bayar dengan catatan pribadi.",
+    "noRecord": "Tidak ada catatan untuk ditransfer.",
+    "payPublicBalance": "Bayar dengan saldo publik.",
+    "publicTransfer": "Perpindahan umum",
+    "publicTransferDesc": "Detail pembelanja dan penerima bersifat publik.",
+    "privateTransfer": "Transfer pribadi",
+    "privateTransferDesc": "Detail pengirim dan penerima bersifat privasi.",
+    "privateToPublic": "Catatan pribadi untuk keseimbangan publik",
+    "privateToPublicDesc": "Detail pengirim bersifat privasi, namun alamat penerima dan jumlah yang diterima bersifat publik.",
+    "publicToPrivate": "Keseimbangan publik ke catatan pribadi",
+    "publicToPrivateDesc": "Alamat pengirim dan jumlah yang dikirim bersifat publik, namun rincian penerima bersifat privasi.",
+    "selectRecord": "Pilih rekaman",
+    "commitment": "Komitmen",
+    "noRecordExist": "Tidak ada catatan",
+    "recordStatistics": "{{COUNT}} data, maksimum",
+    "transferMethod": "Metode Pemindahan",
+    "selectTransferMethod": "Pilih Metode Transfer",
+    "privateRecord": "Catatan Pribadi",
+    "gasFee": "Biaya Bahan Bakar"
   }
 }

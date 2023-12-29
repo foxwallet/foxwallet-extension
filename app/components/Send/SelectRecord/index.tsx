@@ -1,5 +1,4 @@
 import {
-  Button,
   Drawer,
   DrawerBody,
   DrawerCloseButton,
@@ -9,20 +8,16 @@ import {
   Flex,
   Text,
 } from "@chakra-ui/react";
-import { L1, P3 } from "../../../common/theme/components/text";
-import { BasicModal } from "../../Custom/Modal";
 import { promisifyChooseDialogWrapper } from "../../../common/utils/dialog";
-import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
-import { useMemo } from "react";
 import { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 import { TokenNum } from "@/components/Wallet/TokenNum";
 import { NativeToken } from "core/types/Token";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import {
-  IconCheckCircle,
   IconCheckCircleBlack,
   IconUncheckCircleGray,
 } from "@/components/Custom/Icon";
+import { useTranslation } from "react-i18next";
 
 interface Props {
   isOpen: boolean;
@@ -42,6 +37,7 @@ const SelectRecordDrawer = (props: Props) => {
     nativeCurrency,
     selectedRecord,
   } = props;
+  const { t } = useTranslation();
 
   return (
     <Drawer isOpen={isOpen} placement="bottom" onClose={onCancel}>
@@ -54,12 +50,12 @@ const SelectRecordDrawer = (props: Props) => {
           alignItems={"center"}
           fontWeight={"bold"}
         >
-          Select record
+          {t("Send:selectRecord")}
         </DrawerHeader>
         <DrawerBody mt={2}>
           <Flex fontWeight={"semibold"}>
-            <Text>Commitment</Text>
-            <Text ml={"auto"}>Amount</Text>
+            <Text>{t("Send:commitment")}</Text>
+            <Text ml={"auto"}>{t("Send:amount")}</Text>
           </Flex>
           <Flex direction={"column"} maxH={"400px"} overflowY={"auto"} pb={8}>
             {recordList.map((record, i) => (

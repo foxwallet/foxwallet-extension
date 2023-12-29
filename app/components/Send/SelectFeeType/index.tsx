@@ -26,6 +26,7 @@ import {
   IconUncheckCircleGray,
 } from "@/components/Custom/Icon";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
+import { useTranslation } from "react-i18next";
 
 interface Props {
   isOpen: boolean;
@@ -49,17 +50,14 @@ const SelectFeeTypeDrawer = (props: Props) => {
     recordList,
     nativeCurrency,
   } = props;
-
-  const transferMethods = useMemo(() => {
-    return Object.values(AleoFeeMethod);
-  }, []);
+  const { t } = useTranslation();
 
   const feeMethodMap = useMemo(() => {
     return {
-      [AleoFeeMethod.FEE_PUBLIC]: "Public balance to pay fee",
-      [AleoFeeMethod.FEE_PRIVATE]: "Private record to pay fee",
+      [AleoFeeMethod.FEE_PUBLIC]: t("Send:publicFee"),
+      [AleoFeeMethod.FEE_PRIVATE]: t("Send:privateFee"),
     };
-  }, []);
+  }, [t]);
 
   return (
     <Drawer isOpen={isOpen} placement="bottom" onClose={onCancel}>
@@ -71,7 +69,7 @@ const SelectFeeTypeDrawer = (props: Props) => {
           justifyContent={"center"}
           alignItems={"center"}
         >
-          Select Fee Method
+          {t("Send:selectFeeMethod")}
         </DrawerHeader>
         <DrawerBody>
           <Flex
@@ -82,10 +80,7 @@ const SelectFeeTypeDrawer = (props: Props) => {
             mt={2}
             fontSize={"smaller"}
           >
-            <Text>
-              You can use either the public balance or any of the following
-              private records below to pay the gas fee.
-            </Text>
+            <Text>{t("Send:feeHint")}</Text>
           </Flex>
           <Flex direction={"column"}>
             <Flex
@@ -149,8 +144,8 @@ const SelectFeeTypeDrawer = (props: Props) => {
               />
             </Flex>
             <Flex fontWeight={"semibold"} mt={4}>
-              <Text>Commitment</Text>
-              <Text ml={"auto"}>Amount</Text>
+              <Text>{t("Send:commitment")}</Text>
+              <Text ml={"auto"}>{t("Send:amount")}</Text>
             </Flex>
             <Flex direction={"column"} maxH={"250px"} overflowY={"auto"} pb={8}>
               {recordList.map((record, i) => (

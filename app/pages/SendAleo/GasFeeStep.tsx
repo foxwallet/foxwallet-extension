@@ -14,6 +14,7 @@ import { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
 import { AleoGasFee } from "core/types/GasFee";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface GasFeeProps {
   receiverAddress: string;
@@ -53,6 +54,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
     uniqueId,
     selectedAccount.address,
   );
+  const { t } = useTranslation();
 
   const [feeInfo, setFeeInfo] = useState<AleoGasFee | null>(null);
   const gasFee = useMemo(() => {
@@ -211,16 +213,16 @@ export const GasFeeStep = (props: GasFeeProps) => {
   const transferMethodMap = useMemo(() => {
     return {
       [AleoTransferMethod.PUBLIC]: {
-        title: "Public transfer",
+        title: t("Send:publicTransfer"),
       },
       [AleoTransferMethod.PUBLIC_TO_PRIVATE]: {
-        title: "Public balance to private record",
+        title: t("Send:publicToPrivate"),
       },
       [AleoTransferMethod.PRIVATE]: {
-        title: "Private transfer",
+        title: t("Send:privateTransfer"),
       },
       [AleoTransferMethod.PRIVATE_TO_PUBLIC]: {
-        title: "Private record to public balance",
+        title: t("Send:privateToPublic"),
       },
     };
   }, []);
@@ -331,7 +333,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
           justify={"space-between"}
           align={"center"}
         >
-          <Text color={"gray.500"}>{"From"}</Text>
+          <Text color={"gray.500"}>{t("Send:from")}</Text>
           <MiddleEllipsisText text={selectedAccount.address} width={200} />
         </Flex>
         <Flex
@@ -340,7 +342,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
           justify={"space-between"}
           align={"center"}
         >
-          <Text color={"gray.500"}>{"To"}</Text>
+          <Text color={"gray.500"}>{t("Send:to")}</Text>
           <MiddleEllipsisText text={receiverAddress} width={200} />
         </Flex>
         <Flex
@@ -349,7 +351,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
           justify={"space-between"}
           align={"center"}
         >
-          <Text color={"gray.500"}>{"Transfer Method"}</Text>
+          <Text color={"gray.500"}>{t("Send:transferMethod")}</Text>
           <Text>{transferMethodMap[transferMethod].title}</Text>
         </Flex>
         <Flex
@@ -367,7 +369,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
         </Flex>
         <Divider bgColor={"gray.50"} h={"1px"} mt={3} mb={5} />
         <Flex mt={2} flexDir={"column"}>
-          <Text>Gas Fee</Text>
+          <Text>{t("Send:gasFee")}</Text>
           <Flex
             borderStyle={"solid"}
             borderColor={"gray.50"}
@@ -388,7 +390,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
               <Flex onClick={onSelectFeeType} mt={2} flex={1}>
                 {!!currFeeRecord ? (
                   <Flex>
-                    Pay with private record&nbsp; (
+                    {t("Send:payPrivateRecord")}&nbsp; (
                     <TokenNum
                       amount={currFeeRecord.parsedContent?.microcredits || 0n}
                       decimals={nativeCurrency.decimals}
@@ -397,7 +399,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
                     )
                   </Flex>
                 ) : (
-                  <Text>No record to pay fee.</Text>
+                  <Text>{t("Send:noRecord")}</Text>
                 )}
                 <IconChevronRight w={4} h={4} />
               </Flex>
@@ -409,7 +411,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
                 align={"center"}
                 flex={1}
               >
-                <Text>Pay with public balance.</Text>
+                <Text>{t("Send:payPublicBalance")}</Text>
                 <IconChevronRight w={4} h={4} />
               </Flex>
             )}
@@ -424,7 +426,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
         onClick={onSubmit}
         isDisabled={!canSubmit}
       >
-        {"Confirm"}
+        {t("Common:confirm")}
       </Button>
     </Content>
   );

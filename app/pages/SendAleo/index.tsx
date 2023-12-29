@@ -12,18 +12,20 @@ import {
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
 import { AleoGasFee } from "core/types/GasFee";
 import { nanoid } from "nanoid";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TransferInfoStep } from "./TransferInfoStep";
 import { GasFeeStep } from "./GasFeeStep";
 import { useDataRef } from "@/hooks/useDataRef";
 import { showErrorToast } from "@/components/Custom/ErrorToast";
+import { useTranslation } from "react-i18next";
 
 function SendScreen() {
   const navigate = useNavigate();
   const { popupServerClient } = useClient();
   const { selectedAccount, uniqueId } = useCurrAccount();
   const { coinService, chainConfig, nativeCurrency } = useCoinService(uniqueId);
+  const { t } = useTranslation();
 
   const [step, setStep] = useState(1);
   const [receiverAddress, setReceiverAddress] = useState<string>("");
@@ -199,7 +201,7 @@ function SendScreen() {
   return (
     <PageWithHeader
       enableBack
-      title={"Send"}
+      title={t("Send:title")}
       onBack={() => {
         if (step > 1) {
           setStep(1);
