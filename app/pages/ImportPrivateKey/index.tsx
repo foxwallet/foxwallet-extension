@@ -1,6 +1,6 @@
 import { H1, H3, H6 } from "@/common/theme/components/text";
 import { logger } from "@/common/utils/logger";
-import { showMessageToast } from "@/components/Custom/ErrorToast";
+import { showErrorToast } from "@/components/Custom/ErrorToast";
 import { WalletNameStep } from "@/components/Setting/WalletName";
 import { useClient } from "@/hooks/useClient";
 import { useCurrAccount } from "@/hooks/useCurrAccount";
@@ -65,7 +65,7 @@ const CreateWalletScreen = () => {
                   navigate("/");
                 } catch (err) {
                   if (err instanceof Error) {
-                    void showMessageToast({ message: err.message });
+                    void showErrorToast({ message: err.message });
                   }
                 }
               } else {

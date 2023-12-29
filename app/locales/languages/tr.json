@@ -47,6 +47,40 @@
   },
   "Common": {
     "confirm": "Onaylamak",
-    "cancel": "İptal etmek"
+    "cancel": "İptal etmek",
+    "next": "Sonraki"
+  },
+  "Send": {
+    "title": "Göndermek",
+    "from": "İtibaren",
+    "transferToken": "Token Aktarımı",
+    "to": "Adrese",
+    "toPlaceholder": "Alıcı adresini girin",
+    "private": "Özel",
+    "public": "Halk",
+    "balance": "Denge",
+    "amount": "Miktar",
+    "amountPlaceholder": "Miktarı girin",
+    "available": "Mevcut",
+    "privateRecordExplain": "Aleo'nun uygulaması nedeniyle tek bir transferin maksimum tutarı, kullanılan kaydın değeriyle sınırlıdır.",
+    "payPrivateRecord": "Özel kayıtla ödeme yapın.",
+    "noRecord": "Aktarılacak kayıt yok.",
+    "payPublicBalance": "Kamu bakiyesiyle ödeme yapın.",
+    "publicTransfer": "Kamu transferi",
+    "publicTransferDesc": "Hem harcayan hem de alıcının ayrıntıları kamuya açıktır.",
+    "privateTransfer": "Özel transfer",
+    "privateTransferDesc": "Gönderenin ve alıcının ayrıntıları gizlilik altındadır.",
+    "privateToPublic": "Kamu dengesine özel kayıt",
+    "privateToPublicDesc": "Gönderenin ayrıntıları gizlidir ancak alıcının adresi ve alınan tutar herkese açıktır.",
+    "publicToPrivate": "Kamu dengesinden özel kayda",
+    "publicToPrivateDesc": "Gönderenin adresi ve gönderilen miktar herkese açıktır ancak alıcının ayrıntıları gizlilik kapsamındadır.",
+    "selectRecord": "Kayıt seç",
+    "commitment": "Bağlılık",
+    "noRecordExist": "Hiçbir kayıt mevcut değil",
+    "recordStatistics": "{{COUNT}} kayıt, maksimum",
+    "transferMethod": "Aktarım Yöntemi",
+    "selectTransferMethod": "Aktarım Yöntemini Seçin",
+    "privateRecord": "Özel Kayıt",
+    "gasFee": "Gaz Ücreti"
   }
 }

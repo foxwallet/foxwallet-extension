@@ -47,6 +47,40 @@
   },
   "Common": {
     "confirm": "Bestätigen",
-    "cancel": "Stornieren"
+    "cancel": "Stornieren",
+    "next": "Nächste"
+  },
+  "Send": {
+    "title": "Schicken",
+    "from": "Aus",
+    "transferToken": "Token übertragen",
+    "to": "Ansprechen",
+    "toPlaceholder": "Empfängeradresse eingeben",
+    "private": "Privat",
+    "public": "Öffentlich",
+    "balance": "Gleichgewicht",
+    "amount": "Menge",
+    "amountPlaceholder": "Menge eingeben",
+    "available": "Verfügbar",
+    "privateRecordExplain": "Aufgrund der Implementierung von Aleo ist der maximale Betrag einer einzelnen Überweisung durch den Wert des verwendeten Datensatzes begrenzt.",
+    "payPrivateRecord": "Bezahlen Sie mit privater Aufzeichnung.",
+    "noRecord": "Kein Datensatz zum Übertragen vorhanden.",
+    "payPublicBalance": "Bezahlen Sie mit öffentlichem Guthaben.",
+    "publicTransfer": "Öffentlicher Transfer",
+    "publicTransferDesc": "Sowohl die Daten des Spenders als auch des Empfängers sind öffentlich.",
+    "privateTransfer": "Privater Transfer",
+    "privateTransferDesc": "Die Daten des Absenders und Empfängers unterliegen der Privatsphäre.",
+    "privateToPublic": "Privater Eintrag zum öffentlichen Guthaben",
+    "privateToPublicDesc": "Die Angaben des Absenders unterliegen der Geheimhaltung, die Adresse des Empfängers und der erhaltene Betrag sind jedoch öffentlich.",
+    "publicToPrivate": "Öffentliche Bilanz zur privaten Aufzeichnung",
+    "publicToPrivateDesc": "Die Adresse des Absenders und der gesendete Betrag sind öffentlich, die Daten des Empfängers unterliegen jedoch der Privatsphäre.",
+    "selectRecord": "Datensatz auswählen",
+    "commitment": "Engagement",
+    "noRecordExist": "Es ist kein Datensatz vorhanden",
+    "recordStatistics": "Maximal {{COUNT}} Datensätze",
+    "transferMethod": "Übertragungsmethode",
+    "selectTransferMethod": "Wählen Sie Übertragungsmethode",
+    "privateRecord": "Privataufnahme",
+    "gasFee": "Gasgebühr"
   }
 }

@@ -40,24 +40,27 @@ interface BaseInputGroupProps {
   required?: boolean;
   container?: FlexProps;
   inputProps?: InputProps;
+  headerRightElement?: React.ReactNode;
   leftElement?: React.ReactNode;
   rightElement?: React.ReactNode;
 }
 
 export const BaseInputGroup = (props: BaseInputGroupProps) => {
-  const { title, required, container, inputProps, leftElement, rightElement } =
-    props;
+  const {
+    title,
+    headerRightElement,
+    container,
+    inputProps,
+    leftElement,
+    rightElement,
+  } = props;
 
   return (
     <Flex direction={"column"} {...container}>
       {!!title && (
-        <Flex>
+        <Flex justify={"space-between"}>
           <H6 mb={"2"}>{title}</H6>
-          {required ? (
-            <Text color={"green.400"} ml={"1"}>
-              *
-            </Text>
-          ) : null}
+          {headerRightElement ? headerRightElement : null}
         </Flex>
       )}
       <InputGroup>

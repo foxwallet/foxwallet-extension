@@ -47,6 +47,40 @@
   },
   "Common": {
     "confirm": "تصدیق کریں۔",
-    "cancel": "منسوخ کریں۔"
+    "cancel": "منسوخ کریں۔",
+    "next": "اگلے"
+  },
+  "Send": {
+    "title": "بھیجیں",
+    "from": "سے",
+    "transferToken": "ٹوکن منتقل کریں۔",
+    "to": "خطاب کرنا",
+    "toPlaceholder": "وصول کنندہ کا پتہ درج کریں۔",
+    "private": "نجی",
+    "public": "عوام",
+    "balance": "بقیہ",
+    "amount": "رقم",
+    "amountPlaceholder": "رقم درج کریں۔",
+    "available": "دستیاب",
+    "privateRecordExplain": "Aleo کے نفاذ کی وجہ سے، ایک ہی منتقلی کی زیادہ سے زیادہ رقم استعمال شدہ ریکارڈ کی ویلی تک محدود ہے۔",
+    "payPrivateRecord": "نجی ریکارڈ کے ساتھ ادائیگی کریں۔",
+    "noRecord": "منتقلی کا کوئی ریکارڈ نہیں۔",
+    "payPublicBalance": "عوامی بیلنس کے ساتھ ادائیگی کریں۔",
+    "publicTransfer": "عوامی منتقلی",
+    "publicTransferDesc": "خرچ کرنے والے اور وصول کنندہ دونوں کی تفصیلات عوامی ہیں۔",
+    "privateTransfer": "نجی منتقلی۔",
+    "privateTransferDesc": "بھیجنے والے اور وصول کنندہ کی تفصیلات رازداری میں ہیں۔",
+    "privateToPublic": "عوامی توازن کے لیے نجی ریکارڈ",
+    "privateToPublicDesc": "بھیجنے والے کی تفصیلات رازداری میں ہیں، لیکن وصول کنندہ کا پتہ اور موصول ہونے والی رقم عوامی ہے۔",
+    "publicToPrivate": "نجی ریکارڈ میں عوامی توازن",
+    "publicToPrivateDesc": "بھیجنے والے کا پتہ اور بھیجی گئی رقم عوامی ہیں، لیکن وصول کنندہ کی تفصیلات رازداری میں ہیں۔",
+    "selectRecord": "ریکارڈ منتخب کریں۔",
+    "commitment": "عزم",
+    "noRecordExist": "کوئی ریکارڈ موجود نہیں۔",
+    "recordStatistics": "{{COUNT}} ریکارڈز، زیادہ سے زیادہ",
+    "transferMethod": "منتقلی کا طریقہ",
+    "selectTransferMethod": "منتقلی کا طریقہ منتخب کریں۔",
+    "privateRecord": "نجی ریکارڈ",
+    "gasFee": "گیس فیس"
   }
 }
