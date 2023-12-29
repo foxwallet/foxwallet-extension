@@ -20,7 +20,12 @@
       "title": "Wallet",
       "addWallet": "Add wallet",
       "checkAccounts": "Check accounts",
-      "changeName": "Change wallet name"
+      "changeName": "Change wallet name",
+      "addAccount": "Add account",
+      "changeAccountName": "Change account name",
+      "accountName": "Account Name",
+      "accountNamePlaceholder": "Enter account name",
+      "dupAccountName": "Duplicate account name"
     }
   },
   "Onboard": {

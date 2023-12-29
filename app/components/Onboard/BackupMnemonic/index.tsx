@@ -60,8 +60,8 @@ const tips = [
 export const BackupMnemonicStep = (props: {
   mnemonic?: string;
   onConfirm: () => void;
-  createWallet: () => Promise<void>;
-  regenerateWallet: () => Promise<void>;
+  createWallet?: () => Promise<void>;
+  regenerateWallet?: () => Promise<void>;
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -75,7 +75,7 @@ export const BackupMnemonicStep = (props: {
   }, [mnemonic]);
 
   useEffect(() => {
-    createWallet();
+    createWallet?.();
   }, [createWallet]);
 
   if (!mnemonic) {
@@ -137,15 +137,17 @@ export const BackupMnemonicStep = (props: {
         </Link>
       </Flex>
       <Flex mt={12}>
-        <Button
-          colorScheme="secondary"
-          flex={1}
-          mr={4}
-          isDisabled={!mnemonic}
-          onClick={regenerateWallet}
-        >
-          {t("Mnemonic:regenerate")}
-        </Button>
+        {!!regenerateWallet && (
+          <Button
+            colorScheme="secondary"
+            flex={1}
+            mr={4}
+            isDisabled={!mnemonic}
+            onClick={regenerateWallet}
+          >
+            {t("Mnemonic:regenerate")}
+          </Button>
+        )}
         <Button flex={1} isDisabled={!startBackup} onClick={() => onConfirm()}>
           {t("Common:confirm")}
         </Button>

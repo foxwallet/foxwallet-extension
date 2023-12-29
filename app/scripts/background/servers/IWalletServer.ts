@@ -169,6 +169,10 @@ export interface IPopupServer {
   sendAleoTransaction(params: AleoSendTxProps): Promise<AleoTransaction>;
 
   onRequestFinish(params: RequestFinfishProps): Promise<void>;
+
+  getHDMnemonic(walletId: string): Promise<string>;
+
+  deleteHDWallet(walletId: string): Promise<void>;
 }
 
 export interface ConnectProps {
