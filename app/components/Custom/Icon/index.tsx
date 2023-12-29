@@ -38,6 +38,9 @@ import Edit from "@/common/assets/image/icon_edit.svg";
 import More from "@/common/assets/image/icon_more.svg";
 import ExportPhrase from "@/common/assets/image/icon_export_phrase.svg";
 import Delete from "@/common/assets/image/icon_delete.svg";
+import QuestionCircle from "@/common/assets/image/icon_question_circle.svg";
+import CheckCircleBlack from "@/common/assets/image/icon_check_circle_black.svg";
+import UncheckCircleGray from "@/common/assets/image/icon_uncheck_circle_gray.svg";
 
 export const IconCheckCircle = chakra(CheckCircle);
 
@@ -87,3 +90,6 @@ export const IconEdit = chakra(Edit);
 export const IconMore = chakra(More);
 export const IconExportPhrase = chakra(ExportPhrase);
 export const IconDelete = chakra(Delete);
+export const IconQuestionCircle = chakra(QuestionCircle);
+export const IconCheckCircleBlack = chakra(CheckCircleBlack);
+export const IconUncheckCircleGray = chakra(UncheckCircleGray);

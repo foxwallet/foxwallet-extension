@@ -31,7 +31,8 @@
   },
   "Common": {
     "confirm": "确认",
-    "cancel": "取消"
+    "cancel": "取消",
+    "next": "下一个"
   },
   "Password": {
     "title": "密码",
@@ -48,5 +49,38 @@
     "title": "助记符",
     "enterPlaceholder": "输入助记词，以空格分隔",
     "checkTips": "请检查 \"{{WORD}}\""
+  },
+  "Send": {
+    "title": "发送",
+    "from": "发送方",
+    "transferToken": "代币",
+    "to": "收款方",
+    "toPlaceholder": "输入地址",
+    "private": "隐私",
+    "public": "公开",
+    "balance": "金额",
+    "amount": "数量",
+    "amountPlaceholder": "输入金额",
+    "available": "可用的",
+    "privateRecordExplain": "由于Aleo的实现方式，单次转账的最大金额受到所使用记录的金额的限制。",
+    "payPrivateRecord": "使用隐私记录付款。",
+    "noRecord": "没有可转账的记录。",
+    "payPublicBalance": "用公开余额支付。",
+    "publicTransfer": "公开转账",
+    "publicTransferDesc": "付款人和收款人的详细信息都是公开的。",
+    "privateTransfer": "隐私转账",
+    "privateTransferDesc": "付款人和收款人的详细信息属于隐私。",
+    "privateToPublic": "隐私记录到公共余额",
+    "privateToPublicDesc": "付款人的详细信息是保密的，但收款人的地址和收到的金额是公开的。",
+    "publicToPrivate": "公共余额转隐私记录",
+    "publicToPrivateDesc": "付款的地址和发送的金额是公开的，但收款人的详细信息是保密的。",
+    "selectRecord": "选择记录",
+    "commitment": "承诺",
+    "noRecordExist": "不存在记录",
+    "recordStatistics": "最多 {{COUNT}} 条记录",
+    "transferMethod": "转账方式",
+    "selectTransferMethod": "选择转账方式",
+    "privateRecord": "隐私记录",
+    "gasFee": "手续费"
   }
 }

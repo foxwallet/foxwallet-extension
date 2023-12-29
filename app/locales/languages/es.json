@@ -47,6 +47,40 @@
   },
   "Common": {
     "confirm": "Confirmar",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "next": "Próximo"
+  },
+  "Send": {
+    "title": "Enviar",
+    "from": "De",
+    "transferToken": "Ficha de transferencia",
+    "to": "Dirigirse",
+    "toPlaceholder": "Introduzca la dirección del destinatario",
+    "private": "Privado",
+    "public": "Público",
+    "balance": "Balance",
+    "amount": "Cantidad",
+    "amountPlaceholder": "Ingrese la cantidad",
+    "available": "Disponible",
+    "privateRecordExplain": "Debido a la implementación de Aleo, el monto máximo de una sola transferencia está limitado por el valor del registro utilizado.",
+    "payPrivateRecord": "Paga con registro privado.",
+    "noRecord": "No hay antecedentes para transferir.",
+    "payPublicBalance": "Paga con saldo público.",
+    "publicTransfer": "Transferencia pública",
+    "publicTransferDesc": "Tanto los datos del gastador como del receptor son públicos.",
+    "privateTransfer": "Transferencia privada",
+    "privateTransferDesc": "Los datos del remitente y del destinatario son privados.",
+    "privateToPublic": "Registro privado a saldo público.",
+    "privateToPublicDesc": "Los datos del remitente son privados, pero la dirección del destinatario y el monto recibido son públicos.",
+    "publicToPrivate": "Saldo público a registro privado",
+    "publicToPrivateDesc": "La dirección del remitente y el monto enviado son públicos, pero los detalles del destinatario son privados.",
+    "selectRecord": "Seleccionar registro",
+    "commitment": "Compromiso",
+    "noRecordExist": "No existe ningún registro",
+    "recordStatistics": "{{COUNT}} registros, máximo",
+    "transferMethod": "Método de transferencia",
+    "selectTransferMethod": "Seleccione el método de transferencia",
+    "privateRecord": "Registro privado",
+    "gasFee": "Tarifa de gas"
   }
 }

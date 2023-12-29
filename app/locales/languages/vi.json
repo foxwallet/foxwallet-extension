@@ -47,6 +47,40 @@
   },
   "Common": {
     "confirm": "Xác nhận",
-    "cancel": "Hủy bỏ"
+    "cancel": "Hủy bỏ",
+    "next": "Kế tiếp"
+  },
+  "Send": {
+    "title": "Gửi",
+    "from": "Từ",
+    "transferToken": "Chuyển mã thông báo",
+    "to": "Đến địa chỉ",
+    "toPlaceholder": "Nhập địa chỉ người nhận",
+    "private": "Riêng tư",
+    "public": "Công cộng",
+    "balance": "Sự cân bằng",
+    "amount": "Số lượng",
+    "amountPlaceholder": "Nhập số tiền",
+    "available": "Có sẵn",
+    "privateRecordExplain": "Do việc triển khai của Aleo, số tiền tối đa của một lần chuyển tiền bị giới hạn bởi giá trị của bản ghi được sử dụng.",
+    "payPrivateRecord": "Thanh toán bằng hồ sơ riêng.",
+    "noRecord": "Không có hồ sơ để chuyển.",
+    "payPublicBalance": "Thanh toán bằng số dư công cộng.",
+    "publicTransfer": "Chuyển giao công cộng",
+    "publicTransferDesc": "Thông tin chi tiết của cả người chi tiêu và người nhận đều được công khai.",
+    "privateTransfer": "Chuyển khoản riêng",
+    "privateTransferDesc": "Thông tin chi tiết của người gửi và người nhận được bảo mật.",
+    "privateToPublic": "Hồ sơ riêng tư cho số dư công cộng",
+    "privateToPublicDesc": "Thông tin chi tiết về người gửi được giữ kín nhưng địa chỉ của người nhận và số tiền nhận được sẽ được công khai.",
+    "publicToPrivate": "Số dư công cộng đến hồ sơ cá nhân",
+    "publicToPrivateDesc": "Địa chỉ của người gửi và số tiền đã gửi được công khai nhưng thông tin chi tiết về người nhận được giữ kín.",
+    "selectRecord": "Chọn bản ghi",
+    "commitment": "Sự cam kết",
+    "noRecordExist": "Không có bản ghi nào tồn tại",
+    "recordStatistics": "{{COUNT}} bản ghi, tối đa",
+    "transferMethod": "Phương thức chuyển khoản",
+    "selectTransferMethod": "Chọn phương thức chuyển",
+    "privateRecord": "Bản ghi riêng",
+    "gasFee": "Phí gas"
   }
 }
