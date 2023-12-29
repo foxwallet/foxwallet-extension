@@ -207,6 +207,14 @@ export class PopupServerClient implements IClient, IPopupServer {
     return await this.#send("onRequestFinish", params);
   }
 
+  async getHDMnemonic(walletId: string): Promise<string> {
+    return await this.#send("getHDMnemonic", walletId);
+  }
+
+  async deleteHDWallet(walletId: string): Promise<void> {
+    return await this.#send("deleteHDWallet", walletId);
+  }
+
   async #send<T, R>(method: PopupServerMethod, payload: T): Promise<R> {
     return await new Promise<R>((resolve, reject) => {
       const id = nanoid();

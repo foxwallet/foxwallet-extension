@@ -517,4 +517,12 @@ export class PopupWalletServer implements IPopupServer {
     }
     return tx.payload.data;
   }
+
+  async getHDMnemonic(walletId: string): Promise<string> {
+    return await this.keyringManager.getHDMnemonic(walletId);
+  }
+
+  async deleteHDWallet(walletId: string): Promise<void> {
+    return await this.keyringManager.deleteHDWallet(walletId);
+  }
 }

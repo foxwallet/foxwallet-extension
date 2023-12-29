@@ -9,6 +9,7 @@ import { CoinType } from "core/types";
 import { clients } from "@/hooks/useClient";
 import { DEFAULT_UNIQUE_ID_MAP } from "core/constants";
 import { ChainUniqueId } from "core/types/ChainUniqueId";
+import { unionBy } from "lodash";
 
 type SelectedAccount = DisplayAccount & {
   walletId: string;
@@ -47,9 +48,28 @@ export const account = createModel<RootModel>()({
   },
   reducers: {
     _setSelectedAccount(state, payload: { selectedAccount: SelectedAccount }) {
+      let { selectedAccount } = payload;
+      const walletInStore = state.allWalletInfo[selectedAccount.walletId];
+
+      if (walletInStore) {
+        const accountInStore = (
+          walletInStore.accountsMap?.[CoinType.ALEO] || []
+        ).find((a) => a.accountId === selectedAccount.accountId);
+        /**
+         * need to match accountName in allWalletInfo because we only store
+         * the properties unrelated to UI on the IndexedDB
+         */
+        if (accountInStore) {
+          selectedAccount = {
+            ...selectedAccount,
+            accountName: accountInStore.accountName,
+          };
+        }
+      }
+
       return {
         ...state,
-        selectedAccount: payload.selectedAccount,
+        selectedAccount,
       };
     },
     _setSelectedUniqueId(state, payload: { uniqueId: ChainUniqueId }) {
@@ -78,10 +98,21 @@ export const account = createModel<RootModel>()({
 
       walletList.map((w) => {
         if (Object.keys(oldAllWalletInfo).includes(w.walletId)) {
+          const oldAccountMap = oldAllWalletInfo[w.walletId].accountsMap || {};
+          const oldAccountList = oldAccountMap[CoinType.ALEO] || [];
+          const newAccountList = unionBy(
+            [...oldAccountList, ...(w.accountsMap[CoinType.ALEO] || [])],
+            "accountId",
+          ).sort((a1, a2) => a1.index - a2.index);
+
           allWalletInfo[w.walletId] = {
             ...w,
-            // make sure using walletName in Redux store
+            // make sure using walletName & accountName in Redux store
             walletName: oldAllWalletInfo[w.walletId].walletName || "",
+            accountsMap: {
+              ...w.accountsMap,
+              [CoinType.ALEO]: newAccountList,
+            },
           };
         } else {
           allWalletInfo[w.walletId] = w;
@@ -103,6 +134,43 @@ export const account = createModel<RootModel>()({
           [walletId]: {
             ...oldWallet,
             walletName,
+          },
+        },
+      };
+    },
+    changeAccountName(
+      state,
+      paylaod: { walletId: string; accountId: string; accountName: string },
+    ) {
+      const { walletId, accountId, accountName } = paylaod;
+      const oldWallet = state.allWalletInfo[walletId];
+      const oldAccountList: DisplayAccount[] =
+        oldWallet.accountsMap[CoinType.ALEO] || [];
+
+      const newAccountList = oldAccountList.map((account) => {
+        if (account.accountId === accountId) {
+          return {
+            ...account,
+            accountName,
+          };
+        }
+        return account;
+      });
+
+      const newWallet: DisplayWallet = {
+        ...oldWallet,
+        accountsMap: {
+          ...oldWallet.accountsMap,
+          [CoinType.ALEO]: newAccountList,
+        },
+      };
+
+      return {
+        ...state,
+        allWalletInfo: {
+          ...state.allWalletInfo,
+          [walletId]: {
+            ...newWallet,
           },
         },
       };
@@ -146,7 +214,7 @@ export const account = createModel<RootModel>()({
       return { account, uniqueId };
     },
 
-    async refreshAllWalletsToStore() {
+    async resyncAllWalletsToStore() {
       const wallets = await clients.popupServerClient.getAllWallet();
       if (!wallets) return;
 
@@ -154,6 +222,11 @@ export const account = createModel<RootModel>()({
       const simpleWallets = wallets[WalletType.SIMPLE] ?? [];
       const walletList = [...hdWallets, ...simpleWallets];
       dispatch.account._setAllWalletInfo({ walletList });
+    },
+
+    async deleteWallet(walletId: string) {
+      await clients.popupServerClient.deleteHDWallet(walletId);
+      dispatch.account.resyncAllWalletsToStore();
     },
   }),
 });

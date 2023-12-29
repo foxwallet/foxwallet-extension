@@ -18,7 +18,7 @@ export const useWallets = () => {
 
   const key = `/wallets`;
   const fetchWallets = useCallback(async () => {
-    dispatch.account.refreshAllWalletsToStore();
+    dispatch.account.resyncAllWalletsToStore();
     return await popupServerClient.getAllWallet();
   }, [popupServerClient, dispatch.account]);
 
@@ -43,12 +43,29 @@ export const useWallets = () => {
     }));
   }, [originWallets, allWalletInfo]);
 
+  const addAccount = useCallback(
+    async (walletId: string, coinType: CoinType, accountId: string) => {
+      try {
+        await popupServerClient.addAccount({
+          walletId,
+          coinType,
+          accountId,
+        });
+        dispatch.account.resyncAllWalletsToStore();
+      } catch (e) {
+        console.warn("add account error ", e);
+      }
+    },
+    [popupServerClient, dispatch.account],
+  );
+
   return {
     originWallets,
     flattenWalletList,
     error,
     getWallets,
     loadingWallets,
+    addAccount,
   };
 };
 
@@ -83,18 +100,9 @@ export const useCurrWallet = () => {
     [popupServerClient, dispatch.account],
   );
 
-  const addAccount = useCallback(
-    async (walletId: string, coinType: CoinType, accountId: string) => {
-      await popupServerClient.addAccount({ walletId, coinType, accountId });
-      dispatch.account.refreshAllWalletsToStore();
-    },
-    [popupServerClient, dispatch.account],
-  );
-
   return {
     selectedWallet,
     accountsInWallet,
-    addAccount,
     changeWalletName,
   };
 };

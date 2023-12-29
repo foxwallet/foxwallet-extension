@@ -19,6 +19,8 @@ import { NativeToken } from "core/types/Token";
 import { AccountInfoHeader } from "@/components/Wallet/AccountInfoHeader";
 import { BackupReminderView } from "@/components/Wallet/BackupReminderView";
 import { HomeTabList } from "@/components/Wallet/HomeTabList";
+import { useEffect } from "react";
+import { usePopupDispatch } from "@/hooks/useStore";
 
 const HistoryItem = (props: {
   item: AleoHistoryItem;
@@ -66,6 +68,11 @@ const HistoryItem = (props: {
 };
 
 export const WalletTab = () => {
+  const dispatch = usePopupDispatch();
+  useEffect(() => {
+    dispatch.account.resyncAllWalletsToStore();
+  }, [dispatch.account]);
+
   return (
     <TabPanel>
       <AccountInfoHeader />

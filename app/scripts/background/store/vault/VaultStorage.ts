@@ -288,6 +288,17 @@ export class VaultStorage {
     });
   }
 
+  async deleteHDWallet(walletId: string): Promise<void> {
+    const keyring = (await this.getKeyring()) || {};
+    const hdWallets = keyring[WalletType.HD] || [];
+    const newHDWallets = hdWallets.filter((w) => w.walletId !== walletId);
+
+    return await this.setKeyring({
+      ...keyring,
+      [WalletType.HD]: newHDWallets,
+    });
+  }
+
   async getVault() {
     return (await this.#storage.get(null)) as Vault;
   }

@@ -13,16 +13,19 @@ export const BackupReminderView = () => {
   const navigate = useNavigate();
   const [visible, setVisible] = useState(true);
 
-  const backupedMnemonic = usePopupSelector((state) => {
+  const { backupedMnemonic, selectedAccount } = usePopupSelector((state) => {
     const currAccount = state.account.selectedAccount;
     const backupedMnemonic =
       state.account.walletBackupMnemonicMap[currAccount.walletId] ?? false;
-    return backupedMnemonic;
+    return {
+      backupedMnemonic,
+      selectedAccount: state.account.selectedAccount,
+    };
   }, isEqual);
 
   const onBackup = useCallback(() => {
-    navigate("/backup_mnemonic");
-  }, [navigate]);
+    navigate(`/backup_mnemonic/${selectedAccount.walletId}`);
+  }, [navigate, selectedAccount.walletId]);
 
   if (backupedMnemonic || !visible) return null;
 
