@@ -12,11 +12,12 @@ import {
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
 import { AleoGasFee } from "core/types/GasFee";
 import { nanoid } from "nanoid";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TransferInfoStep } from "./TransferInfoStep";
 import { GasFeeStep } from "./GasFeeStep";
 import { useDataRef } from "@/hooks/useDataRef";
+import { showErrorToast } from "@/components/Custom/ErrorToast";
 
 function SendScreen() {
   const navigate = useNavigate();
@@ -138,7 +139,7 @@ function SendScreen() {
           });
         navigate(-1);
       } catch (err) {
-        setErrorMsg((err as Error).message);
+        showErrorToast({ message: (err as Error).message });
       } finally {
         setSubmitting(false);
       }

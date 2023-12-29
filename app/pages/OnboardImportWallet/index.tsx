@@ -8,7 +8,7 @@ import { showMnemonicWarningDialog } from "../../components/Onboard/MnemonicWarn
 import { nanoid } from "nanoid";
 import { CreatePasswordStep } from "../../components/Onboard/CreatePassword";
 import { ImportMnemonicStep } from "../../components/Onboard/ImportMnemonic";
-import { showMessageToast } from "../../components/Custom/ErrorToast";
+import { showErrorToast } from "../../components/Custom/ErrorToast";
 import { usePopupDispatch } from "@/hooks/useStore";
 import { sleep } from "core/utils/sleep";
 import { useNavigate } from "react-router-dom";
@@ -66,7 +66,7 @@ export default function OnboardImportWallet() {
                   navigate("/");
                 } catch (err) {
                   if (err instanceof Error) {
-                    void showMessageToast({ message: err.message });
+                    void showErrorToast({ message: err.message });
                   }
                 }
               } else {

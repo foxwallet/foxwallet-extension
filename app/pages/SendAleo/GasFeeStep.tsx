@@ -1,3 +1,4 @@
+import { showErrorToast } from "@/components/Custom/ErrorToast";
 import { IconChevronRight } from "@/components/Custom/Icon";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import { showSelectFeeTypeDialog } from "@/components/Send/SelectFeeType";
@@ -41,7 +42,6 @@ export const GasFeeStep = (props: GasFeeProps) => {
 
   const { selectedAccount, uniqueId } = useCurrAccount();
   const { coinService, nativeCurrency } = useCoinService(uniqueId);
-  const [errorMsg, setErrorMsg] = useState("");
 
   const { balance, loadingBalance } = useBalance(
     uniqueId,
@@ -71,7 +71,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
         setFeeInfo({ baseFee, priorityFee });
       } catch (err) {
         setFeeInfo(null);
-        setErrorMsg((err as Error).message);
+        showErrorToast({ message: (err as Error).message });
       } finally {
         setLoadingGasFee(false);
       }

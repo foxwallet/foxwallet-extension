@@ -23,6 +23,7 @@ import {
   InputRightElement,
   Text,
 } from "@chakra-ui/react";
+import { AleoFeeMethod } from "core/coins/ALEO/types/FeeMethod";
 import { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
 import { parseUnits } from "ethers/lib/utils";
@@ -58,18 +59,14 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
     setSelectedTransferRecord,
     onConfirm,
   } = props;
-  console.log("===> TransferInfoStep props: ", props);
 
   const { selectedAccount, uniqueId } = useCurrAccount();
-  const coinBasic = useCoinBasic(uniqueId);
-  const { coinService, chainConfig, nativeCurrency } = useCoinService(uniqueId);
+  const { nativeCurrency } = useCoinService(uniqueId);
   const { balance, loadingBalance } = useBalance(
     uniqueId,
     selectedAccount.address,
     10000,
   );
-
-  const [errorMsg, setErrorMsg] = useState("");
 
   const { records, loading: loadingRecords } = useRecords(
     uniqueId,
@@ -121,54 +118,9 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
     }
   }, [loadingBalance, balance, transferMethod]);
 
-  // gas fee
-  // const [feeInfo, setFeeInfo] = useState<AleoGasFee | null>(null);
-  // const gasFee = useMemo(() => {
-  //   if (!feeInfo) {
-  //     return 0n;
-  //   }
-  //   return feeInfo.baseFee + feeInfo.priorityFee;
-  // }, [feeInfo]);
-  // const [loadingGasFee, setLoadingGasFee] = useState(false);
-  // const gasFeeEstimated = !loadingGasFee && gasFee > 0n;
-  // const getGasFee = useCallback(
-  //   async (method: AleoTransferMethod) => {
-  //     setLoadingGasFee(true);
-  //     try {
-  //       const { baseFee, priorityFee } = await coinService.getGasFee(method);
-  //       setFeeInfo({ baseFee, priorityFee });
-  //     } catch (err) {
-  //       setFeeInfo(null);
-  //       setErrorMsg((err as Error).message);
-  //     } finally {
-  //       setLoadingGasFee(false);
-  //     }
-  //   },
-  //   [coinService],
-  // );
-  // useEffect(() => {
-  //   getGasFee(transferMethod);
-  // }, [transferMethod]);
-  const {
-    gasFee: feeInfo,
-    loadingGasFee,
-    error,
-  } = useAleoGasFee(uniqueId, transferMethod);
-  const gasFee = useMemo(() => {
-    if (!feeInfo) {
-      return 0n;
-    }
-    return feeInfo.baseFee + feeInfo.priorityFee;
-  }, [feeInfo]);
-
   // Amount
   const [amountNum, amountNumLegal] = useMemo(() => {
     try {
-      console.log(
-        "===> amountNum: ",
-        amountStr,
-        parseUnits(amountStr, nativeCurrency.decimals).toBigInt(),
-      );
       if (!amountStr) {
         return [null, false];
       }
@@ -184,7 +136,6 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
 
   const onAmountChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      console.log("===> onAmountChange: ", event.target.value.trim());
       setAmountStr(event.target.value.trim());
     },
     [],
@@ -205,13 +156,6 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
 
   // amount valid
   const amountValid = useMemo(() => {
-    console.log(
-      "===> amountValid: ",
-      amountStr,
-      transferMethod,
-      amountNum,
-      currTransferRecord?.parsedContent?.microcredits,
-    );
     if (!amountNumLegal || amountNum === null) {
       return false;
     }
