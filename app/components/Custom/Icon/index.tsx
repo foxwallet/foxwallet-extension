@@ -1,4 +1,4 @@
-import { Icon, chakra } from "@chakra-ui/react";
+import { chakra } from "@chakra-ui/react";
 import CheckCircle from "@/common/assets/image/icon_check_circle.svg";
 import CheckLine from "@/common/assets/image/icon_check_line.svg";
 import CloseLine from "@/common/assets/image/icon_close_line.svg";
@@ -34,6 +34,8 @@ import ChevronRight from "@/common/assets/image/icon_chevron_right.svg";
 import ChevronUp from "@/common/assets/image/icon_chevron_up.svg";
 import ChevronDown from "@/common/assets/image/icon_chevron_down.svg";
 import Wallet from "@/common/assets/image/icon_wallet.svg";
+import Edit from "@/common/assets/image/icon_edit.svg";
+import More from "@/common/assets/image/icon_more.svg";
 
 export const IconCheckCircle = chakra(CheckCircle);
 
@@ -79,3 +81,5 @@ export const IconChevronRight = chakra(ChevronRight);
 export const IconChevronUp = chakra(ChevronUp);
 export const IconChevronDown = chakra(ChevronDown);
 export const IconWallet = chakra(Wallet);
+export const IconEdit = chakra(Edit);
+export const IconMore = chakra(More);

@@ -43,12 +43,29 @@ export const useWallets = () => {
     }));
   }, [originWallets, allWalletInfo]);
 
+  const addAccount = useCallback(
+    async (walletId: string, coinType: CoinType, accountId: string) => {
+      try {
+        await popupServerClient.addAccount({
+          walletId,
+          coinType,
+          accountId,
+        });
+        dispatch.account.refreshAllWalletsToStore();
+      } catch (e) {
+        console.warn("add account error ", e);
+      }
+    },
+    [popupServerClient, dispatch.account],
+  );
+
   return {
     originWallets,
     flattenWalletList,
     error,
     getWallets,
     loadingWallets,
+    addAccount,
   };
 };
 
@@ -83,18 +100,9 @@ export const useCurrWallet = () => {
     [popupServerClient, dispatch.account],
   );
 
-  const addAccount = useCallback(
-    async (walletId: string, coinType: CoinType, accountId: string) => {
-      await popupServerClient.addAccount({ walletId, coinType, accountId });
-      dispatch.account.refreshAllWalletsToStore();
-    },
-    [popupServerClient, dispatch.account],
-  );
-
   return {
     selectedWallet,
     accountsInWallet,
-    addAccount,
     changeWalletName,
   };
 };

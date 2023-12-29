@@ -49,7 +49,7 @@ const AccountListItem: React.FC<AccountListItemProps> = ({
           <MiddleEllipsisText text={account.address} width={260} />
         </Text>
       </Flex>
-      <IconCheckLineBlack height={18} width={18} />
+      {isSelected && <IconCheckLineBlack height={18} width={18} />}
     </Flex>
   );
 };
