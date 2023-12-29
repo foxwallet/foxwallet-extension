@@ -6,13 +6,12 @@ import {
   IconMore,
 } from "@/components/Custom/Icon";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
+import { showDeleteWalletWarningDialog } from "@/components/Wallet/DeleteWalletWarningDialog";
 import { showEditAccountNameDrawer } from "@/components/Wallet/EditAccountNameDrawer";
 import {
   WalletOperateOption,
   showEditWalletDrawer,
 } from "@/components/Wallet/EditWalletDrawer";
-import { useClient } from "@/hooks/useClient";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
 import { useCurrWallet, useWallets } from "@/hooks/useWallets";
 import { PageWithHeader } from "@/layouts/Page";
@@ -23,7 +22,6 @@ import { isEqual } from "lodash";
 import { nanoid } from "nanoid";
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useDispatch } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 
 interface AccountListItemProps {
@@ -119,11 +117,6 @@ const WalletDetailScreen = () => {
   const { addAccount, flattenWalletList } = useWallets();
   const dispatch = usePopupDispatch();
 
-  const allWalletInfo = usePopupSelector(
-    (state) => state.account.allWalletInfo,
-    isEqual,
-  );
-
   const walletInfo = usePopupSelector((state) => {
     if (!walletId) {
       throw new Error("Wallet doesn't exists");
@@ -147,14 +140,18 @@ const WalletDetailScreen = () => {
   }, [addAccount, walletId]);
 
   const onDeleteWallet = useCallback(async () => {
-    // todo show modal
+    const { confirmed } = await showDeleteWalletWarningDialog();
+    if (!confirmed) {
+      return;
+    }
+
     await dispatch.account.deleteWallet(walletId);
     if (selectedWallet.walletId !== walletId) {
       navigate(-1);
       return;
     }
 
-    if (flattenWalletList.length > 0) {
+    if (flattenWalletList.length > 1) {
       const nextWallet = flattenWalletList[0];
       const nextAccount = nextWallet.accountsMap[CoinType.ALEO][0];
       if (!nextAccount) {
@@ -169,8 +166,18 @@ const WalletDetailScreen = () => {
       });
       navigate(-1);
     } else {
-      // todo
-      alert("there are no wallet");
+      // todo: clear data?
+      dispatch.account.setSelectedAccount({
+        selectedAccount: {
+          accountId: "",
+          accountName: "",
+          address: "",
+          index: 0,
+          walletId: "",
+          coinType: CoinType.ALEO,
+        },
+      });
+      navigate("/onboard/home");
     }
   }, [dispatch.account, walletId, navigate, flattenWalletList]);
 
