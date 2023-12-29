@@ -34,6 +34,9 @@ import ChevronRight from "@/common/assets/image/icon_chevron_right.svg";
 import ChevronUp from "@/common/assets/image/icon_chevron_up.svg";
 import ChevronDown from "@/common/assets/image/icon_chevron_down.svg";
 import Wallet from "@/common/assets/image/icon_wallet.svg";
+import QuestionCircle from "@/common/assets/image/icon_question_circle.svg";
+import CheckCircleBlack from "@/common/assets/image/icon_check_circle_black.svg";
+import UncheckCircleGray from "@/common/assets/image/icon_uncheck_circle_gray.svg";
 
 export const IconCheckCircle = chakra(CheckCircle);
 
@@ -79,3 +82,6 @@ export const IconChevronRight = chakra(ChevronRight);
 export const IconChevronUp = chakra(ChevronUp);
 export const IconChevronDown = chakra(ChevronDown);
 export const IconWallet = chakra(Wallet);
+export const IconQuestionCircle = chakra(QuestionCircle);
+export const IconCheckCircleBlack = chakra(CheckCircleBlack);
+export const IconUncheckCircleGray = chakra(UncheckCircleGray);

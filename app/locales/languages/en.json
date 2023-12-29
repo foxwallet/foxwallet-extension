@@ -51,9 +51,44 @@
     "enterPlaceholder": "Enter the mnemonic, separated by spaces",
     "checkTips": "Please check \"{{WORD}}\""
   },
+  "Send": {
+    "title": "Send",
+    "from": "From",
+    "transferToken": "Transfer Token",
+    "to": "To Address",
+    "toPlaceholder": "Enter receiver address",
+    "private": "Private",
+    "public": "Public",
+    "balance": "Balance",
+    "amount": "Amount",
+    "amountPlaceholder": "Enter amount",
+    "available": "Available",
+    "privateRecordExplain": "Due to Aleo's implementation, the maximum amount of a single transfer is limited by the vale of the record used.",
+    "payPrivateRecord": "Pay with private record.",
+    "noRecord": "No record to transfer.",
+    "payPublicBalance": "Pay with public balance.",
+    "publicTransfer": "Public transfer",
+    "publicTransferDesc": "Both the spender's and receiver's details are public.",
+    "privateTransfer": "Private transfer",
+    "privateTransferDesc": "Sender's and receiver's details are in privacy.",
+    "privateToPublic": "Private record to public balance",
+    "privateToPublicDesc": "The sender's details are in privacy, but the receiver's address and received amount are public.",
+    "publicToPrivate": "Public balance to private record",
+    "publicToPrivateDesc": "The sender's address and sent amount are public, but the receiver's details are in privacy.",
+    "selectRecord": "Select record",
+    "commitment": "Commitment",
+    "noRecordExist": "No record exist",
+    "recordStatistics": "{{COUNT}} records, maximum",
+    "transferMethod": "Transfer Method",
+    "selectTransferMethod": "Select Transfer Method",
+    "privateRecord": "Private Record",
+    "gasFee": "Gas Fee"
+  },
+
   "Common": {
     "confirm": "Confirm",
     "cancel": "Cancel",
-    "edit": "Edit"
+    "edit": "Edit",
+    "next": "Next"
   }
 }

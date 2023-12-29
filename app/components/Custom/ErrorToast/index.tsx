@@ -13,6 +13,9 @@ import {
   Text,
   TextProps,
   ModalProps,
+  useToast,
+  VStack,
+  Flex,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { H6 } from "../../../common/theme/components/text";
@@ -37,18 +40,19 @@ export function MessageToast(props: MessageToastProps & ToastProps) {
   return (
     <Modal onClose={onClose} isOpen={isOpen} isCentered>
       <ModalOverlay backdropFilter="blur(10px)" />
-      <ModalContent
-        alignSelf={"center"}
-        bg={"white"}
-        p={"4"}
-        borderRadius={"md"}
-      >
+      <ModalContent alignSelf={"center"} p={"4"} borderRadius={"md"}>
         <ModalBody
           display={"flex"}
           justifyContent={"center"}
           alignItems={"center"}
         >
-          {messageNode || <Text {...messageStyle}>{message}</Text>}
+          <Flex bgColor={"red.50"} px={4} py={3} borderRadius={"lg"}>
+            {messageNode || (
+              <Text color={"red.500"} {...messageStyle}>
+                {message.length > 30 ? message.slice(0, 30) + "..." : message}
+              </Text>
+            )}
+          </Flex>
         </ModalBody>
       </ModalContent>
     </Modal>
@@ -60,7 +64,7 @@ function MessageToastWrapper(
 ) {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const duration = props.duration || 2000;
+  const duration = props.duration || 3000;
 
   useEffect(() => {
     onOpen();
@@ -93,4 +97,4 @@ export function promisifyMessageToastWrapper() {
   };
 }
 
-export const showMessageToast = promisifyMessageToastWrapper();
+export const showErrorToast = promisifyMessageToastWrapper();
