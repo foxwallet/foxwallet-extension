@@ -1,46 +1,18 @@
-import { H6 } from "@/common/theme/components/text";
-import { ERROR_CODE } from "@/common/types/error";
-import {
-  IconAleo,
-  IconChevronRight,
-  IconQuestionCircle,
-} from "@/components/Custom/Icon";
-import { BaseInputGroup } from "@/components/Custom/Input";
+import { IconChevronRight } from "@/components/Custom/Icon";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import { showSelectFeeTypeDialog } from "@/components/Send/SelectFeeType";
-import { showSelectRecordDialog } from "@/components/Send/SelectRecord";
-import { showSelectTransferMethodDialog } from "@/components/Send/SelectTransferMethod";
-import { showAleoTransferInfoDialog } from "@/components/Send/TransferInfo";
 import { TokenNum } from "@/components/Wallet/TokenNum";
 import { useBalance } from "@/hooks/useBalance";
-import { useClient } from "@/hooks/useClient";
-import { useCoinBasic, useCoinService } from "@/hooks/useCoinService";
+import { useCoinService } from "@/hooks/useCoinService";
 import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { useRecords } from "@/hooks/useRecord";
 import { Content } from "@/layouts/Content";
-import { PageWithHeader } from "@/layouts/Page";
-import {
-  Box,
-  Button,
-  Divider,
-  Flex,
-  InputRightElement,
-  Text,
-} from "@chakra-ui/react";
+import { Button, Divider, Flex, Text } from "@chakra-ui/react";
 import { AleoFeeMethod } from "core/coins/ALEO/types/FeeMethod";
 import { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
-import {
-  AleoLocalTxInfo,
-  AleoTxStatus,
-} from "core/coins/ALEO/types/Tranaction";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
-import { ChainUniqueId } from "core/types/ChainUniqueId";
 import { AleoGasFee } from "core/types/GasFee";
-import { parseUnits } from "ethers/lib/utils";
-import { nanoid } from "nanoid";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useDebounce } from "use-debounce";
 
 interface GasFeeProps {
   receiverAddress: string;
@@ -68,8 +40,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
   } = props;
 
   const { selectedAccount, uniqueId } = useCurrAccount();
-  const coinBasic = useCoinBasic(uniqueId);
-  const { coinService, chainConfig, nativeCurrency } = useCoinService(uniqueId);
+  const { coinService, nativeCurrency } = useCoinService(uniqueId);
   const [errorMsg, setErrorMsg] = useState("");
 
   const { balance, loadingBalance } = useBalance(
@@ -145,30 +116,6 @@ export const GasFeeStep = (props: GasFeeProps) => {
     return transferMethod.startsWith("transfer_private");
   }, [transferMethod]);
 
-  const onSelectFeeRecord = useCallback(async () => {
-    const recordList = [...records];
-    if (isPrivateMethod && transferRecord) {
-      const index = recordList.findIndex(
-        (item) => item.commitment === transferRecord.commitment,
-      );
-      if (index >= 0) {
-        recordList.splice(index, 1);
-      }
-    }
-    const { data } = await showSelectRecordDialog({
-      recordList: recordList,
-      nativeCurrency,
-      selectedRecord: currFeeRecord,
-    });
-    if (data) {
-      setSelectedFeeType(AleoFeeMethod.FEE_PRIVATE);
-      setSelectedFeeRecord(data);
-    } else {
-      setSelectedFeeType(AleoFeeMethod.FEE_PUBLIC);
-      setSelectedFeeRecord(undefined);
-    }
-  }, [isPrivateMethod, records, nativeCurrency, currFeeRecord, transferRecord]);
-
   // fee type
   const defaultFeeType = useMemo(() => {
     if (!gasFeeEstimated) {
@@ -197,11 +144,38 @@ export const GasFeeStep = (props: GasFeeProps) => {
   );
   const currFeeType: AleoFeeMethod = selectedFeeType || defaultFeeType;
   const onSelectFeeType = useCallback(async () => {
-    const { data } = await showSelectFeeTypeDialog();
-    if (data) {
-      setSelectedFeeType(data);
+    if (!balance) {
+      return;
     }
-  }, []);
+    let recordList = [...records];
+    if (isPrivateMethod && transferRecord) {
+      recordList = recordList.filter(
+        (item) => item.commitment !== transferRecord.commitment,
+      );
+    }
+    const { data } = await showSelectFeeTypeDialog({
+      balance,
+      selectedFeeMethod: currFeeType,
+      selectedFeeRecord: currFeeRecord,
+      recordList: recordList,
+      nativeCurrency,
+    });
+    if (data) {
+      setSelectedFeeType(AleoFeeMethod.FEE_PRIVATE);
+      setSelectedFeeRecord(data);
+    } else {
+      setSelectedFeeType(AleoFeeMethod.FEE_PUBLIC);
+      setSelectedFeeRecord(undefined);
+    }
+  }, [
+    balance,
+    currFeeType,
+    currFeeRecord,
+    records,
+    isPrivateMethod,
+    transferRecord,
+    nativeCurrency,
+  ]);
 
   const gasFeeValid = useMemo(() => {
     if (!gasFeeEstimated) {
@@ -392,10 +366,6 @@ export const GasFeeStep = (props: GasFeeProps) => {
           />
         </Flex>
         <Divider bgColor={"gray.50"} h={"1px"} mt={3} mb={5} />
-        {/* <Flex direction={"column"} mb={"4"}>
-          <Text color={"gray.500"}>{"Fee Type"}</Text>
-          <Text>{currFeeType}</Text>
-        </Flex> */}
         <Flex mt={2} flexDir={"column"}>
           <Text>Gas Fee</Text>
           <Flex
@@ -415,7 +385,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
           </Flex>
           <Flex fontSize={"small"} color={"gray.500"} flex={1}>
             {currFeeType === AleoFeeMethod.FEE_PRIVATE ? (
-              <Flex onClick={onSelectFeeRecord} mt={2} flex={1}>
+              <Flex onClick={onSelectFeeType} mt={2} flex={1}>
                 {!!currFeeRecord ? (
                   <Flex>
                     Pay with private record&nbsp; (
@@ -433,7 +403,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
               </Flex>
             ) : (
               <Flex
-                onClick={onSelectFeeRecord}
+                onClick={onSelectFeeType}
                 mt={2}
                 justify={"space-between"}
                 align={"center"}
@@ -445,11 +415,15 @@ export const GasFeeStep = (props: GasFeeProps) => {
             )}
           </Flex>
         </Flex>
-        {/* <Button mt="2" onClick={onSelectFeeType}>
-          {currFeeType}
-        </Button> */}
       </Flex>
-      <Button mt="4" onClick={onSubmit} isDisabled={!canSubmit}>
+      <Button
+        position={"absolute"}
+        left={"5"}
+        right={"5"}
+        bottom={10}
+        onClick={onSubmit}
+        isDisabled={!canSubmit}
+      >
         {"Confirm"}
       </Button>
     </Content>
