@@ -1,6 +1,7 @@
 import { H1, H3, H6 } from "@/common/theme/components/text";
 import { logger } from "@/common/utils/logger";
 import { showErrorToast } from "@/components/Custom/ErrorToast";
+import { ImportMnemonicStep } from "@/components/Onboard/ImportMnemonic";
 import { WalletNameStep } from "@/components/Setting/WalletName";
 import { useClient } from "@/hooks/useClient";
 import { useCurrAccount } from "@/hooks/useCurrAccount";

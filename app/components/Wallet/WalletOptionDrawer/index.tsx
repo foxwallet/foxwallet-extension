@@ -22,7 +22,7 @@ interface Props {
   onClickOption: (option: WalletOperateOption) => void;
 }
 
-const EditWalletDrawer = (props: Props) => {
+const WalletOptionDrawer = (props: Props) => {
   const { wallet, isOpen, onCancel, onConfirm, onClickOption } = props;
   const { t } = useTranslation();
 
@@ -53,7 +53,7 @@ const EditWalletDrawer = (props: Props) => {
     <BottomUpDrawer
       isOpen={isOpen}
       onClose={onCancel}
-      title={"More"}
+      title={t("Common:more")}
       body={
         <Flex flexDirection={"column"}>
           <Flex
@@ -64,13 +64,15 @@ const EditWalletDrawer = (props: Props) => {
           >
             <IconExportPhrase />
             <Text ml={2.5} color={"#000"} fontSize={12} fontWeight={500}>
-              {isBackuped ? "Export seed phrase" : "Backup mnemonic"}
+              {isBackuped
+                ? t("Wallet:Export:seedPhrase")
+                : t("Wallet:Create:backupMnemonic")}
             </Text>
           </Flex>
           <Flex align={"center"} as={"button"} mb={1} onClick={handleDelete}>
             <IconDelete />
             <Text ml={2.5} color={"#EF466F"} fontSize={12} fontWeight={500}>
-              Delete wallet
+              {t("Wallet:Manage:delete")}
             </Text>
           </Flex>
         </Flex>
@@ -79,5 +81,5 @@ const EditWalletDrawer = (props: Props) => {
   );
 };
 
-export const showEditWalletDrawer =
-  promisifyChooseDialogWrapper(EditWalletDrawer);
+export const showWalletOptionDrawer =
+  promisifyChooseDialogWrapper(WalletOptionDrawer);

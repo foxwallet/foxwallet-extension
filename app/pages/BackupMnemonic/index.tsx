@@ -2,7 +2,6 @@ import { BackupMnemonicStep } from "@/components/Onboard/BackupMnemonic";
 import { ConfirmMnemonicStep } from "@/components/Onboard/ConfirmMnemonic";
 import { showMnemonicWarningDialog } from "@/components/Onboard/MnemonicWarningDialog";
 import { useClient } from "@/hooks/useClient";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { usePopupDispatch } from "@/hooks/useStore";
 import { Body } from "@/layouts/Body";
 import { PageWithHeader } from "@/layouts/Page";
@@ -46,11 +45,14 @@ const BackupMnemonicScreen = () => {
     if (hasPopuped.current) return;
     hasPopuped.current = true;
 
+    const res = await popupServerClient.getHDMnemonic(
+      walletIdRef.current || "",
+    );
     const { confirmed } = await showMnemonicWarningDialog();
     if (confirmed) {
-      regenerateWallet();
+      setMnemonic(res);
     }
-  }, [regenerateWallet, showMnemonicWarningDialog]);
+  }, [showMnemonicWarningDialog, setMnemonic]);
 
   const stepContent = useMemo(() => {
     switch (step) {

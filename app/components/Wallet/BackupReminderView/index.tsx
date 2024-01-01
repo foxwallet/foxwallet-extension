@@ -3,6 +3,7 @@ import {
   IconBackupReminder,
   IconCloseLineGray,
 } from "@/components/Custom/Icon";
+import { showPasswordVerifyDrawer } from "@/components/Custom/PasswordVerifyDrawer";
 import { usePopupSelector } from "@/hooks/useStore";
 import { Box, Flex, Text } from "@chakra-ui/react";
 import { isEqual } from "lodash";
@@ -23,9 +24,10 @@ export const BackupReminderView = () => {
     };
   }, isEqual);
 
-  const onBackup = useCallback(() => {
-    navigate(`/backup_mnemonic/${selectedAccount.walletId}`);
-  }, [navigate, selectedAccount.walletId]);
+  const onBackup = useCallback(async () => {
+    const { confirmed } = await showPasswordVerifyDrawer();
+    confirmed && navigate(`/\${selectedAccount.walletId}`);
+  }, [navigate, selectedAccount.walletId, showPasswordVerifyDrawer]);
 
   if (backupedMnemonic || !visible) return null;
 

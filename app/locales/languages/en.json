@@ -16,6 +16,12 @@
       "importMnemonic": "Import mnemonic",
       "importPrivateKey": "Import private key"
     },
+    "Export": {
+      "privateKey": "Export private key",
+      "seedPhrase": "Export seed phrase",
+      "show": "Show",
+      "hide": "Hide"
+    },
     "Manage": {
       "title": "Wallet",
       "addWallet": "Add wallet",
@@ -25,7 +31,8 @@
       "changeAccountName": "Change account name",
       "accountName": "Account Name",
       "accountNamePlaceholder": "Enter account name",
-      "dupAccountName": "Duplicate account name"
+      "dupAccountName": "Duplicate account name",
+      "delete": "Delete wallet"
     }
   },
   "Onboard": {
@@ -94,6 +101,10 @@
     "confirm": "Confirm",
     "cancel": "Cancel",
     "edit": "Edit",
-    "next": "Next"
+    "next": "Next",
+    "more": "More"
+  },
+  "Error": {
+    "invalidPassword": "Invalid password"
   }
 }

@@ -33,6 +33,9 @@ const Language = lazy(async () => await import("../pages/Language"));
 const ExportSeedPhrase = lazy(
   async () => await import("../pages/ExportSeedPhrase"),
 );
+const ExportPrivateKey = lazy(
+  async () => await import("../pages/ExportPrivateKey"),
+);
 
 const OnboardHome = lazy(async () => await import("../pages/OnboardHome"));
 const OnboardCreateWallet = lazy(
@@ -125,6 +128,10 @@ export const routesConfig: RouteObject[] = [
       {
         path: "export_seed_phrase/:walletId",
         element: <ExportSeedPhrase />,
+      },
+      {
+        path: "export_private_key/:walletId/:accountId/:coinType",
+        element: <ExportPrivateKey />,
       },
     ],
   },

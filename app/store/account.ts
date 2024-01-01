@@ -94,10 +94,14 @@ export const account = createModel<RootModel>()({
     _setAllWalletInfo(state, payload: { walletList: DisplayWallet[] }) {
       const { walletList } = payload;
       const oldAllWalletInfo = { ...state.allWalletInfo };
+      const oldAllWalletIds = Object.keys(oldAllWalletInfo);
+
       const allWalletInfo: WalletInfoMap = {};
 
       walletList.map((w) => {
-        if (Object.keys(oldAllWalletInfo).includes(w.walletId)) {
+        const { mnemonic, ...restInfo } = w;
+
+        if (oldAllWalletIds.includes(w.walletId)) {
           const oldAccountMap = oldAllWalletInfo[w.walletId].accountsMap || {};
           const oldAccountList = oldAccountMap[CoinType.ALEO] || [];
           const newAccountList = unionBy(
@@ -106,7 +110,7 @@ export const account = createModel<RootModel>()({
           ).sort((a1, a2) => a1.index - a2.index);
 
           allWalletInfo[w.walletId] = {
-            ...w,
+            ...restInfo,
             // make sure using walletName & accountName in Redux store
             walletName: oldAllWalletInfo[w.walletId].walletName || "",
             accountsMap: {
@@ -115,7 +119,7 @@ export const account = createModel<RootModel>()({
             },
           };
         } else {
-          allWalletInfo[w.walletId] = w;
+          allWalletInfo[w.walletId] = restInfo;
         }
       });
 
