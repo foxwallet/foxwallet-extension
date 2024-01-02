@@ -17,13 +17,13 @@ import {
   WalletOperateOption,
   showWalletOptionDrawer,
 } from "@/components/Wallet/WalletOptionDrawer";
+import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
 import { useCurrWallet, useWallets } from "@/hooks/useWallets";
 import { PageWithHeader } from "@/layouts/Page";
 import { SelectedAccount } from "@/scripts/background/store/vault/types/keyring";
 import { Box, Button, Flex, Text, useClipboard } from "@chakra-ui/react";
 import { CoinType } from "core/types";
-import { isEqual } from "lodash";
 import { nanoid } from "nanoid";
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -36,6 +36,23 @@ const AccountListItem: React.FC<AccountListItemProps> = ({ account }) => {
   const { onCopy } = useClipboard(account.address);
   const { showToast } = useCopyToast();
   const navigate = useNavigate();
+  const dispatch = usePopupDispatch();
+
+  const { selectedAccount } = useCurrAccount();
+
+  const allWalletInfo = usePopupSelector(
+    (state) => state.account.allWalletInfo,
+  );
+
+  const operatingWallet = useMemo(
+    () => allWalletInfo[account.walletId],
+    [allWalletInfo, account.walletId],
+  );
+
+  const accountListInWallet = useMemo(
+    () => operatingWallet?.accountsMap?.[CoinType.ALEO] || [],
+    [operatingWallet.accountsMap],
+  );
 
   const handleEditName = useCallback(() => {
     showEditAccountNameDrawer({
@@ -57,10 +74,45 @@ const AccountListItem: React.FC<AccountListItemProps> = ({ account }) => {
     }
   }, [navigate, account]);
 
-  const onChangeVisibility = useCallback(() => {}, []);
+  const onChangeVisibility = useCallback(() => {
+    let newSelectedAccount: SelectedAccount | undefined;
+
+    if (selectedAccount.accountId === account.accountId && !account.hide) {
+      const nextAccount = accountListInWallet.find(
+        (a) => a.accountId !== account.accountId && !a.hide,
+      );
+      if (nextAccount) {
+        newSelectedAccount = {
+          ...nextAccount,
+          walletId: operatingWallet.walletId,
+          coinType: CoinType.ALEO,
+        };
+      }
+    }
+
+    dispatch.account.changeAccountHideState({
+      walletId: operatingWallet.walletId,
+      accountId: account.accountId,
+      coinType: account.coinType,
+      hide: !account.hide,
+    });
+
+    if (newSelectedAccount) {
+      dispatch.account.setSelectedAccount({
+        selectedAccount: newSelectedAccount,
+      });
+    }
+  }, [
+    dispatch.account,
+    account,
+    selectedAccount.accountId,
+    accountListInWallet,
+    operatingWallet.walletId,
+  ]);
 
   const handleShowMore = useCallback(() => {
     showAccountOptionDrawer({
+      wallet: operatingWallet,
       account,
       onClickOption: (option) => {
         switch (option) {
@@ -95,7 +147,7 @@ const AccountListItem: React.FC<AccountListItemProps> = ({ account }) => {
             mr={1}
             fontSize={13}
             fontWeight={"bold"}
-            color={"#000"}
+            color={!!account.hide ? "#777E90" : "#000"}
             align={"start"}
           >
             {account.accountName}
@@ -152,12 +204,14 @@ const WalletDetailScreen = () => {
   const { addAccount, flattenWalletList } = useWallets();
   const dispatch = usePopupDispatch();
 
-  const walletInfo = usePopupSelector((state) => {
-    if (!walletId) {
-      throw new Error("Wallet doesn't exists");
-    }
-    return state.account.allWalletInfo[walletId];
-  }, isEqual);
+  const allWalletInfo = usePopupSelector(
+    (state) => state.account.allWalletInfo,
+  );
+
+  const walletInfo = useMemo(
+    () => allWalletInfo[walletId],
+    [walletId, allWalletInfo],
+  );
 
   const accountList: SelectedAccount[] = useMemo(() => {
     if (!walletInfo) return [];
@@ -168,7 +222,12 @@ const WalletDetailScreen = () => {
       walletId: walletId || "",
       coinType: CoinType.ALEO,
     }));
-  }, [walletInfo, walletId]);
+  }, [walletInfo.accountsMap, walletId]);
+
+  const isAccountFull = useMemo(
+    () => accountList.length >= 8,
+    [accountList.length],
+  );
 
   const onAddAccount = useCallback(() => {
     addAccount(walletId || "", CoinType.ALEO, nanoid());
@@ -225,6 +284,7 @@ const WalletDetailScreen = () => {
           index: 0,
           walletId: "",
           coinType: CoinType.ALEO,
+          hide: false,
         },
       });
       navigate("/onboard/home");
@@ -311,8 +371,11 @@ const WalletDetailScreen = () => {
           left={5}
           right={5}
           onClick={onAddAccount}
+          isDisabled={isAccountFull}
         >
-          {t("Wallet:Manage:addAccount")}
+          {isAccountFull
+            ? t("Wallet:Manage:accountFull")
+            : t("Wallet:Manage:addAccount")}
         </Button>
       </Flex>
     </PageWithHeader>

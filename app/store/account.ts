@@ -35,6 +35,7 @@ const DEFAULT_ACCOUNT_MODEL: AccountModel = {
     index: 0,
     walletId: "",
     coinType: CoinType.ALEO,
+    hide: false,
   },
   selectedUniqueId: DEFAULT_UNIQUE_ID_MAP[CoinType.ALEO],
   walletBackupMnemonicMap: {},
@@ -178,6 +179,48 @@ export const account = createModel<RootModel>()({
           },
         },
       };
+    },
+    changeAccountHideState(
+      state,
+      payload: {
+        walletId: string;
+        accountId: string;
+        coinType: CoinType;
+        hide: boolean;
+      },
+    ) {
+      const { walletId, accountId, coinType, hide } = payload;
+      const matchedWallet = state.allWalletInfo[walletId];
+      if (matchedWallet) {
+        const accountList = matchedWallet.accountsMap[coinType] || [];
+        const targetAccountIndex = accountList.findIndex(
+          (a) => a.accountId === accountId,
+        );
+
+        if (targetAccountIndex !== -1) {
+          accountList[targetAccountIndex] = {
+            ...accountList[targetAccountIndex],
+            hide: !!hide,
+          };
+          const walletInfo = {
+            ...matchedWallet,
+            accountsMap: {
+              ...matchedWallet.accountsMap,
+              [coinType]: [...accountList],
+            },
+          };
+          console.log("change account state ", !!hide);
+          return {
+            ...state,
+            allWalletInfo: {
+              ...state.allWalletInfo,
+              [walletId]: { ...walletInfo },
+            },
+          };
+        }
+      }
+
+      return state;
     },
   },
   effects: (dispatch) => ({
