@@ -8,13 +8,37 @@
       "walletNamePlaceholder": "输入钱包名称",
       "dupWalletName": "钱包名称重复",
       "backupMnemonic": "备份助记词",
-      "confirmMnemonic": "确认助记词"
+      "confirmMnemonic": "确认助记词",
+      "explain": "创建一个新的助记词钱包。"
     },
     "Import": {
       "title": "导入钱包",
       "selectType": "选择类型",
       "importMnemonic": "导入助记词",
-      "importPrivateKey": "导入私钥"
+      "importPrivateKey": "导入私钥",
+      "importMnemonicExplain": "助记词由12个单词组成，单词之间以空格分隔。",
+      "importPrivateKeyExplain": "纯文本私钥字符。"
+    },
+    "backupTips": "您还没有备份钱包",
+    "backupBtnTitle": "立即备份",
+    "tabAsset": "资产",
+    "Export": {
+      "privateKey": "导出私钥",
+      "seedPhrase": "导出助记词",
+      "show": "展示",
+      "hide": "隐藏"
+    },
+    "Manage": {
+      "title": "钱包",
+      "addWallet": "添加钱包",
+      "checkAccounts": "检查账户",
+      "changeName": "更改钱包名称",
+      "addAccount": "新增帐户",
+      "changeAccountName": "更改账户名",
+      "accountName": "帐户名称",
+      "accountNamePlaceholder": "输入账户名",
+      "dupAccountName": "帐户名重复",
+      "delete": "删除钱包"
     }
   },
   "Onboard": {
@@ -32,14 +56,17 @@
   "Common": {
     "confirm": "确认",
     "cancel": "取消",
-    "next": "下一个"
+    "next": "下一个",
+    "edit": "编辑",
+    "more": "更多"
   },
   "Password": {
     "title": "密码",
     "enter": "输入密码",
     "passwordPlaceholder": "不少于6个字符",
     "confirmPasswordPlaceholder": "再次输入密码",
-    "warning": "FoxWallet 不会存储密码。一旦忘记密码，只能通过助记词恢复钱包。"
+    "warning": "FoxWallet 不会存储密码。一旦忘记密码，只能通过助记词恢复钱包。",
+    "verify": "验证密码"
   },
   "Mnemonic": {
     "backupTips1": "点击此处显示助记词",
@@ -48,7 +75,10 @@
     "regenerate": "重新生成",
     "title": "助记符",
     "enterPlaceholder": "输入助记词，以空格分隔",
-    "checkTips": "请检查 \"{{WORD}}\""
+    "checkTips": "请检查 \"{{WORD}}\"",
+    "warning1": "请按顺序记下助记词。",
+    "warning2": "请复制并保存在安全的地方。",
+    "warning3": "助记词或私钥是恢复钱包的唯一方法。一旦丢失，将无法找回。不要通过屏幕截图或社交媒体保存它们。"
   },
   "Send": {
     "title": "发送",
@@ -82,5 +112,21 @@
     "selectTransferMethod": "选择转账方式",
     "privateRecord": "隐私记录",
     "gasFee": "手续费"
+  },
+  "PrivateKey": {
+    "title": "私钥",
+    "enterPlaceholder": "输入私钥"
+  },
+  "Receive": {
+    "title": "收到",
+    "scanToTransfer": "扫描传输",
+    "onlyTips": "仅支持ALEO相关资产",
+    "walletAddr": "钱包地址"
+  },
+  "Setting": {
+    "title": "设置"
+  },
+  "Error": {
+    "invalidPassword": "无效的密码"
   }
 }

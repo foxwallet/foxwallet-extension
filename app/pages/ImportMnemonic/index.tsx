@@ -1,19 +1,15 @@
-import { H1, H3, H6 } from "@/common/theme/components/text";
 import { logger } from "@/common/utils/logger";
 import { showErrorToast } from "@/components/Custom/ErrorToast";
 import { ImportMnemonicStep } from "@/components/Onboard/ImportMnemonic";
 import { WalletNameStep } from "@/components/Setting/WalletName";
 import { useClient } from "@/hooks/useClient";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { usePopupDispatch } from "@/hooks/useStore";
 import { Body } from "@/layouts/Body";
-import { Content } from "@/layouts/Content";
 import { PageWithHeader } from "@/layouts/Page";
-import { TabPanel } from "@chakra-ui/react";
 import { CoinType } from "core/types";
 import { sleep } from "core/utils/sleep";
 import { nanoid } from "nanoid";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
@@ -24,6 +20,7 @@ const ImportMnemonicScreen = () => {
   const walletIdRef = useRef("");
   const navigate = useNavigate();
   const dispatch = usePopupDispatch();
+  const { t } = useTranslation();
 
   const stepContent = useMemo(() => {
     switch (step) {
@@ -83,7 +80,7 @@ const ImportMnemonicScreen = () => {
 
   return (
     <PageWithHeader
-      title="Import Wallet"
+      title={t("Wallet:Import:importMnemonic")}
       enableBack={true}
       onBack={() => {
         if (step > 1) {

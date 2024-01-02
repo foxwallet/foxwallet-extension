@@ -1,30 +1,27 @@
-import { H1, H3, H6 } from "@/common/theme/components/text";
 import { logger } from "@/common/utils/logger";
 import { showErrorToast } from "@/components/Custom/ErrorToast";
-import { ImportMnemonicStep } from "@/components/Onboard/ImportMnemonic";
+import { ImportPrivateKeyStep } from "@/components/Onboard/ImportPrivateKey";
 import { WalletNameStep } from "@/components/Setting/WalletName";
 import { useClient } from "@/hooks/useClient";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { usePopupDispatch } from "@/hooks/useStore";
 import { Body } from "@/layouts/Body";
-import { Content } from "@/layouts/Content";
 import { PageWithHeader } from "@/layouts/Page";
-import { TabPanel } from "@chakra-ui/react";
 import { AleoImportPKType } from "core/coins/ALEO/types/AleoAccount";
 import { CoinType } from "core/types";
 import { sleep } from "core/utils/sleep";
 import { nanoid } from "nanoid";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
-const CreateWalletScreen = () => {
+const ImportPrivateKeyScreen = () => {
   const [step, setStep] = useState(1);
   const walletNameRef = useRef("");
   const { popupServerClient } = useClient();
   const walletIdRef = useRef("");
   const navigate = useNavigate();
   const dispatch = usePopupDispatch();
+  const { t } = useTranslation();
 
   const stepContent = useMemo(() => {
     switch (step) {
@@ -40,7 +37,7 @@ const CreateWalletScreen = () => {
         );
       case 2:
         return (
-          <ImportMnemonicStep
+          <ImportPrivateKeyStep
             onConfirm={async (privateKey) => {
               const walletId = walletIdRef.current;
               const walletName = walletNameRef.current;
@@ -62,6 +59,10 @@ const CreateWalletScreen = () => {
                       ...account,
                     },
                   });
+                  dispatch.account.changeWalletBackupedMnemonic({
+                    walletId: wallet.walletId,
+                    backupedMnemonic: true,
+                  });
                   await sleep(500);
                   navigate("/");
                 } catch (err) {
@@ -80,7 +81,7 @@ const CreateWalletScreen = () => {
 
   return (
     <PageWithHeader
-      title="Import Wallet"
+      title={t("Wallet:Import:importPrivateKey")}
       enableBack={true}
       onBack={() => {
         if (step > 1) {
@@ -95,4 +96,4 @@ const CreateWalletScreen = () => {
   );
 };
 
-export default CreateWalletScreen;
+export default ImportPrivateKeyScreen;

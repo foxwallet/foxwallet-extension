@@ -8,13 +8,37 @@
       "walletNamePlaceholder": "Geben Sie den Wallet-Namen ein",
       "dupWalletName": "Doppelter Wallet-Name",
       "backupMnemonic": "Backup-Mnemonik",
-      "confirmMnemonic": "Mnemonik bestätigen"
+      "confirmMnemonic": "Mnemonik bestätigen",
+      "explain": "Erstellen Sie eine neue HD-Wallet."
     },
     "Import": {
       "title": "Wallet importieren",
       "selectType": "Art auswählen",
       "importMnemonic": "Mnemonik importieren",
-      "importPrivateKey": "Privaten Schlüssel importieren"
+      "importPrivateKey": "Privaten Schlüssel importieren",
+      "importMnemonicExplain": "Die Startphase (Mnemonik) besteht aus 12 durch Leerzeichen getrennten Wörtern.",
+      "importPrivateKeyExplain": "Private Schlüsselzeichen im Klartext."
+    },
+    "backupTips": "Sie haben Ihr Wallet noch nicht gesichert",
+    "backupBtnTitle": "Jetzt sichern",
+    "tabAsset": "Vermögenswert",
+    "Export": {
+      "privateKey": "Privaten Schlüssel exportieren",
+      "seedPhrase": "Seed-Phrase exportieren",
+      "show": "Zeigen",
+      "hide": "Verstecken"
+    },
+    "Manage": {
+      "title": "Geldbörse",
+      "addWallet": "Geldbörse hinzufügen",
+      "checkAccounts": "Konten prüfen",
+      "changeName": "Ändern Sie den Wallet-Namen",
+      "addAccount": "Konto hinzufügen",
+      "changeAccountName": "Kontonamen ändern",
+      "accountName": "Kontoname",
+      "accountNamePlaceholder": "Geben Sie den Kontonamen ein",
+      "dupAccountName": "Doppelter Kontoname",
+      "delete": "Wallet löschen"
     }
   },
   "Onboard": {
@@ -34,7 +58,8 @@
     "enter": "Passwort eingeben",
     "passwordPlaceholder": "Nicht weniger als 6 Zeichen",
     "confirmPasswordPlaceholder": "Passwort erneut eingeben",
-    "warning": "FoxWallet speichert das Passwort nicht. Sobald Sie das Passwort vergessen haben, können Sie das Wallet nur über die Mnemonik wiederherstellen."
+    "warning": "FoxWallet speichert das Passwort nicht. Sobald Sie das Passwort vergessen haben, können Sie das Wallet nur über die Mnemonik wiederherstellen.",
+    "verify": "Passwort bestätigen"
   },
   "Mnemonic": {
     "backupTips1": "Klicken Sie hier, um die mnemonische Phase anzuzeigen",
@@ -43,12 +68,17 @@
     "regenerate": "Regenerieren",
     "title": "Gedächtnisstütze",
     "enterPlaceholder": "Geben Sie die Mnemonik ein, getrennt durch Leerzeichen",
-    "checkTips": "Bitte überprüfen Sie „{{WORD}}“"
+    "checkTips": "Bitte überprüfen Sie „{{WORD}}“",
+    "warning1": "Bitte notieren Sie sich die Startphrase der Reihe nach.",
+    "warning2": "Bitte kopieren Sie es und bewahren Sie es an einem sicheren Ort auf.",
+    "warning3": "Seed-Phrase oder privater Schlüssel sind die einzige Möglichkeit, Ihr Wallet wiederherzustellen. Sobald es verloren geht, kann es nicht mehr wiederhergestellt werden. Speichern Sie sie nicht über Screenshots oder soziale Medien."
   },
   "Common": {
     "confirm": "Bestätigen",
     "cancel": "Stornieren",
-    "next": "Nächste"
+    "next": "Nächste",
+    "edit": "Bearbeiten",
+    "more": "Mehr"
   },
   "Send": {
     "title": "Schicken",
@@ -82,5 +112,21 @@
     "selectTransferMethod": "Wählen Sie Übertragungsmethode",
     "privateRecord": "Privataufnahme",
     "gasFee": "Gasgebühr"
+  },
+  "PrivateKey": {
+    "title": "Privat Schlüssel",
+    "enterPlaceholder": "Geben Sie den privaten Schlüssel ein"
+  },
+  "Receive": {
+    "title": "Erhalten",
+    "scanToTransfer": "Zum Übertragen scannen",
+    "onlyTips": "Unterstützen Sie nur ALEO-bezogene Assets",
+    "walletAddr": "Wallet-Adresse"
+  },
+  "Setting": {
+    "title": "Einstellung"
+  },
+  "Error": {
+    "invalidPassword": "Ungültiges Passwort"
   }
 }

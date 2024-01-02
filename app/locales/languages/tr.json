@@ -8,13 +8,37 @@
       "walletNamePlaceholder": "Cüzdan adını girin",
       "dupWalletName": "Yinelenen cüzdan adı",
       "backupMnemonic": "Yedekleme anımsatıcısı",
-      "confirmMnemonic": "Anımsatıcıyı onayla"
+      "confirmMnemonic": "Anımsatıcıyı onayla",
+      "explain": "Yeni bir HD cüzdan oluşturun."
     },
     "Import": {
       "title": "Cüzdanı İçe Aktar",
       "selectType": "Tür Seçin",
       "importMnemonic": "Anımsatıcıyı içe aktar",
-      "importPrivateKey": "Özel anahtarı içe aktar"
+      "importPrivateKey": "Özel anahtarı içe aktar",
+      "importMnemonicExplain": "Tohum aşaması (anımsatıcı), boşluklarla ayrılmış 12 kelimeden oluşur.",
+      "importPrivateKeyExplain": "Düz metin özel anahtar karakterleri."
+    },
+    "backupTips": "Cüzdanınızı henüz yedeklemediniz",
+    "backupBtnTitle": "Şimdi yedekle",
+    "tabAsset": "Varlık",
+    "Export": {
+      "privateKey": "Özel anahtarı dışa aktar",
+      "seedPhrase": "Tohum ifadesini dışa aktar",
+      "show": "Göstermek",
+      "hide": "Saklamak"
+    },
+    "Manage": {
+      "title": "Cüzdan",
+      "addWallet": "Cüzdan ekle",
+      "checkAccounts": "Hesapları kontrol et",
+      "changeName": "Cüzdan adını değiştir",
+      "addAccount": "Hesap eklemek",
+      "changeAccountName": "Hesap adını değiştir",
+      "accountName": "Hesap adı",
+      "accountNamePlaceholder": "Hesap adını girin",
+      "dupAccountName": "Yinelenen hesap adı",
+      "delete": "Cüzdanı sil"
     }
   },
   "Onboard": {
@@ -34,7 +58,8 @@
     "enter": "Parolanı Gir",
     "passwordPlaceholder": "En az 6 karakter",
     "confirmPasswordPlaceholder": "Şifreyi tekrar girin",
-    "warning": "FoxWallet şifreyi saklamaz. Şifre unutulduğunda cüzdanı yalnızca anımsatıcı aracılığıyla geri yükleyebilirsiniz."
+    "warning": "FoxWallet şifreyi saklamaz. Şifre unutulduğunda cüzdanı yalnızca anımsatıcı aracılığıyla geri yükleyebilirsiniz.",
+    "verify": "Şifreyi Doğrula"
   },
   "Mnemonic": {
     "backupTips1": "Anımsatıcı aşamayı görüntülemek için burayı tıklayın",
@@ -43,12 +68,17 @@
     "regenerate": "Yenile",
     "title": "anımsatıcı",
     "enterPlaceholder": "Anımsatıcıyı boşluklarla ayırarak girin",
-    "checkTips": "Lütfen \"{{WORD}}\" ifadesini kontrol edin"
+    "checkTips": "Lütfen \"{{WORD}}\" ifadesini kontrol edin",
+    "warning1": "Lütfen tohum ifadesini sırayla not edin.",
+    "warning2": "Lütfen kopyalayıp güvenli bir yerde saklayın.",
+    "warning3": "Cüzdanınızı kurtarmanın tek yolu tohum cümlesi veya özel anahtardır. Kaybedildikten sonra geri getirilemez. Bunları ekran görüntüleri veya sosyal medya aracılığıyla kaydetmeyin."
   },
   "Common": {
     "confirm": "Onaylamak",
     "cancel": "İptal etmek",
-    "next": "Sonraki"
+    "next": "Sonraki",
+    "edit": "Düzenlemek",
+    "more": "Daha"
   },
   "Send": {
     "title": "Göndermek",
@@ -82,5 +112,21 @@
     "selectTransferMethod": "Aktarım Yöntemini Seçin",
     "privateRecord": "Özel Kayıt",
     "gasFee": "Gaz Ücreti"
+  },
+  "PrivateKey": {
+    "title": "Özel anahtar",
+    "enterPlaceholder": "Özel anahtarı girin"
+  },
+  "Receive": {
+    "title": "Almak",
+    "scanToTransfer": "Aktarmak için tarayın",
+    "onlyTips": "Yalnızca ALEO ile ilgili varlıkları destekleyin",
+    "walletAddr": "Cüzdan Adresi"
+  },
+  "Setting": {
+    "title": "Ayar"
+  },
+  "Error": {
+    "invalidPassword": "Geçersiz şifre"
   }
 }

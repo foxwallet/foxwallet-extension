@@ -1,20 +1,9 @@
-import { Button, Flex, InputRightElement } from "@chakra-ui/react";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Button, Flex } from "@chakra-ui/react";
+import React, { useCallback, useMemo, useState } from "react";
 import { Content } from "../../../layouts/Content";
-import { BaseInput, BaseInputGroup } from "../../Custom/Input";
+import { BaseInputGroup } from "../../Custom/Input";
 import { WarningArea } from "../../Custom/WarningArea";
-import {
-  IconCheckLine,
-  IconCloseLine,
-  IconEyeOn,
-  IconEyeClose,
-} from "../../Custom/Icon";
-import { type Score as PasswordScore } from "@zxcvbn-ts/core";
-import { useDebounce } from "use-debounce";
-import { PASSWORD_MINIMUL_LENGTH } from "../../../common/constants";
-import { useClient } from "@/hooks/useClient";
 import { useWallets } from "@/hooks/useWallets";
-import { WalletType } from "@/scripts/background/store/vault/types/keyring";
 import { useTranslation } from "react-i18next";
 
 export const WalletNameStep = (props: {
@@ -22,9 +11,7 @@ export const WalletNameStep = (props: {
 }) => {
   const { onConfirm: onSubmit } = props;
   const [walletName, setWalletName] = useState("");
-  const { t } = useTranslation("Onboard", {
-    keyPrefix: "Onboard:CreateWallet",
-  });
+  const { t } = useTranslation();
   const { t: commonT } = useTranslation("Common");
   const { flattenWalletList } = useWallets();
 
@@ -57,18 +44,21 @@ export const WalletNameStep = (props: {
   return (
     <Content>
       <BaseInputGroup
-        title={t("walletName")}
+        title={t("Wallet:Create:walletName")}
         container={{ mt: "2" }}
         required
         inputProps={{
-          placeholder: t("walletNamePlaceholder"),
+          placeholder: t("Wallet:Create:walletNamePlaceholder"),
           value: walletName,
           onChange: onWalletNameChange,
           isInvalid: dupWalletName,
         }}
       />
       {dupWalletName && (
-        <WarningArea container={{ mt: "2" }} content={t("dupWalletName")} />
+        <WarningArea
+          container={{ mt: "2" }}
+          content={t("Wallet:Create:dupWalletName")}
+        />
       )}
       <Flex
         position={"fixed"}
