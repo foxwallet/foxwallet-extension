@@ -25,6 +25,7 @@ import {
   SetSelectedUniqueIdProps,
   ResyncAleoProps,
   ImportPrivateKeyProps,
+  GetPrivateKeyProps,
 } from "./IWalletServer";
 import {
   sendDeployment,
@@ -524,5 +525,21 @@ export class PopupWalletServer implements IPopupServer {
 
   async deleteHDWallet(walletId: string): Promise<void> {
     return await this.keyringManager.deleteHDWallet(walletId);
+  }
+
+  async getPrivateKey({
+    walletId,
+    coinType,
+    accountId,
+  }: GetPrivateKeyProps): Promise<string> {
+    return await this.keyringManager.getPrivateKey({
+      walletId,
+      coinType,
+      accountId,
+    });
+  }
+
+  async checkPassword(password: string): Promise<boolean> {
+    return await this.authManager.checkPassword(password);
   }
 }

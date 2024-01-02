@@ -18,7 +18,10 @@ export type AccountWithViewKey = EncryptedKeyPairWithViewKey & {
   accountName: string;
 };
 
-export type DisplayAccount = Omit<AccountWithViewKey, "privateKey" | "viewKey">;
+export type DisplayAccount = { hide?: boolean } & Omit<
+  AccountWithViewKey,
+  "privateKey" | "viewKey"
+>;
 
 export type SelectedAccount = DisplayAccount & {
   walletId: string;

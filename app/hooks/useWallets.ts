@@ -88,7 +88,9 @@ export const useCurrWallet = () => {
   );
 
   const accountsInWallet = useMemo(() => {
-    return selectedWallet?.accountsMap[coinBasic.coinType] || [];
+    return (selectedWallet?.accountsMap[coinBasic.coinType] || []).filter(
+      (a) => !a.hide,
+    );
   }, [selectedWallet, coinBasic]);
 
   const dispatch = usePopupDispatch();

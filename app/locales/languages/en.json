@@ -1,6 +1,9 @@
 {
   "Wallet": {
     "title": "Wallet",
+    "backupTips": "You haven't backed up your wallet yet",
+    "backupBtnTitle": "Backup now",
+    "tabAsset": "Asset",
     "Create": {
       "title": "Create Wallet",
       "createMnemonic": "Create new mnemonic",
@@ -16,6 +19,12 @@
       "importMnemonic": "Import mnemonic",
       "importPrivateKey": "Import private key"
     },
+    "Export": {
+      "privateKey": "Export private key",
+      "seedPhrase": "Export seed phrase",
+      "show": "Show",
+      "hide": "Hide"
+    },
     "Manage": {
       "title": "Wallet",
       "addWallet": "Add wallet",
@@ -25,7 +34,8 @@
       "changeAccountName": "Change account name",
       "accountName": "Account Name",
       "accountNamePlaceholder": "Enter account name",
-      "dupAccountName": "Duplicate account name"
+      "dupAccountName": "Duplicate account name",
+      "delete": "Delete wallet"
     }
   },
   "Onboard": {
@@ -45,7 +55,8 @@
     "enter": "Enter password",
     "passwordPlaceholder": "No less than 6 characters",
     "confirmPasswordPlaceholder": "Enter password again",
-    "warning": "FoxWallet won't store the password. Once the password is forgotten, you can only restore the wallet through the mnemonic."
+    "warning": "FoxWallet won't store the password. Once the password is forgotten, you can only restore the wallet through the mnemonic.",
+    "verify": "Verify Password"
   },
   "Mnemonic": {
     "title": "Mnemonic",
@@ -89,11 +100,23 @@
     "privateRecord": "Private Record",
     "gasFee": "Gas Fee"
   },
-
+  "Receive":{
+    "title": "Receive",
+    "scanToTransfer": "Scan to transfer",
+    "onlyTips": "Only support ALEO related assets",
+    "walletAddr": "Wallet Address"
+  },
+  "Setting": {
+    "title": "Setting"
+  },
   "Common": {
     "confirm": "Confirm",
     "cancel": "Cancel",
     "edit": "Edit",
-    "next": "Next"
+    "next": "Next",
+    "more": "More"
+  },
+  "Error": {
+    "invalidPassword": "Invalid password"
   }
 }

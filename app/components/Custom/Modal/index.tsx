@@ -53,6 +53,7 @@ export function BasicModal(props: ModalProps) {
         alignSelf={"center"}
         bg={"white"}
         p={"4"}
+        m={2.5}
         borderRadius={"md"}
       >
         {(!!title || !hideClose) && (

@@ -40,6 +40,10 @@ export const useAuth = () => {
     return await popupServerClient.timeoutLock();
   }, []);
 
+  const checkPassword = useCallback(async (password: string) => {
+    return await popupServerClient.checkPassword(password);
+  }, []);
+
   useEffect(() => {
     void getAuth();
 
@@ -55,5 +59,6 @@ export const useAuth = () => {
     login,
     lock,
     timeoutLock,
+    checkPassword,
   };
 };
