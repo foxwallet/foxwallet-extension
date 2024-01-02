@@ -24,7 +24,6 @@ function WordGrid({ words }: { words: string[] }) {
       templateColumns="repeat(3, 1fr)"
       gap={2}
       alignSelf={"stretch"}
-      p={2}
       borderRadius={"lg"}
     >
       {words.map((word, index) => (
@@ -84,7 +83,7 @@ export const BackupMnemonicStep = (props: {
 
   return (
     <Content>
-      <Flex position={"relative"} justify={"center"}>
+      <Flex position={"relative"} justify={"center"} flexDir={"column"}>
         {!startBackup && (
           <Flex
             position={"absolute"}
