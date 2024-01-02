@@ -1,12 +1,11 @@
 import { BackupMnemonicStep } from "@/components/Onboard/BackupMnemonic";
 import { ConfirmMnemonicStep } from "@/components/Onboard/ConfirmMnemonic";
-import { showMnemonicWarningDialog } from "@/components/Onboard/MnemonicWarningDialog";
 import { useClient } from "@/hooks/useClient";
 import { usePopupDispatch } from "@/hooks/useStore";
 import { Body } from "@/layouts/Body";
 import { PageWithHeader } from "@/layouts/Page";
 import { CoinType } from "core/types";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 const BackupMnemonicScreen = () => {
@@ -18,39 +17,16 @@ const BackupMnemonicScreen = () => {
   const walletIdRef = useRef(walletIdFromRoute || "");
   const navigate = useNavigate();
   const dispatch = usePopupDispatch();
-  const hasPopuped = useRef(false);
 
-  const regenerateWallet = useCallback(async () => {
-    const walletId = walletIdRef.current;
-    const prevWallet = await popupServerClient.getHDWallet(walletId);
-
-    const wallet = await popupServerClient.regenerateWallet({
-      walletName: prevWallet.walletName,
-      walletId,
-      revealMnemonic: true,
-    });
-    const coinType = CoinType.ALEO;
-    const account = wallet.accountsMap[coinType][0];
-    await dispatch.account.setSelectedAccount({
-      selectedAccount: {
-        walletId: wallet.walletId,
-        coinType,
-        ...account,
-      },
-    });
-    setMnemonic(wallet.mnemonic ?? "");
-  }, [setMnemonic, dispatch.account]);
-
-  const createWallet = useCallback(async () => {
-    if (hasPopuped.current) return;
-    hasPopuped.current = true;
-
-    const res = await popupServerClient.getHDMnemonic(
-      walletIdRef.current || "",
-    );
-
-    setMnemonic(res);
-  }, [setMnemonic, popupServerClient.getHDMnemonic]);
+  useEffect(() => {
+    const fetchMnemonic = async () => {
+      const mnemonic = await popupServerClient.getHDMnemonic(
+        walletIdRef.current,
+      );
+      setMnemonic(mnemonic);
+    };
+    fetchMnemonic();
+  }, [popupServerClient]);
 
   const stepContent = useMemo(() => {
     switch (step) {
@@ -58,8 +34,6 @@ const BackupMnemonicScreen = () => {
         return (
           <BackupMnemonicStep
             mnemonic={mnemonic}
-            createWallet={createWallet}
-            regenerateWallet={regenerateWallet}
             onConfirm={() => {
               setStep((_step) => _step + 1);
             }}
@@ -79,14 +53,7 @@ const BackupMnemonicScreen = () => {
           />
         );
     }
-  }, [
-    dispatch.account,
-    step,
-    mnemonic,
-    createWallet,
-    regenerateWallet,
-    navigate,
-  ]);
+  }, [dispatch.account, step, mnemonic, navigate]);
 
   const title = useMemo(() => {
     if (step === 1) return "Backup Seed Phrase";
