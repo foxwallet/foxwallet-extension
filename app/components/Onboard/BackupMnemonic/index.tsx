@@ -84,7 +84,7 @@ export const BackupMnemonicStep = (props: {
 
   return (
     <Content>
-      <Flex position={"relative"}>
+      <Flex position={"relative"} justify={"center"}>
         {!startBackup && (
           <Flex
             position={"absolute"}
