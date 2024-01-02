@@ -15,8 +15,6 @@ import { useNavigate } from "react-router-dom";
 import { CoinType } from "core/types";
 import { useTranslation } from "react-i18next";
 
-const ImportWalletSteps = ["Create", "Import"];
-
 export default function OnboardImportWallet() {
   const { t } = useTranslation();
   const [step, setStep] = useState(1);
@@ -67,7 +65,6 @@ export default function OnboardImportWallet() {
                     walletId: wallet.walletId,
                     backupedMnemonic: true,
                   });
-
                   await sleep(500);
                   navigate("/");
                 } catch (err) {

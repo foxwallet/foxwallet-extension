@@ -3,7 +3,7 @@ import { showMnemonicWarningDialog } from "@/components/Onboard/MnemonicWarningD
 import { useClient } from "@/hooks/useClient";
 import { Body } from "@/layouts/Body";
 import { PageWithHeader } from "@/layouts/Page";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 const ExportSeedPhrase = () => {
@@ -12,25 +12,20 @@ const ExportSeedPhrase = () => {
   const navigate = useNavigate();
 
   const [mnemonic, setMnemonic] = useState("");
-  const hasPopuped = useRef(false);
 
-  const createWallet = useCallback(async () => {
-    if (hasPopuped.current) return;
-    hasPopuped.current = true;
-
-    const res = await popupServerClient.getHDMnemonic(walletId || "");
-    const { confirmed } = await showMnemonicWarningDialog();
-    if (confirmed) {
-      setMnemonic(res);
-    }
-  }, [showMnemonicWarningDialog]);
+  useEffect(() => {
+    const fetchMnemonic = async () => {
+      const mnemonic = await popupServerClient.getHDMnemonic(walletId!);
+      setMnemonic(mnemonic);
+    };
+    fetchMnemonic();
+  }, [walletId]);
 
   return (
     <PageWithHeader title={"Backup Seed Phrase"}>
       <Body>
         <BackupMnemonicStep
           mnemonic={mnemonic}
-          createWallet={createWallet}
           onConfirm={() => navigate(-1)}
         />
       </Body>
