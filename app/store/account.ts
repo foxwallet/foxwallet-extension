@@ -9,7 +9,6 @@ import { CoinType } from "core/types";
 import { clients } from "@/hooks/useClient";
 import { DEFAULT_UNIQUE_ID_MAP } from "core/constants";
 import { ChainUniqueId } from "core/types/ChainUniqueId";
-import { unionBy } from "lodash";
 
 type SelectedAccount = DisplayAccount & {
   walletId: string;
@@ -99,28 +98,22 @@ export const account = createModel<RootModel>()({
 
       const allWalletInfo: WalletInfoMap = {};
 
-      walletList.map((w) => {
-        const { mnemonic, ...restInfo } = w;
+      walletList.map((wallet) => {
+        const { mnemonic, ...restInfo } = wallet;
 
-        if (oldAllWalletIds.includes(w.walletId)) {
-          const oldAccountMap = oldAllWalletInfo[w.walletId].accountsMap || {};
-          const oldAccountList = oldAccountMap[CoinType.ALEO] || [];
-          const newAccountList = unionBy(
-            [...oldAccountList, ...(w.accountsMap[CoinType.ALEO] || [])],
-            "accountId",
-          ).sort((a1, a2) => a1.index - a2.index);
-
-          allWalletInfo[w.walletId] = {
+        if (oldAllWalletIds.includes(wallet.walletId)) {
+          const newAccountList = [...(wallet.accountsMap[CoinType.ALEO] || [])];
+          allWalletInfo[wallet.walletId] = {
             ...restInfo,
             // make sure using walletName & accountName in Redux store
-            walletName: oldAllWalletInfo[w.walletId].walletName || "",
+            walletName: oldAllWalletInfo[wallet.walletId].walletName || "",
             accountsMap: {
-              ...w.accountsMap,
+              ...wallet.accountsMap,
               [CoinType.ALEO]: newAccountList,
             },
           };
         } else {
-          allWalletInfo[w.walletId] = restInfo;
+          allWalletInfo[wallet.walletId] = restInfo;
         }
       });
 

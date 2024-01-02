@@ -6,18 +6,21 @@
     "tabAsset": "Asset",
     "Create": {
       "title": "Create Wallet",
-      "createMnemonic": "Create new mnemonic",
+      "explain": "Create a new HD wallet.",
+      "createMnemonic": "Create new seed phase",
       "walletName": "Wallet Name",
       "walletNamePlaceholder": "Enter wallet name",
       "dupWalletName": "Duplicate wallet name",
-      "backupMnemonic": "Backup mnemonic",
-      "confirmMnemonic": "Confirm mnemonic"
+      "backupMnemonic": "Backup seed phase",
+      "confirmMnemonic": "Confirm seed phase"
     },
     "Import": {
       "title": "Import Wallet",
       "selectType": "Select Type",
-      "importMnemonic": "Import mnemonic",
-      "importPrivateKey": "Import private key"
+      "importMnemonic": "Import seed phase",
+      "importMnemonicExplain": "Seed phase(mnemonic) is composed of 12 words, Separated by spaces.",
+      "importPrivateKey": "Import private key",
+      "importPrivateKeyExplain": "Plain text private key characters."
     },
     "Export": {
       "privateKey": "Export private key",
@@ -59,13 +62,20 @@
     "verify": "Verify Password"
   },
   "Mnemonic": {
-    "title": "Mnemonic",
-    "backupTips1": "Click here to display mnemonic phase",
+    "title": "Seed phase",
+    "backupTips1": "Click here to display seed phase",
     "backupTips2": "Please confirm that the surroundings are safe",
+    "warning1": "Please note down the seed phrase in order.",
+    "warning2": "Please copy and keep it in a safe place.",
+    "warning3": "Seed phrase or private key are the only way to recover your wallet. Once lost, it cannot be retrieved. Do not save them via screenshots or social medias.",
     "later": "Remind me later",
     "regenerate": "Regenerate",
-    "enterPlaceholder": "Enter the mnemonic, separated by spaces",
+    "enterPlaceholder": "Enter the seed phase, separated by spaces",
     "checkTips": "Please check \"{{WORD}}\""
+  },
+  "PrivateKey": {
+    "title": "Private key",
+    "enterPlaceholder": "Enter private key"
   },
   "Send": {
     "title": "Send",
@@ -100,7 +110,7 @@
     "privateRecord": "Private Record",
     "gasFee": "Gas Fee"
   },
-  "Receive":{
+  "Receive": {
     "title": "Receive",
     "scanToTransfer": "Scan to transfer",
     "onlyTips": "Only support ALEO related assets",

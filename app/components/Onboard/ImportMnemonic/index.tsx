@@ -1,10 +1,8 @@
 import {
   ChangeEvent,
-  SyntheticEvent,
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
   KeyboardEvent,
 } from "react";
@@ -13,7 +11,6 @@ import { Box, Button, Flex, Text, Textarea } from "@chakra-ui/react";
 import { Content } from "../../../layouts/Content";
 import { wordlists, validateMnemonic } from "bip39";
 import { useDebounce } from "use-debounce";
-import { logger } from "../../../common/utils/logger";
 import { useDataRef } from "../../../hooks/useDataRef";
 import { WarningArea } from "../../Custom/WarningArea";
 import { useTranslation } from "react-i18next";
