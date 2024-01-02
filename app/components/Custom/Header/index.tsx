@@ -1,5 +1,5 @@
-import { Flex, Box } from "@chakra-ui/react";
-import { H5 } from "../../../common/theme/components/text";
+import { Flex, Box, Text } from "@chakra-ui/react";
+import { H5, H6 } from "../../../common/theme/components/text";
 import { useNavigate } from "react-router-dom";
 import { IconCloseLineBlack, IconLeft } from "../Icon";
 
@@ -56,15 +56,16 @@ export const Header = ({
       ) : (
         <Box w={"7"} h={"7"} />
       )}
-      <H5
+      <Text
         whiteSpace={"nowrap"}
         overflow={"hidden"}
         textOverflow={"ellipsis"}
         mx={"2"}
         fontWeight={"semibold"}
+        fontSize={18}
       >
         {title}
-      </H5>
+      </Text>
       {!!rightIcon ? rightIcon : <Box w={"7"} h={"7"} />}
     </Flex>
   );
