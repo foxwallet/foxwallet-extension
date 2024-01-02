@@ -50,12 +50,6 @@ function WordGrid({ words }: { words: string[] }) {
   );
 }
 
-const tips = [
-  "Please note down the seed phrase in order.",
-  "Please copy and keep it in a safe place.",
-  "Seed phrase or private key are the only way to recover your wallet. Once lost, it cannot be retrieved. Do not save them via screenshots or social medias.",
-];
-
 export const BackupMnemonicStep = (props: {
   mnemonic?: string;
   onConfirm: () => void;
@@ -66,6 +60,14 @@ export const BackupMnemonicStep = (props: {
   const navigate = useNavigate();
   const { mnemonic, onConfirm, createWallet, regenerateWallet } = props;
   const [startBackup, setStartBackup] = useState(false);
+  const tips = useMemo(() => {
+    return [
+      t("Mnemonic:warning1"),
+      t("Mnemonic:warning2"),
+      t("Mnemonic:warning3"),
+    ];
+  }, []);
+
   const wordList = useMemo(() => {
     if (!mnemonic) {
       return [];

@@ -8,13 +8,37 @@
       "walletNamePlaceholder": "Ingrese el nombre de la billetera",
       "dupWalletName": "Nombre de billetera duplicado",
       "backupMnemonic": "mnemotécnico de respaldo",
-      "confirmMnemonic": "Confirmar mnemónico"
+      "confirmMnemonic": "Confirmar mnemónico",
+      "explain": "Crea una nueva billetera HD."
     },
     "Import": {
       "title": "Importar billetera",
       "selectType": "Seleccione tipo",
       "importMnemonic": "Importar mnemónico",
-      "importPrivateKey": "Importar clave privada"
+      "importPrivateKey": "Importar clave privada",
+      "importMnemonicExplain": "La fase semilla (mnemónica) se compone de 12 palabras, separadas por espacios.",
+      "importPrivateKeyExplain": "Caracteres de clave privada de texto sin formato."
+    },
+    "backupTips": "Aún no has hecho una copia de seguridad de tu billetera",
+    "backupBtnTitle": "Copia ahora",
+    "tabAsset": "Activo",
+    "Export": {
+      "privateKey": "Exportar clave privada",
+      "seedPhrase": "Exportar frase inicial",
+      "show": "Espectáculo",
+      "hide": "Esconder"
+    },
+    "Manage": {
+      "title": "Billetera",
+      "addWallet": "Agregar billetera",
+      "checkAccounts": "comprobar cuentas",
+      "changeName": "Cambiar nombre de billetera",
+      "addAccount": "Añadir cuenta",
+      "changeAccountName": "Cambiar nombre de cuenta",
+      "accountName": "Nombre de la cuenta",
+      "accountNamePlaceholder": "Introduzca el nombre de la cuenta",
+      "dupAccountName": "Nombre de cuenta duplicado",
+      "delete": "Eliminar billetera"
     }
   },
   "Onboard": {
@@ -34,7 +58,8 @@
     "enter": "Introducir la contraseña",
     "passwordPlaceholder": "No menos de 6 caracteres",
     "confirmPasswordPlaceholder": "Ingrese de nuevo la contraseña",
-    "warning": "FoxWallet no almacenará la contraseña. Una vez que se olvida la contraseña, solo podrá restaurar la billetera mediante el mnemotécnico."
+    "warning": "FoxWallet no almacenará la contraseña. Una vez que se olvida la contraseña, solo podrá restaurar la billetera mediante el mnemotécnico.",
+    "verify": "Verificar contraseña"
   },
   "Mnemonic": {
     "backupTips1": "Haga clic aquí para mostrar la fase mnemotécnica",
@@ -43,12 +68,17 @@
     "regenerate": "Regenerado",
     "title": "Mnemotécnico",
     "enterPlaceholder": "Ingrese el mnemotécnico, separado por espacios.",
-    "checkTips": "Por favor marque \"{{WORD}}\""
+    "checkTips": "Por favor marque \"{{WORD}}\"",
+    "warning1": "Anote la frase inicial en orden.",
+    "warning2": "Por favor cópielo y guárdelo en un lugar seguro.",
+    "warning3": "La frase inicial o la clave privada son la única forma de recuperar su billetera. Una vez perdido, no se puede recuperar. No los guardes mediante capturas de pantalla o redes sociales."
   },
   "Common": {
     "confirm": "Confirmar",
     "cancel": "Cancelar",
-    "next": "Próximo"
+    "next": "Próximo",
+    "edit": "Editar",
+    "more": "Más"
   },
   "Send": {
     "title": "Enviar",
@@ -82,5 +112,21 @@
     "selectTransferMethod": "Seleccione el método de transferencia",
     "privateRecord": "Registro privado",
     "gasFee": "Tarifa de gas"
+  },
+  "PrivateKey": {
+    "title": "Llave privada",
+    "enterPlaceholder": "Introduce la clave privada"
+  },
+  "Receive": {
+    "title": "Recibir",
+    "scanToTransfer": "Escanear para transferir",
+    "onlyTips": "Solo admite activos relacionados con ALEO",
+    "walletAddr": "Dirección de billetera"
+  },
+  "Setting": {
+    "title": "Configuración"
+  },
+  "Error": {
+    "invalidPassword": "Contraseña invalida"
   }
 }

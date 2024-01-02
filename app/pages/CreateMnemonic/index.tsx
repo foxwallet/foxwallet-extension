@@ -1,15 +1,10 @@
-import { H1, H3, H6 } from "@/common/theme/components/text";
 import { BackupMnemonicStep } from "@/components/Onboard/BackupMnemonic";
 import { ConfirmMnemonicStep } from "@/components/Onboard/ConfirmMnemonic";
-import { showMnemonicWarningDialog } from "@/components/Onboard/MnemonicWarningDialog";
 import { WalletNameStep } from "@/components/Setting/WalletName";
 import { useClient } from "@/hooks/useClient";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { usePopupDispatch } from "@/hooks/useStore";
 import { Body } from "@/layouts/Body";
-import { Content } from "@/layouts/Content";
 import { PageWithHeader } from "@/layouts/Page";
-import { TabPanel } from "@chakra-ui/react";
 import { CoinType } from "core/types";
 import { nanoid } from "nanoid";
 import { useCallback, useMemo, useRef, useState } from "react";
@@ -24,6 +19,7 @@ const CreateMnemonicScreen = () => {
   const walletIdRef = useRef("");
   const navigate = useNavigate();
   const dispatch = usePopupDispatch();
+  const { t } = useTranslation();
 
   const createWallet = useCallback(async () => {
     if (walletIdRef.current) {
@@ -47,10 +43,7 @@ const CreateMnemonicScreen = () => {
         ...account,
       },
     });
-    const { confirmed } = await showMnemonicWarningDialog();
-    if (confirmed) {
-      setMnemonic(wallet.mnemonic ?? "");
-    }
+    setMnemonic(wallet.mnemonic ?? "");
   }, []);
 
   const regenerateWallet = useCallback(async () => {
@@ -60,6 +53,8 @@ const CreateMnemonicScreen = () => {
       walletId,
       revealMnemonic: true,
     });
+    await dispatch.account.resyncAllWalletsToStore();
+
     const coinType = CoinType.ALEO;
     const account = wallet.accountsMap[coinType][0];
     await dispatch.account.setSelectedAccount({
@@ -112,7 +107,7 @@ const CreateMnemonicScreen = () => {
 
   return (
     <PageWithHeader
-      title="Create Wallet"
+      title={t("Wallet:Create:title")}
       enableBack={step !== 2}
       onBack={() => {
         if (step > 1) {

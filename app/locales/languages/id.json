@@ -8,13 +8,37 @@
       "walletNamePlaceholder": "Masukkan nama dompet",
       "dupWalletName": "Nama dompet duplikat",
       "backupMnemonic": "Mnemonik cadangan",
-      "confirmMnemonic": "Konfirmasikan mnemonik"
+      "confirmMnemonic": "Konfirmasikan mnemonik",
+      "explain": "Buat dompet HD baru."
     },
     "Import": {
       "title": "Impor Dompet",
       "selectType": "Pilih tipe",
       "importMnemonic": "Impor mnemonik",
-      "importPrivateKey": "Impor kunci pribadi"
+      "importPrivateKey": "Impor kunci pribadi",
+      "importMnemonicExplain": "Fase benih (mnemonik) terdiri dari 12 kata, dipisahkan dengan spasi.",
+      "importPrivateKeyExplain": "Karakter kunci pribadi teks biasa."
+    },
+    "backupTips": "Anda belum mencadangkan dompet Anda",
+    "backupBtnTitle": "Cadangkan sekarang",
+    "tabAsset": "Aset",
+    "Export": {
+      "privateKey": "Ekspor kunci pribadi",
+      "seedPhrase": "Ekspor frase benih",
+      "show": "Menunjukkan",
+      "hide": "Bersembunyi"
+    },
+    "Manage": {
+      "title": "Dompet",
+      "addWallet": "Tambahkan dompet",
+      "checkAccounts": "Periksa akun",
+      "changeName": "Ganti nama dompet",
+      "addAccount": "Menambahkan akun",
+      "changeAccountName": "Ubah nama akun",
+      "accountName": "Nama akun",
+      "accountNamePlaceholder": "Masukkan nama akun",
+      "dupAccountName": "Nama akun duplikat",
+      "delete": "Hapus dompet"
     }
   },
   "Onboard": {
@@ -34,7 +58,8 @@
     "enter": "Masukkan kata kunci",
     "passwordPlaceholder": "Tidak kurang dari 6 karakter",
     "confirmPasswordPlaceholder": "Masukkan kata sandi lagi",
-    "warning": "FoxWallet tidak akan menyimpan kata sandi. Setelah kata sandi terlupa, Anda hanya dapat memulihkan dompet melalui mnemonik."
+    "warning": "FoxWallet tidak akan menyimpan kata sandi. Setelah kata sandi terlupa, Anda hanya dapat memulihkan dompet melalui mnemonik.",
+    "verify": "Verifikasi Kata Sandi"
   },
   "Mnemonic": {
     "backupTips1": "Klik di sini untuk menampilkan fase mnemonik",
@@ -43,12 +68,17 @@
     "regenerate": "Diperbarui",
     "title": "Mnemonik",
     "enterPlaceholder": "Masukkan mnemonik, dipisahkan dengan spasi",
-    "checkTips": "Silakan periksa \"{{WORD}}\""
+    "checkTips": "Silakan periksa \"{{WORD}}\"",
+    "warning1": "Harap catat frase awal secara berurutan.",
+    "warning2": "Harap salin dan simpan di tempat yang aman.",
+    "warning3": "Frase benih atau kunci pribadi adalah satu-satunya cara untuk memulihkan dompet Anda. Sekali hilang, tidak dapat diambil kembali. Jangan menyimpannya melalui screenshot atau media sosial."
   },
   "Common": {
     "confirm": "Mengonfirmasi",
     "cancel": "Membatalkan",
-    "next": "Berikutnya"
+    "next": "Berikutnya",
+    "edit": "Sunting",
+    "more": "Lagi"
   },
   "Send": {
     "title": "Mengirim",
@@ -82,5 +112,21 @@
     "selectTransferMethod": "Pilih Metode Transfer",
     "privateRecord": "Catatan Pribadi",
     "gasFee": "Biaya Bahan Bakar"
+  },
+  "PrivateKey": {
+    "title": "Kunci pribadi",
+    "enterPlaceholder": "Masukkan kunci pribadi"
+  },
+  "Receive": {
+    "title": "Menerima",
+    "scanToTransfer": "Pindai untuk mentransfer",
+    "onlyTips": "Hanya mendukung aset terkait ALEO",
+    "walletAddr": "Alamat Dompet"
+  },
+  "Setting": {
+    "title": "Pengaturan"
+  },
+  "Error": {
+    "invalidPassword": "Kata sandi salah"
   }
 }
