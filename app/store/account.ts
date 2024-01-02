@@ -35,6 +35,7 @@ const DEFAULT_ACCOUNT_MODEL: AccountModel = {
     index: 0,
     walletId: "",
     coinType: CoinType.ALEO,
+    hide: false,
   },
   selectedUniqueId: DEFAULT_UNIQUE_ID_MAP[CoinType.ALEO],
   walletBackupMnemonicMap: {},
@@ -94,10 +95,14 @@ export const account = createModel<RootModel>()({
     _setAllWalletInfo(state, payload: { walletList: DisplayWallet[] }) {
       const { walletList } = payload;
       const oldAllWalletInfo = { ...state.allWalletInfo };
+      const oldAllWalletIds = Object.keys(oldAllWalletInfo);
+
       const allWalletInfo: WalletInfoMap = {};
 
       walletList.map((w) => {
-        if (Object.keys(oldAllWalletInfo).includes(w.walletId)) {
+        const { mnemonic, ...restInfo } = w;
+
+        if (oldAllWalletIds.includes(w.walletId)) {
           const oldAccountMap = oldAllWalletInfo[w.walletId].accountsMap || {};
           const oldAccountList = oldAccountMap[CoinType.ALEO] || [];
           const newAccountList = unionBy(
@@ -106,7 +111,7 @@ export const account = createModel<RootModel>()({
           ).sort((a1, a2) => a1.index - a2.index);
 
           allWalletInfo[w.walletId] = {
-            ...w,
+            ...restInfo,
             // make sure using walletName & accountName in Redux store
             walletName: oldAllWalletInfo[w.walletId].walletName || "",
             accountsMap: {
@@ -115,7 +120,7 @@ export const account = createModel<RootModel>()({
             },
           };
         } else {
-          allWalletInfo[w.walletId] = w;
+          allWalletInfo[w.walletId] = restInfo;
         }
       });
 
@@ -174,6 +179,48 @@ export const account = createModel<RootModel>()({
           },
         },
       };
+    },
+    changeAccountHideState(
+      state,
+      payload: {
+        walletId: string;
+        accountId: string;
+        coinType: CoinType;
+        hide: boolean;
+      },
+    ) {
+      const { walletId, accountId, coinType, hide } = payload;
+      const matchedWallet = state.allWalletInfo[walletId];
+      if (matchedWallet) {
+        const accountList = matchedWallet.accountsMap[coinType] || [];
+        const targetAccountIndex = accountList.findIndex(
+          (a) => a.accountId === accountId,
+        );
+
+        if (targetAccountIndex !== -1) {
+          accountList[targetAccountIndex] = {
+            ...accountList[targetAccountIndex],
+            hide: !!hide,
+          };
+          const walletInfo = {
+            ...matchedWallet,
+            accountsMap: {
+              ...matchedWallet.accountsMap,
+              [coinType]: [...accountList],
+            },
+          };
+          console.log("change account state ", !!hide);
+          return {
+            ...state,
+            allWalletInfo: {
+              ...state.allWalletInfo,
+              [walletId]: { ...walletInfo },
+            },
+          };
+        }
+      }
+
+      return state;
     },
   },
   effects: (dispatch) => ({

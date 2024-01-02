@@ -14,6 +14,7 @@ import {
   SetSelectedUniqueIdProps,
   ResyncAleoProps,
   ImportPrivateKeyProps,
+  GetPrivateKeyProps,
 } from "../../scripts/background/servers/IWalletServer";
 import {
   type DisplayWallet,
@@ -213,6 +214,14 @@ export class PopupServerClient implements IClient, IPopupServer {
 
   async deleteHDWallet(walletId: string): Promise<void> {
     return await this.#send("deleteHDWallet", walletId);
+  }
+
+  async getPrivateKey(params: GetPrivateKeyProps): Promise<string> {
+    return await this.#send("getPrivateKey", params);
+  }
+
+  async checkPassword(password: string): Promise<boolean> {
+    return await this.#send("checkPassword", password);
   }
 
   async #send<T, R>(method: PopupServerMethod, payload: T): Promise<R> {

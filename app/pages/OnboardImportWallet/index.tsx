@@ -62,6 +62,12 @@ export default function OnboardImportWallet() {
                       ...account,
                     },
                   });
+                  await dispatch.account.resyncAllWalletsToStore();
+                  dispatch.account.changeWalletBackupedMnemonic({
+                    walletId: wallet.walletId,
+                    backupedMnemonic: true,
+                  });
+
                   await sleep(500);
                   navigate("/");
                 } catch (err) {

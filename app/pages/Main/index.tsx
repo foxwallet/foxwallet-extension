@@ -11,9 +11,11 @@ import {
   IconWalletSelected,
   IconWalletUnselected,
 } from "@/components/Custom/Icon";
+import { useTranslation } from "react-i18next";
 
 function MainScreen() {
   const location = useLocation();
+  const { t } = useTranslation();
 
   // 获取 URL 中的 Tab 索引
   const tabIndex = parseInt(
@@ -52,14 +54,14 @@ function MainScreen() {
             selected={<IconWalletSelected />}
             unselected={<IconWalletUnselected />}
           >
-            Wallet
+            {t("Wallet:title")}
           </CustomTab>
           <CustomTab
             key={"setting"}
             selected={<IconSettingSelected />}
             unselected={<IconSettingUnselected />}
           >
-            Setting
+            {t("Setting:title")}
           </CustomTab>
         </TabList>
       </Tabs>

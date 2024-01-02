@@ -125,6 +125,12 @@ export type AleoRequestDeploymentProps = Omit<
   uniqueId: ChainUniqueId;
 };
 
+export type GetPrivateKeyProps = {
+  walletId: string;
+  coinType: CoinType;
+  accountId: string;
+};
+
 export interface IPopupServer {
   initPassword: (params: { password: string }) => Promise<boolean>;
 
@@ -173,6 +179,10 @@ export interface IPopupServer {
   getHDMnemonic(walletId: string): Promise<string>;
 
   deleteHDWallet(walletId: string): Promise<void>;
+
+  getPrivateKey(params: GetPrivateKeyProps): Promise<string>;
+
+  checkPassword(password: string): Promise<boolean>;
 }
 
 export interface ConnectProps {

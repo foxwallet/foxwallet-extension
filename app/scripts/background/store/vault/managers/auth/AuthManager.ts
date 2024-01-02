@@ -95,4 +95,15 @@ export class AuthManager {
     this.#token = undefined;
     this.#loginTimestamp = undefined;
   }
+
+  async checkPassword(password: string): Promise<boolean> {
+    const cipher = await this.#storage.getCipher();
+    if (!cipher) {
+      logger.error("cipher not found");
+      return false;
+    }
+    const salt = Buffer.from(cipher.salt, "hex");
+    const token = await getToken(password, salt);
+    return await validateToken(token, cipher);
+  }
 }

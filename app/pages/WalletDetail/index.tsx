@@ -6,19 +6,24 @@ import {
   IconMore,
 } from "@/components/Custom/Icon";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
+import { showPasswordVerifyDrawer } from "@/components/Custom/PasswordVerifyDrawer";
+import {
+  AccountOperateOptions,
+  showAccountOptionDrawer,
+} from "@/components/Wallet/AccountOptionDrawer";
 import { showDeleteWalletWarningDialog } from "@/components/Wallet/DeleteWalletWarningDialog";
 import { showEditAccountNameDrawer } from "@/components/Wallet/EditAccountNameDrawer";
 import {
   WalletOperateOption,
-  showEditWalletDrawer,
-} from "@/components/Wallet/EditWalletDrawer";
+  showWalletOptionDrawer,
+} from "@/components/Wallet/WalletOptionDrawer";
+import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
 import { useCurrWallet, useWallets } from "@/hooks/useWallets";
 import { PageWithHeader } from "@/layouts/Page";
 import { SelectedAccount } from "@/scripts/background/store/vault/types/keyring";
 import { Box, Button, Flex, Text, useClipboard } from "@chakra-ui/react";
 import { CoinType } from "core/types";
-import { isEqual } from "lodash";
 import { nanoid } from "nanoid";
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -30,6 +35,24 @@ interface AccountListItemProps {
 const AccountListItem: React.FC<AccountListItemProps> = ({ account }) => {
   const { onCopy } = useClipboard(account.address);
   const { showToast } = useCopyToast();
+  const navigate = useNavigate();
+  const dispatch = usePopupDispatch();
+
+  const { selectedAccount } = useCurrAccount();
+
+  const allWalletInfo = usePopupSelector(
+    (state) => state.account.allWalletInfo,
+  );
+
+  const operatingWallet = useMemo(
+    () => allWalletInfo[account.walletId],
+    [allWalletInfo, account.walletId],
+  );
+
+  const accountListInWallet = useMemo(
+    () => operatingWallet?.accountsMap?.[CoinType.ALEO] || [],
+    [operatingWallet.accountsMap],
+  );
 
   const handleEditName = useCallback(() => {
     showEditAccountNameDrawer({
@@ -41,6 +64,70 @@ const AccountListItem: React.FC<AccountListItemProps> = ({ account }) => {
     showToast();
     onCopy();
   }, [onCopy, showToast]);
+
+  const onExportPrivateKey = useCallback(async () => {
+    const { confirmed } = await showPasswordVerifyDrawer();
+    if (confirmed) {
+      navigate(
+        `/export_private_key/${account.walletId}/${account.accountId}/${CoinType.ALEO}`,
+      );
+    }
+  }, [navigate, account]);
+
+  const onChangeVisibility = useCallback(() => {
+    let newSelectedAccount: SelectedAccount | undefined;
+
+    if (selectedAccount.accountId === account.accountId && !account.hide) {
+      const nextAccount = accountListInWallet.find(
+        (a) => a.accountId !== account.accountId && !a.hide,
+      );
+      if (nextAccount) {
+        newSelectedAccount = {
+          ...nextAccount,
+          walletId: operatingWallet.walletId,
+          coinType: CoinType.ALEO,
+        };
+      }
+    }
+
+    dispatch.account.changeAccountHideState({
+      walletId: operatingWallet.walletId,
+      accountId: account.accountId,
+      coinType: account.coinType,
+      hide: !account.hide,
+    });
+
+    if (newSelectedAccount) {
+      dispatch.account.setSelectedAccount({
+        selectedAccount: newSelectedAccount,
+      });
+    }
+  }, [
+    dispatch.account,
+    account,
+    selectedAccount.accountId,
+    accountListInWallet,
+    operatingWallet.walletId,
+  ]);
+
+  const handleShowMore = useCallback(() => {
+    showAccountOptionDrawer({
+      wallet: operatingWallet,
+      account,
+      onClickOption: (option) => {
+        switch (option) {
+          case AccountOperateOptions.ExportPrivateKey:
+            onExportPrivateKey();
+            break;
+          case AccountOperateOptions.ChangeVisibility:
+            onChangeVisibility();
+            break;
+          default:
+            break;
+        }
+      },
+    });
+  }, [account, onExportPrivateKey, onChangeVisibility]);
 
   return (
     <Flex
@@ -60,7 +147,7 @@ const AccountListItem: React.FC<AccountListItemProps> = ({ account }) => {
             mr={1}
             fontSize={13}
             fontWeight={"bold"}
-            color={"#000"}
+            color={!!account.hide ? "#777E90" : "#000"}
             align={"start"}
           >
             {account.accountName}
@@ -98,7 +185,7 @@ const AccountListItem: React.FC<AccountListItemProps> = ({ account }) => {
       </Flex>
       <Box
         as="button"
-        onClick={handleCopyAddress}
+        onClick={handleShowMore}
         p={1}
         borderRadius={13}
         _hover={{ backgroundColor: "#F5F5F5" }}
@@ -117,12 +204,14 @@ const WalletDetailScreen = () => {
   const { addAccount, flattenWalletList } = useWallets();
   const dispatch = usePopupDispatch();
 
-  const walletInfo = usePopupSelector((state) => {
-    if (!walletId) {
-      throw new Error("Wallet doesn't exists");
-    }
-    return state.account.allWalletInfo[walletId];
-  }, isEqual);
+  const allWalletInfo = usePopupSelector(
+    (state) => state.account.allWalletInfo,
+  );
+
+  const walletInfo = useMemo(
+    () => allWalletInfo[walletId],
+    [walletId, allWalletInfo],
+  );
 
   const accountList: SelectedAccount[] = useMemo(() => {
     if (!walletInfo) return [];
@@ -133,13 +222,28 @@ const WalletDetailScreen = () => {
       walletId: walletId || "",
       coinType: CoinType.ALEO,
     }));
-  }, [walletInfo, walletId]);
+  }, [walletInfo.accountsMap, walletId]);
 
   const onAddAccount = useCallback(() => {
     addAccount(walletId || "", CoinType.ALEO, nanoid());
   }, [addAccount, walletId]);
 
+  const onBackupMnemonic = useCallback(async () => {
+    const { confirmed } = await showPasswordVerifyDrawer();
+    confirmed && navigate(`/backup_mnemonic/${walletId}`);
+  }, [navigate, showPasswordVerifyDrawer]);
+
+  const onExportSeedPhrase = useCallback(async () => {
+    const { confirmed } = await showPasswordVerifyDrawer();
+    confirmed && navigate(`/export_seed_phrase/${walletId}`);
+  }, [navigate, showPasswordVerifyDrawer]);
+
   const onDeleteWallet = useCallback(async () => {
+    const { confirmed: confirmedPass } = await showPasswordVerifyDrawer();
+    if (!confirmedPass) {
+      return;
+    }
+
     const { confirmed } = await showDeleteWalletWarningDialog();
     if (!confirmed) {
       return;
@@ -166,7 +270,7 @@ const WalletDetailScreen = () => {
       });
       navigate(-1);
     } else {
-      // todo: clear data?
+      // clear data
       dispatch.account.setSelectedAccount({
         selectedAccount: {
           accountId: "",
@@ -175,6 +279,7 @@ const WalletDetailScreen = () => {
           index: 0,
           walletId: "",
           coinType: CoinType.ALEO,
+          hide: false,
         },
       });
       navigate("/onboard/home");
@@ -182,15 +287,15 @@ const WalletDetailScreen = () => {
   }, [dispatch.account, walletId, navigate, flattenWalletList]);
 
   const onWalletMoreAction = useCallback(() => {
-    showEditWalletDrawer({
+    showWalletOptionDrawer({
       wallet: walletInfo,
       onClickOption: async (option) => {
         switch (option) {
           case WalletOperateOption.BackupMnemonic:
-            navigate(`/backup_mnemonic/${walletId}`);
+            onBackupMnemonic();
             break;
           case WalletOperateOption.ExportPhrase:
-            navigate(`/export_seed_phrase/${walletId}`);
+            onExportSeedPhrase();
             break;
           case WalletOperateOption.Delete:
             onDeleteWallet();
@@ -201,12 +306,11 @@ const WalletDetailScreen = () => {
       },
     });
   }, [
-    showEditWalletDrawer,
+    showWalletOptionDrawer,
     walletInfo,
-    navigate,
-    walletId,
-    dispatch.account,
+    onBackupMnemonic,
     onDeleteWallet,
+    onExportSeedPhrase,
   ]);
 
   const renderAccountItem = useCallback(
