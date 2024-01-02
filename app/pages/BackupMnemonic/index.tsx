@@ -48,11 +48,9 @@ const BackupMnemonicScreen = () => {
     const res = await popupServerClient.getHDMnemonic(
       walletIdRef.current || "",
     );
-    const { confirmed } = await showMnemonicWarningDialog();
-    if (confirmed) {
-      setMnemonic(res);
-    }
-  }, [showMnemonicWarningDialog, setMnemonic]);
+
+    setMnemonic(res);
+  }, [setMnemonic, popupServerClient.getHDMnemonic]);
 
   const stepContent = useMemo(() => {
     switch (step) {

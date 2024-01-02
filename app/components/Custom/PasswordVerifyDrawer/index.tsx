@@ -17,7 +17,7 @@ interface Props {
 const PasswordVerifyDrawer = (props: Props) => {
   const { isOpen, onCancel, onConfirm } = props;
   const { t } = useTranslation();
-  const { login } = useAuth();
+  const { checkPassword } = useAuth();
 
   const [password, setPassword] = useState("");
   const [validPass, setValidPass] = useState(true);
@@ -34,14 +34,14 @@ const PasswordVerifyDrawer = (props: Props) => {
   const handleConfirmPassword = useCallback(async () => {
     if (!password) return;
 
-    const success = await login(password);
+    const success = await checkPassword(password);
     setValidPass(success);
     if (success) {
       onConfirm?.();
     } else {
       console.warn("password verify failed");
     }
-  }, [onConfirm, password, login]);
+  }, [onConfirm, password, checkPassword]);
 
   const disabledConfirm = useMemo(() => !password, [password]);
 
@@ -49,13 +49,13 @@ const PasswordVerifyDrawer = (props: Props) => {
     <BottomUpDrawer
       isOpen={isOpen}
       onClose={onCancel}
-      title={"Verify Password"}
+      title={t("Password:verify")}
       body={
         <Flex flexDirection={"column"}>
           <BaseInputGroup
             container={{ mt: 1 }}
             inputProps={{
-              placeholder: "Enter your password",
+              placeholder: t("Password:enter"),
               type: viewPass ? "text" : "password",
               onChange: onPasswordChange,
               isInvalid: disabledConfirm,

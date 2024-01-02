@@ -8,10 +8,12 @@ import { usePopupSelector } from "@/hooks/useStore";
 import { Box, Flex, Text } from "@chakra-ui/react";
 import { isEqual } from "lodash";
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 export const BackupReminderView = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [visible, setVisible] = useState(true);
 
   const { backupedMnemonic, selectedAccount } = usePopupSelector((state) => {
@@ -26,7 +28,7 @@ export const BackupReminderView = () => {
 
   const onBackup = useCallback(async () => {
     const { confirmed } = await showPasswordVerifyDrawer();
-    confirmed && navigate(`/\${selectedAccount.walletId}`);
+    confirmed && navigate(`/backup_mnemonic/${selectedAccount.walletId}`);
   }, [navigate, selectedAccount.walletId, showPasswordVerifyDrawer]);
 
   if (backupedMnemonic || !visible) return null;
@@ -41,11 +43,11 @@ export const BackupReminderView = () => {
     >
       <Flex direction={"column"} justify={"center"}>
         <Text color={"#000"} fontWeight={500} fontSize={13} maxW={150}>
-          You haven't backed up your wallet yet
+          {t("Wallet:backupTips")}
         </Text>
         <Flex as="button" align={"center"} mt={1} onClick={onBackup}>
           <Text color={"#00D856"} fontWeight={500} fontSize={13}>
-            Backup now
+            {t("Wallet:backupBtnTitle")}
           </Text>
           <IconArrowBackup ml={1} />
         </Flex>

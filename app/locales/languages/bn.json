@@ -15,7 +15,9 @@
       "selectType": "প্রকার নির্বাচন করুন",
       "importMnemonic": "নিউমোনিক আমদানি করুন",
       "importPrivateKey": "ব্যক্তিগত কী আমদানি করুন"
-    }
+    },
+    "backupTips": "আপনি এখনও আপনার ওয়ালেট ব্যাক আপ করেননি",
+    "backupBtnTitle": "এখনি ব্যাকআপ করে নিন"
   },
   "Onboard": {
     "Home": {

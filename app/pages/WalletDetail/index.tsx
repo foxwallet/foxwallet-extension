@@ -224,11 +224,6 @@ const WalletDetailScreen = () => {
     }));
   }, [walletInfo.accountsMap, walletId]);
 
-  const isAccountFull = useMemo(
-    () => accountList.length >= 8,
-    [accountList.length],
-  );
-
   const onAddAccount = useCallback(() => {
     addAccount(walletId || "", CoinType.ALEO, nanoid());
   }, [addAccount, walletId]);
@@ -371,11 +366,8 @@ const WalletDetailScreen = () => {
           left={5}
           right={5}
           onClick={onAddAccount}
-          isDisabled={isAccountFull}
         >
-          {isAccountFull
-            ? t("Wallet:Manage:accountFull")
-            : t("Wallet:Manage:addAccount")}
+          {t("Wallet:Manage:addAccount")}
         </Button>
       </Flex>
     </PageWithHeader>

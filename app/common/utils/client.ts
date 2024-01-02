@@ -220,6 +220,10 @@ export class PopupServerClient implements IClient, IPopupServer {
     return await this.#send("getPrivateKey", params);
   }
 
+  async checkPassword(password: string): Promise<boolean> {
+    return await this.#send("checkPassword", password);
+  }
+
   async #send<T, R>(method: PopupServerMethod, payload: T): Promise<R> {
     return await new Promise<R>((resolve, reject) => {
       const id = nanoid();

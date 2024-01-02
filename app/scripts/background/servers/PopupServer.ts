@@ -538,4 +538,8 @@ export class PopupWalletServer implements IPopupServer {
       accountId,
     });
   }
+
+  async checkPassword(password: string): Promise<boolean> {
+    return await this.authManager.checkPassword(password);
+  }
 }

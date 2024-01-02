@@ -6,18 +6,15 @@ import { QRCodeSVG } from "qrcode.react";
 import WALLET_LOGO from "@/common/assets/image/logo.png";
 import { Content } from "@/layouts/Content";
 import { HeaderLeftIconType } from "@/components/Custom/Header";
-import {
-  IconAleo,
-  IconCopyBlack,
-  IconShare,
-  IconWarning,
-} from "@/components/Custom/Icon";
+import { IconAleo, IconCopyBlack, IconWarning } from "@/components/Custom/Icon";
 import { useCallback } from "react";
 import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
+import { useTranslation } from "react-i18next";
 
 const QRCode = chakra(QRCodeSVG);
 
 function ReceiveScreen() {
+  const { t } = useTranslation();
   const { selectedAccount } = useCurrAccount();
   const { onCopy } = useClipboard(selectedAccount.address);
   const { showToast } = useCopyToast();
@@ -27,19 +24,17 @@ function ReceiveScreen() {
     showToast();
   }, [onCopy, showToast]);
 
-  const handleShare = useCallback(() => {}, []);
-
   return (
     <PageWithHeader
       enableBack
-      title="Receive"
+      title={t("Receive:title")}
       backIconType={HeaderLeftIconType.Close}
     >
       <Content>
         <VStack>
           <IconAleo h={10} w={10} />
           <Text fontWeight={500} fontSize={14}>
-            Scan to Transfer
+            {t("Receive:scanToTransfer")}
           </Text>
           <Flex
             bg={"rgba(239, 70, 111, 0.08)"}
@@ -50,7 +45,7 @@ function ReceiveScreen() {
           >
             <IconWarning mr={1} />
             <Text color={"#EF466F"} fontWeight={500} fontSize={14}>
-              Only support ALEO related assets
+              {t("Receive:onlyTips")}
             </Text>
           </Flex>
         </VStack>
@@ -68,7 +63,7 @@ function ReceiveScreen() {
           }}
         />
         <Text alignSelf={"center"} mt={3} mb={2} fontWeight={500} fontSize={14}>
-          Wallet Address
+          {t("Receive:walletAddr")}
         </Text>
         <Flex
           align={"center"}

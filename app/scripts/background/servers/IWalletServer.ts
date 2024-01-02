@@ -181,6 +181,8 @@ export interface IPopupServer {
   deleteHDWallet(walletId: string): Promise<void>;
 
   getPrivateKey(params: GetPrivateKeyProps): Promise<string>;
+
+  checkPassword(password: string): Promise<boolean>;
 }
 
 export interface ConnectProps {

@@ -134,7 +134,7 @@ function ManageWalletScreen() {
   return (
     <PageWithHeader
       enableBack
-      title={t("Wallet:Manage:title")}
+      title={t("Wallet:title")}
       rightIcon={
         <Box mr={2} fontSize={12} fontWeight={500} as="button" onClick={onEdit}>
           {t("Common:edit")}

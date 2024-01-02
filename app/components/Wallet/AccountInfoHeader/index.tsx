@@ -18,6 +18,7 @@ import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import { showWalletsDrawer } from "../WalletsDrawer";
 import { useCurrWallet } from "@/hooks/useWallets";
+import { useTranslation } from "react-i18next";
 
 export const AccountInfoHeader = () => {
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ export const AccountInfoHeader = () => {
   const { nativeCurrency } = useCoinService(uniqueId);
   const { balance } = useBalance(uniqueId, selectedAccount.address, 4000);
   const { selectedWallet } = useCurrWallet();
+  const { t } = useTranslation();
 
   const { showToast } = useCopyToast();
   const { onCopy } = useClipboard(selectedAccount.address);
@@ -33,17 +35,17 @@ export const AccountInfoHeader = () => {
   const options: ActionButtonProps[] = useMemo(
     () => [
       {
-        title: "Receive",
+        title: t("Receive:title"),
         icon: <IconReceive />,
         onPress: () => navigate("/receive"),
       },
       {
-        title: "Send",
+        title: t("Send:title"),
         icon: <IconSend />,
         onPress: () => navigate("/send_aleo"),
       },
     ],
-    [navigate],
+    [navigate, t],
   );
 
   const onChangeWallet = useCallback(() => {
