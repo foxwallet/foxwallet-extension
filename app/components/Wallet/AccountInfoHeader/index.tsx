@@ -20,6 +20,7 @@ import { showWalletsDrawer } from "../WalletsDrawer";
 import { useCurrWallet } from "@/hooks/useWallets";
 import { useTranslation } from "react-i18next";
 import RescanButton from "../RescanButton";
+import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
 
 export const AccountInfoHeader = () => {
   const navigate = useNavigate();
@@ -28,10 +29,11 @@ export const AccountInfoHeader = () => {
   const { balance } = useBalance(uniqueId, selectedAccount.address, 4000);
   const { selectedWallet } = useCurrWallet();
   const { t } = useTranslation();
+  const showBalance = usePopupSelector((state) => state.account.showBalance);
+  const dispatch = usePopupDispatch();
 
   const { showToast } = useCopyToast();
   const { onCopy } = useClipboard(selectedAccount.address);
-  const [showBalance, setShowBalance] = useState(true);
 
   const options: ActionButtonProps[] = useMemo(
     () => [
@@ -123,7 +125,7 @@ export const AccountInfoHeader = () => {
           <Box
             as="button"
             ml={1}
-            onClick={() => setShowBalance((prev) => !prev)}
+            onClick={() => dispatch.account.changeBalanceState()}
           >
             {showBalance ? (
               <IconEyeOn w={4} h={4} />
@@ -156,7 +158,12 @@ const ActionButton: React.FC<ActionButtonProps> = ({
   return (
     <Flex as="button" onClick={onPress} align={"center"} direction={"column"}>
       {icon}
-      <Text fontSize={10} fontWeight={500} color={disabled ? "gray" : "#000"}>
+      <Text
+        mt={1}
+        fontSize={12}
+        fontWeight={500}
+        color={disabled ? "gray" : "#000"}
+      >
         {title}
       </Text>
     </Flex>
