@@ -303,10 +303,12 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
 
       <Flex flexDir={"column"} mt={5}>
         <Flex justify={"space-between"}>
-          <Text fontWeight={"bold"}>Transfer Method</Text>
+          <Text fontWeight={"bold"}>{t("Send:transferMethod")}</Text>
           <Flex fontSize={"small"} color={"gray.500"}>
-            {isPrivateMethod ? t("Send:private") : t("Send:public")}
-            &nbsp;Balance:&nbsp;
+            {isPrivateMethod
+              ? t("Send:privateRecord")
+              : t("Send:publicBalance")}
+            :&nbsp;
             <TokenNum
               amount={
                 (isPrivateMethod
