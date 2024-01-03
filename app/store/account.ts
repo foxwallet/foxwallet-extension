@@ -102,10 +102,27 @@ export const account = createModel<RootModel>()({
         const { mnemonic, ...restInfo } = wallet;
 
         if (oldAllWalletIds.includes(wallet.walletId)) {
-          const newAccountList = [...(wallet.accountsMap[CoinType.ALEO] || [])];
+          const oldAccountList =
+            oldAllWalletInfo[wallet.walletId].accountsMap[CoinType.ALEO] || [];
+
+          const newAccountList = [
+            ...(wallet.accountsMap[CoinType.ALEO] || []),
+          ].map((account) => {
+            const matchedAccount = oldAccountList.find(
+              (oldAccount) => oldAccount.accountId === account.accountId,
+            );
+            if (matchedAccount) {
+              return {
+                ...account,
+                ...matchedAccount, // using accountName & hide of the existed account in Redux store
+              };
+            }
+            return account;
+          });
+
           allWalletInfo[wallet.walletId] = {
             ...restInfo,
-            // make sure using walletName & accountName in Redux store
+            // make sure using walletName in Redux store
             walletName: oldAllWalletInfo[wallet.walletId].walletName || "",
             accountsMap: {
               ...wallet.accountsMap,

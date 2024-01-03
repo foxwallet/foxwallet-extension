@@ -13,6 +13,9 @@ const SignMessage = lazy(async () => await import("../pages/SignMessage"));
 const Deployment = lazy(async () => await import("../pages/Deployment"));
 const TokenDetail = lazy(async () => await import("../pages/TokenDetail"));
 const WalletDetail = lazy(async () => await import("../pages/WalletDetail"));
+const TransactionDetail = lazy(
+  async () => await import("../pages/TransactionDetail"),
+);
 
 // SettingTab
 const ManageWallet = lazy(async () => await import("../pages/ManageWallet"));
@@ -118,7 +121,7 @@ export const routesConfig: RouteObject[] = [
         element: <Language />,
       },
       {
-        path: "token_detail",
+        path: "token_detail/:uniqueId",
         element: <TokenDetail />,
       },
       {
@@ -132,6 +135,10 @@ export const routesConfig: RouteObject[] = [
       {
         path: "export_private_key/:walletId/:accountId/:coinType",
         element: <ExportPrivateKey />,
+      },
+      {
+        path: "transaction_detail/:txId",
+        element: <TransactionDetail />,
       },
     ],
   },
