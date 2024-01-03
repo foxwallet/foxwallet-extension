@@ -108,6 +108,7 @@
     "transferMethod": "Transfer Method",
     "selectTransferMethod": "Select Transfer Method",
     "privateRecord": "Private Record",
+    "publicBalance": "Public balance",
     "gasFee": "Gas Fee"
   },
   "Receive": {
@@ -118,6 +119,9 @@
   },
   "Setting": {
     "title": "Setting"
+  },
+  "Language": {
+    "title": "Language"
   },
   "Common": {
     "confirm": "Confirm",

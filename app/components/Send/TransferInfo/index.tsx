@@ -9,13 +9,12 @@ import {
   Flex,
 } from "@chakra-ui/react";
 import { P3 } from "../../../common/theme/components/text";
-import { BasicModal } from "../../Custom/Modal";
 import { promisifyChooseDialogWrapper } from "../../../common/utils/dialog";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
-import { useMemo } from "react";
 import { NativeToken, NativeTokenWithAddress } from "core/types/Token";
 import { AleoFeeMethod } from "core/coins/ALEO/types/FeeMethod";
 import { TokenNum } from "@/components/Wallet/TokenNum";
+import { useTranslation } from "react-i18next";
 
 interface Props {
   isOpen: boolean;
@@ -35,6 +34,7 @@ interface Props {
 
 const AleoTransferInfoDrawer = (props: Props) => {
   const { isOpen, onConfirm, onCancel, transferInfo } = props;
+  const { t } = useTranslation();
   const {
     from,
     to,
@@ -69,7 +69,7 @@ const AleoTransferInfoDrawer = (props: Props) => {
               <P3>{to}</P3>
             </Flex>
             <Flex direction={"column"} mb={"4"}>
-              <P3 color={"gray.500"}>{"Transfer Method"}</P3>
+              <P3 color={"gray.500"}>{t("Send:transferMethod")}</P3>
               <P3>{transferMethod}</P3>
             </Flex>
             <Flex direction={"column"} mb={"4"}>
