@@ -100,14 +100,15 @@ function ManageWalletScreen() {
           wallet.accountsMap[CoinType.ALEO] || []
         ).find((a) => !a.hide);
 
-        if (!account) return; // will not happen
-        dispatch.account.setSelectedAccount({
-          selectedAccount: {
-            ...account,
-            walletId: wallet.walletId,
-            coinType: CoinType.ALEO,
-          },
-        });
+        if (account) {
+          dispatch.account.setSelectedAccount({
+            selectedAccount: {
+              ...account,
+              walletId: wallet.walletId,
+              coinType: CoinType.ALEO,
+            },
+          });
+        }
       }
       navigate(-1);
     },

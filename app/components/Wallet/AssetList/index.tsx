@@ -6,12 +6,14 @@ import { useCoinService } from "@/hooks/useCoinService";
 import { useBalance } from "@/hooks/useBalance";
 import { useNavigate } from "react-router-dom";
 import { useCallback } from "react";
+import { usePopupSelector } from "@/hooks/useStore";
 
 export const AssetList = () => {
   const navigate = useNavigate();
   const { selectedAccount, uniqueId } = useCurrAccount();
   const { nativeCurrency } = useCoinService(uniqueId);
   const { balance } = useBalance(uniqueId, selectedAccount.address, 4000);
+  const showBalance = usePopupSelector((state) => state.account.showBalance);
 
   const onTokenDetail = useCallback(() => {
     // need to be modified when adapt for multi-chain
@@ -36,11 +38,15 @@ export const AssetList = () => {
             {nativeCurrency.symbol}
           </Text>
         </Flex>
-        <TokenNum
-          amount={balance?.total || 0n}
-          decimals={nativeCurrency.decimals}
-          symbol={""}
-        />
+        {showBalance ? (
+          <TokenNum
+            amount={balance?.total || 0n}
+            decimals={nativeCurrency.decimals}
+            symbol={""}
+          />
+        ) : (
+          <Text>*****</Text>
+        )}
       </Flex>
     </TabPanel>
   );
