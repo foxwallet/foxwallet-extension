@@ -19,6 +19,7 @@ import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import { showWalletsDrawer } from "../WalletsDrawer";
 import { useCurrWallet } from "@/hooks/useWallets";
 import { useTranslation } from "react-i18next";
+import RescanButton from "../RescanButton";
 
 export const AccountInfoHeader = () => {
   const navigate = useNavigate();
@@ -106,25 +107,32 @@ export const AccountInfoHeader = () => {
           <IconCopy w={3} h={3} />
         </Flex>
       </Flex>
-      <Flex direction={"row"} align={"center"} mt={2}>
-        <Box fontSize={24} fontWeight={600}>
-          {showBalance ? (
-            <TokenNum
-              amount={balance?.total || 0n}
-              decimals={nativeCurrency.decimals}
-              symbol={nativeCurrency.symbol}
-            />
-          ) : (
-            "*****"
-          )}
-        </Box>
-        <Box as="button" ml={1} onClick={() => setShowBalance((prev) => !prev)}>
-          {showBalance ? (
-            <IconEyeOn w={4} h={4} />
-          ) : (
-            <IconEyeClose w={4} h={4} />
-          )}
-        </Box>
+      <Flex direction={"row"} align={"center"} justify={"space-between"} mt={2}>
+        <Flex align={"center"}>
+          <Box fontSize={24} fontWeight={600}>
+            {showBalance ? (
+              <TokenNum
+                amount={balance?.total || 0n}
+                decimals={nativeCurrency.decimals}
+                symbol={nativeCurrency.symbol}
+              />
+            ) : (
+              "*****"
+            )}
+          </Box>
+          <Box
+            as="button"
+            ml={1}
+            onClick={() => setShowBalance((prev) => !prev)}
+          >
+            {showBalance ? (
+              <IconEyeOn w={4} h={4} />
+            ) : (
+              <IconEyeClose w={4} h={4} />
+            )}
+          </Box>
+        </Flex>
+        <RescanButton />
       </Flex>
       <Flex direction={"row"} align={"center"} justify={"space-around"} mt={6}>
         {options.map(renderActionItem)}

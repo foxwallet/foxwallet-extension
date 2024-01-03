@@ -41,6 +41,11 @@ import Delete from "@/common/assets/image/icon_delete.svg";
 import QuestionCircle from "@/common/assets/image/icon_question_circle.svg";
 import CheckCircleBlack from "@/common/assets/image/icon_check_circle_black.svg";
 import UncheckCircleGray from "@/common/assets/image/icon_uncheck_circle_gray.svg";
+import Rescan from "@/common/assets/image/icon_rescan.svg";
+import Loading from "@/common/assets/image/icon_loading.svg";
+import EmptyTxPlaceholder from "@/common/assets/image/icon_empty_tx.svg";
+import SendBlack from "@/common/assets/image/icon_send_black.svg";
+import ReceiveBlack from "@/common/assets/image/icon_receive_black.svg";
 
 export const IconCheckCircle = chakra(CheckCircle);
 
@@ -93,3 +98,8 @@ export const IconDelete = chakra(Delete);
 export const IconQuestionCircle = chakra(QuestionCircle);
 export const IconCheckCircleBlack = chakra(CheckCircleBlack);
 export const IconUncheckCircleGray = chakra(UncheckCircleGray);
+export const IconRescan = chakra(Rescan);
+export const IconLoading = chakra(Loading);
+export const IconEmptyTxPlaceholder = chakra(EmptyTxPlaceholder);
+export const IconSendBlack = chakra(SendBlack);
+export const IconReceiveBlack = chakra(ReceiveBlack);
