@@ -24,6 +24,7 @@ interface AccountModel {
   selectedUniqueId: ChainUniqueId;
   walletBackupMnemonicMap: WalletBackupedMnemonicMap;
   allWalletInfo: WalletInfoMap;
+  showBalance: boolean;
 }
 
 const DEFAULT_ACCOUNT_MODEL: AccountModel = {
@@ -39,6 +40,7 @@ const DEFAULT_ACCOUNT_MODEL: AccountModel = {
   selectedUniqueId: DEFAULT_UNIQUE_ID_MAP[CoinType.ALEO],
   walletBackupMnemonicMap: {},
   allWalletInfo: {},
+  showBalance: true,
 };
 
 export const account = createModel<RootModel>()({
@@ -231,6 +233,12 @@ export const account = createModel<RootModel>()({
       }
 
       return state;
+    },
+    changeBalanceState(state) {
+      return {
+        ...state,
+        showBalance: !state.showBalance,
+      };
     },
   },
   effects: (dispatch) => ({

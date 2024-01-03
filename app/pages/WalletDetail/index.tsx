@@ -347,17 +347,7 @@ const WalletDetailScreen = () => {
             ALEO
           </Text>
         </Flex>
-        <Flex
-          direction={"column"}
-          maxH={435}
-          overflowY="auto"
-          sx={{
-            scrollbarWidth: "none",
-            "::-webkit-scrollbar": {
-              display: "none",
-            },
-          }}
-        >
+        <Flex direction={"column"} maxH={435} overflowY="auto">
           {accountList.map(renderAccountItem)}
         </Flex>
         <Button

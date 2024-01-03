@@ -1,38 +1,113 @@
-import { H1, H3, H6 } from "@/common/theme/components/text";
-import { useClient } from "@/hooks/useClient";
+import { HELP_CENTER_URL } from "@/common/constants";
+import {
+  IconChevronRight,
+  IconCommunity,
+  IconGuide,
+  IconLogo,
+  IconSecurityTips,
+  IconSettings,
+  IconWallet,
+} from "@/components/Custom/Icon";
+import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
+import SettingItem from "@/components/Setting/SettingItem";
 import { useCurrAccount } from "@/hooks/useCurrAccount";
+import { useCurrWallet } from "@/hooks/useWallets";
 import { Content } from "@/layouts/Content";
-import { TabPanel } from "@chakra-ui/react";
-import { useCallback } from "react";
+import { Box, Divider, Flex, TabPanel, Text } from "@chakra-ui/react";
+import i18next from "i18next";
+import React, { useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import browser from "webextension-polyfill";
 
 export const SettingTab = () => {
   const navigate = useNavigate();
-  const { selectedAccount, uniqueId } = useCurrAccount();
-  const { popupServerClient } = useClient();
+  const { t } = useTranslation();
+  const { selectedAccount } = useCurrAccount();
+  const { selectedWallet } = useCurrWallet();
 
   const onManageWallet = useCallback(() => {
     navigate("/manage_wallet");
   }, [navigate]);
 
-  const onLanguage = useCallback(() => {
-    navigate("/manage_language");
+  const onGuide = useCallback(() => {
+    const url =
+      i18next.resolvedLanguage === "zh"
+        ? `${HELP_CENTER_URL}/zh/docs/`
+        : `${HELP_CENTER_URL}/docs/`;
+    browser.tabs.create({ url });
+  }, []);
+
+  const onCummunity = useCallback(() => {
+    navigate("/community");
   }, [navigate]);
 
-  const onResync = useCallback(async () => {
-    await popupServerClient.rescanAleo({ uniqueId, account: selectedAccount });
-  }, [popupServerClient, selectedAccount, uniqueId]);
+  const onSecurityTips = useCallback(() => {
+    const url =
+      i18next.resolvedLanguage === "zh"
+        ? `${HELP_CENTER_URL}/zh/docs/security-tips`
+        : `${HELP_CENTER_URL}/docs/security-tips`;
+    browser.tabs.create({ url });
+  }, []);
 
-  const onReset = useCallback(() => {}, []);
+  const onSettings = useCallback(() => {
+    navigate("/settings");
+  }, [navigate]);
 
   return (
     <TabPanel>
+      <Flex
+        p={5}
+        pb={2.5}
+        as={"button"}
+        direction={"row"}
+        align={"center"}
+        justify={"space-between"}
+        borderBottomWidth={"1px"}
+        borderColor={"#E6E8EC"}
+        w={"100%"}
+      >
+        <Flex align={"center"}>
+          <IconLogo w={8} h={8} mr={1} />
+          <Flex direction={"column"} align={"flex-start"}>
+            <Text fontSize={14} color={"#000"} fontWeight={"bold"}>
+              {selectedWallet?.walletName}
+            </Text>
+            <Box fontSize={11} color={"#777E90"} fontWeight={500} maxW={200}>
+              <MiddleEllipsisText text={selectedAccount.address} />
+            </Box>
+          </Flex>
+        </Flex>
+        <IconChevronRight w={18} h={18} />
+      </Flex>
       <Content>
-        <H3>Setting</H3>
-        <H6 onClick={() => onManageWallet()}>Manage Wallet</H6>
-        <H6 onClick={() => onLanguage()}>Language</H6>
-        <H6 onClick={() => onResync()}>Resync current account</H6>
-        <H6>Reset</H6>
+        <SettingItem
+          title={t("Wallet:title")}
+          icon={<IconWallet w={4} h={4} />}
+          onPress={onManageWallet}
+        />
+        <SettingItem
+          title={t("Setting:guide")}
+          icon={<IconGuide w={4} h={4} />}
+          onPress={onGuide}
+        />
+        <SettingItem
+          title={t("Setting:community")}
+          icon={<IconCommunity w={4} h={4} />}
+          onPress={onCummunity}
+        />
+        <Divider bg={"#E6E8EC"} h={"1px"} mb={2.5} />
+        <SettingItem
+          title={t("Setting:securityTips")}
+          icon={<IconSecurityTips w={4} h={4} />}
+          onPress={onSecurityTips}
+        />
+        <Divider bg={"#E6E8EC"} h={"1px"} mb={2.5} />
+        <SettingItem
+          title={t("Setting:settings")}
+          icon={<IconSettings w={4} h={4} />}
+          onPress={onSettings}
+        />
       </Content>
     </TabPanel>
   );

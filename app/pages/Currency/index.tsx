@@ -7,28 +7,29 @@ import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
 import { IconCheckLineBlack } from "@/components/Custom/Icon";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { CURRENCY, SupportCurrency } from "core/constants";
 
-function LanguageScreen() {
+function CurrencyScreen() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const currLanguage = usePopupSelector((state) => state.setting.language);
+  const currCurrency = usePopupSelector((state) => state.setting.currency);
   const dispatch = usePopupDispatch();
-  const changeLanguage = useCallback(
-    (newLanguage: SupportLanguages) => {
-      dispatch.setting.changeLanguage({ language: newLanguage });
+  const changeCurrency = useCallback(
+    (newCurrency: SupportCurrency) => {
+      dispatch.setting.updateCurrency({ currency: newCurrency });
       navigate(-1);
     },
     [dispatch.setting, navigate],
   );
 
   return (
-    <PageWithHeader enableBack title={t("Language:title")}>
+    <PageWithHeader enableBack title={t("Currency:title")}>
       <Content>
         <Flex flexDir={"column"} maxH={500} overflowY={"auto"}>
-          {Object.values(SupportLanguages).map((language) => (
+          {Object.values(SupportCurrency).map((currency) => (
             <Flex
-              key={language}
-              onClick={() => changeLanguage(language)}
+              key={currency}
+              onClick={() => changeCurrency(currency)}
               justify={"space-between"}
               align={"center"}
               borderStyle={"solid"}
@@ -39,8 +40,8 @@ function LanguageScreen() {
               mt={2}
               as={"button"}
             >
-              <Text fontWeight={500}>{LanguageLabels[language]}</Text>
-              {currLanguage === language && <IconCheckLineBlack w={5} h={5} />}
+              <Text fontWeight={500}>{CURRENCY[currency].symbol}</Text>
+              {currCurrency === currency && <IconCheckLineBlack w={5} h={5} />}
             </Flex>
           ))}
         </Flex>
@@ -49,4 +50,4 @@ function LanguageScreen() {
   );
 }
 
-export default LanguageScreen;
+export default CurrencyScreen;
