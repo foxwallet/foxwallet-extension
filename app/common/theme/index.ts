@@ -32,6 +32,17 @@ export const theme = extendBaseTheme({
         color: "text",
         bg: "bg",
       },
+      "*::-webkit-scrollbar": {
+        width: "8px",
+      },
+      "*::-webkit-scrollbar-track": {
+        background: "gray.50",
+        borderRadius: "8px",
+      },
+      "*::-webkit-scrollbar-thumb": {
+        background: "gray.500",
+        borderRadius: "8px",
+      },
     },
   },
   colors,

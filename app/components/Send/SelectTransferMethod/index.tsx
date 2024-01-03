@@ -93,9 +93,7 @@ const SelectTransferMethodDrawer = (props: Props) => {
         <DrawerBody>
           <Flex flexDir={"column"} pt={2} mt={3} fontSize={"smaller"}>
             <Flex justify={"space-between"}>
-              <Text color={"gray.500"}>{`${t("Send:public")} ${t(
-                "Send:balance",
-              )}`}</Text>
+              <Text color={"gray.500"}>{t("Send:publicBalance")}</Text>
               {loadingBalance ? (
                 <Spinner w={2} h={2} />
               ) : (

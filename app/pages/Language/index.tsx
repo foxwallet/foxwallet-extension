@@ -1,21 +1,46 @@
-import { useBalance } from "@/hooks/useBalance";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { PageWithHeader } from "@/layouts/Page";
-import { Button, Flex, Text, chakra } from "@chakra-ui/react";
-import { useCallback, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { L1 } from "@/common/theme/components/text";
+import { Flex, Text } from "@chakra-ui/react";
+import { useCallback } from "react";
 import { Content } from "@/layouts/Content";
-import { useWallets } from "@/hooks/useWallets";
-import { WalletType } from "@/scripts/background/store/vault/types/keyring";
+import { LanguageLabels, SupportLanguages } from "@/locales/i18";
+import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
+import { IconCheckLineBlack } from "@/components/Custom/Icon";
+import { useTranslation } from "react-i18next";
 
 function LanguageScreen() {
-  const navigate = useNavigate();
-  const { selectedAccount, uniqueId } = useCurrAccount();
+  const { t } = useTranslation();
+  const currLanguage = usePopupSelector((state) => state.setting.language);
+  const dispatch = usePopupDispatch();
+  const changeLanguage = useCallback(
+    (newLanguage: SupportLanguages) => {
+      dispatch.setting.changeLanguage({ language: newLanguage });
+    },
+    [dispatch],
+  );
 
   return (
-    <PageWithHeader enableBack title="Receive">
-      <Content>{}</Content>
+    <PageWithHeader enableBack title={t("Language:title")}>
+      <Content>
+        <Flex flexDir={"column"} maxH={500} overflowY={"auto"}>
+          {Object.values(SupportLanguages).map((language) => (
+            <Flex
+              key={language}
+              onClick={() => changeLanguage(language)}
+              justify={"space-between"}
+              align={"center"}
+              borderStyle={"solid"}
+              borderWidth={"1px"}
+              borderRadius={"lg"}
+              borderColor={"gray.50"}
+              p={3}
+              mt={2}
+            >
+              <Text fontWeight={500}>{LanguageLabels[language]}</Text>
+              {currLanguage === language && <IconCheckLineBlack w={5} h={5} />}
+            </Flex>
+          ))}
+        </Flex>
+      </Content>
     </PageWithHeader>
   );
 }
