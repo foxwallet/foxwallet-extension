@@ -145,6 +145,27 @@
     "privacyPolicy": "<Privacy Policy>",
     "userAgreement": "<User Agreement>"
   },
+  "Dapp": {
+    "requestConnect": "Request connection",
+    "requestDetail": "Request detail",
+    "network": "Network",
+    "permission": "Permission",
+    "program": "Program",
+    "programs": "Programs",
+    "permissionTip": "I trust this dapp, and allow it to access my on-chain history.",
+    "account": "Account",
+    "requestDeployment": "Request deployment",
+    "content": "Content",
+    "inputs": "Inputs",
+    "gasFee": "Gas Fee",
+    "requestTx": "Request send transaction",
+    "message": "Message",
+    "requestSignMessage": "Request sign message",
+    "noDecrypt": "No decrypt permission.",
+    "uponRequest": "Dapp may request decrypt your record.",
+    "autoDecrypt": "Dapp can decrypt record without request.",
+    "onChainHistory": "Dapp can access your on-chain history."
+  },
   "Common": {
     "confirm": "Confirm",
     "cancel": "Cancel",

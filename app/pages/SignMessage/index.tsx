@@ -1,41 +1,50 @@
 import { ERROR_CODE } from "@/common/types/error";
-import { TokenNum } from "@/components/Wallet/TokenNum";
-import { useBalance } from "@/hooks/useBalance";
+import { IconFoxWallet, IconLogo } from "@/components/Custom/Icon";
+import { ResponsiveFlex } from "@/components/Custom/ResponsiveFlex";
+import { AccountInfo } from "@/components/Dapp/AccountInfo";
+import { DappInfo } from "@/components/Dapp/DappInfo";
 import { useClient } from "@/hooks/useClient";
-import { useCoinService } from "@/hooks/useCoinService";
 import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { useDappRequest } from "@/hooks/useDappRequest";
-import { useTxHistory } from "@/hooks/useTxHistory";
 import { Content } from "@/layouts/Content";
 import { Button, Flex, Text } from "@chakra-ui/react";
-import { NATIVE_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
-import {
-  AleoHistoryItem,
-  AleoTxAddressType,
-} from "core/coins/ALEO/types/History";
-import { AleoTxStatus } from "core/coins/ALEO/types/Tranaction";
 import { useCallback, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 
 function SignMessageScreen() {
-  const navigate = useNavigate();
   const { selectedAccount } = useCurrAccount();
   const { requestId } = useParams();
   const { popupServerClient } = useClient();
   const { dappRequest, loading } = useDappRequest(requestId);
+  const { t } = useTranslation();
 
   const dappRequestInfo = useMemo(() => {
     if (!dappRequest) {
       return null;
     }
-    const { id, type, siteInfo, payload } = dappRequest;
+    const { payload } = dappRequest;
+    const message = payload.message;
     return (
-      <Flex direction={"column"}>
-        <Flex>{JSON.stringify(siteInfo)}</Flex>
-        <Flex>{JSON.stringify(payload)}</Flex>
+      <Flex
+        direction={"column"}
+        w={"full"}
+        borderRadius={"lg"}
+        borderStyle={"solid"}
+        borderWidth={"1px"}
+        borderColor={"gray.50"}
+        flex={1}
+        p={2}
+        maxH={[200, 300, 400, 500]}
+        overflowY={"auto"}
+      >
+        <Text>{t("Dapp:message")}:</Text>
+        <Text maxW={"full"} fontWeight={"bold"} mt={2}>
+          {message}
+        </Text>
       </Flex>
     );
-  }, [dappRequest]);
+  }, [dappRequest, t]);
 
   const onConfirm = useCallback(() => {
     if (requestId && selectedAccount?.address) {
@@ -56,12 +65,57 @@ function SignMessageScreen() {
 
   return (
     <Content>
-      <Flex>SignMessage</Flex>
-      <Flex>{requestId}</Flex>
-      <Flex>address: {selectedAccount?.address}</Flex>
-      {dappRequestInfo}
-      <Button onClick={onConfirm}>Confrim</Button>
-      <Button onClick={onCancel}>Cancel</Button>
+      <ResponsiveFlex
+        alignSelf={"center"}
+        align={"center"}
+        flexDir={"column"}
+        flex={1}
+      >
+        <Flex
+          justify={"center"}
+          align={"center"}
+          mb={3}
+          alignSelf={"flex-start"}
+        >
+          <IconLogo mr={2} />
+          <IconFoxWallet />
+        </Flex>
+        {!!dappRequest?.siteInfo && (
+          <DappInfo siteInfo={dappRequest.siteInfo} />
+        )}
+        <Text mt={3} mb={3}>
+          {t("Dapp:requestSignMessage")}
+        </Text>
+        <AccountInfo account={selectedAccount} />
+        <Text mt={3} mb={3}>
+          {t("Dapp:requestDetail")}
+        </Text>
+        {dappRequestInfo}
+        <Flex
+          mt={3}
+          position={"fixed"}
+          left={5}
+          right={5}
+          bottom={5}
+          justify={"center"}
+        >
+          <ResponsiveFlex flexDir={"column"}>
+            <Flex alignSelf={"stretch"}>
+              <Button onClick={onConfirm} flex={1} mr={"2"}>
+                {t("Common:confirm")}
+              </Button>
+              <Button
+                onClick={onCancel}
+                flex={1}
+                colorScheme="secondary"
+                ml={2}
+              >
+                {t("Common:cancel")}
+              </Button>
+            </Flex>
+          </ResponsiveFlex>
+        </Flex>
+      </ResponsiveFlex>
     </Content>
   );
 }

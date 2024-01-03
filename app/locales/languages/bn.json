@@ -111,7 +111,8 @@
     "transferMethod": "স্থানান্তর পদ্ধতি",
     "selectTransferMethod": "স্থানান্তর পদ্ধতি নির্বাচন করুন",
     "privateRecord": "ব্যক্তিগত রেকর্ড",
-    "gasFee": "গ্যাস ফি"
+    "gasFee": "গ্যাস ফি",
+    "publicBalance": "পাবলিক ভারসাম্য"
   },
   "PrivateKey": {
     "title": "ব্যক্তিগত কী",
@@ -124,9 +125,55 @@
     "walletAddr": "ওয়ালেট ঠিকানা"
   },
   "Setting": {
-    "title": "বিন্যাস"
+    "title": "বিন্যাস",
+    "guide": "গাইড",
+    "community": "সম্প্রদায়",
+    "securityTips": "নিরাপত্তা টিপস",
+    "settings": "সেটিংস"
   },
   "Error": {
     "invalidPassword": "অবৈধ পাসওয়ার্ড"
+  },
+  "TokenDetail": {
+    "title": "টোকেন বিস্তারিত",
+    "balance": "ভারসাম্য",
+    "tx_records": "লেনদেন রেকর্ড",
+    "empty_tx": "কোনো লেনদেনের রেকর্ড নেই"
+  },
+  "Language": {
+    "title": "ভাষা"
+  },
+  "Dapp": {
+    "requestConnect": "সংযোগের অনুরোধ করুন",
+    "requestDetail": "বিস্তারিত অনুরোধ করুন",
+    "network": "অন্তর্জাল",
+    "permission": "অনুমতি",
+    "program": "কার্যক্রম",
+    "programs": "প্রোগ্রাম",
+    "permissionTip": "আমি এই ড্যাপকে বিশ্বাস করি এবং এটিকে আমার অন-চেইন ইতিহাস অ্যাক্সেস করার অনুমতি দিই।",
+    "account": "হিসাব",
+    "requestDeployment": "স্থাপনার অনুরোধ করুন",
+    "content": "বিষয়বস্তু",
+    "inputs": "ইনপুট",
+    "gasFee": "গ্যাস ফি",
+    "requestTx": "অনুরোধ পাঠান লেনদেন",
+    "message": "বার্তা",
+    "requestSignMessage": "অনুরোধ সাইন বার্তা",
+    "noDecrypt": "কোন ডিক্রিপ্ট অনুমতি নেই.",
+    "uponRequest": "Dapp আপনার রেকর্ড ডিক্রিপ্ট করার অনুরোধ করতে পারে।",
+    "autoDecrypt": "Dapp অনুরোধ ছাড়াই রেকর্ড ডিক্রিপ্ট করতে পারে।",
+    "onChainHistory": "Dapp আপনার অন-চেইন ইতিহাস অ্যাক্সেস করতে পারে।"
+  },
+  "Currency": {
+    "title": "মুদ্রা"
+  },
+  "About": {
+    "title": "সম্পর্কিত",
+    "sender": "প্রেরক",
+    "upgrade": "আপগ্রেড করুন",
+    "download": "ডাউনলোড করুন",
+    "noUpdate": "কোন আপডেট প্রয়োজন",
+    "privacyPolicy": "<গোপনীয়তা নীতি>",
+    "userAgreement": "<ব্যবহারকারী চুক্তি>"
   }
 }

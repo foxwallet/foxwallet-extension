@@ -125,9 +125,55 @@
     "walletAddr": "钱包地址"
   },
   "Setting": {
-    "title": "设置"
+    "title": "设置",
+    "guide": "指导",
+    "community": "社区",
+    "securityTips": "安全提示",
+    "settings": "设置"
   },
   "Error": {
     "invalidPassword": "无效的密码"
+  },
+  "TokenDetail": {
+    "title": "代币详情",
+    "balance": "余额",
+    "tx_records": "交易记录",
+    "empty_tx": "无交易记录"
+  },
+  "Language": {
+    "title": "语言"
+  },
+  "Dapp": {
+    "requestConnect": "请求连接",
+    "requestDetail": "请求详情",
+    "network": "网络",
+    "permission": "权限",
+    "program": "合约",
+    "programs": "合约",
+    "permissionTip": "我信任这个 Dapp，并允许它访问我的链上历史记录。",
+    "account": "帐户",
+    "requestDeployment": "请求部署",
+    "content": "内容",
+    "inputs": "输入",
+    "gasFee": "手续费",
+    "requestTx": "请求发送交易",
+    "message": "信息",
+    "requestSignMessage": "请求签名消息",
+    "noDecrypt": "没有解密权限。",
+    "uponRequest": "Dapp 可能会请求解密您的记录。",
+    "autoDecrypt": "Dapp 无需请求即可解密记录。",
+    "onChainHistory": "Dapp 可以访问您的链上历史记录。"
+  },
+  "Currency": {
+    "title": "货币"
+  },
+  "About": {
+    "title": "关于",
+    "sender": "发件人",
+    "upgrade": "升级",
+    "download": "下载",
+    "noUpdate": "无需更新",
+    "privacyPolicy": "<隐私政策>",
+    "userAgreement": "<用户协议>"
   }
 }

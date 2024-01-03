@@ -111,7 +111,8 @@
     "transferMethod": "Método de transferencia",
     "selectTransferMethod": "Seleccione el método de transferencia",
     "privateRecord": "Registro privado",
-    "gasFee": "Tarifa de gas"
+    "gasFee": "Tarifa de gas",
+    "publicBalance": "equilibrio publico"
   },
   "PrivateKey": {
     "title": "Llave privada",
@@ -124,9 +125,55 @@
     "walletAddr": "Dirección de billetera"
   },
   "Setting": {
-    "title": "Configuración"
+    "title": "Configuración",
+    "guide": "Guía",
+    "community": "Comunidad",
+    "securityTips": "Consejos de seguridad",
+    "settings": "Ajustes"
   },
   "Error": {
     "invalidPassword": "Contraseña invalida"
+  },
+  "TokenDetail": {
+    "title": "Detalle del token",
+    "balance": "Balance",
+    "tx_records": "Registros de transacciones",
+    "empty_tx": "Sin registros de transacciones"
+  },
+  "Language": {
+    "title": "Idioma"
+  },
+  "Dapp": {
+    "requestConnect": "Solicitar conexión",
+    "requestDetail": "Detalle de la solicitud",
+    "network": "Red",
+    "permission": "Permiso",
+    "program": "Programa",
+    "programs": "Programas",
+    "permissionTip": "Confío en esta dapp y le permito acceder a mi historial en cadena.",
+    "account": "Cuenta",
+    "requestDeployment": "Solicitar implementación",
+    "content": "Contenido",
+    "inputs": "Entradas",
+    "gasFee": "Tarifa de gas",
+    "requestTx": "Solicitar enviar transacción",
+    "message": "Mensaje",
+    "requestSignMessage": "Solicitar mensaje de firma",
+    "noDecrypt": "Sin permiso de descifrado.",
+    "uponRequest": "Dapp puede solicitar descifrar su registro.",
+    "autoDecrypt": "Dapp puede descifrar registros sin solicitud.",
+    "onChainHistory": "Dapp puede acceder a su historial en cadena."
+  },
+  "Currency": {
+    "title": "Divisa"
+  },
+  "About": {
+    "title": "Acerca de",
+    "sender": "Remitente",
+    "upgrade": "Mejora",
+    "download": "Descargar",
+    "noUpdate": "No se requiere actualización",
+    "privacyPolicy": "<Política de privacidad>",
+    "userAgreement": "<Acuerdo de usuario>"
   }
 }

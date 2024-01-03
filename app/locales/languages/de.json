@@ -111,7 +111,8 @@
     "transferMethod": "Übertragungsmethode",
     "selectTransferMethod": "Wählen Sie Übertragungsmethode",
     "privateRecord": "Privataufnahme",
-    "gasFee": "Gasgebühr"
+    "gasFee": "Gasgebühr",
+    "publicBalance": "Öffentliches Gleichgewicht"
   },
   "PrivateKey": {
     "title": "Privat Schlüssel",
@@ -124,9 +125,55 @@
     "walletAddr": "Wallet-Adresse"
   },
   "Setting": {
-    "title": "Einstellung"
+    "title": "Einstellung",
+    "guide": "Führung",
+    "community": "Gemeinschaft",
+    "securityTips": "Sicherheitstipps",
+    "settings": "Einstellungen"
   },
   "Error": {
     "invalidPassword": "Ungültiges Passwort"
+  },
+  "TokenDetail": {
+    "title": "Token-Details",
+    "balance": "Gleichgewicht",
+    "tx_records": "Transaktionsaufzeichnungen",
+    "empty_tx": "Keine Transaktionsaufzeichnungen"
+  },
+  "Language": {
+    "title": "Sprache"
+  },
+  "Dapp": {
+    "requestConnect": "Verbindung anfordern",
+    "requestDetail": "Einzelheiten anfordern",
+    "network": "Netzwerk",
+    "permission": "Erlaubnis",
+    "program": "Programm",
+    "programs": "Programme",
+    "permissionTip": "Ich vertraue diesem Dapp und erlaube ihm, auf meinen On-Chain-Verlauf zuzugreifen.",
+    "account": "Konto",
+    "requestDeployment": "Bereitstellung anfordern",
+    "content": "Inhalt",
+    "inputs": "Eingaben",
+    "gasFee": "Gasgebühr",
+    "requestTx": "Sendetransaktion anfordern",
+    "message": "Nachricht",
+    "requestSignMessage": "Signieren Sie eine Nachricht",
+    "noDecrypt": "Keine Entschlüsselungsberechtigung.",
+    "uponRequest": "Dapp kann die Entschlüsselung Ihres Datensatzes anfordern.",
+    "autoDecrypt": "Dapp kann Datensätze ohne Anfrage entschlüsseln.",
+    "onChainHistory": "Dapp kann auf Ihren On-Chain-Verlauf zugreifen."
+  },
+  "Currency": {
+    "title": "Währung"
+  },
+  "About": {
+    "title": "Um",
+    "sender": "Absender",
+    "upgrade": "Aktualisierung",
+    "download": "Herunterladen",
+    "noUpdate": "Kein Update erforderlich",
+    "privacyPolicy": "<Datenschutzerklärung>",
+    "userAgreement": "<Benutzervereinbarung>"
   }
 }
