@@ -124,10 +124,26 @@
     "empty_tx": "No transaction records"
   },
   "Setting": {
-    "title": "Setting"
+    "title": "Setting",
+    "guide": "Guide",
+    "community": "Community",
+    "securityTips": "Security Tips",
+    "settings": "Settings"
   },
   "Language": {
     "title": "Language"
+  },
+  "Currency": {
+    "title": "Currency"
+  },
+  "About": {
+    "title": "About",
+    "sender": "Sender",
+    "upgrade": "Upgrade",
+    "download": "Download",
+    "noUpdate": "No update required",
+    "privacyPolicy": "<Privacy Policy>",
+    "userAgreement": "<User Agreement>"
   },
   "Common": {
     "confirm": "Confirm",

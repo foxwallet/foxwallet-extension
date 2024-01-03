@@ -149,17 +149,7 @@ function ManageWalletScreen() {
       }
     >
       <Flex direction={"column"} flex={1} px={5} pb={4}>
-        <Flex
-          direction={"column"}
-          maxH={470}
-          overflowY="auto"
-          sx={{
-            scrollbarWidth: "none",
-            "::-webkit-scrollbar": {
-              display: "none",
-            },
-          }}
-        >
+        <Flex direction={"column"} maxH={470} overflowY="auto">
           {flattenWalletList.map(renderWalletItem)}
         </Flex>
         <Button

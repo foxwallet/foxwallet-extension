@@ -314,7 +314,7 @@ export class KeyringManager {
       token,
     )) as EncryptedKeyPairWithViewKey;
     // TODO: use i18n
-    const accountName = `Account ${index}`;
+    const accountName = `Account ${index + 1}`;
     const newHdWallet: HDWallet = {
       ...hdWallet,
       accountsMap: {

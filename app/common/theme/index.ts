@@ -33,7 +33,7 @@ export const theme = extendBaseTheme({
         bg: "bg",
       },
       "*::-webkit-scrollbar": {
-        width: "8px",
+        display: "none",
       },
       "*::-webkit-scrollbar-track": {
         background: "gray.50",

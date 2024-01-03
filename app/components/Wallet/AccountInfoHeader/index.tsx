@@ -156,7 +156,7 @@ const ActionButton: React.FC<ActionButtonProps> = ({
   return (
     <Flex as="button" onClick={onPress} align={"center"} direction={"column"}>
       {icon}
-      <Text fontSize={10} fontWeight={500} color={disabled ? "gray" : "#000"}>
+      <Text fontSize={12} fontWeight={500} color={disabled ? "gray" : "#000"}>
         {title}
       </Text>
     </Flex>

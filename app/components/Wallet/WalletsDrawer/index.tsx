@@ -121,17 +121,7 @@ const WalletsDrawer = (props: Props) => {
               ALEO
             </Text>
           </Flex>
-          <Flex
-            direction={"column"}
-            maxH={190}
-            overflowY="auto"
-            sx={{
-              scrollbarWidth: "none",
-              "::-webkit-scrollbar": {
-                display: "none",
-              },
-            }}
-          >
+          <Flex direction={"column"} maxH={190} overflowY="auto">
             {accountsInWallet.map(renderAccountItem)}
           </Flex>
         </Flex>

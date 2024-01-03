@@ -279,17 +279,7 @@ const TokenDetailScreen = () => {
       <Flex direction={"column"} px={5} py={2.5}>
         <Text fontWeight={"bold"}>{t("TokenDetail:tx_records")}</Text>
         {history && history?.length > 0 ? (
-          <Flex
-            direction={"column"}
-            maxH={340}
-            overflowY="auto"
-            sx={{
-              scrollbarWidth: "none",
-              "::-webkit-scrollbar": {
-                display: "none",
-              },
-            }}
-          >
+          <Flex direction={"column"} maxH={340} overflowY="auto">
             {history?.map(renderTxHistoryItem)}
           </Flex>
         ) : (

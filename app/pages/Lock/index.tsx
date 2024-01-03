@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button, Flex, Image, InputRightElement, Text } from "@chakra-ui/react";
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
+// @ts-ignore
 import WALLET_LOGO from "@/common/assets/image/logo.png";
 import { IconFoxWallet } from "@/components/Custom/Icon";
 import { useTranslation } from "react-i18next";

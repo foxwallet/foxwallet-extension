@@ -10,17 +10,7 @@ export const HomeTabList = () => {
         <Tab mr={6}>{t("Wallet:tabAsset")}</Tab>
       </TabList>
       <TabIndicator height="2px" bg="black" borderRadius="1px" />
-      <TabPanels
-        maxH={258}
-        overflowY="auto"
-        sx={{
-          scrollbarWidth: "none",
-          "::-webkit-scrollbar": {
-            display: "none",
-          },
-        }}
-        pt={2.5}
-      >
+      <TabPanels maxH={258} overflowY="auto" pt={2.5}>
         <AssetList />
       </TabPanels>
     </Tabs>
