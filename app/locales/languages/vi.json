@@ -111,7 +111,8 @@
     "transferMethod": "Phương thức chuyển khoản",
     "selectTransferMethod": "Chọn phương thức chuyển",
     "privateRecord": "Bản ghi riêng",
-    "gasFee": "Phí gas"
+    "gasFee": "Phí gas",
+    "publicBalance": "Cân bằng công cộng"
   },
   "PrivateKey": {
     "title": "Khóa riêng",
@@ -124,9 +125,55 @@
     "walletAddr": "Địa chỉ ví"
   },
   "Setting": {
-    "title": "Cài đặt"
+    "title": "Cài đặt",
+    "guide": "Hướng dẫn",
+    "community": "Cộng đồng",
+    "securityTips": "Mẹo bảo mật",
+    "settings": "Cài đặt"
   },
   "Error": {
     "invalidPassword": "Mật khẩu không hợp lệ"
+  },
+  "TokenDetail": {
+    "title": "Chi tiết mã thông báo",
+    "balance": "Sự cân bằng",
+    "tx_records": "Hồ sơ giao dịch",
+    "empty_tx": "Không có hồ sơ giao dịch"
+  },
+  "Language": {
+    "title": "Ngôn ngữ"
+  },
+  "Dapp": {
+    "requestConnect": "Yêu cầu kết nối",
+    "requestDetail": "Yêu cầu chi tiết",
+    "network": "Mạng",
+    "permission": "Sự cho phép",
+    "program": "Chương trình",
+    "programs": "Chương trình",
+    "permissionTip": "Tôi tin tưởng dapp này và cho phép nó truy cập vào lịch sử giao dịch của tôi.",
+    "account": "Tài khoản",
+    "requestDeployment": "Yêu cầu triển khai",
+    "content": "Nội dung",
+    "inputs": "Đầu vào",
+    "gasFee": "Phí gas",
+    "requestTx": "Yêu cầu gửi giao dịch",
+    "message": "Tin nhắn",
+    "requestSignMessage": "Yêu cầu tin nhắn ký",
+    "noDecrypt": "Không có quyền giải mã.",
+    "uponRequest": "Dapp có thể yêu cầu giải mã hồ sơ của bạn.",
+    "autoDecrypt": "Dapp có thể giải mã bản ghi mà không cần yêu cầu.",
+    "onChainHistory": "Dapp có thể truy cập lịch sử giao dịch của bạn."
+  },
+  "Currency": {
+    "title": "Tiền tệ"
+  },
+  "About": {
+    "title": "Về",
+    "sender": "Người gửi",
+    "upgrade": "Nâng cấp",
+    "download": "Tải xuống",
+    "noUpdate": "Không cần cập nhật",
+    "privacyPolicy": "<Chính sách quyền riêng tư>",
+    "userAgreement": "<Thỏa thuận người dùng>"
   }
 }

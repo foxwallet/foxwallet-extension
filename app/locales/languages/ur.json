@@ -111,7 +111,8 @@
     "transferMethod": "منتقلی کا طریقہ",
     "selectTransferMethod": "منتقلی کا طریقہ منتخب کریں۔",
     "privateRecord": "نجی ریکارڈ",
-    "gasFee": "گیس فیس"
+    "gasFee": "گیس فیس",
+    "publicBalance": "عوامی توازن"
   },
   "PrivateKey": {
     "title": "نجی کلید",
@@ -124,9 +125,55 @@
     "walletAddr": "بٹوے کا پتہ"
   },
   "Setting": {
-    "title": "ترتیب"
+    "title": "ترتیب",
+    "guide": "رہنما",
+    "community": "برادری",
+    "securityTips": "حفاظتی نکات",
+    "settings": "ترتیبات"
   },
   "Error": {
     "invalidPassword": "غلط پاسورڈ"
+  },
+  "TokenDetail": {
+    "title": "ٹوکن کی تفصیل",
+    "balance": "بقیہ",
+    "tx_records": "لین دین کے ریکارڈز",
+    "empty_tx": "لین دین کا کوئی ریکارڈ نہیں۔"
+  },
+  "Language": {
+    "title": "زبان"
+  },
+  "Dapp": {
+    "requestConnect": "کنکشن کی درخواست کریں۔",
+    "requestDetail": "تفصیل طلب کریں۔",
+    "network": "نیٹ ورک",
+    "permission": "اجازت",
+    "program": "پروگرام",
+    "programs": "پروگرامز",
+    "permissionTip": "میں اس ڈیپ پر بھروسہ کرتا ہوں، اور اسے اپنی آن چین ہسٹری تک رسائی کی اجازت دیتا ہوں۔",
+    "account": "کھاتہ",
+    "requestDeployment": "تعیناتی کی درخواست کریں۔",
+    "content": "مواد",
+    "inputs": "ان پٹ",
+    "gasFee": "گیس فیس",
+    "requestTx": "لین دین بھیجنے کی درخواست کریں۔",
+    "message": "پیغام",
+    "requestSignMessage": "دستخطی پیغام کی درخواست کریں۔",
+    "noDecrypt": "خفیہ کاری کی اجازت نہیں ہے۔",
+    "uponRequest": "Dapp آپ کے ریکارڈ کو ڈکرپٹ کرنے کی درخواست کر سکتا ہے۔",
+    "autoDecrypt": "Dapp درخواست کے بغیر ریکارڈ کو ڈکرپٹ کر سکتا ہے۔",
+    "onChainHistory": "Dapp آپ کی آن چین ہسٹری تک رسائی حاصل کر سکتا ہے۔"
+  },
+  "Currency": {
+    "title": "کرنسی"
+  },
+  "About": {
+    "title": "کے بارے میں",
+    "sender": "بھیجنے والا",
+    "upgrade": "اپ گریڈ",
+    "download": "ڈاؤن لوڈ کریں",
+    "noUpdate": "اپ ڈیٹ کی ضرورت نہیں ہے۔",
+    "privacyPolicy": "<رازداری کی پالیسی>",
+    "userAgreement": "<صارف کا معاہدہ>"
   }
 }

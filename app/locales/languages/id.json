@@ -111,7 +111,8 @@
     "transferMethod": "Metode Pemindahan",
     "selectTransferMethod": "Pilih Metode Transfer",
     "privateRecord": "Catatan Pribadi",
-    "gasFee": "Biaya Bahan Bakar"
+    "gasFee": "Biaya Bahan Bakar",
+    "publicBalance": "Keseimbangan publik"
   },
   "PrivateKey": {
     "title": "Kunci pribadi",
@@ -124,9 +125,55 @@
     "walletAddr": "Alamat Dompet"
   },
   "Setting": {
-    "title": "Pengaturan"
+    "title": "Pengaturan",
+    "guide": "Memandu",
+    "community": "Masyarakat",
+    "securityTips": "Kiat Keamanan",
+    "settings": "Pengaturan"
   },
   "Error": {
     "invalidPassword": "Kata sandi salah"
+  },
+  "TokenDetail": {
+    "title": "Detail Token",
+    "balance": "Keseimbangan",
+    "tx_records": "Catatan Transaksi",
+    "empty_tx": "Tidak ada catatan transaksi"
+  },
+  "Language": {
+    "title": "Bahasa"
+  },
+  "Dapp": {
+    "requestConnect": "Minta koneksi",
+    "requestDetail": "Minta detailnya",
+    "network": "Jaringan",
+    "permission": "Izin",
+    "program": "Program",
+    "programs": "Program",
+    "permissionTip": "Saya mempercayai dapp ini, dan mengizinkannya mengakses riwayat on-chain saya.",
+    "account": "Akun",
+    "requestDeployment": "Minta penerapan",
+    "content": "Isi",
+    "inputs": "masukan",
+    "gasFee": "Biaya Bahan Bakar",
+    "requestTx": "Permintaan pengiriman transaksi",
+    "message": "Pesan",
+    "requestSignMessage": "Minta pesan tanda tangan",
+    "noDecrypt": "Tidak ada izin mendekripsi.",
+    "uponRequest": "Dapp mungkin meminta mendekripsi catatan Anda.",
+    "autoDecrypt": "Dapp dapat mendekripsi catatan tanpa permintaan.",
+    "onChainHistory": "Dapp dapat mengakses riwayat on-chain Anda."
+  },
+  "Currency": {
+    "title": "Mata uang"
+  },
+  "About": {
+    "title": "Tentang",
+    "sender": "Pengirim",
+    "upgrade": "Meningkatkan",
+    "download": "Unduh",
+    "noUpdate": "Tidak diperlukan pembaruan",
+    "privacyPolicy": "<Kebijakan Privasi>",
+    "userAgreement": "<Perjanjian Pengguna>"
   }
 }

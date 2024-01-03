@@ -111,7 +111,8 @@
     "transferMethod": "Метод передачі",
     "selectTransferMethod": "Виберіть метод передачі",
     "privateRecord": "Приватний запис",
-    "gasFee": "Плата за газ"
+    "gasFee": "Плата за газ",
+    "publicBalance": "Громадський баланс"
   },
   "PrivateKey": {
     "title": "Приватний ключ",
@@ -124,9 +125,55 @@
     "walletAddr": "Адреса гаманця"
   },
   "Setting": {
-    "title": "Налаштування"
+    "title": "Налаштування",
+    "guide": "Гід",
+    "community": "Спільнота",
+    "securityTips": "Поради щодо безпеки",
+    "settings": "Налаштування"
   },
   "Error": {
     "invalidPassword": "Невірний пароль"
+  },
+  "TokenDetail": {
+    "title": "Деталі маркера",
+    "balance": "Баланс",
+    "tx_records": "Записи транзакцій",
+    "empty_tx": "Немає записів про операції"
+  },
+  "Language": {
+    "title": "Мова"
+  },
+  "Dapp": {
+    "requestConnect": "Запит на підключення",
+    "requestDetail": "Деталі запиту",
+    "network": "Мережа",
+    "permission": "Дозвіл",
+    "program": "програма",
+    "programs": "Програми",
+    "permissionTip": "Я довіряю цій програмі та дозволяю їй отримати доступ до моєї історії в мережі.",
+    "account": "Обліковий запис",
+    "requestDeployment": "Запит на розгортання",
+    "content": "Зміст",
+    "inputs": "Вхідні дані",
+    "gasFee": "Плата за газ",
+    "requestTx": "Запит на надсилання транзакції",
+    "message": "повідомлення",
+    "requestSignMessage": "Запит підпису повідомлення",
+    "noDecrypt": "Немає дозволу на розшифровку.",
+    "uponRequest": "Dapp може вимагати розшифрувати ваш запис.",
+    "autoDecrypt": "Dapp може розшифрувати запис без запиту.",
+    "onChainHistory": "Dapp може отримати доступ до вашої історії в мережі."
+  },
+  "Currency": {
+    "title": "Валюта"
+  },
+  "About": {
+    "title": "про",
+    "sender": "Відправник",
+    "upgrade": "Оновлення",
+    "download": "Завантажити",
+    "noUpdate": "Оновлення не потрібне",
+    "privacyPolicy": "<Політика конфіденційності>",
+    "userAgreement": "<Угода користувача>"
   }
 }

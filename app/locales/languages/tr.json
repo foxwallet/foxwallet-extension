@@ -111,7 +111,8 @@
     "transferMethod": "Aktarım Yöntemi",
     "selectTransferMethod": "Aktarım Yöntemini Seçin",
     "privateRecord": "Özel Kayıt",
-    "gasFee": "Gaz Ücreti"
+    "gasFee": "Gaz Ücreti",
+    "publicBalance": "Kamu dengesi"
   },
   "PrivateKey": {
     "title": "Özel anahtar",
@@ -124,9 +125,55 @@
     "walletAddr": "Cüzdan Adresi"
   },
   "Setting": {
-    "title": "Ayar"
+    "title": "Ayar",
+    "guide": "Rehber",
+    "community": "Toplum",
+    "securityTips": "Güvenlik İpuçları",
+    "settings": "Ayarlar"
   },
   "Error": {
     "invalidPassword": "Geçersiz şifre"
+  },
+  "TokenDetail": {
+    "title": "Jeton Detayı",
+    "balance": "Denge",
+    "tx_records": "İşlem Kayıtları",
+    "empty_tx": "İşlem kaydı yok"
+  },
+  "Language": {
+    "title": "Dil"
+  },
+  "Dapp": {
+    "requestConnect": "Bağlantı iste",
+    "requestDetail": "Ayrıntı talep et",
+    "network": "Ağ",
+    "permission": "İzin",
+    "program": "programı",
+    "programs": "Programlar",
+    "permissionTip": "Bu dapp'a güveniyorum ve zincir üstü geçmişime erişmesine izin veriyorum.",
+    "account": "Hesap",
+    "requestDeployment": "Dağıtım iste",
+    "content": "İçerik",
+    "inputs": "Girişler",
+    "gasFee": "Gaz Ücreti",
+    "requestTx": "Gönderme işlemini talep et",
+    "message": "İleti",
+    "requestSignMessage": "İmza mesajı iste",
+    "noDecrypt": "Şifre çözme izni yok.",
+    "uponRequest": "Dapp, kaydınızın şifresinin çözülmesini talep edebilir.",
+    "autoDecrypt": "Dapp, istek olmadan kaydın şifresini çözebilir.",
+    "onChainHistory": "Dapp, zincir üzerindeki geçmişinize erişebilir."
+  },
+  "Currency": {
+    "title": "Para birimi"
+  },
+  "About": {
+    "title": "Hakkında",
+    "sender": "Gönderen",
+    "upgrade": "Güncelleme",
+    "download": "İndirmek",
+    "noUpdate": "Güncelleme gerekmez",
+    "privacyPolicy": "<Gizlilik Politikası>",
+    "userAgreement": "<Kullanıcı Sözleşmesi>"
   }
 }

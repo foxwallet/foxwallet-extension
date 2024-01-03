@@ -111,7 +111,8 @@
     "transferMethod": "स्थानांतरण विधि",
     "selectTransferMethod": "स्थानांतरण विधि का चयन करें",
     "privateRecord": "निजी रिकॉर्ड",
-    "gasFee": "गैस शुल्क"
+    "gasFee": "गैस शुल्क",
+    "publicBalance": "सार्वजनिक संतुलन"
   },
   "PrivateKey": {
     "title": "निजी चाबी",
@@ -124,9 +125,55 @@
     "walletAddr": "बटुआ पता"
   },
   "Setting": {
-    "title": "सेटिंग"
+    "title": "सेटिंग",
+    "guide": "मार्गदर्शक",
+    "community": "समुदाय",
+    "securityTips": "सुरक्षा युक्तियाँ",
+    "settings": "समायोजन"
   },
   "Error": {
     "invalidPassword": "अवैध पासवर्ड"
+  },
+  "TokenDetail": {
+    "title": "टोकन विवरण",
+    "balance": "संतुलन",
+    "tx_records": "लेन-देन रिकार्ड",
+    "empty_tx": "कोई लेन-देन रिकॉर्ड नहीं"
+  },
+  "Language": {
+    "title": "भाषा"
+  },
+  "Dapp": {
+    "requestConnect": "कनेक्शन का अनुरोध करें",
+    "requestDetail": "विवरण का अनुरोध करें",
+    "network": "नेटवर्क",
+    "permission": "अनुमति",
+    "program": "कार्यक्रम",
+    "programs": "कार्यक्रमों",
+    "permissionTip": "मैं इस डैप पर भरोसा करता हूं, और इसे मेरे ऑन-चेन इतिहास तक पहुंचने की अनुमति देता हूं।",
+    "account": "खाता",
+    "requestDeployment": "तैनाती का अनुरोध करें",
+    "content": "सामग्री",
+    "inputs": "इनपुट",
+    "gasFee": "गैस शुल्क",
+    "requestTx": "लेन-देन भेजने का अनुरोध करें",
+    "message": "संदेश",
+    "requestSignMessage": "संकेत संदेश का अनुरोध करें",
+    "noDecrypt": "कोई डिक्रिप्ट अनुमति नहीं.",
+    "uponRequest": "Dapp आपके रिकॉर्ड को डिक्रिप्ट करने का अनुरोध कर सकता है।",
+    "autoDecrypt": "Dapp बिना अनुरोध के रिकॉर्ड को डिक्रिप्ट कर सकता है।",
+    "onChainHistory": "डैप आपके ऑन-चेन इतिहास तक पहुंच सकता है।"
+  },
+  "Currency": {
+    "title": "मुद्रा"
+  },
+  "About": {
+    "title": "के बारे में",
+    "sender": "प्रेषक",
+    "upgrade": "उन्नत करना",
+    "download": "डाउनलोड करना",
+    "noUpdate": "किसी अद्यतन की आवश्यकता नहीं है",
+    "privacyPolicy": "<गोपनीयता नीति>",
+    "userAgreement": "<उपयोगकर्ता अनुबंध>"
   }
 }
