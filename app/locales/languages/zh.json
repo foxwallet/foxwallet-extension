@@ -111,6 +111,7 @@
     "transferMethod": "转账方式",
     "selectTransferMethod": "选择转账方式",
     "privateRecord": "隐私记录",
+    "publicBalance": "公共余额",
     "gasFee": "手续费"
   },
   "PrivateKey": {
@@ -118,8 +119,8 @@
     "enterPlaceholder": "输入私钥"
   },
   "Receive": {
-    "title": "收到",
-    "scanToTransfer": "扫描传输",
+    "title": "接收",
+    "scanToTransfer": "扫描转账",
     "onlyTips": "仅支持ALEO相关资产",
     "walletAddr": "钱包地址"
   },
