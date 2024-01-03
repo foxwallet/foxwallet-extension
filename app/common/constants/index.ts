@@ -19,3 +19,6 @@ export const FOX_DAPP_REQUEST = "fox_dapp_request";
 export const FOX_DAPP_RESP = "fox_dapp_response";
 
 export const DAPP_CONNECTION_EXPIRE_TIME = 1000 * 60 * 30;
+
+export const ALE0_EXPOLER_TRANSACTION_URL =
+  "https://explorer.aleo.org/transaction";

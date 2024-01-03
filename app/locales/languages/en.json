@@ -117,6 +117,12 @@
     "onlyTips": "Only support ALEO related assets",
     "walletAddr": "Wallet Address"
   },
+  "TokenDetail": {
+    "title": "Token Detail",
+    "balance": "Balance",
+    "tx_records": "Transaction Records",
+    "empty_tx": "No transaction records"
+  },
   "Setting": {
     "title": "Setting"
   },

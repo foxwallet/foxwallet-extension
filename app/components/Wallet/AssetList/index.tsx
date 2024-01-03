@@ -5,12 +5,18 @@ import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { useCoinService } from "@/hooks/useCoinService";
 import { useBalance } from "@/hooks/useBalance";
 import { useNavigate } from "react-router-dom";
+import { useCallback } from "react";
 
 export const AssetList = () => {
   const navigate = useNavigate();
   const { selectedAccount, uniqueId } = useCurrAccount();
   const { nativeCurrency } = useCoinService(uniqueId);
   const { balance } = useBalance(uniqueId, selectedAccount.address, 4000);
+
+  const onTokenDetail = useCallback(() => {
+    // need to be modified when adapt for multi-chain
+    navigate(`/token_detail/${uniqueId}`);
+  }, [navigate, uniqueId]);
 
   return (
     <TabPanel>
@@ -22,7 +28,7 @@ export const AssetList = () => {
         align={"center"}
         justify={"space-between"}
         _hover={{ background: "#F5F5F5" }}
-        onClick={() => navigate("/token_detail")}
+        onClick={onTokenDetail}
       >
         <Flex align={"center"}>
           <IconAleo />

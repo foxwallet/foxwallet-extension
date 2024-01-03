@@ -6,6 +6,7 @@ import { useCurrWallet, useWallets } from "@/hooks/useWallets";
 import {
   DisplayAccount,
   DisplayWallet,
+  SelectedAccount,
 } from "@/scripts/background/store/vault/types/keyring";
 import { useTranslation } from "react-i18next";
 import { IconCheckLineBlack } from "@/components/Custom/Icon";
@@ -94,17 +95,23 @@ function ManageWalletScreen() {
 
   const onSelectWallet = useCallback(
     (wallet: DisplayWallet) => {
-      const account: DisplayAccount = wallet.accountsMap[CoinType.ALEO][0];
-      dispatch.account.setSelectedAccount({
-        selectedAccount: {
-          ...account,
-          walletId: wallet.walletId,
-          coinType: CoinType.ALEO,
-        },
-      });
+      if (wallet.walletId !== selectedWallet.walletId) {
+        const account: DisplayAccount | undefined = (
+          wallet.accountsMap[CoinType.ALEO] || []
+        ).find((a) => !a.hide);
+
+        if (!account) return; // will not happen
+        dispatch.account.setSelectedAccount({
+          selectedAccount: {
+            ...account,
+            walletId: wallet.walletId,
+            coinType: CoinType.ALEO,
+          },
+        });
+      }
       navigate(-1);
     },
-    [dispatch.account],
+    [dispatch.account, navigate],
   );
 
   const onCheckAccounts = useCallback((wallet: DisplayWallet) => {
