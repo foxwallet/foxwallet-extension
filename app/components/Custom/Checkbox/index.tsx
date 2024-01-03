@@ -25,7 +25,7 @@ export function BaseCheckbox(props: CheckboxProps) {
       }}
       cursor={"pointer"}
     >
-      <Box w="4" h="4" mr="1">
+      <Box w="4" h="4" mr="2">
         <Box
           w="4"
           h="4"

@@ -1,4 +1,8 @@
 import { ERROR_CODE } from "@/common/types/error";
+import { IconFoxWallet, IconLogo } from "@/components/Custom/Icon";
+import { ResponsiveFlex } from "@/components/Custom/ResponsiveFlex";
+import { AccountInfo } from "@/components/Dapp/AccountInfo";
+import { DappInfo } from "@/components/Dapp/DappInfo";
 import { TokenNum } from "@/components/Wallet/TokenNum";
 import { useBalance } from "@/hooks/useBalance";
 import { useClient } from "@/hooks/useClient";
@@ -15,6 +19,7 @@ import {
 } from "core/coins/ALEO/types/History";
 import { AleoTxStatus } from "core/coins/ALEO/types/Tranaction";
 import { useCallback, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 
 function DeploymentScreen() {
@@ -23,19 +28,44 @@ function DeploymentScreen() {
   const { requestId } = useParams();
   const { popupServerClient } = useClient();
   const { dappRequest, loading } = useDappRequest(requestId);
+  const { t } = useTranslation();
 
   const dappRequestInfo = useMemo(() => {
     if (!dappRequest) {
       return null;
     }
-    const { id, type, siteInfo, payload } = dappRequest;
+    const { payload } = dappRequest;
+    const { programId, program, chainId } = payload;
     return (
-      <Flex direction={"column"}>
-        <Flex>{JSON.stringify(siteInfo)}</Flex>
-        <Flex>{JSON.stringify(payload)}</Flex>
+      <Flex
+        direction={"column"}
+        alignSelf={"stretch"}
+        borderRadius={"lg"}
+        borderStyle={"solid"}
+        borderWidth={"1px"}
+        borderColor={"gray.50"}
+        flex={1}
+        maxH={200}
+        overflowY={"auto"}
+        p={2}
+      >
+        <Flex justify={"space-between"}>
+          <Text>{t("Dapp:network")}</Text>
+          <Text>{chainId}</Text>
+        </Flex>
+        <Flex justify={"space-between"}>
+          <Text>{t("Dapp:program")}</Text>
+          <Text maxW={"70%"} wordBreak={"break-all"}>
+            {programId}
+          </Text>
+        </Flex>
+        <Flex justify={"space-between"}>
+          <Text>{t("Dapp:content")}</Text>
+          <Text maxW={"70%"}>{program}</Text>
+        </Flex>
       </Flex>
     );
-  }, [dappRequest]);
+  }, [dappRequest, t]);
 
   const onConfirm = useCallback(() => {
     if (requestId && selectedAccount?.address) {
@@ -56,12 +86,57 @@ function DeploymentScreen() {
 
   return (
     <Content>
-      <Flex>Deployment</Flex>
-      <Flex>{requestId}</Flex>
-      <Flex>address: {selectedAccount?.address}</Flex>
-      {dappRequestInfo}
-      <Button onClick={onConfirm}>Confrim</Button>
-      <Button onClick={onCancel}>Cancel</Button>
+      <ResponsiveFlex
+        alignSelf={"center"}
+        align={"center"}
+        flexDir={"column"}
+        flex={1}
+      >
+        <Flex
+          justify={"center"}
+          align={"center"}
+          mb={3}
+          alignSelf={"flex-start"}
+        >
+          <IconLogo mr={2} />
+          <IconFoxWallet />
+        </Flex>
+        {!!dappRequest?.siteInfo && (
+          <DappInfo siteInfo={dappRequest.siteInfo} />
+        )}
+        <Text mt={3} mb={3}>
+          {t("Dapp:requestDeployment")}
+        </Text>
+        <AccountInfo account={selectedAccount} />
+        <Text mt={3} mb={3}>
+          {t("Dapp:requestDetail")}
+        </Text>
+        {dappRequestInfo}
+        <Flex
+          mt={3}
+          position={"fixed"}
+          left={5}
+          right={5}
+          bottom={5}
+          justify={"center"}
+        >
+          <ResponsiveFlex flexDir={"column"}>
+            <Flex alignSelf={"stretch"}>
+              <Button onClick={onConfirm} flex={1} mr={"2"}>
+                {t("Common:confirm")}
+              </Button>
+              <Button
+                onClick={onCancel}
+                flex={1}
+                colorScheme="secondary"
+                ml={2}
+              >
+                {t("Common:cancel")}
+              </Button>
+            </Flex>
+          </ResponsiveFlex>
+        </Flex>
+      </ResponsiveFlex>
     </Content>
   );
 }

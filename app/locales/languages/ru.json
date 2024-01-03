@@ -111,7 +111,8 @@
     "transferMethod": "Метод передачи",
     "selectTransferMethod": "Выберите метод передачи",
     "privateRecord": "Частная запись",
-    "gasFee": "Плата за газ"
+    "gasFee": "Плата за газ",
+    "publicBalance": "Государственный баланс"
   },
   "PrivateKey": {
     "title": "Закрытый ключ",
@@ -124,9 +125,55 @@
     "walletAddr": "Адрес кошелька"
   },
   "Setting": {
-    "title": "Параметр"
+    "title": "Параметр",
+    "guide": "Гид",
+    "community": "Сообщество",
+    "securityTips": "Советы по безопасности",
+    "settings": "Настройки"
   },
   "Error": {
     "invalidPassword": "Неверный пароль"
+  },
+  "TokenDetail": {
+    "title": "Детали токена",
+    "balance": "Баланс",
+    "tx_records": "Записи транзакций",
+    "empty_tx": "Нет записей о транзакциях"
+  },
+  "Language": {
+    "title": "Язык"
+  },
+  "Dapp": {
+    "requestConnect": "Запросить соединение",
+    "requestDetail": "Запросить детали",
+    "network": "Сеть",
+    "permission": "Разрешение",
+    "program": "Программа",
+    "programs": "Программы",
+    "permissionTip": "Я доверяю этому децентрализованному приложению и разрешаю ему доступ к моей истории в сети.",
+    "account": "Счет",
+    "requestDeployment": "Запросить развертывание",
+    "content": "Содержание",
+    "inputs": "Входы",
+    "gasFee": "Плата за газ",
+    "requestTx": "Запросить отправку транзакции",
+    "message": "Сообщение",
+    "requestSignMessage": "Запросить подписанное сообщение",
+    "noDecrypt": "Нет разрешения на расшифровку.",
+    "uponRequest": "Dapp может запросить расшифровку вашей записи.",
+    "autoDecrypt": "Dapp может расшифровать запись без запроса.",
+    "onChainHistory": "Dapp может получить доступ к вашей истории в сети."
+  },
+  "Currency": {
+    "title": "Валюта"
+  },
+  "About": {
+    "title": "О",
+    "sender": "Отправитель",
+    "upgrade": "Обновление",
+    "download": "Скачать",
+    "noUpdate": "Обновление не требуется",
+    "privacyPolicy": "<Политика конфиденциальности>",
+    "userAgreement": "<Пользовательское соглашение>"
   }
 }

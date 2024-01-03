@@ -58,6 +58,7 @@ import Youtube from "@/common/assets/image/icon_youtube.svg";
 import Language from "@/common/assets/image/icon_language.svg";
 import Currency from "@/common/assets/image/icon_currency.svg";
 import Info from "@/common/assets/image/icon_info.svg";
+import Web from "@/common/assets/image/icon_web.svg";
 
 export const IconCheckCircle = chakra(CheckCircle);
 
@@ -127,3 +128,4 @@ export const IconYoutube = chakra(Youtube);
 export const IconLanguage = chakra(Language);
 export const IconCurrency = chakra(Currency);
 export const IconInfo = chakra(Info);
+export const IconWeb = chakra(Web);
