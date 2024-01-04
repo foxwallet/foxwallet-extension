@@ -3,14 +3,21 @@ import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { useSyncProgress } from "@/hooks/useSyncProgress";
 import { Flex, Text, keyframes } from "@chakra-ui/react";
 import { useCallback, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 const rotateAnimation = keyframes`
   from { transform: rotate(0deg) }
   to { transform: rotate(360deg) }
 `;
 
-const RescanButton = () => {
+interface RescanButtonProps {
+  paused: boolean;
+}
+
+const RescanButton = (props: RescanButtonProps) => {
+  const { paused } = props;
   const { selectedAccount, uniqueId } = useCurrAccount();
+  const { t } = useTranslation();
   const { progress, error, getProgress } = useSyncProgress(
     uniqueId,
     selectedAccount.address,
@@ -41,8 +48,8 @@ const RescanButton = () => {
       ) : (
         <IconRescan />
       )}
-      <Text ml={1} fontSize={10} color={"black"}>
-        {progress}%
+      <Text ml={1} fontSize={10}>
+        {paused ? t("Common:paused") : `${progress ?? 0}%`}
       </Text>
     </Flex>
   );
