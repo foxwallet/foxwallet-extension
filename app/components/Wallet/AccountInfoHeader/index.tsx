@@ -86,12 +86,7 @@ export const AccountInfoHeader = () => {
       borderColor={"#E6E8EC"}
     >
       <Flex justify={"space-between"} align={"center"}>
-        <Flex
-          onClick={onChangeWallet}
-          as={"button"}
-          direction={"row"}
-          align={"center"}
-        >
+        <Flex onClick={onChangeWallet} direction={"row"} align={"center"}>
           <IconLogo w={8} h={8} mr={1} />
           <Flex direction={"column"} align={"flex-start"}>
             <Text fontSize={12} lineHeight={4} color={"#000"} fontWeight={500}>

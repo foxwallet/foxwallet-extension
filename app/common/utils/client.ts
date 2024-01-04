@@ -216,8 +216,8 @@ export class PopupServerClient implements IClient, IPopupServer {
     return await this.#send("getHDMnemonic", walletId);
   }
 
-  async deleteHDWallet(walletId: string): Promise<void> {
-    return await this.#send("deleteHDWallet", walletId);
+  async deleteWallet(walletId: string): Promise<DisplayKeyring> {
+    return await this.#send("deleteWallet", walletId);
   }
 
   async getPrivateKey(params: GetPrivateKeyProps): Promise<string> {

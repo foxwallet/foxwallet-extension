@@ -34,15 +34,6 @@ const CreateMnemonicScreen = () => {
     });
     await dispatch.account.resyncAllWalletsToStore();
 
-    const coinType = CoinType.ALEO;
-    const account = wallet.accountsMap[coinType][0];
-    await dispatch.account.setSelectedAccount({
-      selectedAccount: {
-        walletId: wallet.walletId,
-        coinType,
-        ...account,
-      },
-    });
     setMnemonic(wallet.mnemonic ?? "");
   }, []);
 
@@ -54,16 +45,6 @@ const CreateMnemonicScreen = () => {
       revealMnemonic: true,
     });
     await dispatch.account.resyncAllWalletsToStore();
-
-    const coinType = CoinType.ALEO;
-    const account = wallet.accountsMap[coinType][0];
-    await dispatch.account.setSelectedAccount({
-      selectedAccount: {
-        walletId: wallet.walletId,
-        coinType,
-        ...account,
-      },
-    });
     setMnemonic(wallet.mnemonic ?? "");
   }, []);
 

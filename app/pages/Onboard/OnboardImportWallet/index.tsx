@@ -51,15 +51,6 @@ export default function OnboardImportWallet() {
                     walletName,
                     mnemonic,
                   });
-                  const coinType = CoinType.ALEO;
-                  const account = wallet.accountsMap[coinType][0];
-                  await dispatch.account.setSelectedAccount({
-                    selectedAccount: {
-                      walletId: wallet.walletId,
-                      coinType,
-                      ...account,
-                    },
-                  });
                   await dispatch.account.resyncAllWalletsToStore();
                   dispatch.account.changeWalletBackupedMnemonic({
                     walletId: wallet.walletId,

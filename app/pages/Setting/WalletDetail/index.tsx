@@ -238,8 +238,12 @@ const WalletDetailScreen = () => {
   const onDeleteWallet = useCallback(async () => {
     try {
       if (!walletInfo) return;
-      await deleteWallet(walletInfo.walletId);
-      navigate(-1);
+      const newWallets = await deleteWallet(walletInfo.walletId);
+      if (newWallets.length === 0) {
+        navigate("/onboard/home");
+      } else {
+        navigate(-1);
+      }
     } catch (e) {
       console.warn("delete wallet error " + e);
     }

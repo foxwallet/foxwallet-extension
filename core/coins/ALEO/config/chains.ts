@@ -34,3 +34,7 @@ export const ALEO_CHAIN_CONFIGS: { [key in string]: AleoConfig } = {
     testnet: true,
   },
 };
+
+export const ALEO_CHAIN_IDS = Object.values(ALEO_CHAIN_CONFIGS).map(
+  (c) => c.chainId,
+);

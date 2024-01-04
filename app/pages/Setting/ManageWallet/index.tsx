@@ -55,7 +55,6 @@ const WalletItem: React.FC<WalletItemProps> = ({
         flex={1}
         minH={"52px"}
         align={"center"}
-        as={"button"}
         onClick={handleSelected}
       >
         {isEditing && (
@@ -81,7 +80,7 @@ function ManageWalletScreen() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { selectedWallet } = useCurrWallet();
-  const { flattenWalletList, deleteWallet } = useWallets();
+  const { walletList, deleteWallet } = useWallets();
   const dispatch = usePopupDispatch();
   const { isOpen, onToggle } = useDisclosure();
 
@@ -110,12 +109,15 @@ function ManageWalletScreen() {
   const onDeleteWallet = useCallback(
     async (wallet: DisplayWallet) => {
       try {
-        await deleteWallet(wallet.walletId);
+        const newWallets = await deleteWallet(wallet.walletId);
+        if (newWallets.length === 0) {
+          navigate("/onboard/home");
+        }
       } catch (e) {
         console.warn("delete wallet error " + e);
       }
     },
-    [deleteWallet],
+    [deleteWallet, navigate],
   );
 
   const renderWalletItem = useCallback(
@@ -153,7 +155,7 @@ function ManageWalletScreen() {
     >
       <Flex direction={"column"} flex={1} px={5} pb={4}>
         <Flex direction={"column"} maxH={470} overflowY="auto">
-          {flattenWalletList.map(renderWalletItem)}
+          {walletList.map(renderWalletItem)}
         </Flex>
         <Button
           position={"absolute"}

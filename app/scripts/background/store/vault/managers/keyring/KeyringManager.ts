@@ -520,7 +520,7 @@ export class KeyringManager {
     return "";
   }
 
-  async deleteHDWallet(walletId: string): Promise<void> {
+  async deleteWallet(walletId: string): Promise<void> {
     const keyring = await this.#storage.getKeyring();
     if (!keyring) {
       throw new Error("Empty keyring");
@@ -529,6 +529,6 @@ export class KeyringManager {
     if (!token) {
       throw new Error(ERROR_CODE.NOT_AUTH);
     }
-    return await this.#storage.deleteHDWallet(walletId);
+    return await this.#storage.deleteWallet(walletId);
   }
 }

@@ -1,14 +1,13 @@
 import { useClient } from "./useClient";
-import { useCallback, useMemo } from "react";
-import useSWR from "swr";
+import { useCallback, useEffect, useMemo } from "react";
 import { CoinType } from "core/types";
-import { WalletType } from "@/scripts/background/store/vault/types/keyring";
 import { usePopupDispatch, usePopupSelector } from "./useStore";
 import { isEqual } from "lodash";
 import { useCoinBasic } from "./useCoinService";
 import { showPasswordVerifyDrawer } from "@/components/Custom/PasswordVerifyDrawer";
 import { showDeleteWalletWarningDialog } from "@/components/Wallet/DeleteWalletWarningDialog";
 import { useNavigate } from "react-router-dom";
+import { useCurrAccount } from "./useCurrAccount";
 
 export const useWallets = () => {
   const { popupServerClient } = useClient();
@@ -23,34 +22,13 @@ export const useWallets = () => {
   );
   const dispatch = usePopupDispatch();
 
-  const key = `/wallets`;
-  const fetchWallets = useCallback(async () => {
+  const walletList = useMemo(() => {
+    return Object.values(allWalletInfo);
+  }, [allWalletInfo]);
+
+  useEffect(() => {
     dispatch.account.resyncAllWalletsToStore();
-    return await popupServerClient.getAllWallet();
-  }, [popupServerClient, dispatch.account]);
-
-  const {
-    data: originWallets,
-    error,
-    mutate: getWallets,
-    isLoading: loadingWallets,
-  } = useSWR(key, fetchWallets);
-
-  const flattenWalletList = useMemo(() => {
-    if (!originWallets) {
-      return [];
-    }
-
-    const hdWallets = originWallets[WalletType.HD] ?? [];
-    const simpleWallets = originWallets[WalletType.SIMPLE] ?? [];
-    const allWallets = [...hdWallets, ...simpleWallets];
-    return allWallets
-      .map((w) => ({
-        ...w,
-        ...(allWalletInfo[w.walletId] || {}),
-      }))
-      .filter((w) => !!allWalletInfo[w.walletId]); // must fliter wallets not in allWalletInfo (has been deleted)
-  }, [originWallets, allWalletInfo]);
+  }, [dispatch]);
 
   const addAccount = useCallback(
     async (walletId: string, coinType: CoinType, accountId: string) => {
@@ -60,7 +38,7 @@ export const useWallets = () => {
           coinType,
           accountId,
         });
-        dispatch.account.resyncAllWalletsToStore();
+        await dispatch.account.resyncAllWalletsToStore();
       } catch (e) {
         console.warn("add account error ", e);
       }
@@ -80,60 +58,14 @@ export const useWallets = () => {
         return Promise.reject("Cancel deleting!");
       }
 
-      // if there is more than 1 wallet
-      if (flattenWalletList.length > 1) {
-        await dispatch.account.deleteWallet(walletId);
-
-        if (selectedAccount.walletId !== walletId) {
-          return Promise.resolve();
-        }
-
-        // using the first wallet in the list that does not contain the current wallet
-        const nextWallet = flattenWalletList.filter(
-          (w) => w.walletId !== selectedAccount.walletId,
-        )[0];
-        const nextAccount = (nextWallet.accountsMap[CoinType.ALEO] || []).find(
-          (account) => !account.hide,
-        );
-        if (!nextAccount) {
-          throw new Error("Wallet doesn't has any accounts");
-        }
-
-        dispatch.account.setSelectedAccount({
-          selectedAccount: {
-            ...nextAccount,
-            walletId: nextWallet.walletId,
-            coinType: CoinType.ALEO,
-          },
-        });
-
-        return Promise.resolve();
-      } else {
-        await dispatch.account.deleteWallet(walletId);
-        // clear data & reset to /onboard/home
-        dispatch.account.setSelectedAccount({
-          selectedAccount: {
-            accountId: "",
-            accountName: "",
-            address: "",
-            index: 0,
-            walletId: "",
-            coinType: CoinType.ALEO,
-            hide: false,
-          },
-        });
-        navigate("/onboard/home");
-      }
+      const newWallets = await dispatch.account.deleteWallet(walletId);
+      return newWallets;
     },
-    [dispatch.account, navigate, flattenWalletList, selectedAccount],
+    [dispatch.account, navigate, selectedAccount],
   );
 
   return {
-    originWallets,
-    flattenWalletList,
-    error,
-    getWallets,
-    loadingWallets,
+    walletList,
     addAccount,
     deleteWallet,
   };
@@ -142,19 +74,15 @@ export const useWallets = () => {
 export const useCurrWallet = () => {
   const { popupServerClient } = useClient();
 
-  const { selectedAccount, uniqueId, allWalletInfo } = usePopupSelector(
-    (state) => ({
-      selectedAccount: state.account.selectedAccount,
-      uniqueId: state.account.selectedUniqueId,
-      allWalletInfo: state.account.allWalletInfo,
-    }),
-    isEqual,
-  );
+  const { selectedAccount, uniqueId } = useCurrAccount();
+
+  const { walletList } = useWallets();
+
   const coinBasic = useCoinBasic(uniqueId);
 
   const selectedWallet = useMemo(
-    () => allWalletInfo[selectedAccount.walletId],
-    [allWalletInfo, selectedAccount.walletId],
+    () => walletList.find((item) => item.walletId === selectedAccount.walletId),
+    [walletList, selectedAccount.walletId],
   );
 
   const accountsInWallet = useMemo(() => {

@@ -288,13 +288,35 @@ export class VaultStorage {
     });
   }
 
-  async deleteHDWallet(walletId: string): Promise<void> {
+  async deleteWallet(walletId: string): Promise<void> {
     const keyring = (await this.getKeyring()) || {};
     const hdWallets = keyring[WalletType.HD] || [];
-    const newHDWallets = hdWallets.filter((w) => w.walletId !== walletId);
+    const simpleWallets = keyring[WalletType.SIMPLE] || [];
+    const newHDWallets = [...hdWallets];
+    const newSimpleWallets = [...simpleWallets];
+    const index = newHDWallets.findIndex((w) => w.walletId === walletId);
+    if (index > -1) {
+      const wallet = newHDWallets[index];
+      const aleoAccount = wallet.accountsMap[CoinType.ALEO];
+      for (let account of aleoAccount) {
+        await this.#aleoStorage.removeAccount(account.address);
+      }
+      newHDWallets.splice(index, 1);
+    } else {
+      const index = newSimpleWallets.findIndex((w) => w.walletId === walletId);
+      if (index > -1) {
+        const wallet = newSimpleWallets[index];
+        const aleoAccount = wallet.accountsMap[CoinType.ALEO];
+        for (let account of aleoAccount) {
+          await this.#aleoStorage.removeAccount(account.address);
+        }
+        newSimpleWallets.splice(index, 1);
+      }
+    }
 
     return await this.setKeyring({
       ...keyring,
+      [WalletType.SIMPLE]: newSimpleWallets,
       [WalletType.HD]: newHDWallets,
     });
   }
