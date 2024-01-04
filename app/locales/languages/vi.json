@@ -169,11 +169,11 @@
   },
   "About": {
     "title": "Về",
-    "sender": "Người gửi",
     "upgrade": "Nâng cấp",
     "download": "Tải xuống",
     "noUpdate": "Không cần cập nhật",
     "privacyPolicy": "<Chính sách quyền riêng tư>",
-    "userAgreement": "<Thỏa thuận người dùng>"
+    "userAgreement": "<Thỏa thuận người dùng>",
+    "version": "Phiên bản"
   }
 }

@@ -18,7 +18,7 @@ import { useNavigate } from "react-router-dom";
 const SettingsScreen = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { currLanguage, currCurrency } = usePopupSelector(
+  const { currLanguage } = usePopupSelector(
     (state) => ({
       currLanguage: state.setting.language,
       currCurrency: state.setting.currency,
@@ -54,12 +54,12 @@ const SettingsScreen = () => {
           icon={<IconLanguage w={4} h={4} />}
           onPress={onLanguage}
         />
-        <SettingItem
+        {/* <SettingItem
           title={t("Currency:title")}
           subtitle={CURRENCY[currCurrency].symbol}
           icon={<IconCurrency w={4} h={4} />}
           onPress={onCurrency}
-        />
+        /> */}
         <SettingItem
           title={t("About:title")}
           icon={<IconInfo w={4} h={4} />}

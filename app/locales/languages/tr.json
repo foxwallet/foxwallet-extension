@@ -169,11 +169,11 @@
   },
   "About": {
     "title": "Hakkında",
-    "sender": "Gönderen",
     "upgrade": "Güncelleme",
     "download": "İndirmek",
     "noUpdate": "Güncelleme gerekmez",
     "privacyPolicy": "<Gizlilik Politikası>",
-    "userAgreement": "<Kullanıcı Sözleşmesi>"
+    "userAgreement": "<Kullanıcı Sözleşmesi>",
+    "version": "Sürüm"
   }
 }

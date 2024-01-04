@@ -68,17 +68,16 @@ export const SettingTab = () => {
         w={"100%"}
       >
         <Flex align={"center"}>
-          <IconLogo w={8} h={8} mr={1} />
+          <IconLogo w={8} h={8} mr={2} />
           <Flex direction={"column"} align={"flex-start"}>
-            <Text fontSize={14} color={"#000"} fontWeight={"bold"}>
+            <Text fontSize={14} fontWeight={"bold"}>
               {selectedWallet?.walletName}
             </Text>
-            <Box fontSize={11} color={"#777E90"} fontWeight={500} maxW={200}>
-              <MiddleEllipsisText text={selectedAccount.address} />
+            <Box fontSize={11} color={"gray.500"} fontWeight={500}>
+              <MiddleEllipsisText text={selectedAccount.address} width={150} />
             </Box>
           </Flex>
         </Flex>
-        <IconChevronRight w={18} h={18} />
       </Flex>
       <Content>
         <SettingItem
