@@ -41,12 +41,14 @@ ReactDOM.createRoot(
   document.getElementById("modal-root") as HTMLElement,
 ).render(
   <StrictMode>
-    <ChakraBaseProvider theme={theme}>
-      <Provider store={store}>
-        <ViewPort>
-          <GlobalModal />
-        </ViewPort>
-      </Provider>
-    </ChakraBaseProvider>
+    <HashRouter>
+      <ChakraBaseProvider theme={theme}>
+        <Provider store={store}>
+          <ViewPort>
+            <GlobalModal />
+          </ViewPort>
+        </Provider>
+      </ChakraBaseProvider>
+    </HashRouter>
   </StrictMode>,
 );

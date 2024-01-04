@@ -1,5 +1,5 @@
 import { PageWithHeader } from "@/layouts/Page";
-import { Box, Button, Flex, Text, useDisclosure } from "@chakra-ui/react";
+import { Box, Button, Flex, Text } from "@chakra-ui/react";
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCurrWallet, useWallets } from "@/hooks/useWallets";
@@ -8,82 +8,89 @@ import {
   DisplayWallet,
 } from "@/scripts/background/store/vault/types/keyring";
 import { useTranslation } from "react-i18next";
-import {
-  IconCheckLineBlack,
-  IconDelete,
-  IconLogo,
-} from "@/components/Custom/Icon";
+import { IconCheckLineBlack } from "@/components/Custom/Icon";
+import { showEditWalletNameDrawer } from "@/components/Wallet/EditWalletNameDrawer";
 import { usePopupDispatch } from "@/hooks/useStore";
 import { CoinType } from "core/types";
 
 interface WalletItemProps {
   wallet: DisplayWallet;
   isSelected: boolean;
-  isEditing: boolean;
   onSelected: (wallet: DisplayWallet) => void;
-  onDelete: (wallet: DisplayWallet) => void;
+  onCheckAccounts: (wallet: DisplayWallet) => void;
 }
 const WalletItem: React.FC<WalletItemProps> = ({
   wallet,
   isSelected,
-  isEditing,
   onSelected,
-  onDelete,
+  onCheckAccounts,
 }) => {
-  const handleSelected = useCallback(() => {
-    if (isEditing) return;
-    onSelected(wallet);
-  }, [onSelected, wallet, isEditing]);
+  const { t } = useTranslation();
 
-  const handleDelete = useCallback(() => {
-    onDelete(wallet);
-  }, [onDelete, wallet]);
+  const handleSelected = useCallback(() => {
+    onSelected(wallet);
+  }, []);
+
+  const handleCheckAccounts = useCallback(() => {
+    onCheckAccounts(wallet);
+  }, [wallet, onCheckAccounts]);
 
   return (
     <Flex
       mt={2.5}
-      px={2.5}
       borderWidth={1}
       borderColor={isSelected ? "#000" : "#E6E8EC"}
       borderRadius={8}
       position={"relative"}
-      justify={"space-between"}
-      align={"center"}
     >
       <Flex
+        pl={2.5}
         pr={2}
         flex={1}
-        minH={"52px"}
+        minH={"38px"}
         align={"center"}
         as={"button"}
         onClick={handleSelected}
       >
-        {isEditing && (
-          <Box mr={2.5} as="button" onClick={handleDelete}>
-            <IconDelete w={18} h={18} />
-          </Box>
+        {isSelected ? (
+          <IconCheckLineBlack height={18} width={18} />
+        ) : (
+          <Box height={18} width={18} />
         )}
-        <IconLogo mr={2.5} h={30} w={30} />
-        <Text fontSize={13} fontWeight={500} align={"start"}>
+        <Text
+          ml={1}
+          fontSize={12}
+          fontWeight={500}
+          color={"#000"}
+          align={"start"}
+        >
           {wallet.walletName}
         </Text>
       </Flex>
-      {isSelected ? (
-        <IconCheckLineBlack height={18} width={18} />
-      ) : (
-        <Box height={18} width={18} />
-      )}
+      <Text
+        position={"absolute"}
+        right={2.5}
+        alignSelf={"center"}
+        fontSize={10}
+        color={"#777E90"}
+        as={"button"}
+        onClick={handleCheckAccounts}
+        px={0.5}
+        borderRadius={"4px"}
+        _hover={{ backgroundColor: "#F5F5F5" }}
+      >
+        {t("Wallet:Manage:checkAccounts")}
+      </Text>
     </Flex>
   );
 };
 
-function ManageWalletScreen() {
+function WalletListScreen() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { selectedWallet } = useCurrWallet();
-  const { flattenWalletList, deleteWallet } = useWallets();
+  const { flattenWalletList } = useWallets();
   const dispatch = usePopupDispatch();
-  const { isOpen, onToggle } = useDisclosure();
 
   const onSelectWallet = useCallback(
     (wallet: DisplayWallet) => {
@@ -107,16 +114,13 @@ function ManageWalletScreen() {
     [dispatch.account, navigate],
   );
 
-  const onDeleteWallet = useCallback(
-    async (wallet: DisplayWallet) => {
-      try {
-        await deleteWallet(wallet.walletId);
-      } catch (e) {
-        console.warn("delete wallet error " + e);
-      }
-    },
-    [deleteWallet],
-  );
+  const onCheckAccounts = useCallback((wallet: DisplayWallet) => {
+    navigate(`/wallet_detail/${wallet.walletId}`);
+  }, []);
+
+  const onEdit = useCallback(() => {
+    showEditWalletNameDrawer();
+  }, [showEditWalletNameDrawer]);
 
   const renderWalletItem = useCallback(
     (wallet: DisplayWallet, index: number) => {
@@ -126,28 +130,21 @@ function ManageWalletScreen() {
           key={`${wallet.walletId}${index}`}
           wallet={wallet}
           isSelected={isSelected}
-          isEditing={isOpen}
           onSelected={onSelectWallet}
-          onDelete={onDeleteWallet}
+          onCheckAccounts={onCheckAccounts}
         />
       );
     },
-    [selectedWallet?.walletId, isOpen],
+    [selectedWallet?.walletId],
   );
 
   return (
     <PageWithHeader
       enableBack
-      title={t("Wallet:Manage:title")}
+      title={t("Wallet:title")}
       rightIcon={
-        <Box
-          mr={2}
-          fontSize={12}
-          fontWeight={500}
-          as="button"
-          onClick={onToggle}
-        >
-          {isOpen ? t("Common:done") : t("Common:edit")}
+        <Box mr={2} fontSize={12} fontWeight={500} as="button" onClick={onEdit}>
+          {t("Common:edit")}
         </Box>
       }
     >
@@ -169,4 +166,4 @@ function ManageWalletScreen() {
   );
 }
 
-export default ManageWalletScreen;
+export default WalletListScreen;

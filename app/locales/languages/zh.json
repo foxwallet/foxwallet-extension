@@ -29,7 +29,7 @@
       "hide": "隐藏"
     },
     "Manage": {
-      "title": "钱包",
+      "title": "切换钱包",
       "addWallet": "添加钱包",
       "checkAccounts": "检查账户",
       "changeName": "更改钱包名称",

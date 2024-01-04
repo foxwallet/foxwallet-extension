@@ -43,7 +43,7 @@ const EditWalletNameDrawer = (props: Props) => {
         item.walletName === walletName &&
         walletName !== selectedWallet?.walletName,
     );
-  }, [flattenWalletList, walletName, selectedWallet.walletName]);
+  }, [flattenWalletList, walletName, selectedWallet?.walletName]);
 
   const isInvalidName = useMemo(() => {
     return !walletName || dupWalletName;

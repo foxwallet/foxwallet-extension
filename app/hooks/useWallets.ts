@@ -6,12 +6,19 @@ import { WalletType } from "@/scripts/background/store/vault/types/keyring";
 import { usePopupDispatch, usePopupSelector } from "./useStore";
 import { isEqual } from "lodash";
 import { useCoinBasic } from "./useCoinService";
+import { showPasswordVerifyDrawer } from "@/components/Custom/PasswordVerifyDrawer";
+import { showDeleteWalletWarningDialog } from "@/components/Wallet/DeleteWalletWarningDialog";
+import { useNavigate } from "react-router-dom";
 
 export const useWallets = () => {
   const { popupServerClient } = useClient();
+  const navigate = useNavigate();
 
-  const allWalletInfo = usePopupSelector(
-    (state) => state.account.allWalletInfo,
+  const { allWalletInfo, selectedAccount } = usePopupSelector(
+    (state) => ({
+      allWalletInfo: state.account.allWalletInfo,
+      selectedAccount: state.account.selectedAccount,
+    }),
     isEqual,
   );
   const dispatch = usePopupDispatch();
@@ -37,10 +44,12 @@ export const useWallets = () => {
     const hdWallets = originWallets[WalletType.HD] ?? [];
     const simpleWallets = originWallets[WalletType.SIMPLE] ?? [];
     const allWallets = [...hdWallets, ...simpleWallets];
-    return allWallets.map((w) => ({
-      ...w,
-      ...(allWalletInfo[w.walletId] || {}),
-    }));
+    return allWallets
+      .map((w) => ({
+        ...w,
+        ...(allWalletInfo[w.walletId] || {}),
+      }))
+      .filter((w) => !!allWalletInfo[w.walletId]); // must fliter wallets not in allWalletInfo (has been deleted)
   }, [originWallets, allWalletInfo]);
 
   const addAccount = useCallback(
@@ -59,6 +68,63 @@ export const useWallets = () => {
     [popupServerClient, dispatch.account],
   );
 
+  const deleteWallet = useCallback(
+    async (walletId: string) => {
+      const { confirmed: confirmedPass } = await showPasswordVerifyDrawer();
+      if (!confirmedPass) {
+        return Promise.reject("Password verify failed!");
+      }
+
+      const { confirmed } = await showDeleteWalletWarningDialog();
+      if (!confirmed) {
+        return Promise.reject("Cancel deleting!");
+      }
+
+      // if there is more than 1 wallet
+      if (flattenWalletList.length > 1) {
+        await dispatch.account.deleteWallet(walletId);
+
+        if (selectedAccount.walletId !== walletId) {
+          return Promise.resolve();
+        }
+
+        const nextWallet = flattenWalletList[0];
+        const nextAccount = (nextWallet.accountsMap[CoinType.ALEO] || []).find(
+          (account) => !account.hide,
+        );
+        if (!nextAccount) {
+          throw new Error("Wallet doesn't has any accounts");
+        }
+
+        dispatch.account.setSelectedAccount({
+          selectedAccount: {
+            ...nextAccount,
+            walletId: nextWallet.walletId,
+            coinType: CoinType.ALEO,
+          },
+        });
+
+        return Promise.resolve();
+      } else {
+        await dispatch.account.deleteWallet(walletId);
+        // clear data & reset to /onboard/home
+        dispatch.account.setSelectedAccount({
+          selectedAccount: {
+            accountId: "",
+            accountName: "",
+            address: "",
+            index: 0,
+            walletId: "",
+            coinType: CoinType.ALEO,
+            hide: false,
+          },
+        });
+        navigate("/onboard/home");
+      }
+    },
+    [dispatch.account, navigate, flattenWalletList, selectedAccount],
+  );
+
   return {
     originWallets,
     flattenWalletList,
@@ -66,6 +132,7 @@ export const useWallets = () => {
     getWallets,
     loadingWallets,
     addAccount,
+    deleteWallet,
   };
 };
 
