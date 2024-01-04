@@ -38,7 +38,8 @@
       "accountName": "Hesap adı",
       "accountNamePlaceholder": "Hesap adını girin",
       "dupAccountName": "Yinelenen hesap adı",
-      "delete": "Cüzdanı sil"
+      "delete": "Cüzdanı sil",
+      "deleteRemind": "Yalnızca çekirdek ifade veya özel anahtar kullanılarak geri yüklenebileceği için lütfen cüzdanın düzgün şekilde yedeklendiğinden emin olun."
     }
   },
   "Onboard": {
@@ -59,7 +60,10 @@
     "passwordPlaceholder": "En az 6 karakter",
     "confirmPasswordPlaceholder": "Şifreyi tekrar girin",
     "warning": "FoxWallet şifreyi saklamaz. Şifre unutulduğunda cüzdanı yalnızca anımsatıcı aracılığıyla geri yükleyebilirsiniz.",
-    "verify": "Şifreyi Doğrula"
+    "verify": "Şifreyi Doğrula",
+    "strengthRemind": "Şifre yeterince güçlü değilse cüzdan varlıklarının güvenliği tehlikeye girebilir.",
+    "change": "Değiştirmek",
+    "stillCreate": "Hala Oluştur"
   },
   "Mnemonic": {
     "backupTips1": "Anımsatıcı aşamayı görüntülemek için burayı tıklayın",
@@ -78,7 +82,12 @@
     "cancel": "İptal etmek",
     "next": "Sonraki",
     "edit": "Düzenlemek",
-    "more": "Daha"
+    "more": "Daha",
+    "done": "Tamamlamak",
+    "delete": "Silmek",
+    "warning": "Uyarı",
+    "copySuccess": "Başarıyı Kopyala!",
+    "paused": "Duraklatıldı"
   },
   "Send": {
     "title": "Göndermek",
@@ -134,7 +143,8 @@
     "guide": "Rehber",
     "community": "Toplum",
     "securityTips": "Güvenlik İpuçları",
-    "settings": "Ayarlar"
+    "settings": "Ayarlar",
+    "account": "Hesap"
   },
   "Error": {
     "invalidPassword": "Geçersiz şifre"

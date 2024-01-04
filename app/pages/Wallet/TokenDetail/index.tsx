@@ -13,7 +13,6 @@ import { PageWithHeader } from "@/layouts/Page";
 import { Box, Button, Divider, Flex, Text, VStack } from "@chakra-ui/react";
 import {
   AleoHistoryItem,
-  AleoHistoryType,
   AleoTxAddressType,
 } from "core/coins/ALEO/types/History";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
@@ -21,111 +20,62 @@ import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { AleoTxStatus } from "../../../../offscreen_transaction/src/types";
-import { parseU64 } from "../../../../offscreen_sync/helper";
 import dayjs from "dayjs";
 import browser from "webextension-polyfill";
 import { ALE0_EXPOLER_TRANSACTION_URL } from "@/common/constants";
 import { useTxHistory } from "@/hooks/useTxHistory";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 
-// const history: any[] = [
-//   {
-//     type: AleoHistoryType.LOCAL,
-//     localId: "localid1",
-//     txId: "at1g37atr7cuy35s2y4me2eu0h2r3u2xyhhcs8yryz2x8xhgd7klurqdqpluq",
-//     error: "",
-//     programId: "programId_mock-1",
-//     functionName: "send",
-//     inputs: [],
-//     timestamp: Date.now(),
-//     addressType: AleoTxAddressType.SEND,
-//     amount: "123.33",
-//     status: AleoTxStatus.COMPLETED,
-//   },
-//   {
-//     type: AleoHistoryType.LOCAL,
-//     localId: "localid1",
-//     txId: "at1g37atr7cuy35s2y4me2eu0h2r3u2xyhhcs8yryz2x8xhgd7klurqdqpluq",
-//     error: "",
-//     programId: "programId_mock-1",
-//     functionName: "send",
-//     inputs: [],
-//     timestamp: Date.now(),
-//     addressType: AleoTxAddressType.SEND,
-//     amount: "123",
-//     status: AleoTxStatus.COMPLETED,
-//   },
-//   {
-//     type: AleoHistoryType.LOCAL,
-//     localId: "localid1",
-//     txId: "at1g37atr7cuy35s2y4me2eu0h2r3u2xyhhcs8yryz2x8xhgd7klurqdqpluq",
-//     error: "",
-//     programId: "programId_mock-1",
-//     functionName: "send",
-//     inputs: [],
-//     timestamp: Date.now(),
-//     addressType: AleoTxAddressType.SEND,
-//     amount: "123",
-//     status: AleoTxStatus.COMPLETED,
-//   },
-//   {
-//     type: AleoHistoryType.LOCAL,
-//     localId: "localid1",
-//     txId: "at1g37atr7cuy35s2y4me2eu0h2r3u2xyhhcs8yryz2x8xhgd7klurqdqpluq",
-//     error: "",
-//     programId: "programId_mock-1",
-//     functionName: "send",
-//     inputs: [],
-//     timestamp: Date.now(),
-//     addressType: AleoTxAddressType.SEND,
-//     amount: "123",
-//     status: AleoTxStatus.COMPLETED,
-//   },
-//   {
-//     type: AleoHistoryType.LOCAL,
-//     localId: "localid1",
-//     txId: "at1g37atr7cuy35s2y4me2eu0h2r3u2xyhhcs8yryz2x8xhgd7klurqdqpluq",
-//     error: "",
-//     programId: "programId_mock-1",
-//     functionName: "send",
-//     inputs: [],
-//     timestamp: Date.now(),
-//     addressType: AleoTxAddressType.RECEIVE,
-//     amount: "123",
-//     status: AleoTxStatus.COMPLETED,
-//   },
-//   {
-//     type: AleoHistoryType.LOCAL,
-//     localId: "localid1",
-//     txId: "at1g37atr7cuy35s2y4me2eu0h2r3u2xyhhcs8yryz2x8xhgd7klurqdqpluq",
-//     error: "",
-//     programId: "programId_mock-1",
-//     functionName: "send",
-//     inputs: [],
-//     timestamp: Date.now(),
-//     addressType: AleoTxAddressType.RECEIVE,
-//     amount: "123",
-//     status: AleoTxStatus.COMPLETED,
-//   },
-//   {
-//     type: AleoHistoryType.LOCAL,
-//     localId: "localid1",
-//     txId: "at1g37atr7cuy35s2y4me2eu0h2r3u2xyhhcs8yryz2x8xhgd7klurqdqpluq",
-//     error: "",
-//     programId: "programId_mock-1",
-//     functionName: "send",
-//     inputs: [],
-//     timestamp: Date.now(),
-//     addressType: AleoTxAddressType.RECEIVE,
-//     amount: "123",
-//     status: AleoTxStatus.COMPLETED,
-//   },
-// ];
-
 interface TokenTxHistoryItemProps {
   item: AleoHistoryItem;
   uniqueId: InnerChainUniqueId;
 }
+
+// const HistoryItem = (props: {
+//   item: AleoHistoryItem;
+//   nativeCurrency: NativeToken;
+// }) => {
+//   const { item, nativeCurrency } = props;
+
+//   const { status, programId, functionName, addressType, amount, txId } = item;
+
+//   const statusPrefix = status === AleoTxStatus.FINALIZD ? "" : status;
+
+//   if (programId === NATIVE_TOKEN_PROGRAM_ID) {
+//     return (
+//       <Flex key={txId} mt={2}>
+//         {statusPrefix}&nbsp;
+//         {functionName.startsWith("transfer")
+//           ? functionName.slice(9)
+//           : functionName}
+//         &nbsp;
+//         {addressType}&nbsp;
+//         {amount && (
+//           <TokenNum
+//             amount={BigInt(amount)}
+//             decimals={nativeCurrency.decimals}
+//             symbol={nativeCurrency.symbol}
+//           />
+//         )}
+//       </Flex>
+//     );
+//   }
+//   if (addressType === AleoTxAddressType.SEND) {
+//     return (
+//       <Flex key={txId} mt={2}>
+//         {statusPrefix}&nbsp;Call&nbsp;{programId}&nbsp;
+//         {functionName}
+//       </Flex>
+//     );
+//   }
+//   return (
+//     <Flex key={txId} mt={2}>
+//       {statusPrefix}&nbsp;Received from&nbsp;{programId}&nbsp;
+//       {functionName}
+//     </Flex>
+//   );
+// };
+
 const TokenTxHistoryItem: React.FC<TokenTxHistoryItemProps> = ({
   uniqueId,
   item,
@@ -140,11 +90,14 @@ const TokenTxHistoryItem: React.FC<TokenTxHistoryItemProps> = ({
   );
 
   const onClick = useCallback(() => {
+    if (!item.txId) {
+      return;
+    }
     const url = `${ALE0_EXPOLER_TRANSACTION_URL}/${item.txId}`;
     browser.tabs.create({ url });
   }, [item.txId]);
 
-  const txLabel = useMemo(() => `${item.programId}(${item.functionName})`, []);
+  const txLabel = useMemo(() => `${item.functionName}`, []);
   const amount = useMemo(() => BigInt(item.amount || 0n), [item.amount]);
 
   return (
@@ -169,7 +122,9 @@ const TokenTxHistoryItem: React.FC<TokenTxHistoryItemProps> = ({
         <Flex direction={"column"} ml={2.5} alignItems={"flex-start"}>
           <Flex align={"center"}>
             <Flex fontWeight={"bold"} fontSize={12}>
-              <MiddleEllipsisText text={txLabel} width={150} />
+              <Text maxWidth={150} textOverflow={"ellipsis"}>
+                {txLabel}
+              </Text>
             </Flex>
             {!!item.amount && (
               <Box fontWeight={"bold"} fontSize={12} ml={1}>

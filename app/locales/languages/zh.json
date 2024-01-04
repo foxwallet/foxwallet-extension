@@ -38,7 +38,8 @@
       "accountName": "帐户名称",
       "accountNamePlaceholder": "输入账户名",
       "dupAccountName": "帐户名重复",
-      "delete": "删除钱包"
+      "delete": "删除钱包",
+      "deleteRemind": "请确保钱包已正确备份，因为只能使用种子短语或私钥来恢复钱包。"
     }
   },
   "Onboard": {
@@ -58,7 +59,12 @@
     "cancel": "取消",
     "next": "下一个",
     "edit": "编辑",
-    "more": "更多"
+    "more": "更多",
+    "done": "完成",
+    "delete": "删除",
+    "warning": "警告",
+    "copySuccess": "复制成功！",
+    "paused": "暂停"
   },
   "Password": {
     "title": "密码",
@@ -66,7 +72,10 @@
     "passwordPlaceholder": "不少于6个字符",
     "confirmPasswordPlaceholder": "再次输入密码",
     "warning": "FoxWallet 不会存储密码。一旦忘记密码，只能通过助记词恢复钱包。",
-    "verify": "验证密码"
+    "verify": "验证密码",
+    "strengthRemind": "如果密码强度不够，钱包资产的安全可能会受到损害。",
+    "change": "修改",
+    "stillCreate": "仍然创建"
   },
   "Mnemonic": {
     "backupTips1": "点击此处显示助记词",
@@ -134,7 +143,8 @@
     "guide": "指导",
     "community": "社区",
     "securityTips": "安全提示",
-    "settings": "设置"
+    "settings": "设置",
+    "account": "帐户"
   },
   "Error": {
     "invalidPassword": "无效的密码"

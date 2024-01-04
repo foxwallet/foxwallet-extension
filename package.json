@@ -7,8 +7,8 @@
   "license": "MIT",
   "scripts": {
     "dev": "vite --mode development",
-    "build:dev": "npm run clean && node ./scripts/predev.js && yarn build:dapp &&  vite build --mode development && cd offscreen_transaction && npx rollup -c && cd .. && cp ./offscreen_tx.html ./dist/offscreen_tx.html",
-    "build:prod": "npm run clean && node ./scripts/prerelease.js && yarn build:dapp && vite build",
+    "build:dev": "npm run clean && node ./scripts/predev.js && yarn build:dapp &&  vite build --mode development && cd offscreen_transaction && NODE_ENV=development npx rollup -c && cd .. && cp ./offscreen_tx.html ./dist/offscreen_tx.html",
+    "build:prod": "npm run clean && yarn wasm && node ./scripts/prerelease.js && yarn build:dapp && vite build && cd offscreen_transaction && NODE_ENV=production npx rollup -c && cd .. && cp ./offscreen_tx.html ./dist/offscreen_tx.html",
     "build:dapp": "vite build --config vite-injector.config.ts",
     "clean": "rimraf dist/ && rimraf node_modules/aleo_wasm/",
     "wasm": "cd @aleohq/aleo_wasm && RUSTFLAGS='-C link-arg=--max-memory=4294967296' wasm-pack build --release --target web",
@@ -126,6 +126,7 @@
     "prettier": "^3.0.3",
     "rimraf": "^5.0.1",
     "rollup": "^4.6.1",
+    "rollup-plugin-terser": "^7.0.2",
     "sass": "^1.66.1",
     "shx": "^0.3.4",
     "stream-browserify": "^3.0.0",

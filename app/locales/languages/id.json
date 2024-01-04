@@ -38,7 +38,8 @@
       "accountName": "Nama akun",
       "accountNamePlaceholder": "Masukkan nama akun",
       "dupAccountName": "Nama akun duplikat",
-      "delete": "Hapus dompet"
+      "delete": "Hapus dompet",
+      "deleteRemind": "Harap pastikan dompet dicadangkan dengan benar karena hanya dapat dipulihkan menggunakan frase awal atau kunci pribadi."
     }
   },
   "Onboard": {
@@ -59,7 +60,10 @@
     "passwordPlaceholder": "Tidak kurang dari 6 karakter",
     "confirmPasswordPlaceholder": "Masukkan kata sandi lagi",
     "warning": "FoxWallet tidak akan menyimpan kata sandi. Setelah kata sandi terlupa, Anda hanya dapat memulihkan dompet melalui mnemonik.",
-    "verify": "Verifikasi Kata Sandi"
+    "verify": "Verifikasi Kata Sandi",
+    "strengthRemind": "Jika kata sandinya tidak cukup kuat, keamanan aset dompet mungkin terganggu.",
+    "change": "Mengubah",
+    "stillCreate": "Masih Buat"
   },
   "Mnemonic": {
     "backupTips1": "Klik di sini untuk menampilkan fase mnemonik",
@@ -78,7 +82,12 @@
     "cancel": "Membatalkan",
     "next": "Berikutnya",
     "edit": "Sunting",
-    "more": "Lagi"
+    "more": "Lagi",
+    "done": "Selesai",
+    "delete": "Menghapus",
+    "warning": "Peringatan",
+    "copySuccess": "Salin Sukses!",
+    "paused": "Dijeda"
   },
   "Send": {
     "title": "Mengirim",
@@ -134,7 +143,8 @@
     "guide": "Memandu",
     "community": "Masyarakat",
     "securityTips": "Kiat Keamanan",
-    "settings": "Pengaturan"
+    "settings": "Pengaturan",
+    "account": "Akun"
   },
   "Error": {
     "invalidPassword": "Kata sandi salah"

@@ -164,7 +164,7 @@ export const AccountInfoHeader = () => {
             )}
           </Box>
         </Flex>
-        <RescanButton />
+        <RescanButton paused={!!sendingAleoTx} />
       </Flex>
       <Flex direction={"row"} align={"center"} justify={"space-around"} mt={6}>
         {options.map(renderActionItem)}

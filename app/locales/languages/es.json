@@ -38,7 +38,8 @@
       "accountName": "Nombre de la cuenta",
       "accountNamePlaceholder": "Introduzca el nombre de la cuenta",
       "dupAccountName": "Nombre de cuenta duplicado",
-      "delete": "Eliminar billetera"
+      "delete": "Eliminar billetera",
+      "deleteRemind": "Asegúrese de que la billetera tenga una copia de seguridad adecuada, ya que solo se puede restaurar utilizando la frase inicial o la clave privada."
     }
   },
   "Onboard": {
@@ -59,7 +60,10 @@
     "passwordPlaceholder": "No menos de 6 caracteres",
     "confirmPasswordPlaceholder": "Ingrese de nuevo la contraseña",
     "warning": "FoxWallet no almacenará la contraseña. Una vez que se olvida la contraseña, solo podrá restaurar la billetera mediante el mnemotécnico.",
-    "verify": "Verificar contraseña"
+    "verify": "Verificar contraseña",
+    "strengthRemind": "Si la contraseña no es lo suficientemente segura, la seguridad de los activos de la billetera puede verse comprometida.",
+    "change": "Cambiar",
+    "stillCreate": "Seguir creando"
   },
   "Mnemonic": {
     "backupTips1": "Haga clic aquí para mostrar la fase mnemotécnica",
@@ -78,7 +82,12 @@
     "cancel": "Cancelar",
     "next": "Próximo",
     "edit": "Editar",
-    "more": "Más"
+    "more": "Más",
+    "done": "Hecho",
+    "delete": "Borrar",
+    "warning": "Advertencia",
+    "copySuccess": "¡Copia exitosa!",
+    "paused": "En pausa"
   },
   "Send": {
     "title": "Enviar",
@@ -134,7 +143,8 @@
     "guide": "Guía",
     "community": "Comunidad",
     "securityTips": "Consejos de seguridad",
-    "settings": "Ajustes"
+    "settings": "Ajustes",
+    "account": "Cuenta"
   },
   "Error": {
     "invalidPassword": "Contraseña invalida"
