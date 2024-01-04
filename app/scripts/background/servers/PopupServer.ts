@@ -404,27 +404,83 @@ export class PopupWalletServer implements IPopupServer {
   }
 
   async createWallet(params: CreateWalletProps): Promise<DisplayWallet> {
-    return await this.keyringManager.createNewWallet(params);
+    const wallet = await this.keyringManager.createNewWallet(params);
+    const account = wallet.accountsMap[CoinType.ALEO][0];
+    if (account) {
+      await this.setSelectedAccount({
+        selectAccount: {
+          walletId: wallet.walletId,
+          coinType: CoinType.ALEO,
+          ...account,
+        },
+      });
+    }
+    return wallet;
   }
 
   async regenerateWallet(
     params: RegenerateWalletProps,
   ): Promise<DisplayWallet> {
-    return await this.keyringManager.regenerateWallet(params);
+    const wallet = await this.keyringManager.regenerateWallet(params);
+    const account = wallet.accountsMap[CoinType.ALEO][0];
+    if (account) {
+      await this.setSelectedAccount({
+        selectAccount: {
+          walletId: wallet.walletId,
+          coinType: CoinType.ALEO,
+          ...account,
+        },
+      });
+    }
+    return wallet;
   }
 
   async importHDWallet(params: ImportHDWalletProps): Promise<DisplayWallet> {
-    return await this.keyringManager.importHDWallet(params);
+    const wallet = await this.keyringManager.importHDWallet(params);
+    const account = wallet.accountsMap[CoinType.ALEO][0];
+    if (account) {
+      await this.setSelectedAccount({
+        selectAccount: {
+          walletId: wallet.walletId,
+          coinType: CoinType.ALEO,
+          ...account,
+        },
+      });
+    }
+    return wallet;
   }
 
   async addAccount(params: AddAccountProps): Promise<DisplayWallet> {
-    return await this.keyringManager.addNewAccount(params);
+    const wallet = await this.keyringManager.addNewAccount(params);
+    const accounts = wallet.accountsMap[params.coinType];
+    const account = accounts[accounts.length - 1];
+    if (account) {
+      await this.setSelectedAccount({
+        selectAccount: {
+          walletId: wallet.walletId,
+          coinType: params.coinType,
+          ...account,
+        },
+      });
+    }
+    return wallet;
   }
 
   async importPrivateKey<T extends CoinType>(
     params: ImportPrivateKeyProps<T>,
   ): Promise<DisplayWallet> {
-    return await this.keyringManager.importPrivateKey(params);
+    const wallet = await this.keyringManager.importPrivateKey(params);
+    const account = wallet.accountsMap[params.coinType][0];
+    if (account) {
+      await this.setSelectedAccount({
+        selectAccount: {
+          walletId: wallet.walletId,
+          coinType: params.coinType,
+          ...account,
+        },
+      });
+    }
+    return wallet;
   }
 
   async getSelectedAccount(
@@ -532,8 +588,53 @@ export class PopupWalletServer implements IPopupServer {
     return await this.keyringManager.getHDMnemonic(walletId);
   }
 
-  async deleteHDWallet(walletId: string): Promise<void> {
-    return await this.keyringManager.deleteHDWallet(walletId);
+  async deleteWallet(walletId: string): Promise<DisplayKeyring> {
+    await stopSync();
+    const selectedAccount = await this.accountSettingStorage.getSelectedAccount(
+      CoinType.ALEO,
+    );
+    let newSelectedAccount: SelectedAccount | null = null;
+    if (selectedAccount?.walletId === walletId) {
+      const allWallets = await this.keyringManager.getAllWallet(false);
+      if (allWallets) {
+        const otherHDWallet = allWallets[WalletType.HD]?.filter(
+          (item) => item.walletId !== walletId,
+        )[0];
+        if (otherHDWallet) {
+          const otherAccount = otherHDWallet.accountsMap[CoinType.ALEO][0];
+          if (otherAccount) {
+            newSelectedAccount = {
+              walletId: otherHDWallet.walletId,
+              coinType: CoinType.ALEO,
+              ...otherAccount,
+            };
+          }
+        } else {
+          const otherSimpleWallet = allWallets[WalletType.SIMPLE]?.filter(
+            (item) => item.walletId !== walletId,
+          )[0];
+          if (otherSimpleWallet) {
+            const otherAccount =
+              otherSimpleWallet.accountsMap[CoinType.ALEO][0];
+            if (otherAccount) {
+              newSelectedAccount = {
+                walletId: otherSimpleWallet.walletId,
+                coinType: CoinType.ALEO,
+                ...otherAccount,
+              };
+            }
+          }
+        }
+      }
+      if (newSelectedAccount) {
+        await this.accountSettingStorage.setSelectedAccount(newSelectedAccount);
+      } else {
+        await this.accountSettingStorage.removeSelectedAccount(CoinType.ALEO);
+      }
+    }
+    await this.keyringManager.deleteWallet(walletId);
+    syncBlocks();
+    return await this.getAllWallet();
   }
 
   async getPrivateKey({

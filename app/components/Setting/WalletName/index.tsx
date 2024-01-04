@@ -13,7 +13,7 @@ export const WalletNameStep = (props: {
   const [walletName, setWalletName] = useState("");
   const { t } = useTranslation();
   const { t: commonT } = useTranslation("Common");
-  const { flattenWalletList } = useWallets();
+  const { walletList } = useWallets();
 
   const onWalletNameChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -24,11 +24,11 @@ export const WalletNameStep = (props: {
   );
 
   const dupWalletName = useMemo(() => {
-    if (!flattenWalletList) {
+    if (!walletList) {
       return false;
     }
-    return flattenWalletList.some((item) => item.walletName === walletName);
-  }, [flattenWalletList, walletName]);
+    return walletList.some((item) => item.walletName === walletName);
+  }, [walletList, walletName]);
 
   const disableConfirm = useMemo(() => {
     return !walletName || dupWalletName;

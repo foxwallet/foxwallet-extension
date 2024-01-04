@@ -274,24 +274,51 @@ export const account = createModel<RootModel>()({
         dispatch.account._setSelectedAccount({
           selectedAccount: account,
         });
-        return { account, uniqueId };
+      } else {
+        dispatch.account._setSelectedAccount({
+          selectedAccount: {
+            accountId: "",
+            accountName: "",
+            address: "",
+            index: 0,
+            walletId: "",
+            coinType: CoinType.ALEO,
+            hide: false,
+          },
+        });
       }
       return { account, uniqueId };
     },
 
     async resyncAllWalletsToStore() {
-      const wallets = await clients.popupServerClient.getAllWallet();
-      if (!wallets) return;
+      try {
+        const [wallets] = await Promise.all([
+          clients.popupServerClient.getAllWallet(),
+          this.getSelectedAccount(CoinType.ALEO),
+        ]);
+        if (!wallets) return;
+
+        const hdWallets = wallets[WalletType.HD] ?? [];
+        const simpleWallets = wallets[WalletType.SIMPLE] ?? [];
+        const walletList = [...hdWallets, ...simpleWallets];
+        dispatch.account._setAllWalletInfo({ walletList });
+        return walletList;
+      } catch (err) {
+        console.error("resyncAllWalletsToStore failed: ", err);
+        return [];
+      }
+    },
+
+    async deleteWallet(walletId: string) {
+      const wallets = await clients.popupServerClient.deleteWallet(walletId);
+      if (!wallets) return [];
 
       const hdWallets = wallets[WalletType.HD] ?? [];
       const simpleWallets = wallets[WalletType.SIMPLE] ?? [];
       const walletList = [...hdWallets, ...simpleWallets];
-      dispatch.account._setAllWalletInfo({ walletList });
-    },
+      dispatch.account._setAllWalletInfo({ walletList: walletList });
 
-    async deleteWallet(walletId: string) {
-      await clients.popupServerClient.deleteHDWallet(walletId);
-      await dispatch.account.resyncAllWalletsToStore();
+      return [...walletList];
     },
   }),
 });
