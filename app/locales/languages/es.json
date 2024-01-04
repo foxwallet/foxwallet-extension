@@ -112,7 +112,12 @@
     "selectTransferMethod": "Seleccione el método de transferencia",
     "privateRecord": "Registro privado",
     "gasFee": "Tarifa de gas",
-    "publicBalance": "equilibrio publico"
+    "publicBalance": "equilibrio publico",
+    "selectFeeMethod": "Seleccione el método de tarifa",
+    "publicFee": "Saldo público para pagar cuota",
+    "privateFee": "Registro privado para pagar la tasa",
+    "feeHint": "Puede utilizar el saldo público o cualquiera de los siguientes registros privados a continuación para pagar la tarifa del gas.",
+    "sendingAleoTx": "Enviando transacción aleo"
   },
   "PrivateKey": {
     "title": "Llave privada",

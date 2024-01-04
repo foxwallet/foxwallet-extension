@@ -3,12 +3,13 @@ import {
   IconCopy,
   IconEyeClose,
   IconEyeOn,
+  IconLoading,
   IconLogo,
   IconReceive,
   IconSend,
 } from "@/components/Custom/Icon";
 import { useCurrAccount } from "@/hooks/useCurrAccount";
-import { Box, Flex, Text, useClipboard } from "@chakra-ui/react";
+import { Box, Flex, Text, keyframes, useClipboard } from "@chakra-ui/react";
 import { TokenNum } from "../TokenNum";
 import { useCoinService } from "@/hooks/useCoinService";
 import { useBalance } from "@/hooks/useBalance";
@@ -21,6 +22,12 @@ import { useCurrWallet } from "@/hooks/useWallets";
 import { useTranslation } from "react-i18next";
 import RescanButton from "../RescanButton";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
+import { useIsSendingAleoTx } from "@/hooks/useSendingTxStatus";
+
+const rotateAnimation = keyframes`
+  from { transform: rotate(0deg) }
+  to { transform: rotate(360deg) }
+`;
 
 export const AccountInfoHeader = () => {
   const navigate = useNavigate();
@@ -31,9 +38,9 @@ export const AccountInfoHeader = () => {
   const { t } = useTranslation();
   const showBalance = usePopupSelector((state) => state.account.showBalance);
   const dispatch = usePopupDispatch();
-
   const { showToast } = useCopyToast();
   const { onCopy } = useClipboard(selectedAccount.address);
+  const { sendingAleoTx } = useIsSendingAleoTx(uniqueId);
 
   const options: ActionButtonProps[] = useMemo(
     () => [
@@ -78,22 +85,45 @@ export const AccountInfoHeader = () => {
       borderBottomWidth={1}
       borderColor={"#E6E8EC"}
     >
-      <Flex
-        onClick={onChangeWallet}
-        as={"button"}
-        direction={"row"}
-        align={"center"}
-      >
-        <IconLogo w={8} h={8} mr={1} />
-        <Flex direction={"column"} align={"flex-start"}>
-          <Text fontSize={12} lineHeight={4} color={"#000"} fontWeight={500}>
-            {selectedWallet?.walletName}
-          </Text>
-          <Text fontSize={10} color={"#777E90"} fontWeight={500}>
-            {selectedAccount.accountName}
-          </Text>
+      <Flex justify={"space-between"} align={"center"}>
+        <Flex
+          onClick={onChangeWallet}
+          as={"button"}
+          direction={"row"}
+          align={"center"}
+        >
+          <IconLogo w={8} h={8} mr={1} />
+          <Flex direction={"column"} align={"flex-start"}>
+            <Text fontSize={12} lineHeight={4} color={"#000"} fontWeight={500}>
+              {selectedWallet?.walletName}
+            </Text>
+            <Text fontSize={10} color={"#777E90"} fontWeight={500}>
+              {selectedAccount.accountName}
+            </Text>
+          </Flex>
+          <IconArrowRight w={18} h={18} />
         </Flex>
-        <IconArrowRight w={18} h={18} />
+        {!!sendingAleoTx && (
+          <Flex
+            bgColor={"green.50"}
+            p={2}
+            borderRadius={"lg"}
+            justify={"center"}
+            align={"center"}
+            onClick={() => navigate(`/token_detail/${uniqueId}`)}
+          >
+            <IconLoading
+              w={4}
+              h={4}
+              mr={1}
+              stroke={"green.600"}
+              animation={`${rotateAnimation} infinite 2s linear`}
+            />
+            <Text color={"green.600"} fontSize={"smaller"}>
+              {t("Send:sendingAleoTx")}
+            </Text>
+          </Flex>
+        )}
       </Flex>
       <Flex mt={6} direction={"row"} align={"center"}>
         <Box maxW={128} noOfLines={1} fontSize={11} color={"#777E90"}>

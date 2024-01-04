@@ -112,7 +112,12 @@
     "selectTransferMethod": "Aktarım Yöntemini Seçin",
     "privateRecord": "Özel Kayıt",
     "gasFee": "Gaz Ücreti",
-    "publicBalance": "Kamu dengesi"
+    "publicBalance": "Kamu dengesi",
+    "selectFeeMethod": "Ücret Yöntemini Seçin",
+    "publicFee": "Ücret ödemek için kamu bakiyesi",
+    "privateFee": "Ücret ödemek için özel kayıt",
+    "feeHint": "Gaz ücretini ödemek için kamu bakiyesini veya aşağıdaki özel kayıtlardan herhangi birini kullanabilirsiniz.",
+    "sendingAleoTx": "Aleo işlemi gönderiliyor"
   },
   "PrivateKey": {
     "title": "Özel anahtar",
