@@ -311,7 +311,8 @@ export const GasFeeStep = (props: GasFeeProps) => {
       transferMethod,
       transferRecord,
       feeType: currFeeType,
-      feeRecord: currFeeRecord,
+      feeRecord:
+        currFeeType === AleoFeeMethod.FEE_PRIVATE ? currFeeRecord : undefined,
       gasFee: feeInfo,
     });
   }, [
@@ -360,7 +361,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
           justify={"space-between"}
           align={"center"}
         >
-          <Text color={"gray.500"}>{"Amount"}</Text>
+          <Text color={"gray.500"}>{t("Send:amount")}</Text>
           <TokenNum
             amount={amountNum}
             decimals={nativeCurrency.decimals}

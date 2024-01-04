@@ -112,7 +112,12 @@
     "selectTransferMethod": "Wählen Sie Übertragungsmethode",
     "privateRecord": "Privataufnahme",
     "gasFee": "Gasgebühr",
-    "publicBalance": "Öffentliches Gleichgewicht"
+    "publicBalance": "Öffentliches Gleichgewicht",
+    "selectFeeMethod": "Wählen Sie die Gebührenmethode aus",
+    "publicFee": "Öffentliches Guthaben zur Zahlung einer Gebühr",
+    "privateFee": "Private Aufzeichnung zur Zahlung der Gebühr",
+    "feeHint": "Sie können entweder das öffentliche Guthaben oder eine der folgenden privaten Aufzeichnungen verwenden, um die Gasgebühr zu bezahlen.",
+    "sendingAleoTx": "Aleo-Transaktion wird gesendet"
   },
   "PrivateKey": {
     "title": "Privat Schlüssel",

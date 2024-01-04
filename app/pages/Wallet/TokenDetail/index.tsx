@@ -25,100 +25,102 @@ import { parseU64 } from "../../../../offscreen_sync/helper";
 import dayjs from "dayjs";
 import browser from "webextension-polyfill";
 import { ALE0_EXPOLER_TRANSACTION_URL } from "@/common/constants";
+import { useTxHistory } from "@/hooks/useTxHistory";
+import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 
-const history: any[] = [
-  {
-    type: AleoHistoryType.LOCAL,
-    localId: "localid1",
-    txId: "at1g37atr7cuy35s2y4me2eu0h2r3u2xyhhcs8yryz2x8xhgd7klurqdqpluq",
-    error: "",
-    programId: "programId_mock-1",
-    functionName: "send",
-    inputs: [],
-    timestamp: Date.now(),
-    addressType: AleoTxAddressType.SEND,
-    amount: "123.33",
-    status: AleoTxStatus.COMPLETED,
-  },
-  {
-    type: AleoHistoryType.LOCAL,
-    localId: "localid1",
-    txId: "at1g37atr7cuy35s2y4me2eu0h2r3u2xyhhcs8yryz2x8xhgd7klurqdqpluq",
-    error: "",
-    programId: "programId_mock-1",
-    functionName: "send",
-    inputs: [],
-    timestamp: Date.now(),
-    addressType: AleoTxAddressType.SEND,
-    amount: "123",
-    status: AleoTxStatus.COMPLETED,
-  },
-  {
-    type: AleoHistoryType.LOCAL,
-    localId: "localid1",
-    txId: "at1g37atr7cuy35s2y4me2eu0h2r3u2xyhhcs8yryz2x8xhgd7klurqdqpluq",
-    error: "",
-    programId: "programId_mock-1",
-    functionName: "send",
-    inputs: [],
-    timestamp: Date.now(),
-    addressType: AleoTxAddressType.SEND,
-    amount: "123",
-    status: AleoTxStatus.COMPLETED,
-  },
-  {
-    type: AleoHistoryType.LOCAL,
-    localId: "localid1",
-    txId: "at1g37atr7cuy35s2y4me2eu0h2r3u2xyhhcs8yryz2x8xhgd7klurqdqpluq",
-    error: "",
-    programId: "programId_mock-1",
-    functionName: "send",
-    inputs: [],
-    timestamp: Date.now(),
-    addressType: AleoTxAddressType.SEND,
-    amount: "123",
-    status: AleoTxStatus.COMPLETED,
-  },
-  {
-    type: AleoHistoryType.LOCAL,
-    localId: "localid1",
-    txId: "at1g37atr7cuy35s2y4me2eu0h2r3u2xyhhcs8yryz2x8xhgd7klurqdqpluq",
-    error: "",
-    programId: "programId_mock-1",
-    functionName: "send",
-    inputs: [],
-    timestamp: Date.now(),
-    addressType: AleoTxAddressType.RECEIVE,
-    amount: "123",
-    status: AleoTxStatus.COMPLETED,
-  },
-  {
-    type: AleoHistoryType.LOCAL,
-    localId: "localid1",
-    txId: "at1g37atr7cuy35s2y4me2eu0h2r3u2xyhhcs8yryz2x8xhgd7klurqdqpluq",
-    error: "",
-    programId: "programId_mock-1",
-    functionName: "send",
-    inputs: [],
-    timestamp: Date.now(),
-    addressType: AleoTxAddressType.RECEIVE,
-    amount: "123",
-    status: AleoTxStatus.COMPLETED,
-  },
-  {
-    type: AleoHistoryType.LOCAL,
-    localId: "localid1",
-    txId: "at1g37atr7cuy35s2y4me2eu0h2r3u2xyhhcs8yryz2x8xhgd7klurqdqpluq",
-    error: "",
-    programId: "programId_mock-1",
-    functionName: "send",
-    inputs: [],
-    timestamp: Date.now(),
-    addressType: AleoTxAddressType.RECEIVE,
-    amount: "123",
-    status: AleoTxStatus.COMPLETED,
-  },
-];
+// const history: any[] = [
+//   {
+//     type: AleoHistoryType.LOCAL,
+//     localId: "localid1",
+//     txId: "at1g37atr7cuy35s2y4me2eu0h2r3u2xyhhcs8yryz2x8xhgd7klurqdqpluq",
+//     error: "",
+//     programId: "programId_mock-1",
+//     functionName: "send",
+//     inputs: [],
+//     timestamp: Date.now(),
+//     addressType: AleoTxAddressType.SEND,
+//     amount: "123.33",
+//     status: AleoTxStatus.COMPLETED,
+//   },
+//   {
+//     type: AleoHistoryType.LOCAL,
+//     localId: "localid1",
+//     txId: "at1g37atr7cuy35s2y4me2eu0h2r3u2xyhhcs8yryz2x8xhgd7klurqdqpluq",
+//     error: "",
+//     programId: "programId_mock-1",
+//     functionName: "send",
+//     inputs: [],
+//     timestamp: Date.now(),
+//     addressType: AleoTxAddressType.SEND,
+//     amount: "123",
+//     status: AleoTxStatus.COMPLETED,
+//   },
+//   {
+//     type: AleoHistoryType.LOCAL,
+//     localId: "localid1",
+//     txId: "at1g37atr7cuy35s2y4me2eu0h2r3u2xyhhcs8yryz2x8xhgd7klurqdqpluq",
+//     error: "",
+//     programId: "programId_mock-1",
+//     functionName: "send",
+//     inputs: [],
+//     timestamp: Date.now(),
+//     addressType: AleoTxAddressType.SEND,
+//     amount: "123",
+//     status: AleoTxStatus.COMPLETED,
+//   },
+//   {
+//     type: AleoHistoryType.LOCAL,
+//     localId: "localid1",
+//     txId: "at1g37atr7cuy35s2y4me2eu0h2r3u2xyhhcs8yryz2x8xhgd7klurqdqpluq",
+//     error: "",
+//     programId: "programId_mock-1",
+//     functionName: "send",
+//     inputs: [],
+//     timestamp: Date.now(),
+//     addressType: AleoTxAddressType.SEND,
+//     amount: "123",
+//     status: AleoTxStatus.COMPLETED,
+//   },
+//   {
+//     type: AleoHistoryType.LOCAL,
+//     localId: "localid1",
+//     txId: "at1g37atr7cuy35s2y4me2eu0h2r3u2xyhhcs8yryz2x8xhgd7klurqdqpluq",
+//     error: "",
+//     programId: "programId_mock-1",
+//     functionName: "send",
+//     inputs: [],
+//     timestamp: Date.now(),
+//     addressType: AleoTxAddressType.RECEIVE,
+//     amount: "123",
+//     status: AleoTxStatus.COMPLETED,
+//   },
+//   {
+//     type: AleoHistoryType.LOCAL,
+//     localId: "localid1",
+//     txId: "at1g37atr7cuy35s2y4me2eu0h2r3u2xyhhcs8yryz2x8xhgd7klurqdqpluq",
+//     error: "",
+//     programId: "programId_mock-1",
+//     functionName: "send",
+//     inputs: [],
+//     timestamp: Date.now(),
+//     addressType: AleoTxAddressType.RECEIVE,
+//     amount: "123",
+//     status: AleoTxStatus.COMPLETED,
+//   },
+//   {
+//     type: AleoHistoryType.LOCAL,
+//     localId: "localid1",
+//     txId: "at1g37atr7cuy35s2y4me2eu0h2r3u2xyhhcs8yryz2x8xhgd7klurqdqpluq",
+//     error: "",
+//     programId: "programId_mock-1",
+//     functionName: "send",
+//     inputs: [],
+//     timestamp: Date.now(),
+//     addressType: AleoTxAddressType.RECEIVE,
+//     amount: "123",
+//     status: AleoTxStatus.COMPLETED,
+//   },
+// ];
 
 interface TokenTxHistoryItemProps {
   item: AleoHistoryItem;
@@ -142,14 +144,8 @@ const TokenTxHistoryItem: React.FC<TokenTxHistoryItemProps> = ({
     browser.tabs.create({ url });
   }, [item.txId]);
 
-  const txLabel = useMemo(
-    () =>
-      item.addressType === AleoTxAddressType.RECEIVE
-        ? t("Receive:title")
-        : t("Send:title"),
-    [],
-  );
-  const amount = useMemo(() => parseU64("1232"), [item.amount]);
+  const txLabel = useMemo(() => `${item.programId}(${item.functionName})`, []);
+  const amount = useMemo(() => BigInt(item.amount || 0n), [item.amount]);
 
   return (
     <Flex
@@ -172,20 +168,23 @@ const TokenTxHistoryItem: React.FC<TokenTxHistoryItemProps> = ({
         </Box>
         <Flex direction={"column"} ml={2.5} alignItems={"flex-start"}>
           <Flex align={"center"}>
-            <Text fontWeight={"bold"} fontSize={12}>
-              {txLabel}
-            </Text>
-            <Box fontWeight={"bold"} fontSize={12} ml={1}>
-              <TokenNum
-                amount={amount}
-                decimals={nativeCurrency.decimals}
-                symbol={nativeCurrency.symbol}
-              />
-            </Box>
+            <Flex fontWeight={"bold"} fontSize={12}>
+              <MiddleEllipsisText text={txLabel} width={150} />
+            </Flex>
+            {!!item.amount && (
+              <Box fontWeight={"bold"} fontSize={12} ml={1}>
+                <TokenNum
+                  amount={amount}
+                  decimals={nativeCurrency.decimals}
+                  symbol={nativeCurrency.symbol}
+                />
+              </Box>
+            )}
           </Flex>
-          <Text color={"#777E90"} fontSize={10}>
-            {timeStr}
-          </Text>
+          <Flex color={"gray.500"} fontSize={10} align={"center"}>
+            <Text mr={2}>{item.status}</Text>
+            <Text>{timeStr}</Text>
+          </Flex>
         </Flex>
       </Flex>
       <IconChevronRight />
@@ -204,7 +203,7 @@ const TokenDetailScreen = () => {
   const { selectedAccount } = useCurrAccount();
   const { balance } = useBalance(uniqueId, selectedAccount.address);
 
-  // const { history } = useTxHistory(uniqueId, selectedAccount.address, 4000);
+  const { history } = useTxHistory(uniqueId, selectedAccount.address, 4000);
 
   const onReceive = useCallback(() => {
     navigate(`/receive`);

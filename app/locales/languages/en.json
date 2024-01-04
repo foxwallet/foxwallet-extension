@@ -109,7 +109,12 @@
     "selectTransferMethod": "Select Transfer Method",
     "privateRecord": "Private Record",
     "publicBalance": "Public balance",
-    "gasFee": "Gas Fee"
+    "gasFee": "Gas Fee",
+    "selectFeeMethod": "Select Fee Method",
+    "publicFee": "Public balance to pay fee",
+    "privateFee": "Private record to pay fee",
+    "feeHint": "You can use either the public balance or any of the following private records below to pay the gas fee.",
+    "sendingAleoTx": "Sending aleo transaction"
   },
   "Receive": {
     "title": "Receive",

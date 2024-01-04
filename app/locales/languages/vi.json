@@ -112,7 +112,12 @@
     "selectTransferMethod": "Chọn phương thức chuyển",
     "privateRecord": "Bản ghi riêng",
     "gasFee": "Phí gas",
-    "publicBalance": "Cân bằng công cộng"
+    "publicBalance": "Cân bằng công cộng",
+    "selectFeeMethod": "Chọn phương thức tính phí",
+    "publicFee": "Số dư công phải trả phí",
+    "privateFee": "Hồ sơ riêng để nộp lệ phí",
+    "feeHint": "Bạn có thể sử dụng số dư công khai hoặc bất kỳ hồ sơ cá nhân nào dưới đây để thanh toán phí gas.",
+    "sendingAleoTx": "Gửi giao dịch aleo"
   },
   "PrivateKey": {
     "title": "Khóa riêng",
