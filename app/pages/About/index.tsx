@@ -5,11 +5,15 @@ import { Flex, Text, Image, Divider, Box, VStack } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
 // @ts-ignore
 import WALLET_LOGO from "@/common/assets/image/logo.png";
-import Browser from "webextension-polyfill";
+import browser from "webextension-polyfill";
 import { PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL } from "@/common/constants";
+import { useMemo } from "react";
 
 const AboutScreen = () => {
   const { t } = useTranslation();
+  const version = useMemo(() => {
+    return browser.runtime.getManifest().version;
+  }, []);
   const noUpdate = true;
 
   return (
@@ -21,10 +25,10 @@ const AboutScreen = () => {
         </Flex>
         <Divider h={"1px"} bg={"#E6E8EC"} />
         <Flex py={2.5} mb={2.5} align={"center"} justify={"space-between"}>
-          <Text fontSize={13}>Sender</Text>
-          <Text>V1.0.0</Text>
+          <Text fontSize={13}>{t("About:version")}</Text>
+          <Text>v{version}</Text>
         </Flex>
-        <Flex py={2.5} mb={2.5} align={"center"} justify={"space-between"}>
+        {/* <Flex py={2.5} mb={2.5} align={"center"} justify={"space-between"}>
           <Text fontSize={13}>{t("About:upgrade")}</Text>
           {noUpdate ? (
             <Text color={"#777E90"} fontSize={12}>
@@ -38,7 +42,7 @@ const AboutScreen = () => {
               <IconChevronRight w={4} h={4} />
             </Flex>
           )}
-        </Flex>
+        </Flex> */}
       </Content>
       <VStack mb={8}>
         <Box
@@ -46,7 +50,7 @@ const AboutScreen = () => {
           fontSize={14}
           fontWeight={500}
           as="button"
-          onClick={() => Browser.tabs.create({ url: PRIVACY_POLICY_URL })}
+          onClick={() => browser.tabs.create({ url: PRIVACY_POLICY_URL })}
         >
           <Text>{t("About:privacyPolicy")}</Text>
         </Box>
@@ -55,7 +59,7 @@ const AboutScreen = () => {
           fontSize={14}
           fontWeight={500}
           as="button"
-          onClick={() => Browser.tabs.create({ url: TERMS_OF_SERVICE_URL })}
+          onClick={() => browser.tabs.create({ url: TERMS_OF_SERVICE_URL })}
         >
           <Text>{t("About:userAgreement")}</Text>
         </Box>

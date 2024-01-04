@@ -169,11 +169,11 @@
   },
   "About": {
     "title": "সম্পর্কিত",
-    "sender": "প্রেরক",
     "upgrade": "আপগ্রেড করুন",
     "download": "ডাউনলোড করুন",
     "noUpdate": "কোন আপডেট প্রয়োজন",
     "privacyPolicy": "<গোপনীয়তা নীতি>",
-    "userAgreement": "<ব্যবহারকারী চুক্তি>"
+    "userAgreement": "<ব্যবহারকারী চুক্তি>",
+    "version": "সংস্করণ"
   }
 }
