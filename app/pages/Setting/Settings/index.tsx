@@ -26,7 +26,9 @@ const SettingsScreen = () => {
     isEqual,
   );
 
-  const onModifyPassword = useCallback(() => {}, []);
+  const onModifyPassword = useCallback(() => {
+    navigate("/change_password");
+  }, [navigate]);
 
   const onLanguage = useCallback(() => {
     navigate("/manage_language");
@@ -43,11 +45,11 @@ const SettingsScreen = () => {
   return (
     <PageWithHeader title={t("Setting:settings")}>
       <Content>
-        <SettingItem
+        {/* <SettingItem
           title={t("Password:title")}
           icon={<IconEdit w={4} h={4} />}
           onPress={onModifyPassword}
-        />
+        /> */}
         <SettingItem
           title={t("Language:title")}
           subtitle={LanguageLabels[currLanguage]}

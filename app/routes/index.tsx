@@ -14,9 +14,6 @@ const Deployment = lazy(async () => await import("../pages/Dapp/Deployment"));
 const TokenDetail = lazy(
   async () => await import("../pages/Wallet/TokenDetail"),
 );
-const WalletDetail = lazy(
-  async () => await import("../pages/Setting/WalletDetail"),
-);
 const TransactionDetail = lazy(
   async () => await import("../pages/Wallet/TransactionDetail"),
 );
@@ -51,7 +48,17 @@ const Community = lazy(async () => await import("../pages/Setting/Community"));
 const Settings = lazy(async () => await import("../pages/Setting/Settings"));
 const Currency = lazy(async () => await import("../pages/Setting/Currency"));
 const About = lazy(async () => await import("../pages/Setting/About"));
+const ChangePassword = lazy(
+  async () => await import("../pages/Setting/ChangePassword"),
+);
+const WalletList = lazy(
+  async () => await import("../pages/Setting/WalletList"),
+);
+const WalletDetail = lazy(
+  async () => await import("../pages/Setting/WalletDetail"),
+);
 
+// Onboard
 const OnboardHome = lazy(
   async () => await import("../pages/Onboard/OnboardHome"),
 );
@@ -169,6 +176,14 @@ export const routesConfig: RouteObject[] = [
       {
         path: "about",
         element: <About />,
+      },
+      {
+        path: "change_password",
+        element: <ChangePassword />,
+      },
+      {
+        path: "wallet_list",
+        element: <WalletList />,
       },
     ],
   },

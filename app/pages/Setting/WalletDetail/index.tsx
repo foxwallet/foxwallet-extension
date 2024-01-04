@@ -11,7 +11,6 @@ import {
   AccountOperateOptions,
   showAccountOptionDrawer,
 } from "@/components/Wallet/AccountOptionDrawer";
-import { showDeleteWalletWarningDialog } from "@/components/Wallet/DeleteWalletWarningDialog";
 import { showEditAccountNameDrawer } from "@/components/Wallet/EditAccountNameDrawer";
 import {
   WalletOperateOption,
@@ -19,7 +18,7 @@ import {
 } from "@/components/Wallet/WalletOptionDrawer";
 import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
-import { useCurrWallet, useWallets } from "@/hooks/useWallets";
+import { useWallets } from "@/hooks/useWallets";
 import { PageWithHeader } from "@/layouts/Page";
 import { SelectedAccount } from "@/scripts/background/store/vault/types/keyring";
 import { Box, Button, Flex, Text, useClipboard } from "@chakra-ui/react";
@@ -200,9 +199,7 @@ const WalletDetailScreen = () => {
   const navigate = useNavigate();
   const { walletId = "" } = useParams();
   const { t } = useTranslation();
-  const { selectedWallet } = useCurrWallet();
-  const { addAccount, flattenWalletList } = useWallets();
-  const dispatch = usePopupDispatch();
+  const { addAccount, deleteWallet } = useWallets();
 
   const allWalletInfo = usePopupSelector(
     (state) => state.account.allWalletInfo,
@@ -222,7 +219,7 @@ const WalletDetailScreen = () => {
       walletId: walletId || "",
       coinType: CoinType.ALEO,
     }));
-  }, [walletInfo.accountsMap, walletId]);
+  }, [walletInfo?.accountsMap, walletId]);
 
   const onAddAccount = useCallback(() => {
     addAccount(walletId || "", CoinType.ALEO, nanoid());
@@ -239,52 +236,14 @@ const WalletDetailScreen = () => {
   }, [navigate, showPasswordVerifyDrawer]);
 
   const onDeleteWallet = useCallback(async () => {
-    const { confirmed: confirmedPass } = await showPasswordVerifyDrawer();
-    if (!confirmedPass) {
-      return;
-    }
-
-    const { confirmed } = await showDeleteWalletWarningDialog();
-    if (!confirmed) {
-      return;
-    }
-
-    await dispatch.account.deleteWallet(walletId);
-    if (selectedWallet.walletId !== walletId) {
+    try {
+      if (!walletInfo) return;
+      await deleteWallet(walletInfo.walletId);
       navigate(-1);
-      return;
+    } catch (e) {
+      console.warn("delete wallet error " + e);
     }
-
-    if (flattenWalletList.length > 1) {
-      const nextWallet = flattenWalletList[0];
-      const nextAccount = nextWallet.accountsMap[CoinType.ALEO][0];
-      if (!nextAccount) {
-        throw new Error("Wallet doesn't has any accounts");
-      }
-      dispatch.account.setSelectedAccount({
-        selectedAccount: {
-          ...nextAccount,
-          walletId: nextWallet.walletId,
-          coinType: CoinType.ALEO,
-        },
-      });
-      navigate(-1);
-    } else {
-      // clear data
-      dispatch.account.setSelectedAccount({
-        selectedAccount: {
-          accountId: "",
-          accountName: "",
-          address: "",
-          index: 0,
-          walletId: "",
-          coinType: CoinType.ALEO,
-          hide: false,
-        },
-      });
-      navigate("/onboard/home");
-    }
-  }, [dispatch.account, walletId, navigate, flattenWalletList]);
+  }, [deleteWallet, walletInfo?.walletId, navigate]);
 
   const onWalletMoreAction = useCallback(() => {
     showWalletOptionDrawer({
