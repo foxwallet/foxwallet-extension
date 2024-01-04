@@ -5,51 +5,61 @@ import { CheckAuth } from "@/components/Onboard/CheckAuth";
 
 // WalletTab
 const MainPage = lazy(async () => await import("../pages/Main"));
-const SendAleo = lazy(async () => await import("../pages/SendAleo"));
-const Receive = lazy(async () => await import("../pages/Receive"));
-const ConnectDapp = lazy(async () => await import("../pages/ConnectDapp"));
-const RequestTx = lazy(async () => await import("../pages/RequestTx"));
-const SignMessage = lazy(async () => await import("../pages/SignMessage"));
-const Deployment = lazy(async () => await import("../pages/Deployment"));
-const TokenDetail = lazy(async () => await import("../pages/TokenDetail"));
-const WalletDetail = lazy(async () => await import("../pages/WalletDetail"));
+const SendAleo = lazy(async () => await import("../pages/Wallet/SendAleo"));
+const Receive = lazy(async () => await import("../pages/Wallet/Receive"));
+const ConnectDapp = lazy(async () => await import("../pages/Dapp/ConnectDapp"));
+const RequestTx = lazy(async () => await import("../pages/Dapp/RequestTx"));
+const SignMessage = lazy(async () => await import("../pages/Dapp/SignMessage"));
+const Deployment = lazy(async () => await import("../pages/Dapp/Deployment"));
+const TokenDetail = lazy(
+  async () => await import("../pages/Wallet/TokenDetail"),
+);
+const WalletDetail = lazy(
+  async () => await import("../pages/Setting/WalletDetail"),
+);
 const TransactionDetail = lazy(
-  async () => await import("../pages/TransactionDetail"),
+  async () => await import("../pages/Wallet/TransactionDetail"),
 );
 
 // SettingTab
-const ManageWallet = lazy(async () => await import("../pages/ManageWallet"));
-const CreateWallet = lazy(async () => await import("../pages/CreateWallet"));
+const ManageWallet = lazy(
+  async () => await import("../pages/Setting/ManageWallet"),
+);
+const CreateWallet = lazy(
+  async () => await import("../pages/Setting/CreateWallet"),
+);
 const CreateMnemonic = lazy(
-  async () => await import("../pages/CreateMnemonic"),
+  async () => await import("../pages/Setting/CreateMnemonic"),
 );
 const BackupMnemonic = lazy(
-  async () => await import("../pages/BackupMnemonic"),
+  async () => await import("../pages/Setting/BackupMnemonic"),
 );
 const ImportMnemonic = lazy(
-  async () => await import("../pages/ImportMnemonic"),
+  async () => await import("../pages/Setting/ImportMnemonic"),
 );
 const ImportPrivateKey = lazy(
-  async () => await import("../pages/ImportPrivateKey"),
+  async () => await import("../pages/Setting/ImportPrivateKey"),
 );
-const Language = lazy(async () => await import("../pages/Language"));
+const Language = lazy(async () => await import("../pages/Setting/Language"));
 const ExportSeedPhrase = lazy(
-  async () => await import("../pages/ExportSeedPhrase"),
+  async () => await import("../pages/Setting/ExportSeedPhrase"),
 );
 const ExportPrivateKey = lazy(
-  async () => await import("../pages/ExportPrivateKey"),
+  async () => await import("../pages/Setting/ExportPrivateKey"),
 );
-const Community = lazy(async () => await import("../pages/Community"));
-const Settings = lazy(async () => await import("../pages/Settings"));
-const Currency = lazy(async () => await import("../pages/Currency"));
-const About = lazy(async () => await import("../pages/About"));
+const Community = lazy(async () => await import("../pages/Setting/Community"));
+const Settings = lazy(async () => await import("../pages/Setting/Settings"));
+const Currency = lazy(async () => await import("../pages/Setting/Currency"));
+const About = lazy(async () => await import("../pages/Setting/About"));
 
-const OnboardHome = lazy(async () => await import("../pages/OnboardHome"));
+const OnboardHome = lazy(
+  async () => await import("../pages/Onboard/OnboardHome"),
+);
 const OnboardCreateWallet = lazy(
-  async () => await import("../pages/OnboardCreateWallet"),
+  async () => await import("../pages/Onboard/OnboardCreateWallet"),
 );
 const OnboardImportWallet = lazy(
-  async () => await import("../pages/OnboardImportWallet"),
+  async () => await import("../pages/Onboard/OnboardImportWallet"),
 );
 
 // 加上 onboard 和 lock 逻辑

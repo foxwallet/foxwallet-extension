@@ -12,9 +12,9 @@ import {
   MenuList,
 } from "@chakra-ui/react";
 import React, { useState, useRef, useCallback } from "react";
-import { B3, H4, L1 } from "../../common/theme/components/text";
+import { B3, H4, L1 } from "../../../common/theme/components/text";
 import { useNavigate } from "react-router-dom";
-import BaseCheckbox from "../../components/Custom/Checkbox";
+import BaseCheckbox from "../../../components/Custom/Checkbox";
 import browser from "webextension-polyfill";
 import {
   IconChevronDown,
@@ -22,7 +22,7 @@ import {
   IconFoxWallet,
   IconLogo,
   OnboardLogo,
-} from "../../components/Custom/Icon";
+} from "../../../components/Custom/Icon";
 import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { LanguageLabels, SupportLanguages } from "@/locales/i18";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
