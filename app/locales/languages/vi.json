@@ -38,7 +38,8 @@
       "accountName": "Tên tài khoản",
       "accountNamePlaceholder": "Nhập tên tài khoản",
       "dupAccountName": "Tên tài khoản trùng lặp",
-      "delete": "Xóa ví"
+      "delete": "Xóa ví",
+      "deleteRemind": "Vui lòng đảm bảo ví được sao lưu đúng cách vì nó chỉ có thể được khôi phục bằng cụm từ hạt giống hoặc khóa riêng."
     }
   },
   "Onboard": {
@@ -59,7 +60,10 @@
     "passwordPlaceholder": "Không ít hơn 6 ký tự",
     "confirmPasswordPlaceholder": "Nhập lại mật khẩu",
     "warning": "FoxWallet sẽ không lưu trữ mật khẩu. Khi quên mật khẩu, bạn chỉ có thể khôi phục ví thông qua tính năng ghi nhớ.",
-    "verify": "Xác nhận lại mật khẩu"
+    "verify": "Xác nhận lại mật khẩu",
+    "strengthRemind": "Nếu mật khẩu không đủ mạnh, tính bảo mật của tài sản ví có thể bị xâm phạm.",
+    "change": "Thay đổi",
+    "stillCreate": "Vẫn Tạo"
   },
   "Mnemonic": {
     "backupTips1": "Nhấn vào đây để hiển thị giai đoạn ghi nhớ",
@@ -78,7 +82,12 @@
     "cancel": "Hủy bỏ",
     "next": "Kế tiếp",
     "edit": "Biên tập",
-    "more": "Hơn"
+    "more": "Hơn",
+    "done": "Xong",
+    "delete": "Xóa bỏ",
+    "warning": "Cảnh báo",
+    "copySuccess": "Sao chép thành công!",
+    "paused": "Đã tạm dừng"
   },
   "Send": {
     "title": "Gửi",
@@ -134,7 +143,8 @@
     "guide": "Hướng dẫn",
     "community": "Cộng đồng",
     "securityTips": "Mẹo bảo mật",
-    "settings": "Cài đặt"
+    "settings": "Cài đặt",
+    "account": "Tài khoản"
   },
   "Error": {
     "invalidPassword": "Mật khẩu không hợp lệ"

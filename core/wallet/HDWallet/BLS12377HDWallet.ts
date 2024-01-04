@@ -11,7 +11,7 @@ import {
 import { getCoinDerivation } from "../../helper/CoinBasic";
 import { CoreError } from "../../types/Error";
 import { encryptStr } from "../../utils/encrypt";
-import { PrivateKey } from "aleo_wasm";
+import init, { PrivateKey } from "aleo_wasm";
 import { logger } from "@/common/utils/logger";
 
 export class BLS12377HDWallet<T extends CoinType> implements BaseHDWallet<T> {
@@ -34,6 +34,7 @@ export class BLS12377HDWallet<T extends CoinType> implements BaseHDWallet<T> {
     switch (this.symbol) {
       case CoinType.ALEO: {
         try {
+          await init();
           const wallet = this.coinRoot.deriveChild(i);
           const pk = PrivateKey.from_seed_unchecked(wallet.key);
 
@@ -52,6 +53,7 @@ export class BLS12377HDWallet<T extends CoinType> implements BaseHDWallet<T> {
             index: i,
           };
         } catch (err) {
+          console.error(err);
           // @ts-expect-error throw error
           throw new CoreError("BLS12377HDWallet derive failed " + err.message);
         }

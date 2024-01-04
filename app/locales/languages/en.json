@@ -185,7 +185,8 @@
     "done": "Done",
     "delete": "Delete",
     "warning": "Warning",
-    "copySuccess": "Copy Success!"
+    "copySuccess": "Copy Success!",
+    "paused": "Paused"
   },
   "Error": {
     "invalidPassword": "Invalid password"
