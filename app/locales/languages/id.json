@@ -112,7 +112,12 @@
     "selectTransferMethod": "Pilih Metode Transfer",
     "privateRecord": "Catatan Pribadi",
     "gasFee": "Biaya Bahan Bakar",
-    "publicBalance": "Keseimbangan publik"
+    "publicBalance": "Keseimbangan publik",
+    "selectFeeMethod": "Pilih Metode Biaya",
+    "publicFee": "Keseimbangan publik untuk membayar biaya",
+    "privateFee": "Catatan pribadi untuk membayar biaya",
+    "feeHint": "Anda dapat menggunakan saldo publik atau salah satu catatan pribadi berikut di bawah ini untuk membayar biaya bahan bakar.",
+    "sendingAleoTx": "Mengirim transaksi aleo"
   },
   "PrivateKey": {
     "title": "Kunci pribadi",

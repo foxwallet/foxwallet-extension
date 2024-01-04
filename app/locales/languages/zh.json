@@ -107,12 +107,17 @@
     "selectRecord": "选择记录",
     "commitment": "承诺",
     "noRecordExist": "不存在记录",
-    "recordStatistics": "最多 {{COUNT}} 条记录",
+    "recordStatistics": "总共 {{COUNT}} 条记录",
     "transferMethod": "转账方式",
     "selectTransferMethod": "选择转账方式",
     "privateRecord": "隐私记录",
     "publicBalance": "公共余额",
-    "gasFee": "手续费"
+    "gasFee": "手续费",
+    "selectFeeMethod": "付手续费方式",
+    "publicFee": "公共余额支付费用",
+    "privateFee": "隐私记录支付费用",
+    "feeHint": "您可以使用公共余额或以下任何隐私记录来支付手续费。",
+    "sendingAleoTx": "正在发送aleo交易"
   },
   "PrivateKey": {
     "title": "私钥",

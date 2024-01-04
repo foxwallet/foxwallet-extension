@@ -200,8 +200,12 @@ export class PopupServerClient implements IClient, IPopupServer {
     return await this.#send("rescanAleo", params);
   }
 
-  async sendAleoTransaction(params: AleoSendTxProps): Promise<AleoTransaction> {
+  async sendAleoTransaction(params: AleoSendTxProps): Promise<void> {
     return await this.#send("sendAleoTransaction", params);
+  }
+
+  async isSendingAleoTransaction(): Promise<boolean> {
+    return await this.#send("isSendingAleoTransaction", {});
   }
 
   async onRequestFinish(params: RequestFinfishProps): Promise<void> {

@@ -10,7 +10,7 @@ import { showSelectRecordDialog } from "@/components/Send/SelectRecord";
 import { showSelectTransferMethodDialog } from "@/components/Send/SelectTransferMethod";
 import { TokenNum } from "@/components/Wallet/TokenNum";
 import { useBalance } from "@/hooks/useBalance";
-import { useCoinService } from "@/hooks/useCoinService";
+import { useCoinBasic, useCoinService } from "@/hooks/useCoinService";
 import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { useRecords } from "@/hooks/useRecord";
 import { Content } from "@/layouts/Content";
@@ -60,6 +60,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
   } = props;
 
   const { selectedAccount, uniqueId } = useCurrAccount();
+  const coinBasic = useCoinBasic(uniqueId);
   const { nativeCurrency } = useCoinService(uniqueId);
   const { balance, loadingBalance } = useBalance(
     uniqueId,
@@ -85,11 +86,10 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
   );
   useEffect(() => {
     if (debounceReceiverAddress) {
-      // const valid = coinBasic.isValidAddress(debounceReceiverAddress);
-      // setAddressValid(valid);
-      setAddressValid(true);
+      const valid = coinBasic.isValidAddress(debounceReceiverAddress);
+      setAddressValid(valid);
     }
-  }, [debounceReceiverAddress]);
+  }, [debounceReceiverAddress, coinBasic]);
 
   // Transfer method
   const isPrivateMethod = useMemo(() => {

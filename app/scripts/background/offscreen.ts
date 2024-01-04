@@ -15,7 +15,7 @@ const OFFSCREEN_DOCUMENT_PATH = "/offscreen.html";
 // A global promise to avoid concurrency issues
 let creating: Promise<void> | null;
 
-async function hasDocument(path: string) {
+async function hasDocument(path: string): Promise<boolean> {
   if ("getContexts" in chrome.runtime) {
     // @ts-expect-error getContexts not in type
     const contexts = await chrome.runtime.getContexts({
@@ -115,6 +115,11 @@ export async function sendTransaction(params: AleoSendTxParams) {
   syncBlocks();
   console.log("===> setupOffscreenDocument after tx", OFFSCREEN_DOCUMENT_PATH);
   return sendTxResp;
+}
+
+export async function isSendingAleoTransaction() {
+  const has = await hasDocument(OFFSCREEN_TX_DOCUMENT_PATH);
+  return has;
 }
 
 export async function sendDeployment(params: AleoRequestDeploymentParams) {

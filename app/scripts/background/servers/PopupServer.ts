@@ -28,6 +28,7 @@ import {
   GetPrivateKeyProps,
 } from "./IWalletServer";
 import {
+  isSendingAleoTransaction,
   sendDeployment,
   sendTransaction,
   stopSync,
@@ -501,22 +502,30 @@ export class PopupWalletServer implements IPopupServer {
     return true;
   }
 
-  async sendAleoTransaction(params: AleoSendTxProps): Promise<Transaction> {
+  async sendAleoTransaction(params: AleoSendTxProps): Promise<void> {
     const { walletId, accountId, coinType, ...rest } = params;
     const pk = await this.keyringManager.getPrivateKey({
       walletId,
       coinType,
       accountId,
     });
-    const tx = await sendTransaction({
+    sendTransaction({
       ...rest,
       privateKey: pk,
     });
-    console.log("===> sendAleoTransaction resp: ", tx);
-    if (tx.payload?.error) {
-      throw new Error(tx.payload.error);
-    }
-    return tx.payload.data;
+    // const tx = await sendTransaction({
+    //   ...rest,
+    //   privateKey: pk,
+    // });
+    // console.log("===> sendAleoTransaction resp: ", tx);
+    // if (tx.payload?.error) {
+    //   throw new Error(tx.payload.error);
+    // }
+    // return tx.payload.data;
+  }
+
+  async isSendingAleoTransaction(): Promise<boolean> {
+    return await isSendingAleoTransaction();
   }
 
   async getHDMnemonic(walletId: string): Promise<string> {
