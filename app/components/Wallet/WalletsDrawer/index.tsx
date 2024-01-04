@@ -45,9 +45,9 @@ const AccountListItem: React.FC<AccountListItemProps> = ({
         <Text fontSize={13} fontWeight={500} color={"#000"} align={"start"}>
           {account.accountName}
         </Text>
-        <Text fontSize={9} color={"#777E90"} noOfLines={1}>
+        <Box fontSize={9} color={"#777E90"} noOfLines={1}>
           <MiddleEllipsisText text={account.address} width={260} />
-        </Text>
+        </Box>
       </Flex>
       {isSelected && <IconCheckLineBlack height={18} width={18} />}
     </Flex>

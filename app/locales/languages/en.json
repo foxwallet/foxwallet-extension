@@ -29,7 +29,7 @@
       "hide": "Hide"
     },
     "Manage": {
-      "title": "Wallet",
+      "title": "Switch Wallet",
       "addWallet": "Add wallet",
       "checkAccounts": "Check accounts",
       "changeName": "Change wallet name",
@@ -133,7 +133,8 @@
     "guide": "Guide",
     "community": "Community",
     "securityTips": "Security Tips",
-    "settings": "Settings"
+    "settings": "Settings",
+    "account": "Account"
   },
   "Language": {
     "title": "Language"
@@ -176,7 +177,8 @@
     "cancel": "Cancel",
     "edit": "Edit",
     "next": "Next",
-    "more": "More"
+    "more": "More",
+    "done": "Done"
   },
   "Error": {
     "invalidPassword": "Invalid password"

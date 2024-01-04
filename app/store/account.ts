@@ -221,7 +221,7 @@ export const account = createModel<RootModel>()({
               [coinType]: [...accountList],
             },
           };
-          console.log("change account state ", !!hide);
+
           return {
             ...state,
             allWalletInfo: {
@@ -291,7 +291,7 @@ export const account = createModel<RootModel>()({
 
     async deleteWallet(walletId: string) {
       await clients.popupServerClient.deleteHDWallet(walletId);
-      dispatch.account.resyncAllWalletsToStore();
+      await dispatch.account.resyncAllWalletsToStore();
     },
   }),
 });

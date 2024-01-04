@@ -15,7 +15,7 @@ import { useCurrWallet } from "@/hooks/useWallets";
 import { Content } from "@/layouts/Content";
 import { Box, Divider, Flex, TabPanel, Text } from "@chakra-ui/react";
 import i18next from "i18next";
-import React, { useCallback } from "react";
+import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import browser from "webextension-polyfill";
@@ -26,9 +26,13 @@ export const SettingTab = () => {
   const { selectedAccount } = useCurrAccount();
   const { selectedWallet } = useCurrWallet();
 
-  const onManageWallet = useCallback(() => {
+  const onSwitchWallet = useCallback(() => {
     navigate("/manage_wallet");
   }, [navigate]);
+
+  const onWalletDetail = useCallback(() => {
+    navigate(`/wallet_detail/${selectedWallet.walletId}`);
+  }, [navigate, selectedWallet?.walletId]);
 
   const onGuide = useCallback(() => {
     const url =
@@ -66,6 +70,7 @@ export const SettingTab = () => {
         borderBottomWidth={"1px"}
         borderColor={"#E6E8EC"}
         w={"100%"}
+        onClick={onSwitchWallet}
       >
         <Flex align={"center"}>
           <IconLogo w={8} h={8} mr={2} />
@@ -73,17 +78,23 @@ export const SettingTab = () => {
             <Text fontSize={14} fontWeight={"bold"}>
               {selectedWallet?.walletName}
             </Text>
-            <Box fontSize={11} color={"gray.500"} fontWeight={500}>
+            <Box
+              fontSize={11}
+              color={"gray.500"}
+              fontWeight={500}
+              noOfLines={1}
+            >
               <MiddleEllipsisText text={selectedAccount.address} width={150} />
             </Box>
           </Flex>
         </Flex>
+        <IconChevronRight w={18} h={18} />
       </Flex>
       <Content>
         <SettingItem
-          title={t("Wallet:title")}
+          title={t("Setting:account")}
           icon={<IconWallet w={4} h={4} />}
-          onPress={onManageWallet}
+          onPress={onWalletDetail}
         />
         <SettingItem
           title={t("Setting:guide")}
