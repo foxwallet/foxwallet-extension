@@ -1,11 +1,11 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { PageWithHeader } from "../../layouts/Page";
-import { Body } from "../../layouts/Body";
-import { useClient } from "../../hooks/useClient";
-import { CreatePasswordStep } from "../../components/Onboard/CreatePassword";
-import { BackupMnemonicStep } from "../../components/Onboard/BackupMnemonic";
-import { logger } from "../../common/utils/logger";
-import { ConfirmMnemonicStep } from "../../components/Onboard/ConfirmMnemonic";
+import { PageWithHeader } from "../../../layouts/Page";
+import { Body } from "../../../layouts/Body";
+import { useClient } from "../../../hooks/useClient";
+import { CreatePasswordStep } from "../../../components/Onboard/CreatePassword";
+import { BackupMnemonicStep } from "../../../components/Onboard/BackupMnemonic";
+import { logger } from "../../../common/utils/logger";
+import { ConfirmMnemonicStep } from "../../../components/Onboard/ConfirmMnemonic";
 import { nanoid } from "nanoid";
 import { useNavigate } from "react-router-dom";
 import { usePopupDispatch } from "@/hooks/useStore";

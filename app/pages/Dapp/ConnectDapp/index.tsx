@@ -12,7 +12,7 @@ import { Content } from "@/layouts/Content";
 import { PageWithHeader } from "@/layouts/Page";
 import { DecryptPermission } from "@/scripts/background/types/permission";
 import { Button, Flex, Image, Text, keyframes } from "@chakra-ui/react";
-import BaseCheckbox from "../../components/Custom/Checkbox";
+import BaseCheckbox from "../../../components/Custom/Checkbox";
 
 import { NATIVE_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
 import {
