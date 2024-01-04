@@ -38,7 +38,8 @@
       "accountName": "Account Name",
       "accountNamePlaceholder": "Enter account name",
       "dupAccountName": "Duplicate account name",
-      "delete": "Delete wallet"
+      "delete": "Delete wallet",
+      "deleteRemind": "Please ensure the wallet is properly backed up as it can only be restored using the seed phrase or private key."
     }
   },
   "Onboard": {
@@ -59,7 +60,10 @@
     "passwordPlaceholder": "No less than 6 characters",
     "confirmPasswordPlaceholder": "Enter password again",
     "warning": "FoxWallet won't store the password. Once the password is forgotten, you can only restore the wallet through the mnemonic.",
-    "verify": "Verify Password"
+    "verify": "Verify Password",
+    "strengthRemind": "If the password is not strong enough, the security of the wallet assets may be compromised.",
+    "change": "Change",
+    "stillCreate": "Still Create"
   },
   "Mnemonic": {
     "title": "Seed phase",
@@ -178,7 +182,10 @@
     "edit": "Edit",
     "next": "Next",
     "more": "More",
-    "done": "Done"
+    "done": "Done",
+    "delete": "Delete",
+    "warning": "Warning",
+    "copySuccess": "Copy Success!"
   },
   "Error": {
     "invalidPassword": "Invalid password"

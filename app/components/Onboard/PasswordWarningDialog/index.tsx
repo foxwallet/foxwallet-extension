@@ -2,6 +2,7 @@ import { Button, Flex } from "@chakra-ui/react";
 import { P3 } from "../../../common/theme/components/text";
 import { BasicModal } from "../../Custom/Modal";
 import { promisifyChooseDialogWrapper } from "../../../common/utils/dialog";
+import { useTranslation } from "react-i18next";
 
 interface Props {
   isOpen: boolean;
@@ -11,27 +12,22 @@ interface Props {
 
 const PasswordWarningDialog = (props: Props) => {
   const { isOpen, onConfirm, onCancel } = props;
+  const { t } = useTranslation();
 
   return (
     <BasicModal
       isOpen={isOpen}
       onClose={onCancel}
       isCentered
-      title={"Warning"}
-      body={
-        <P3>
-          {
-            "The password strength is too low, the wallet assets will be insecure."
-          }
-        </P3>
-      }
+      title={t("Common:warning")}
+      body={<P3 textAlign={"center"}>{t("Password:strengthRemind")}</P3>}
       footer={
         <Flex flex={1}>
           <Button flex={1} mr="2" onClick={onCancel}>
-            Change
+            {t("Password:change")}
           </Button>
           <Button flex={1} ml="2" colorScheme="secondary" onClick={onConfirm}>
-            Still create
+            {t("Password:stillCreate")}
           </Button>
         </Flex>
       }
