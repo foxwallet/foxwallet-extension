@@ -33,16 +33,6 @@ function OnboardCreateWalletScreen() {
       revealMnemonic: true,
     });
     await dispatch.account.resyncAllWalletsToStore();
-
-    const coinType = CoinType.ALEO;
-    const account = wallet.accountsMap[coinType][0];
-    await dispatch.account.setSelectedAccount({
-      selectedAccount: {
-        walletId: wallet.walletId,
-        coinType,
-        ...account,
-      },
-    });
     setMnemonic(wallet.mnemonic ?? "");
   }, []);
 
@@ -52,15 +42,6 @@ function OnboardCreateWalletScreen() {
       walletName: walletNameRef.current,
       walletId,
       revealMnemonic: true,
-    });
-    const coinType = CoinType.ALEO;
-    const account = wallet.accountsMap[coinType][0];
-    await dispatch.account.setSelectedAccount({
-      selectedAccount: {
-        walletId: wallet.walletId,
-        coinType,
-        ...account,
-      },
     });
     setMnemonic(wallet.mnemonic ?? "");
   }, []);

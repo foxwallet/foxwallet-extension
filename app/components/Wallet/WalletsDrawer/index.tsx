@@ -38,7 +38,6 @@ const AccountListItem: React.FC<AccountListItemProps> = ({
       align={"center"}
       justify={"space-between"}
       minH={"52px"}
-      as={"button"}
       onClick={handleSelected}
     >
       <Flex direction={"column"}>

@@ -180,7 +180,7 @@ export interface IPopupServer {
 
   getHDMnemonic(walletId: string): Promise<string>;
 
-  deleteHDWallet(walletId: string): Promise<void>;
+  deleteWallet(walletId: string): Promise<DisplayKeyring>;
 
   getPrivateKey(params: GetPrivateKeyProps): Promise<string>;
 

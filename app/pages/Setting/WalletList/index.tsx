@@ -49,7 +49,6 @@ const WalletItem: React.FC<WalletItemProps> = ({
         flex={1}
         minH={"38px"}
         align={"center"}
-        as={"button"}
         onClick={handleSelected}
       >
         {isSelected ? (
@@ -73,7 +72,6 @@ const WalletItem: React.FC<WalletItemProps> = ({
         alignSelf={"center"}
         fontSize={10}
         color={"#777E90"}
-        as={"button"}
         onClick={handleCheckAccounts}
         px={0.5}
         borderRadius={"4px"}
@@ -89,7 +87,7 @@ function WalletListScreen() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { selectedWallet } = useCurrWallet();
-  const { flattenWalletList } = useWallets();
+  const { walletList } = useWallets();
   const dispatch = usePopupDispatch();
 
   const onSelectWallet = useCallback(
@@ -150,7 +148,7 @@ function WalletListScreen() {
     >
       <Flex direction={"column"} flex={1} px={5} pb={4}>
         <Flex direction={"column"} maxH={470} overflowY="auto">
-          {flattenWalletList.map(renderWalletItem)}
+          {walletList.map(renderWalletItem)}
         </Flex>
         <Button
           position={"absolute"}

@@ -44,6 +44,11 @@ export class AccountSettingStorage {
     return await instance.setItem(SELECTED_ACCOUNT_KEY, account);
   };
 
+  removeSelectedAccount = async (coinType: CoinType) => {
+    const instance = this.getAccountSettingInstance(coinType);
+    return await instance.removeItem(SELECTED_ACCOUNT_KEY);
+  };
+
   getSelectedAccount = async (coinType: CoinType) => {
     const instance = this.getAccountSettingInstance(coinType);
     const selectedAccount: SelectedAccount | null =

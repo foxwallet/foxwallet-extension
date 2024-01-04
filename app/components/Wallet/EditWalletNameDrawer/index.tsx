@@ -16,7 +16,7 @@ interface Props {
 const EditWalletNameDrawer = (props: Props) => {
   const { isOpen, onCancel, onConfirm } = props;
   const { t } = useTranslation();
-  const { flattenWalletList } = useWallets();
+  const { walletList } = useWallets();
   const { selectedWallet, changeWalletName } = useCurrWallet();
 
   const [walletName, setWalletName] = useState(selectedWallet?.walletName);
@@ -38,12 +38,12 @@ const EditWalletNameDrawer = (props: Props) => {
 
   const dupWalletName = useMemo(() => {
     if (!walletName) return false;
-    return flattenWalletList?.some(
+    return walletList?.some(
       (item) =>
         item.walletName === walletName &&
         walletName !== selectedWallet?.walletName,
     );
-  }, [flattenWalletList, walletName, selectedWallet?.walletName]);
+  }, [walletList, walletName, selectedWallet?.walletName]);
 
   const isInvalidName = useMemo(() => {
     return !walletName || dupWalletName;

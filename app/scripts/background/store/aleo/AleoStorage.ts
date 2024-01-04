@@ -11,6 +11,8 @@ import {
 } from "core/coins/ALEO/types/SyncTask";
 import { ProverKeyPair } from "core/coins/ALEO/types/ProverKeyPair";
 import { AleoLocalTxInfo } from "core/coins/ALEO/types/Tranaction";
+import { ALEO_CHAIN_IDS } from "core/coins/ALEO/config/chains";
+import localforage from "localforage";
 
 export class AleoStorage implements IAleoStorage {
   static instance: AleoStorage;
@@ -45,6 +47,7 @@ export class AleoStorage implements IAleoStorage {
     const newInstance = this.#aleoBlockStorage.createInstance({
       name: chainId,
       storeName: `${prefix}-${address}`,
+      driver: localforage.INDEXEDDB,
     });
     this.#aleoBlockStorageMap.set(key, newInstance);
     return newInstance;
@@ -88,7 +91,41 @@ export class AleoStorage implements IAleoStorage {
 
   async removeAccount(address: string) {
     const instance = this.#aleoAccountStorage;
-    return await instance.removeItem(address);
+    await instance.removeItem(address);
+    for (let chainId of ALEO_CHAIN_IDS) {
+      await this.clearAccountBlockData(chainId, address);
+    }
+    return true;
+  }
+
+  async clearAccountBlockData(chainId: string, address: string) {
+    const instance = this.getAleoStorageInstance(
+      chainId,
+      address,
+      StorageKey.INFO,
+    );
+    let keys = await instance.keys();
+    for (let key of keys) {
+      await instance.removeItem(key);
+    }
+    const recordInstance = this.getAleoStorageInstance(
+      chainId,
+      address,
+      StorageKey.RECORD,
+    );
+    keys = await recordInstance.keys();
+    for (let key of keys) {
+      await recordInstance.removeItem(key);
+    }
+    const txInstance = this.getAleoStorageInstance(
+      chainId,
+      address,
+      StorageKey.LOCAL_TX,
+    );
+    keys = await txInstance.keys();
+    for (let key of keys) {
+      await txInstance.removeItem(key);
+    }
   }
 
   async getAleoRecordRanges(
