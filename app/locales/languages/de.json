@@ -169,11 +169,11 @@
   },
   "About": {
     "title": "Um",
-    "sender": "Absender",
     "upgrade": "Aktualisierung",
     "download": "Herunterladen",
     "noUpdate": "Kein Update erforderlich",
     "privacyPolicy": "<Datenschutzerklärung>",
-    "userAgreement": "<Benutzervereinbarung>"
+    "userAgreement": "<Benutzervereinbarung>",
+    "version": "Ausführung"
   }
 }

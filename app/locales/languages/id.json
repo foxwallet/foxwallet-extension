@@ -169,11 +169,11 @@
   },
   "About": {
     "title": "Tentang",
-    "sender": "Pengirim",
     "upgrade": "Meningkatkan",
     "download": "Unduh",
     "noUpdate": "Tidak diperlukan pembaruan",
     "privacyPolicy": "<Kebijakan Privasi>",
-    "userAgreement": "<Perjanjian Pengguna>"
+    "userAgreement": "<Perjanjian Pengguna>",
+    "version": "Versi: kapan"
   }
 }

@@ -169,11 +169,11 @@
   },
   "About": {
     "title": "关于",
-    "sender": "发件人",
     "upgrade": "升级",
     "download": "下载",
     "noUpdate": "无需更新",
     "privacyPolicy": "<隐私政策>",
-    "userAgreement": "<用户协议>"
+    "userAgreement": "<用户协议>",
+    "version": "版本"
   }
 }

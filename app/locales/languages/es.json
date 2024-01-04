@@ -169,11 +169,11 @@
   },
   "About": {
     "title": "Acerca de",
-    "sender": "Remitente",
     "upgrade": "Mejora",
     "download": "Descargar",
     "noUpdate": "No se requiere actualización",
     "privacyPolicy": "<Política de privacidad>",
-    "userAgreement": "<Acuerdo de usuario>"
+    "userAgreement": "<Acuerdo de usuario>",
+    "version": "Versión"
   }
 }
