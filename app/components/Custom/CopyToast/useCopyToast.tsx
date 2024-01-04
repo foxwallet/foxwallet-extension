@@ -1,8 +1,10 @@
 import { Flex, useToast, Text, Box, VStack } from "@chakra-ui/react";
 import { IconCheckLineBlack } from "../Icon";
+import { useTranslation } from "react-i18next";
 
 const ToastId = "copy-toast";
 export const useCopyToast = () => {
+  const { t } = useTranslation();
   const toast = useToast({
     position: "top",
     render: () => (
@@ -29,7 +31,7 @@ export const useCopyToast = () => {
             <IconCheckLineBlack />
           </Flex>
           <Text color={"white"} fontWeight={500}>
-            Copy Success!
+            {t("Common:copySuccess")}
           </Text>
         </Box>
       </VStack>

@@ -157,7 +157,7 @@ export const AccountInfoHeader = () => {
             ml={1}
             onClick={() => dispatch.account.changeBalanceState()}
           >
-            {showBalance ? (
+            {!showBalance ? (
               <IconEyeOn w={4} h={4} />
             ) : (
               <IconEyeClose w={4} h={4} />
