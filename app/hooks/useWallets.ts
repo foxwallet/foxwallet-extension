@@ -88,7 +88,10 @@ export const useWallets = () => {
           return Promise.resolve();
         }
 
-        const nextWallet = flattenWalletList[0];
+        // using the first wallet in the list that does not contain the current wallet
+        const nextWallet = flattenWalletList.filter(
+          (w) => w.walletId !== selectedAccount.walletId,
+        )[0];
         const nextAccount = (nextWallet.accountsMap[CoinType.ALEO] || []).find(
           (account) => !account.hide,
         );
