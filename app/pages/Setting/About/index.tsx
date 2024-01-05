@@ -49,7 +49,7 @@ const AboutScreen = () => {
           color={"#00D856"}
           fontSize={14}
           fontWeight={500}
-          as="button"
+          cursor={"pointer"}
           onClick={() => browser.tabs.create({ url: PRIVACY_POLICY_URL })}
         >
           <Text>{t("About:privacyPolicy")}</Text>
@@ -58,7 +58,7 @@ const AboutScreen = () => {
           color={"#00D856"}
           fontSize={14}
           fontWeight={500}
-          as="button"
+          cursor={"pointer"}
           onClick={() => browser.tabs.create({ url: TERMS_OF_SERVICE_URL })}
         >
           <Text>{t("About:userAgreement")}</Text>

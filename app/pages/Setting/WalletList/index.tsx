@@ -141,7 +141,13 @@ function WalletListScreen() {
       enableBack
       title={t("Wallet:title")}
       rightIcon={
-        <Box mr={2} fontSize={12} fontWeight={500} as="button" onClick={onEdit}>
+        <Box
+          mr={2}
+          fontSize={12}
+          fontWeight={500}
+          cursor={"pointer"}
+          onClick={onEdit}
+        >
           {t("Common:edit")}
         </Box>
       }

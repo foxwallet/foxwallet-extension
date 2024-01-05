@@ -83,13 +83,13 @@ function ReceiveScreen() {
             {selectedAccount.address}
           </Text>
           <Flex
-            as="button"
             h={6}
             w={6}
             bg={"#E6E8EC"}
             justify={"center"}
             align={"center"}
             borderRadius={12}
+            cursor={"pointer"}
             onClick={handleCopy}
           >
             <IconCopyBlack h={3.5} w={3.5} />

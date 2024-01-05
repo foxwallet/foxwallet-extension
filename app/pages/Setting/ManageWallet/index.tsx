@@ -58,7 +58,7 @@ const WalletItem: React.FC<WalletItemProps> = ({
         onClick={handleSelected}
       >
         {isEditing && (
-          <Box mr={2.5} as="button" onClick={handleDelete}>
+          <Box mr={2.5} cursor={"pointer"} onClick={handleDelete}>
             <IconDelete w={18} h={18} />
           </Box>
         )}
@@ -146,7 +146,7 @@ function ManageWalletScreen() {
           mr={2}
           fontSize={12}
           fontWeight={500}
-          as="button"
+          cursor={"pointer"}
           onClick={onToggle}
         >
           {isOpen ? t("Common:done") : t("Common:edit")}
