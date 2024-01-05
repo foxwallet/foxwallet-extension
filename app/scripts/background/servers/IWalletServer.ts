@@ -131,6 +131,12 @@ export type GetPrivateKeyProps = {
   accountId: string;
 };
 
+export type ChangeAccountStateProps = {
+  walletId: string;
+  accountId: string;
+  hide: boolean;
+};
+
 export interface IPopupServer {
   initPassword: (params: { password: string }) => Promise<boolean>;
 
@@ -185,6 +191,8 @@ export interface IPopupServer {
   getPrivateKey(params: GetPrivateKeyProps): Promise<string>;
 
   checkPassword(password: string): Promise<boolean>;
+
+  changeAccountHideState(params: ChangeAccountStateProps): Promise<void>;
 }
 
 export interface ConnectProps {

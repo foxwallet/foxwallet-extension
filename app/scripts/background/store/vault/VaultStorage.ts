@@ -15,6 +15,7 @@ import { TaskPriority } from "core/coins/ALEO/types/SyncTask";
 import { AleoStorage } from "../aleo/AleoStorage";
 import { ALEO_CHAIN_CONFIGS } from "core/coins/ALEO/config/chains";
 import { AleoSyncAccount } from "core/coins/ALEO/types/AleoSyncAccount";
+import { ChangeAccountStateProps } from "../../servers/IWalletServer";
 
 export class VaultStorage {
   #storage: browser.Storage.LocalStorageArea;
@@ -314,6 +315,60 @@ export class VaultStorage {
       }
     }
 
+    return await this.setKeyring({
+      ...keyring,
+      [WalletType.SIMPLE]: newSimpleWallets,
+      [WalletType.HD]: newHDWallets,
+    });
+  }
+
+  async changeAccountHideState(params: ChangeAccountStateProps) {
+    const { walletId, accountId, hide } = params;
+    const keyring = (await this.getKeyring()) || {};
+    const hdWallets = keyring[WalletType.HD] || [];
+    const simpleWallets = keyring[WalletType.SIMPLE] || [];
+    const newHDWallets = [...hdWallets];
+    const newSimpleWallets = [...simpleWallets];
+    const index = newHDWallets.findIndex((w) => w.walletId === walletId);
+
+    if (index > -1) {
+      const wallet = newHDWallets[index];
+      const aleoAccount = wallet.accountsMap[CoinType.ALEO];
+      const accountIndex = aleoAccount.findIndex(
+        (a) => a.accountId === accountId,
+      );
+      if (accountIndex > -1) {
+        aleoAccount[accountIndex] = {
+          ...aleoAccount[accountIndex],
+          hide,
+        };
+        wallet.accountsMap = {
+          ...wallet.accountsMap,
+          [CoinType.ALEO]: [...aleoAccount],
+        };
+        newHDWallets[index] = { ...wallet };
+      }
+    } else {
+      const index = newSimpleWallets.findIndex((w) => w.walletId === walletId);
+      if (index > -1) {
+        const wallet = newSimpleWallets[index];
+        const aleoAccount = wallet.accountsMap[CoinType.ALEO];
+        const accountIndex = aleoAccount.findIndex(
+          (a) => a.accountId === accountId,
+        );
+        if (accountIndex > -1) {
+          aleoAccount[accountIndex] = {
+            ...aleoAccount[accountIndex],
+            hide,
+          };
+          wallet.accountsMap = {
+            ...wallet.accountsMap,
+            [CoinType.ALEO]: [...aleoAccount],
+          };
+          newSimpleWallets[index] = { ...wallet };
+        }
+      }
+    }
     return await this.setKeyring({
       ...keyring,
       [WalletType.SIMPLE]: newSimpleWallets,

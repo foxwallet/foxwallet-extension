@@ -23,6 +23,7 @@ import { decryptStr, encryptStr } from "core/utils/encrypt";
 import { logger } from "../../../../../../common/utils/logger";
 import {
   AddAccountProps,
+  ChangeAccountStateProps,
   ImportPrivateKeyProps,
 } from "../../../../servers/IWalletServer";
 import initAleoWasm from "aleo_wasm";
@@ -148,6 +149,7 @@ export class KeyringManager {
           {
             ...newAccount,
             accountName,
+            hide: false,
           },
         ],
       },
@@ -206,6 +208,7 @@ export class KeyringManager {
           {
             ...newAccount,
             accountName,
+            hide: false,
           },
         ],
       },
@@ -279,6 +282,7 @@ export class KeyringManager {
           {
             ...newAccount,
             accountName,
+            hide: false,
           },
         ],
       },
@@ -324,6 +328,7 @@ export class KeyringManager {
           {
             ...newEncryptedKeyPair,
             accountName,
+            hide: false,
           },
         ],
       },
@@ -372,6 +377,7 @@ export class KeyringManager {
             accountId: nanoid(),
             accountName: "Account 1",
             privateKey: privateKeyObj,
+            hide: false,
           },
         ],
       },
@@ -530,5 +536,17 @@ export class KeyringManager {
       throw new Error(ERROR_CODE.NOT_AUTH);
     }
     return await this.#storage.deleteWallet(walletId);
+  }
+
+  async changeAccountHideState(params: ChangeAccountStateProps) {
+    const keyring = await this.#storage.getKeyring();
+    if (!keyring) {
+      throw new Error("Empty keyring");
+    }
+    const token = this.#getToken();
+    if (!token) {
+      throw new Error(ERROR_CODE.NOT_AUTH);
+    }
+    return await this.#storage.changeAccountHideState(params);
   }
 }

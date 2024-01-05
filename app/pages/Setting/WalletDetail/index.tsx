@@ -92,7 +92,6 @@ const AccountListItem: React.FC<AccountListItemProps> = ({ account }) => {
     dispatch.account.changeAccountHideState({
       walletId: operatingWallet.walletId,
       accountId: account.accountId,
-      coinType: account.coinType,
       hide: !account.hide,
     });
 

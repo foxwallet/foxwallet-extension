@@ -9,6 +9,7 @@ import { CoinType } from "core/types";
 import { clients } from "@/hooks/useClient";
 import { DEFAULT_UNIQUE_ID_MAP } from "core/constants";
 import { ChainUniqueId } from "core/types/ChainUniqueId";
+import { ChangeAccountStateProps } from "@/scripts/background/servers/IWalletServer";
 
 type SelectedAccount = DisplayAccount & {
   walletId: string;
@@ -116,7 +117,8 @@ export const account = createModel<RootModel>()({
             if (matchedAccount) {
               return {
                 ...account,
-                ...matchedAccount, // using accountName & hide of the existed account in Redux store
+                ...matchedAccount, // using accountName of the existed account in Redux store
+                hide: account.hide,
               };
             }
             return account;
@@ -191,48 +193,6 @@ export const account = createModel<RootModel>()({
           },
         },
       };
-    },
-    changeAccountHideState(
-      state,
-      payload: {
-        walletId: string;
-        accountId: string;
-        coinType: CoinType;
-        hide: boolean;
-      },
-    ) {
-      const { walletId, accountId, coinType, hide } = payload;
-      const matchedWallet = state.allWalletInfo[walletId];
-      if (matchedWallet) {
-        const accountList = matchedWallet.accountsMap[coinType] || [];
-        const targetAccountIndex = accountList.findIndex(
-          (a) => a.accountId === accountId,
-        );
-
-        if (targetAccountIndex !== -1) {
-          accountList[targetAccountIndex] = {
-            ...accountList[targetAccountIndex],
-            hide: !!hide,
-          };
-          const walletInfo = {
-            ...matchedWallet,
-            accountsMap: {
-              ...matchedWallet.accountsMap,
-              [coinType]: [...accountList],
-            },
-          };
-
-          return {
-            ...state,
-            allWalletInfo: {
-              ...state.allWalletInfo,
-              [walletId]: { ...walletInfo },
-            },
-          };
-        }
-      }
-
-      return state;
     },
     changeBalanceState(state) {
       return {
@@ -319,6 +279,11 @@ export const account = createModel<RootModel>()({
       dispatch.account._setAllWalletInfo({ walletList: walletList });
 
       return [...walletList];
+    },
+
+    async changeAccountHideState(params: ChangeAccountStateProps) {
+      await clients.popupServerClient.changeAccountHideState(params);
+      await dispatch.account.resyncAllWalletsToStore();
     },
   }),
 });
