@@ -142,7 +142,8 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
   );
 
   // transfer record
-  const currTransferRecord = selectedTransferRecord || records[0];
+  const currTransferRecord: RecordDetailWithSpent | undefined =
+    selectedTransferRecord || records[0];
   const onSelectTransferRecord = useCallback(async () => {
     const { data } = await showSelectRecordDialog({
       recordList: records,
@@ -353,7 +354,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
             <TokenNum
               amount={
                 (isPrivateMethod
-                  ? currTransferRecord.parsedContent?.microcredits
+                  ? currTransferRecord?.parsedContent?.microcredits
                   : balance?.publicBalance) || 0n
               }
               decimals={nativeCurrency.decimals}
@@ -415,7 +416,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
                   {t("Send:payPrivateRecord")}&nbsp; (
                   <TokenNum
                     amount={
-                      currTransferRecord.parsedContent?.microcredits || 0n
+                      currTransferRecord?.parsedContent?.microcredits || 0n
                     }
                     decimals={nativeCurrency.decimals}
                     symbol={nativeCurrency.symbol}
