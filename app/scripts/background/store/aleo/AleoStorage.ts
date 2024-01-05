@@ -99,32 +99,36 @@ export class AleoStorage implements IAleoStorage {
   }
 
   async clearAccountBlockData(chainId: string, address: string) {
-    const instance = this.getAleoStorageInstance(
-      chainId,
-      address,
-      StorageKey.INFO,
-    );
-    let keys = await instance.keys();
-    for (let key of keys) {
-      await instance.removeItem(key);
-    }
-    const recordInstance = this.getAleoStorageInstance(
-      chainId,
-      address,
-      StorageKey.RECORD,
-    );
-    keys = await recordInstance.keys();
-    for (let key of keys) {
-      await recordInstance.removeItem(key);
-    }
-    const txInstance = this.getAleoStorageInstance(
-      chainId,
-      address,
-      StorageKey.LOCAL_TX,
-    );
-    keys = await txInstance.keys();
-    for (let key of keys) {
-      await txInstance.removeItem(key);
+    try {
+      const instance = this.getAleoStorageInstance(
+        chainId,
+        address,
+        StorageKey.INFO,
+      );
+      let keys = await instance.keys();
+      for (let key of keys) {
+        await instance.removeItem(key);
+      }
+      const recordInstance = this.getAleoStorageInstance(
+        chainId,
+        address,
+        StorageKey.RECORD,
+      );
+      keys = await recordInstance.keys();
+      for (let key of keys) {
+        await recordInstance.removeItem(key);
+      }
+      const txInstance = this.getAleoStorageInstance(
+        chainId,
+        address,
+        StorageKey.LOCAL_TX,
+      );
+      keys = await txInstance.keys();
+      for (let key of keys) {
+        await txInstance.removeItem(key);
+      }
+    } catch (err) {
+      console.error("clearAccountBlockData failed: ", err);
     }
   }
 
