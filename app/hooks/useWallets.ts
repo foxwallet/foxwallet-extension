@@ -6,12 +6,10 @@ import { isEqual } from "lodash";
 import { useCoinBasic } from "./useCoinService";
 import { showPasswordVerifyDrawer } from "@/components/Custom/PasswordVerifyDrawer";
 import { showDeleteWalletWarningDialog } from "@/components/Wallet/DeleteWalletWarningDialog";
-import { useNavigate } from "react-router-dom";
 import { useCurrAccount } from "./useCurrAccount";
 
 export const useWallets = () => {
   const { popupServerClient } = useClient();
-  const navigate = useNavigate();
 
   const { allWalletInfo, selectedAccount } = usePopupSelector(
     (state) => ({
@@ -61,7 +59,7 @@ export const useWallets = () => {
       const newWallets = await dispatch.account.deleteWallet(walletId);
       return newWallets;
     },
-    [dispatch.account, navigate, selectedAccount],
+    [dispatch.account, selectedAccount],
   );
 
   return {

@@ -26,6 +26,7 @@ import {
   ResyncAleoProps,
   ImportPrivateKeyProps,
   GetPrivateKeyProps,
+  ChangeAccountStateProps,
 } from "./IWalletServer";
 import {
   isSendingAleoTransaction,
@@ -43,7 +44,6 @@ import { DappRequest } from "../types/dapp";
 import { createPopup } from "../helper/popup";
 import { AleoConnectHistory } from "../types/connect";
 import { SiteInfo } from "@/scripts/content/host";
-import { Transaction } from "core/coins/ALEO/types/AleoTransaction";
 import { PrivateKey } from "aleo_wasm";
 import { hexToUint8Array } from "@/common/utils/buffer";
 import {
@@ -52,7 +52,6 @@ import {
 } from "core/coins/ALEO/types/Tranaction";
 import { CoinServiceEntry } from "core/coins/CoinServiceEntry";
 import { ChainUniqueId, InnerChainUniqueId } from "core/types/ChainUniqueId";
-import { DEFAULT_UNIQUE_ID_MAP } from "core/constants";
 
 export type OnRequestFinishCallback = (
   error: null | Error,
@@ -495,7 +494,9 @@ export class PopupWalletServer implements IPopupServer {
     const existKeyring = await this.keyringManager.getAllWallet(true);
     const existWallet = existKeyring[WalletType.HD]?.[0];
     if (existWallet) {
-      const existAccount = existWallet.accountsMap[params.coinType][0];
+      const existAccount = existWallet.accountsMap[params.coinType].find(
+        (account) => !account.hide,
+      );
       if (existAccount) {
         const newSelectedAccount = {
           walletId: existWallet.walletId,
@@ -601,7 +602,9 @@ export class PopupWalletServer implements IPopupServer {
           (item) => item.walletId !== walletId,
         )[0];
         if (otherHDWallet) {
-          const otherAccount = otherHDWallet.accountsMap[CoinType.ALEO][0];
+          const otherAccount = otherHDWallet.accountsMap[CoinType.ALEO].find(
+            (account) => !account.hide,
+          );
           if (otherAccount) {
             newSelectedAccount = {
               walletId: otherHDWallet.walletId,
@@ -614,8 +617,9 @@ export class PopupWalletServer implements IPopupServer {
             (item) => item.walletId !== walletId,
           )[0];
           if (otherSimpleWallet) {
-            const otherAccount =
-              otherSimpleWallet.accountsMap[CoinType.ALEO][0];
+            const otherAccount = otherSimpleWallet.accountsMap[
+              CoinType.ALEO
+            ].find((account) => !account.hide);
             if (otherAccount) {
               newSelectedAccount = {
                 walletId: otherSimpleWallet.walletId,
@@ -651,5 +655,9 @@ export class PopupWalletServer implements IPopupServer {
 
   async checkPassword(password: string): Promise<boolean> {
     return await this.authManager.checkPassword(password);
+  }
+
+  async changeAccountHideState(params: ChangeAccountStateProps): Promise<void> {
+    return await this.keyringManager.changeAccountHideState(params);
   }
 }

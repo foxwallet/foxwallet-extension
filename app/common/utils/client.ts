@@ -15,6 +15,7 @@ import {
   ResyncAleoProps,
   ImportPrivateKeyProps,
   GetPrivateKeyProps,
+  ChangeAccountStateProps,
 } from "../../scripts/background/servers/IWalletServer";
 import {
   type DisplayWallet,
@@ -226,6 +227,10 @@ export class PopupServerClient implements IClient, IPopupServer {
 
   async checkPassword(password: string): Promise<boolean> {
     return await this.#send("checkPassword", password);
+  }
+
+  async changeAccountHideState(params: ChangeAccountStateProps): Promise<void> {
+    return await this.#send("changeAccountHideState", params);
   }
 
   async #send<T, R>(method: PopupServerMethod, payload: T): Promise<R> {
