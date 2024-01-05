@@ -28,17 +28,12 @@ export const ImportPrivateKeyStep = ({ onConfirm }: Props) => {
     setPrivateKey(value);
   }, []);
 
-  const isValid = useMemo(() => {
-    return validateMnemonic(privateKey);
-  }, [privateKey]);
-
   const showError = useMemo(() => {
-    const words = privateKey.trim().split(" ");
-    if (words.length === 12 || words.length === 24) {
-      return !isValid;
+    if (!privateKey) {
+      return false;
     }
-    return false;
-  }, [privateKey, isValid]);
+    return !privateKeyValid;
+  }, [privateKey, privateKeyValid]);
 
   return (
     <Content>
@@ -52,11 +47,11 @@ export const ImportPrivateKeyStep = ({ onConfirm }: Props) => {
         h={"150"}
         borderColor={showError ? "red.500" : undefined}
       />
-      {!privateKeyValid && (
+      {showError && (
         <WarningArea container={{ mt: "2" }} content={"Wrong private key."} />
       )}
       <Button
-        isDisabled={!isValid}
+        isDisabled={!privateKeyValid}
         position={"fixed"}
         bottom={10}
         left={"4"}
