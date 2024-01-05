@@ -299,19 +299,29 @@ export class VaultStorage {
     if (index > -1) {
       const wallet = newHDWallets[index];
       const aleoAccount = wallet.accountsMap[CoinType.ALEO];
-      for (let account of aleoAccount) {
-        await this.#aleoStorage.removeAccount(account.address);
+      try {
+        for (let account of aleoAccount) {
+          await this.#aleoStorage.removeAccount(account.address);
+        }
+      } catch (e) {
+        console.log("aleoStorage#deleteHDWallet error ", e);
+      } finally {
+        newHDWallets.splice(index, 1);
       }
-      newHDWallets.splice(index, 1);
     } else {
       const index = newSimpleWallets.findIndex((w) => w.walletId === walletId);
       if (index > -1) {
         const wallet = newSimpleWallets[index];
         const aleoAccount = wallet.accountsMap[CoinType.ALEO];
-        for (let account of aleoAccount) {
-          await this.#aleoStorage.removeAccount(account.address);
+        try {
+          for (let account of aleoAccount) {
+            await this.#aleoStorage.removeAccount(account.address);
+          }
+        } catch (e) {
+          console.log("aleoStorage#deleteSimpleWallet error ", e);
+        } finally {
+          newSimpleWallets.splice(index, 1);
         }
-        newSimpleWallets.splice(index, 1);
       }
     }
 

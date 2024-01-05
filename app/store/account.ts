@@ -272,6 +272,8 @@ export const account = createModel<RootModel>()({
     async deleteWallet(walletId: string) {
       const wallets = await clients.popupServerClient.deleteWallet(walletId);
       if (!wallets) return [];
+      // update selectedAccount in Redux store immediately
+      await dispatch.account.getSelectedAccount(CoinType.ALEO);
 
       const hdWallets = wallets[WalletType.HD] ?? [];
       const simpleWallets = wallets[WalletType.SIMPLE] ?? [];
