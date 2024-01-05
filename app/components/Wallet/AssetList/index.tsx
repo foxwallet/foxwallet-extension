@@ -24,12 +24,12 @@ export const AssetList = () => {
     <TabPanel>
       <Flex
         w={"100%"}
-        as="button"
         py={3}
         px={5}
         align={"center"}
         justify={"space-between"}
         _hover={{ background: "#F5F5F5" }}
+        cursor={"pointer"}
         onClick={onTokenDetail}
       >
         <Flex align={"center"}>

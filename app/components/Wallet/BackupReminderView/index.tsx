@@ -45,7 +45,7 @@ export const BackupReminderView = () => {
         <Text color={"#000"} fontWeight={500} fontSize={13} maxW={150}>
           {t("Wallet:backupTips")}
         </Text>
-        <Flex as="button" align={"center"} mt={1} onClick={onBackup}>
+        <Flex cursor={"pointer"} align={"center"} mt={1} onClick={onBackup}>
           <Text color={"#00D856"} fontWeight={500} fontSize={13}>
             {t("Wallet:backupBtnTitle")}
           </Text>
@@ -54,7 +54,7 @@ export const BackupReminderView = () => {
       </Flex>
       <Flex align={"flex-start"}>
         <IconBackupReminder mt={1} />
-        <Box as="button" onClick={() => setVisible((prev) => !prev)}>
+        <Box cursor={"pointer"} onClick={() => setVisible((prev) => !prev)}>
           <IconCloseLineGray w={4} h={4} />
         </Box>
       </Flex>

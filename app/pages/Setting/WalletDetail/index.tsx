@@ -151,7 +151,7 @@ const AccountListItem: React.FC<AccountListItemProps> = ({ account }) => {
             {account.accountName}
           </Text>
           <Box
-            as="button"
+            cursor={"pointer"}
             onClick={handleEditName}
             p={1}
             borderRadius={11}
@@ -171,7 +171,7 @@ const AccountListItem: React.FC<AccountListItemProps> = ({ account }) => {
             <MiddleEllipsisText text={account.address} width={240} />
           </Box>
           <Box
-            as="button"
+            cursor={"pointer"}
             onClick={handleCopyAddress}
             p={1}
             borderRadius={12}
@@ -182,7 +182,7 @@ const AccountListItem: React.FC<AccountListItemProps> = ({ account }) => {
         </Flex>
       </Flex>
       <Box
-        as="button"
+        cursor={"pointer"}
         onClick={handleShowMore}
         p={1}
         borderRadius={13}
@@ -292,7 +292,7 @@ const WalletDetailScreen = () => {
       title={walletInfo?.walletName}
       rightIcon={
         <Box
-          as="button"
+          cursor={"pointer"}
           onClick={onWalletMoreAction}
           p={1}
           borderRadius={13}
