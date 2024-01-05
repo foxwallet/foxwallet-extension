@@ -20,7 +20,7 @@ const SettingItem: React.FC<SettingItemProps> = ({
       justify={"space-between"}
       py={2.5}
       mb={2.5}
-      as="button"
+      cursor={"pointer"}
       onClick={onPress}
     >
       <Flex align={"center"} justify={"flex-start"}>

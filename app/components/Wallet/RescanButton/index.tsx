@@ -33,7 +33,7 @@ const RescanButton = (props: RescanButtonProps) => {
 
   return (
     <Flex
-      as="button"
+      cursor={"pointer"}
       onClick={onRescan}
       borderWidth={"1px"}
       borderRadius={"4px"}

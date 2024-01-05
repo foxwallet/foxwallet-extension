@@ -108,7 +108,7 @@ const WalletsDrawer = (props: Props) => {
       onClose={onCancel}
       title={selectedWallet?.walletName}
       rightIcon={
-        <Box as="button" pr={1} onClick={handleManageWallet}>
+        <Box cursor={"pointer"} pr={1} onClick={handleManageWallet}>
           <IconWallet />
         </Box>
       }
