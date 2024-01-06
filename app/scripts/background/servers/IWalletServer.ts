@@ -140,7 +140,7 @@ export type ChangeAccountStateProps = {
 export interface IPopupServer {
   initPassword: (params: { password: string }) => Promise<boolean>;
 
-  hasAuth(params: { checkExpire?: boolean }): Promise<boolean>;
+  hasAuth(): Promise<boolean>;
 
   login(params: { password: string }): Promise<boolean>;
 

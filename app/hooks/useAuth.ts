@@ -12,7 +12,7 @@ export const useAuth = () => {
     setLoading(true);
     try {
       console.log("===> before getAuth");
-      const hasAuth = await popupServerClient.hasAuth({ checkExpire: true });
+      const hasAuth = await popupServerClient.hasAuth();
       console.log("===> hasAuth: ", hasAuth);
       dispatch.user.setHasAuth({ hasAuth });
     } catch (err) {
@@ -46,10 +46,6 @@ export const useAuth = () => {
 
   useEffect(() => {
     void getAuth();
-
-    return () => {
-      timeoutLock();
-    };
   }, [getAuth, popupServerClient]);
 
   return {
