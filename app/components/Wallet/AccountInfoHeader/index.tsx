@@ -52,10 +52,11 @@ export const AccountInfoHeader = () => {
       {
         title: t("Send:title"),
         icon: <IconSend />,
+        disabled: sendingAleoTx,
         onPress: () => navigate("/send_aleo"),
       },
     ],
-    [navigate, t],
+    [navigate, t, sendingAleoTx],
   );
 
   const onChangeWallet = useCallback(() => {
@@ -188,7 +189,7 @@ const ActionButton: React.FC<ActionButtonProps> = ({
   return (
     <Flex
       cursor={"pointer"}
-      onClick={onPress}
+      onClick={!disabled ? onPress : undefined}
       align={"center"}
       direction={"column"}
     >
