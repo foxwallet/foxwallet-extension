@@ -384,9 +384,9 @@ export class PopupWalletServer implements IPopupServer {
     return true;
   }
 
-  async hasAuth(params: { checkExpire?: boolean }): Promise<boolean> {
-    console.log("===> popup server hasAuth: ", params);
-    const result = this.authManager.hasAuth(params.checkExpire);
+  async hasAuth(): Promise<boolean> {
+    console.log("===> popup server hasAuth: ");
+    const result = this.authManager.hasAuth();
     return result;
   }
 

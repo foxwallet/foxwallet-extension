@@ -7,7 +7,7 @@ import { logger } from "../../../../../../common/utils/logger";
 import { vaultStorage, type VaultStorage } from "../../VaultStorage";
 
 const EXPIRE_TIME = 1000 * 60 * 60 * 4;
-const LOCK_TIME = 1000 * 60 * 15;
+const LOCK_TIME = 1000 * 60 * 1;
 export class AuthManager {
   #storage: VaultStorage;
   #token?: string;
@@ -31,9 +31,12 @@ export class AuthManager {
 
   async updatePassword(password: string) {}
 
-  hasAuth(checkExpire?: boolean) {
+  hasAuth() {
     if (!this.#token || !this.#loginTimestamp) {
       return false;
+    }
+    if (this.#timerId !== undefined) {
+      console.log("===> hasAuth clearTimeout: ", this.#timerId, Date.now());
     }
     clearTimeout(this.#timerId);
     const now = Date.now();
@@ -42,21 +45,21 @@ export class AuthManager {
       this.#loginTimestamp,
       now - this.#loginTimestamp >= EXPIRE_TIME,
     );
-    if (now - this.#loginTimestamp >= EXPIRE_TIME) {
-      this.lock();
-      return false;
-    }
     return true;
   }
 
   lock = () => {
-    console.log("===> AuthManager lock ");
+    console.log("===> AuthManager lock ", Date.now());
     this.#token = undefined;
     this.#loginTimestamp = undefined;
     this.#timerId = undefined;
   };
 
   timeoutLock = () => {
+    if (this.#timerId !== undefined) {
+      console.log("===> AuthManager timeoutLock clearTimeout: ", this.#timerId);
+      clearTimeout(this.#timerId);
+    }
     this.#loginTimestamp = Date.now();
     // @ts-expect-error setTimeout
     this.#timerId = setTimeout(this.lock, LOCK_TIME);
