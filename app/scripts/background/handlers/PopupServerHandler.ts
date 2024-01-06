@@ -44,5 +44,9 @@ export class PopupServerHandler implements IHandler {
         release();
       }
     });
+    port.onDisconnect.addListener(async () => {
+      console.log("===> PopupServerHandler onDisconnect");
+      await executeServerMethod(this.popupServer.timeoutLock());
+    });
   }
 }

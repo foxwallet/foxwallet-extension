@@ -121,8 +121,8 @@ export class PopupServerClient implements IClient, IPopupServer {
     return await this.#send("initPassword", params);
   }
 
-  async hasAuth(params: { checkExpire?: boolean }): Promise<boolean> {
-    return await this.#send("hasAuth", params);
+  async hasAuth(): Promise<boolean> {
+    return await this.#send("hasAuth", {});
   }
 
   async login(params: { password: string }): Promise<boolean> {
