@@ -161,27 +161,32 @@ export class PopupWalletServer implements IPopupServer {
       if (popupId) {
         this.addItem(popupId, requestId);
         this.requestIdCallbackMap[requestId] = async (error, data: string) => {
-          if (error) {
-            const popupId = this.findPopupIdByRequestId(requestId);
-            if (popupId) {
-              browser.windows.remove(popupId);
+          try {
+            if (error) {
+              const popupId = this.findPopupIdByRequestId(requestId);
+              if (popupId) {
+                browser.windows.remove(popupId);
+              }
+              reject(error);
+              return;
             }
-            reject(error);
+            const connectHistory: AleoConnectHistory = {
+              site: siteInfo,
+              ...params,
+              lastConnectTime: Date.now(),
+            };
+            await this.dappStorage.addConnectHistory(
+              CoinType.ALEO,
+              data,
+              connectHistory,
+            );
+            await browser.windows.remove(popupId);
+            resolve(data);
             return;
+          } catch (err) {
+            console.error("createConnectPopup callback error: ", err);
+            reject(err);
           }
-          const connectHistory: AleoConnectHistory = {
-            site: siteInfo,
-            ...params,
-            lastConnectTime: Date.now(),
-          };
-          await this.dappStorage.addConnectHistory(
-            CoinType.ALEO,
-            data,
-            connectHistory,
-          );
-          await browser.windows.remove(popupId);
-          resolve(data);
-          return;
         };
       } else {
         resolve(null);
@@ -206,37 +211,57 @@ export class PopupWalletServer implements IPopupServer {
       if (popupId) {
         this.addItem(popupId, requestId);
         this.requestIdCallbackMap[requestId] = async (error, data: string) => {
-          if (error) {
-            const popupId = this.findPopupIdByRequestId(requestId);
-            if (popupId) {
-              browser.windows.remove(popupId);
+          try {
+            if (error) {
+              const popupId = this.findPopupIdByRequestId(requestId);
+              if (popupId) {
+                browser.windows.remove(popupId);
+              }
+              reject(error);
+              return;
             }
-            reject(error);
-            return;
-          }
-          const txInfo: AleoLocalTxInfo = {
-            ...params,
-            status: AleoTxStatus.QUEUED,
-          };
-          await this.coinService
-            .getInstance(InnerChainUniqueId.ALEO_TESTNET3)
-            .setAddressLocalTx(address, txInfo);
-          const pk = await this.keyringManager.getPrivateKeyByAddress({
-            coinType,
-            address,
-          });
-          if (!pk) {
-            reject(new Error("Get private key failed"));
-            return;
-          }
-          await browser.windows.remove(popupId);
+            const pk = await this.keyringManager.getPrivateKeyByAddress({
+              coinType,
+              address,
+            });
+            if (!pk) {
+              reject(new Error("Get private key failed"));
+              return;
+            }
+            const txInfo: AleoLocalTxInfo = {
+              ...params,
+              status: AleoTxStatus.QUEUED,
+            };
+            await this.coinService
+              .getInstance(InnerChainUniqueId.ALEO_TESTNET3)
+              .setAddressLocalTx(address, txInfo);
+            await browser.windows.remove(popupId);
 
-          sendTransaction({
-            ...params,
-            privateKey: pk,
-          });
-          resolve(localId);
-          return;
+            sendTransaction({
+              ...params,
+              privateKey: pk,
+            }).then(async (resp) => {
+              console.log(
+                "===> createRequestTxPopup sendTransaction resp: ",
+                resp,
+              );
+              if (!resp) {
+                const finalTxInfo: AleoLocalTxInfo = {
+                  ...params,
+                  status: AleoTxStatus.FAILED,
+                  error: "sendTransaction failed",
+                };
+                await this.coinService
+                  .getInstance(InnerChainUniqueId.ALEO_TESTNET3)
+                  .setAddressLocalTx(address, finalTxInfo);
+              }
+            });
+            resolve(localId);
+            return;
+          } catch (err) {
+            console.error("createRequestTxPopup callback error: ", err);
+            reject(err);
+          }
         };
       } else {
         resolve(null);
@@ -264,40 +289,60 @@ export class PopupWalletServer implements IPopupServer {
       if (popupId) {
         this.addItem(popupId, requestId);
         this.requestIdCallbackMap[requestId] = async (error, data: string) => {
-          if (error) {
-            const popupId = this.findPopupIdByRequestId(requestId);
-            if (popupId) {
-              browser.windows.remove(popupId);
+          try {
+            if (error) {
+              const popupId = this.findPopupIdByRequestId(requestId);
+              if (popupId) {
+                browser.windows.remove(popupId);
+              }
+              reject(error);
+              return;
             }
-            reject(error);
-            return;
-          }
-          const txInfo: AleoLocalTxInfo = {
-            ...params,
-            functionName: "",
-            inputs: [],
-            status: AleoTxStatus.QUEUED,
-            deploy: true,
-          };
-          await this.coinService
-            .getInstance(InnerChainUniqueId.ALEO_TESTNET3)
-            .setAddressLocalTx(address, txInfo);
-          const pk = await this.keyringManager.getPrivateKeyByAddress({
-            coinType,
-            address,
-          });
-          if (!pk) {
-            reject(new Error("Get private key failed"));
-            return;
-          }
-          await browser.windows.remove(popupId);
+            const pk = await this.keyringManager.getPrivateKeyByAddress({
+              coinType,
+              address,
+            });
+            if (!pk) {
+              reject(new Error("Get private key failed"));
+              return;
+            }
+            const txInfo: AleoLocalTxInfo = {
+              ...params,
+              functionName: "",
+              inputs: [],
+              status: AleoTxStatus.QUEUED,
+              deploy: true,
+            };
+            await this.coinService
+              .getInstance(InnerChainUniqueId.ALEO_TESTNET3)
+              .setAddressLocalTx(address, txInfo);
+            await browser.windows.remove(popupId);
 
-          sendDeployment({
-            ...params,
-            privateKey: pk,
-          });
-          resolve(localId);
-          return;
+            sendDeployment({
+              ...params,
+              privateKey: pk,
+            }).then(async (resp) => {
+              console.log("===> createRequestDeployPopup resp: ", resp);
+              if (!resp) {
+                const finalTxInfo: AleoLocalTxInfo = {
+                  ...params,
+                  functionName: "",
+                  inputs: [],
+                  deploy: true,
+                  status: AleoTxStatus.FAILED,
+                  error: "sendDeployment failed",
+                };
+                await this.coinService
+                  .getInstance(InnerChainUniqueId.ALEO_TESTNET3)
+                  .setAddressLocalTx(address, finalTxInfo);
+              }
+            });
+            resolve(localId);
+            return;
+          } catch (err) {
+            console.error("createRequestDeployPopup callback error: ", err);
+            reject(err);
+          }
         };
       } else {
         resolve(null);
@@ -330,27 +375,32 @@ export class PopupWalletServer implements IPopupServer {
             error,
             data: string,
           ) => {
-            if (error) {
-              const popupId = this.findPopupIdByRequestId(requestId);
-              if (popupId) {
-                browser.windows.remove(popupId);
+            try {
+              if (error) {
+                const popupId = this.findPopupIdByRequestId(requestId);
+                if (popupId) {
+                  browser.windows.remove(popupId);
+                }
+                reject(error);
+                return;
               }
-              reject(error);
-              return;
+              const messageArray = hexToUint8Array(message);
+              const pk = await this.keyringManager.getPrivateKeyByAddress({
+                coinType: CoinType.ALEO,
+                address,
+              });
+              if (!pk) {
+                reject(new Error("Get private key failed"));
+                return;
+              }
+              await browser.windows.remove(popupId);
+              const privateKey = PrivateKey.from_string(pk);
+              const signature = privateKey.sign(messageArray).to_hex();
+              resolve(signature);
+            } catch (err) {
+              console.error("creatSignMessagePopup callback error: ", err);
+              reject(err);
             }
-            const messageArray = hexToUint8Array(message);
-            const pk = await this.keyringManager.getPrivateKeyByAddress({
-              coinType: CoinType.ALEO,
-              address,
-            });
-            if (!pk) {
-              reject(new Error("Get private key failed"));
-              return;
-            }
-            await browser.windows.remove(popupId);
-            const privateKey = PrivateKey.from_string(pk);
-            const signature = privateKey.sign(messageArray).to_hex();
-            resolve(signature);
           };
         } else {
           resolve(null);
@@ -569,6 +619,18 @@ export class PopupWalletServer implements IPopupServer {
     sendTransaction({
       ...rest,
       privateKey: pk,
+    }).then(async (resp) => {
+      console.log("===> sendAleoTransaction sendTransaction resp: ", resp);
+      if (!resp) {
+        const finalTxInfo: AleoLocalTxInfo = {
+          ...params,
+          status: AleoTxStatus.FAILED,
+          error: "sendTransaction failed",
+        };
+        await this.coinService
+          .getInstance(InnerChainUniqueId.ALEO_TESTNET3)
+          .setAddressLocalTx(rest.address, finalTxInfo);
+      }
     });
     // const tx = await sendTransaction({
     //   ...rest,
