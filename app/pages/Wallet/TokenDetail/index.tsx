@@ -24,57 +24,12 @@ import dayjs from "dayjs";
 import browser from "webextension-polyfill";
 import { ALE0_EXPOLER_TRANSACTION_URL } from "@/common/constants";
 import { useTxHistory } from "@/hooks/useTxHistory";
-import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
+import { useIsSendingAleoTx } from "@/hooks/useSendingTxStatus";
 
 interface TokenTxHistoryItemProps {
   item: AleoHistoryItem;
   uniqueId: InnerChainUniqueId;
 }
-
-// const HistoryItem = (props: {
-//   item: AleoHistoryItem;
-//   nativeCurrency: NativeToken;
-// }) => {
-//   const { item, nativeCurrency } = props;
-
-//   const { status, programId, functionName, addressType, amount, txId } = item;
-
-//   const statusPrefix = status === AleoTxStatus.FINALIZD ? "" : status;
-
-//   if (programId === NATIVE_TOKEN_PROGRAM_ID) {
-//     return (
-//       <Flex key={txId} mt={2}>
-//         {statusPrefix}&nbsp;
-//         {functionName.startsWith("transfer")
-//           ? functionName.slice(9)
-//           : functionName}
-//         &nbsp;
-//         {addressType}&nbsp;
-//         {amount && (
-//           <TokenNum
-//             amount={BigInt(amount)}
-//             decimals={nativeCurrency.decimals}
-//             symbol={nativeCurrency.symbol}
-//           />
-//         )}
-//       </Flex>
-//     );
-//   }
-//   if (addressType === AleoTxAddressType.SEND) {
-//     return (
-//       <Flex key={txId} mt={2}>
-//         {statusPrefix}&nbsp;Call&nbsp;{programId}&nbsp;
-//         {functionName}
-//       </Flex>
-//     );
-//   }
-//   return (
-//     <Flex key={txId} mt={2}>
-//       {statusPrefix}&nbsp;Received from&nbsp;{programId}&nbsp;
-//       {functionName}
-//     </Flex>
-//   );
-// };
 
 const TokenTxHistoryItem: React.FC<TokenTxHistoryItemProps> = ({
   uniqueId,
@@ -159,6 +114,7 @@ const TokenDetailScreen = () => {
   const { balance } = useBalance(uniqueId, selectedAccount.address);
 
   const { history } = useTxHistory(uniqueId, selectedAccount.address, 4000);
+  const { sendingAleoTx } = useIsSendingAleoTx(uniqueId);
 
   const onReceive = useCallback(() => {
     navigate(`/receive`);
@@ -223,6 +179,7 @@ const TokenDetailScreen = () => {
             ml={3}
             colorScheme="normal"
             borderColor={"black"}
+            isDisabled={sendingAleoTx}
             onClick={onSend}
           >
             {t("Send:title")}
