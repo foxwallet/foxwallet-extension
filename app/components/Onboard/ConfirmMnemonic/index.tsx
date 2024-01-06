@@ -176,7 +176,6 @@ export const ConfirmMnemonicStep = (props: {
                 width={"32%"}
                 mr={(index + 1) % 3 === 0 ? "0" : "2%"}
                 mt={index >= 3 ? 2 : 0}
-                onClick={option ? () => onWordCancel(index) : undefined}
               >
                 <Text
                   wordBreak={"break-word"}

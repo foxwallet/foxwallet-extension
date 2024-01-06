@@ -16,7 +16,7 @@ export const useIsSendingAleoTx = (uniqueId: ChainUniqueId) => {
     mutate: getSendingAleoTx,
     isLoading: loadingStatus,
   } = useSWR(key, fetchStatus, {
-    refreshInterval: 1000,
+    refreshInterval: 500,
   });
 
   const res = useMemo(() => {
