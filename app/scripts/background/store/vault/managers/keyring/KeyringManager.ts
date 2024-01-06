@@ -434,7 +434,7 @@ export class KeyringManager {
           (item) => item.address === address,
         );
         if (!account) {
-          throw new Error("Account not found " + address);
+          continue;
         }
         const encryptedPrivateKey = account.privateKey;
         const privateKey = decryptStr(token, encryptedPrivateKey);
@@ -447,14 +447,14 @@ export class KeyringManager {
           (item) => item.address === address,
         );
         if (!account) {
-          throw new Error("Account not found " + address);
+          continue;
         }
         const encryptedPrivateKey = account.privateKey;
         const privateKey = decryptStr(token, encryptedPrivateKey);
         return privateKey;
       }
     }
-    return null;
+    throw new Error("Account not found " + address);
   }
 
   async getViewKey({

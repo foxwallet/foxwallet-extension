@@ -88,33 +88,42 @@ export async function syncBlocks() {
 }
 
 export async function sendTransaction(params: AleoSendTxParams) {
-  console.log("===> sendTransaction closeOffscreenTxDocument");
-  await closeOffscreenDocument(OFFSCREEN_DOCUMENT_PATH);
-  console.log(
-    "===> initWorker setupOffscreenDocument ",
-    OFFSCREEN_TX_DOCUMENT_PATH,
-  );
-  await setupOffscreenDocument(OFFSCREEN_TX_DOCUMENT_PATH);
-  console.log("===> initWorker sendMessage");
-  const messsage: BackgroundMessage = {
-    type: OffscreenMethod.SEND_TX,
-    origin: MessageOrigin.BACKGROUND_TO_OFFSCREEN_TX,
-    payload: {
-      ...params,
-      rpcList: ReserveChainConfigs.ALEO_TESTNET3.rpcList,
-    },
-  };
-  const sendTxResp: OffscreenMessage =
-    await chrome.runtime.sendMessage(messsage);
-  console.log("===> sendTx resp: ", sendTxResp);
-  await closeOffscreenDocument(OFFSCREEN_TX_DOCUMENT_PATH);
-  console.log(
-    "===> closeOffscreenDocument after tx",
-    OFFSCREEN_TX_DOCUMENT_PATH,
-  );
-  syncBlocks();
-  console.log("===> setupOffscreenDocument after tx", OFFSCREEN_DOCUMENT_PATH);
-  return sendTxResp;
+  try {
+    console.log("===> sendTransaction closeOffscreenTxDocument");
+    await closeOffscreenDocument(OFFSCREEN_DOCUMENT_PATH);
+    console.log(
+      "===> initWorker setupOffscreenDocument ",
+      OFFSCREEN_TX_DOCUMENT_PATH,
+    );
+    await setupOffscreenDocument(OFFSCREEN_TX_DOCUMENT_PATH);
+    console.log("===> initWorker sendMessage");
+    const messsage: BackgroundMessage = {
+      type: OffscreenMethod.SEND_TX,
+      origin: MessageOrigin.BACKGROUND_TO_OFFSCREEN_TX,
+      payload: {
+        ...params,
+        rpcList: ReserveChainConfigs.ALEO_TESTNET3.rpcList,
+      },
+    };
+    const sendTxResp: OffscreenMessage =
+      await chrome.runtime.sendMessage(messsage);
+    console.log("===> sendTx resp: ", sendTxResp);
+    return sendTxResp;
+  } catch (err) {
+    console.error("sendTransaction failed: ", err);
+    return undefined;
+  } finally {
+    console.log(
+      "===> closeOffscreenDocument after tx",
+      OFFSCREEN_TX_DOCUMENT_PATH,
+    );
+    await closeOffscreenDocument(OFFSCREEN_TX_DOCUMENT_PATH);
+    console.log(
+      "===> setupOffscreenDocument after tx",
+      OFFSCREEN_DOCUMENT_PATH,
+    );
+    syncBlocks();
+  }
 }
 
 export async function isSendingAleoTransaction() {
@@ -123,31 +132,40 @@ export async function isSendingAleoTransaction() {
 }
 
 export async function sendDeployment(params: AleoRequestDeploymentParams) {
-  console.log("===> sendTransaction closeOffscreenTxDocument");
-  await closeOffscreenDocument(OFFSCREEN_DOCUMENT_PATH);
-  console.log(
-    "===> initWorker setupOffscreenDocument ",
-    OFFSCREEN_TX_DOCUMENT_PATH,
-  );
-  await setupOffscreenDocument(OFFSCREEN_TX_DOCUMENT_PATH);
-  console.log("===> initWorker sendMessage");
-  const messsage: BackgroundMessage = {
-    type: OffscreenMethod.DEPLOY,
-    origin: MessageOrigin.BACKGROUND_TO_OFFSCREEN_TX,
-    payload: {
-      ...params,
-      rpcList: ReserveChainConfigs.ALEO_TESTNET3.rpcList,
-    },
-  };
-  const sendTxResp: OffscreenMessage =
-    await chrome.runtime.sendMessage(messsage);
-  console.log("===> sendTx resp: ", sendTxResp);
-  await closeOffscreenDocument(OFFSCREEN_TX_DOCUMENT_PATH);
-  console.log(
-    "===> closeOffscreenDocument after tx",
-    OFFSCREEN_TX_DOCUMENT_PATH,
-  );
-  syncBlocks();
-  console.log("===> setupOffscreenDocument after tx", OFFSCREEN_DOCUMENT_PATH);
-  return sendTxResp;
+  try {
+    console.log("===> sendTransaction closeOffscreenTxDocument");
+    await closeOffscreenDocument(OFFSCREEN_DOCUMENT_PATH);
+    console.log(
+      "===> initWorker setupOffscreenDocument ",
+      OFFSCREEN_TX_DOCUMENT_PATH,
+    );
+    await setupOffscreenDocument(OFFSCREEN_TX_DOCUMENT_PATH);
+    console.log("===> initWorker sendMessage");
+    const messsage: BackgroundMessage = {
+      type: OffscreenMethod.DEPLOY,
+      origin: MessageOrigin.BACKGROUND_TO_OFFSCREEN_TX,
+      payload: {
+        ...params,
+        rpcList: ReserveChainConfigs.ALEO_TESTNET3.rpcList,
+      },
+    };
+    const sendTxResp: OffscreenMessage =
+      await chrome.runtime.sendMessage(messsage);
+    console.log("===> sendTx resp: ", sendTxResp);
+    return sendTxResp;
+  } catch (err) {
+    console.error("sendDeployment failed: ", err);
+    return undefined;
+  } finally {
+    await closeOffscreenDocument(OFFSCREEN_TX_DOCUMENT_PATH);
+    console.log(
+      "===> closeOffscreenDocument after tx",
+      OFFSCREEN_TX_DOCUMENT_PATH,
+    );
+    syncBlocks();
+    console.log(
+      "===> setupOffscreenDocument after tx",
+      OFFSCREEN_DOCUMENT_PATH,
+    );
+  }
 }
