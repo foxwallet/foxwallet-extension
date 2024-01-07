@@ -207,6 +207,10 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
       currTransferRecord,
     );
 
+    if (loadingBalance || !balance) {
+      return false;
+    }
+
     if (!receiverAddress || !addressValid) {
       return false;
     }
