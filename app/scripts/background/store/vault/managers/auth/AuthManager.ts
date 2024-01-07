@@ -37,14 +37,10 @@ export class AuthManager {
     }
     if (this.#timerId !== undefined) {
       console.log("===> hasAuth clearTimeout: ", this.#timerId, Date.now());
+      this.#timerId = undefined;
+      clearTimeout(this.#timerId);
     }
-    clearTimeout(this.#timerId);
-    const now = Date.now();
-    console.log(
-      "===> AuthManager hasAuth: ",
-      this.#loginTimestamp,
-      now - this.#loginTimestamp >= EXPIRE_TIME,
-    );
+    console.log("===> AuthManager hasAuth: ", this.#loginTimestamp);
     return true;
   }
 
@@ -59,6 +55,7 @@ export class AuthManager {
     if (this.#timerId !== undefined) {
       console.log("===> AuthManager timeoutLock clearTimeout: ", this.#timerId);
       clearTimeout(this.#timerId);
+      this.#timerId = undefined;
     }
     this.#loginTimestamp = Date.now();
     // @ts-expect-error setTimeout
@@ -83,10 +80,6 @@ export class AuthManager {
   }
 
   getToken() {
-    const hasAuth = this.hasAuth();
-    if (!hasAuth) {
-      return undefined;
-    }
     return this.#token;
   }
 
