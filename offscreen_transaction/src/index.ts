@@ -11,6 +11,8 @@ browser.runtime.onMessage.addListener(handleMessages);
 
 let worker: Worker | null = null;
 
+let isSendingTx = false;
+
 const getWorker = () => {
   if (!worker) {
     worker = new Worker(new URL("worker.js", import.meta.url), {
@@ -33,8 +35,21 @@ async function handleMessages(
   console.log("===> handleMessages: ", message, sender, sendResponse);
 
   switch (message.type) {
+    case OffscreenMethod.IS_SENDING_TX: {
+      sendResponse({
+        type: OffscreenMessageType.RESPONSE,
+        origin: MessageOrigin.OFFSCREEN_TX_TO_BACKGROUND,
+        payload: { error: null, data: isSendingTx },
+      });
+      return {
+        type: OffscreenMessageType.RESPONSE,
+        origin: MessageOrigin.OFFSCREEN_TX_TO_BACKGROUND,
+        payload: { error: null, data: isSendingTx },
+      };
+    }
     case OffscreenMethod.SEND_TX: {
       await new Promise<void>((resolve, reject) => {
+        isSendingTx = true;
         const worker = getWorker();
         worker.addEventListener("error", (err) => {
           sendResponse({
@@ -71,7 +86,19 @@ async function handleMessages(
             }
           }
         });
-      });
+      })
+        .then(() => {
+          isSendingTx = false;
+        })
+        .catch((err) => {
+          console.error("handleMessages SEND_TX error: ", err);
+          sendResponse({
+            type: OffscreenMessageType.RESPONSE,
+            origin: MessageOrigin.OFFSCREEN_TX_TO_BACKGROUND,
+            payload: { error: err.message, data: null },
+          });
+          isSendingTx = false;
+        });
       return {
         type: OffscreenMessageType.RESPONSE,
         origin: MessageOrigin.OFFSCREEN_TX_TO_BACKGROUND,
@@ -80,6 +107,7 @@ async function handleMessages(
     }
     case OffscreenMethod.DEPLOY: {
       await new Promise<void>((resolve, reject) => {
+        isSendingTx = true;
         const worker = getWorker();
         worker.addEventListener("error", (err) => {
           sendResponse({
@@ -116,7 +144,19 @@ async function handleMessages(
             }
           }
         });
-      });
+      })
+        .then(() => {
+          isSendingTx = false;
+        })
+        .catch((err) => {
+          console.error("handleMessages DEPLOY error: ", err);
+          sendResponse({
+            type: OffscreenMessageType.RESPONSE,
+            origin: MessageOrigin.OFFSCREEN_TX_TO_BACKGROUND,
+            payload: { error: err.message, data: null },
+          });
+          isSendingTx = false;
+        });
       return {
         type: OffscreenMessageType.RESPONSE,
         origin: MessageOrigin.OFFSCREEN_TX_TO_BACKGROUND,
