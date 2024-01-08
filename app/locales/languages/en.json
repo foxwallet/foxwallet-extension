@@ -18,7 +18,7 @@
       "title": "Import Wallet",
       "selectType": "Select Type",
       "importMnemonic": "Import seed phase",
-      "importMnemonicExplain": "Seed phase(mnemonic) is composed of 12 words, Separated by spaces.",
+      "importMnemonicExplain": "Seed phase(mnemonic) is composed of 12 words, separated by spaces.",
       "importPrivateKey": "Import private key",
       "importPrivateKeyExplain": "Plain text private key characters."
     },
@@ -139,6 +139,9 @@
     "securityTips": "Security Tips",
     "settings": "Settings",
     "account": "Account"
+  },
+  "Me": {
+    "title": "Me"
   },
   "Language": {
     "title": "Language"

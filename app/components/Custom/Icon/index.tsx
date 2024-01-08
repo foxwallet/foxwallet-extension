@@ -59,6 +59,8 @@ import Language from "@/common/assets/image/icon_language.svg";
 import Currency from "@/common/assets/image/icon_currency.svg";
 import Info from "@/common/assets/image/icon_info.svg";
 import Web from "@/common/assets/image/icon_web.svg";
+import MeSelected from "@/common/assets/image/icon_me_selected.svg";
+import MeUnselected from "@/common/assets/image/icon_me_unselected.svg";
 
 export const IconCheckCircle = chakra(CheckCircle);
 
@@ -129,3 +131,5 @@ export const IconLanguage = chakra(Language);
 export const IconCurrency = chakra(Currency);
 export const IconInfo = chakra(Info);
 export const IconWeb = chakra(Web);
+export const IconMeSelected = chakra(MeSelected);
+export const IconMeUnselected = chakra(MeUnselected);

@@ -85,7 +85,7 @@ function Lock() {
             {passwordInvalid && (
               <IconCloseLine w={"5"} h="full" fill="red.400" mr={2} />
             )}
-            {viewPass ? (
+            {!viewPass ? (
               <IconEyeClose w={"5"} h="full" />
             ) : (
               <IconEyeOn w={"5"} h="full" />

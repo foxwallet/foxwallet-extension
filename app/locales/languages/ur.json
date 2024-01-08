@@ -190,5 +190,8 @@
     "privacyPolicy": "<رازداری کی پالیسی>",
     "userAgreement": "<صارف کا معاہدہ>",
     "version": "ورژن"
+  },
+  "Me": {
+    "title": "مجھے"
   }
 }

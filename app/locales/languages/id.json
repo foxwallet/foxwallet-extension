@@ -190,5 +190,8 @@
     "privacyPolicy": "<Kebijakan Privasi>",
     "userAgreement": "<Perjanjian Pengguna>",
     "version": "Versi: kapan"
+  },
+  "Me": {
+    "title": "Aku"
   }
 }

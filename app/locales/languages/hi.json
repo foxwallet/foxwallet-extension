@@ -190,5 +190,8 @@
     "privacyPolicy": "<गोपनीयता नीति>",
     "userAgreement": "<उपयोगकर्ता अनुबंध>",
     "version": "संस्करण"
+  },
+  "Me": {
+    "title": "मुझे"
   }
 }
