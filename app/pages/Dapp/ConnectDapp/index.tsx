@@ -105,7 +105,7 @@ function ConnectAleoDappScreen() {
         <Flex justify={"space-between"} mt={2}>
           <Text>{t("Dapp:programs")}</Text>
           <Text fontWeight={"bold"} maxW={210} wordBreak={"break-all"}>
-            {programs.join(",\n")}
+            {(programs ?? []).join(",\n")}
           </Text>
         </Flex>
       </Flex>
