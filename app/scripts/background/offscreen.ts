@@ -78,6 +78,10 @@ export async function stopSending() {
 }
 
 export async function syncBlocks() {
+  const has = await hasDocument(OFFSCREEN_DOCUMENT_PATH);
+  if (has) {
+    return;
+  }
   console.log("===> initWorker setupOffscreenDocument");
   await setupOffscreenDocument(OFFSCREEN_DOCUMENT_PATH);
   console.log("===> initWorker sendMessage");
