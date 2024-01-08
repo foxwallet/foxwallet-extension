@@ -8,7 +8,7 @@ import {
 import { BaseInputGroup } from "@/components/Custom/Input";
 import { useAuth } from "@/hooks/useAuth";
 import { Button, Flex, Image, InputRightElement, Text } from "@chakra-ui/react";
-import { useCallback, useState } from "react";
+import { useCallback, useState, KeyboardEvent } from "react";
 import { useNavigate } from "react-router-dom";
 // @ts-ignore
 import WALLET_LOGO from "@/common/assets/image/logo.png";
@@ -48,6 +48,16 @@ function Lock() {
 
   const passwordInvalid = !!password && !isPasswordValid;
 
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        onConfirm();
+      }
+    },
+    [onConfirm],
+  );
+
   return (
     <Flex
       direction={"column"}
@@ -68,6 +78,7 @@ function Lock() {
           placeholder: t("Password:enter"),
           type: viewPass ? "text" : "password",
           onChange: onPasswordChange,
+          onKeyDown: handleKeyDown,
         }}
         rightElement={
           <InputRightElement
