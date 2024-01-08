@@ -190,5 +190,8 @@
     "privacyPolicy": "<Datenschutzerklärung>",
     "userAgreement": "<Benutzervereinbarung>",
     "version": "Ausführung"
+  },
+  "Me": {
+    "title": "Mich"
   }
 }

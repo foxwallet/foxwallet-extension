@@ -6,6 +6,8 @@ import { WalletTab } from "./WalletTab";
 import { SettingTab } from "./SettingTab";
 import { useLocation } from "react-router-dom";
 import {
+  IconMeSelected,
+  IconMeUnselected,
   IconSettingSelected,
   IconSettingUnselected,
   IconWalletSelected,
@@ -57,11 +59,11 @@ function MainScreen() {
             {t("Wallet:title")}
           </CustomTab>
           <CustomTab
-            key={"setting"}
-            selected={<IconSettingSelected />}
-            unselected={<IconSettingUnselected />}
+            key={"me"}
+            selected={<IconMeSelected />}
+            unselected={<IconMeUnselected />}
           >
-            {t("Setting:title")}
+            {t("Me:title")}
           </CustomTab>
         </TabList>
       </Tabs>

@@ -190,5 +190,8 @@
     "privacyPolicy": "<Gizlilik Politikası>",
     "userAgreement": "<Kullanıcı Sözleşmesi>",
     "version": "Sürüm"
+  },
+  "Me": {
+    "title": "Ben"
   }
 }

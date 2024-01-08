@@ -116,11 +116,11 @@
     "selectRecord": "选择记录",
     "commitment": "承诺",
     "noRecordExist": "不存在记录",
-    "recordStatistics": "总共 {{COUNT}} 条记录",
+    "recordStatistics": "总共 {{COUNT}} 条记录，最多",
     "transferMethod": "转账方式",
     "selectTransferMethod": "选择转账方式",
     "privateRecord": "隐私记录",
-    "publicBalance": "公共余额",
+    "publicBalance": "公开余额",
     "gasFee": "手续费",
     "selectFeeMethod": "付手续费方式",
     "publicFee": "公共余额支付费用",
@@ -190,5 +190,8 @@
     "privacyPolicy": "<隐私政策>",
     "userAgreement": "<用户协议>",
     "version": "版本"
+  },
+  "Me": {
+    "title": "我"
   }
 }
