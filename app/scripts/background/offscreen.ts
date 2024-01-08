@@ -73,7 +73,15 @@ export async function stopSync() {
   await closeOffscreenDocument(OFFSCREEN_DOCUMENT_PATH);
 }
 
+export async function stopSending() {
+  await closeOffscreenDocument(OFFSCREEN_TX_DOCUMENT_PATH);
+}
+
 export async function syncBlocks() {
+  const has = await hasDocument(OFFSCREEN_DOCUMENT_PATH);
+  if (has) {
+    return;
+  }
   console.log("===> initWorker setupOffscreenDocument");
   await setupOffscreenDocument(OFFSCREEN_DOCUMENT_PATH);
   console.log("===> initWorker sendMessage");
@@ -126,9 +134,50 @@ export async function sendTransaction(params: AleoSendTxParams) {
   }
 }
 
+async function getSendingTxStatus() {
+  try {
+    const messsage: BackgroundMessage = {
+      type: OffscreenMethod.IS_SENDING_TX,
+      origin: MessageOrigin.BACKGROUND_TO_OFFSCREEN_TX,
+      payload: {},
+    };
+    const sendingTxResp: OffscreenMessage =
+      await chrome.runtime.sendMessage(messsage);
+    console.log("===> sendingTx resp: ", sendingTxResp);
+    if (!sendingTxResp?.payload || sendingTxResp?.payload?.error) {
+      throw new Error(
+        "Get sending status failed " + sendingTxResp?.payload?.error,
+      );
+    }
+    return !!sendingTxResp.payload.data;
+  } catch (err) {
+    console.error("===> getSendingTxStatus error: ", err);
+    return false;
+  }
+}
+
 export async function isSendingAleoTransaction() {
   const has = await hasDocument(OFFSCREEN_TX_DOCUMENT_PATH);
-  return has;
+  console.log("===> isSendingAleoTransaction has document: ", has);
+  if (!has) {
+    return false;
+  }
+  const status = await getSendingTxStatus();
+  if (status) {
+    return true;
+  }
+  const delayStatus = await new Promise<boolean>((resolve) => {
+    setTimeout(async () => {
+      const status = await getSendingTxStatus();
+      resolve(status);
+    }, 2000);
+  });
+  console.log("===> isSendingAleoTransaction: ", status, delayStatus);
+  if (!delayStatus) {
+    await stopSending();
+    syncBlocks();
+  }
+  return delayStatus;
 }
 
 export async function sendDeployment(params: AleoRequestDeploymentParams) {

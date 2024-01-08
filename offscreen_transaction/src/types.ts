@@ -296,6 +296,7 @@ export enum OffscreenMethod {
   INIT_WORKER = "init_worker",
   SEND_TX = "send_tx",
   DEPLOY = "deploy",
+  IS_SENDING_TX = "is_sending_tx",
 }
 
 export interface BackgroundMessage<T = any> {
