@@ -22,7 +22,7 @@ const CreateWalletScreen = () => {
   }, [navigate]);
 
   return (
-    <PageWithHeader title={t("Wallet:Import:selectType")} enableBack>
+    <PageWithHeader title={t("Wallet:Manage:addWallet")} enableBack>
       <Content>
         <Flex flexDir={"column"} h={"full"} justify={"center"} align={"center"}>
           <Button onClick={() => createMnemonic()} alignSelf={"stretch"}>

@@ -190,5 +190,8 @@
     "privacyPolicy": "<Chính sách quyền riêng tư>",
     "userAgreement": "<Thỏa thuận người dùng>",
     "version": "Phiên bản"
+  },
+  "Me": {
+    "title": "Tôi"
   }
 }

@@ -19,44 +19,36 @@ const TransactionDetail = lazy(
 );
 
 // SettingTab
-const ManageWallet = lazy(
-  async () => await import("../pages/Setting/ManageWallet"),
-);
-const CreateWallet = lazy(
-  async () => await import("../pages/Setting/CreateWallet"),
-);
+const ManageWallet = lazy(async () => await import("../pages/Me/ManageWallet"));
+const CreateWallet = lazy(async () => await import("../pages/Me/CreateWallet"));
 const CreateMnemonic = lazy(
-  async () => await import("../pages/Setting/CreateMnemonic"),
+  async () => await import("../pages/Me/CreateMnemonic"),
 );
 const BackupMnemonic = lazy(
-  async () => await import("../pages/Setting/BackupMnemonic"),
+  async () => await import("../pages/Me/BackupMnemonic"),
 );
 const ImportMnemonic = lazy(
-  async () => await import("../pages/Setting/ImportMnemonic"),
+  async () => await import("../pages/Me/ImportMnemonic"),
 );
 const ImportPrivateKey = lazy(
-  async () => await import("../pages/Setting/ImportPrivateKey"),
+  async () => await import("../pages/Me/ImportPrivateKey"),
 );
-const Language = lazy(async () => await import("../pages/Setting/Language"));
+const Language = lazy(async () => await import("../pages/Me/Language"));
 const ExportSeedPhrase = lazy(
-  async () => await import("../pages/Setting/ExportSeedPhrase"),
+  async () => await import("../pages/Me/ExportSeedPhrase"),
 );
 const ExportPrivateKey = lazy(
-  async () => await import("../pages/Setting/ExportPrivateKey"),
+  async () => await import("../pages/Me/ExportPrivateKey"),
 );
-const Community = lazy(async () => await import("../pages/Setting/Community"));
-const Settings = lazy(async () => await import("../pages/Setting/Settings"));
-const Currency = lazy(async () => await import("../pages/Setting/Currency"));
-const About = lazy(async () => await import("../pages/Setting/About"));
+const Community = lazy(async () => await import("../pages/Me/Community"));
+const Settings = lazy(async () => await import("../pages/Me/Settings"));
+const Currency = lazy(async () => await import("../pages/Me/Currency"));
+const About = lazy(async () => await import("../pages/Me/About"));
 const ChangePassword = lazy(
-  async () => await import("../pages/Setting/ChangePassword"),
+  async () => await import("../pages/Me/ChangePassword"),
 );
-const WalletList = lazy(
-  async () => await import("../pages/Setting/WalletList"),
-);
-const WalletDetail = lazy(
-  async () => await import("../pages/Setting/WalletDetail"),
-);
+const WalletList = lazy(async () => await import("../pages/Me/WalletList"));
+const WalletDetail = lazy(async () => await import("../pages/Me/WalletDetail"));
 
 // Onboard
 const OnboardHome = lazy(
