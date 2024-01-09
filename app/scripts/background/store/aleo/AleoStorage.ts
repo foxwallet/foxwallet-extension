@@ -257,25 +257,30 @@ export class AleoStorage implements IAleoStorage {
     chainId: string,
     address: string,
   ): Promise<boolean> {
-    const txInstance = this.getAleoStorageInstance(
-      chainId,
-      address,
-      StorageKey.LOCAL_TX,
-    );
-    await txInstance.clear();
-    const recordInstance = this.getAleoStorageInstance(
-      chainId,
-      address,
-      StorageKey.RECORD,
-    );
-    await recordInstance.clear();
-    const infoInstance = this.getAleoStorageInstance(
-      chainId,
-      address,
-      StorageKey.INFO,
-    );
-    await infoInstance.clear();
-    return true;
+    try {
+      const txInstance = this.getAleoStorageInstance(
+        chainId,
+        address,
+        StorageKey.LOCAL_TX,
+      );
+      await txInstance.clear();
+      const recordInstance = this.getAleoStorageInstance(
+        chainId,
+        address,
+        StorageKey.RECORD,
+      );
+      await recordInstance.clear();
+      const infoInstance = this.getAleoStorageInstance(
+        chainId,
+        address,
+        StorageKey.INFO,
+      );
+      await infoInstance.clear();
+      return true;
+    } catch (err) {
+      console.error("===> clearAddressLocalData failed: ", err);
+      return false;
+    }
   }
 
   async getProgramContent(

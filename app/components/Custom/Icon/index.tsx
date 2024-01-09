@@ -61,6 +61,7 @@ import Info from "@/common/assets/image/icon_info.svg";
 import Web from "@/common/assets/image/icon_web.svg";
 import MeSelected from "@/common/assets/image/icon_me_selected.svg";
 import MeUnselected from "@/common/assets/image/icon_me_unselected.svg";
+import Reset from "@/common/assets/image/icon_reset.svg";
 
 const AdaptColorModeIcon: (i: any) => ChakraComponent<any, any> =
   (icon: any) => (props: ChakraComponent<any, any>) => {
@@ -140,3 +141,4 @@ export const IconInfo = AdaptColorModeIcon(Info);
 export const IconWeb = chakra(Web);
 export const IconMeSelected = AdaptColorModeIcon(MeSelected);
 export const IconMeUnselected = AdaptColorModeIcon(MeUnselected);
+export const IconReset = chakra(Reset);

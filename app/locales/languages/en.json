@@ -179,6 +179,10 @@
     "autoDecrypt": "Dapp can decrypt record without request.",
     "onChainHistory": "Dapp can access your on-chain history."
   },
+  "Reset": {
+    "remind": "All of your history for this account will be reset and network will be resynced. Please confrim to proceed.",
+    "account": "Reset account"
+  },
   "Common": {
     "confirm": "Confirm",
     "cancel": "Cancel",
