@@ -18,7 +18,7 @@ export const variantFilled = definePartsStyle((props) => {
       bg: mode("white", "black")(props),
       borderStyle: "solid",
       borderWidth: "1.6px",
-      borderColor: mode("gray.50", "white")(props),
+      borderColor: mode("gray.50", "#777E90")(props),
       outline: "none",
       _placeholder: {
         color: mode("gray.500", "gray.400")(props),

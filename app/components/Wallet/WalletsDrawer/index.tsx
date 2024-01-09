@@ -13,6 +13,7 @@ import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { usePopupDispatch } from "@/hooks/useStore";
 import { CoinType } from "core/types";
+import { useThemeStyle } from "@/hooks/useThemeStyle";
 
 interface AccountListItemProps {
   account: DisplayAccount;
@@ -28,10 +29,11 @@ const AccountListItem: React.FC<AccountListItemProps> = ({
     onSelected(account);
   }, [account, onSelected]);
 
+  const { selectedBorderColor, borderColor } = useThemeStyle();
   return (
     <Flex
       borderWidth={1}
-      borderColor={isSelected ? "#000" : "#E6E8EC"}
+      borderColor={isSelected ? selectedBorderColor : borderColor}
       borderRadius={8}
       px={2.5}
       mt={2.5}
@@ -41,7 +43,7 @@ const AccountListItem: React.FC<AccountListItemProps> = ({
       onClick={handleSelected}
     >
       <Flex direction={"column"}>
-        <Text fontSize={13} fontWeight={500} color={"#000"} align={"start"}>
+        <Text fontSize={13} fontWeight={500} align={"start"}>
           {account.accountName}
         </Text>
         <Box fontSize={9} color={"#777E90"} noOfLines={1}>
@@ -74,6 +76,8 @@ const WalletsDrawer = (props: Props) => {
 
   const onSelectAccount = useCallback(
     (account: DisplayAccount) => {
+      if (!selectedWallet?.walletId) return;
+
       dispatch.account.setSelectedAccount({
         selectedAccount: {
           walletId: selectedWallet?.walletId,
@@ -116,7 +120,7 @@ const WalletsDrawer = (props: Props) => {
         <Flex flexDirection={"column"} px={1.5}>
           <Flex align={"center"} justify={"flex-start"}>
             <IconAleo />
-            <Text ml={1} fontSize={14} fontWeight={500} color={"black"}>
+            <Text ml={1} fontSize={14} fontWeight={500}>
               ALEO
             </Text>
           </Flex>

@@ -7,6 +7,7 @@ import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
 import { IconCheckLineBlack } from "@/components/Custom/Icon";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { useThemeStyle } from "@/hooks/useThemeStyle";
 
 function LanguageScreen() {
   const { t } = useTranslation();
@@ -21,6 +22,8 @@ function LanguageScreen() {
     [dispatch.setting, navigate],
   );
 
+  const { borderColor } = useThemeStyle();
+
   return (
     <PageWithHeader enableBack title={t("Language:title")}>
       <Content>
@@ -34,7 +37,7 @@ function LanguageScreen() {
               borderStyle={"solid"}
               borderWidth={"1px"}
               borderRadius={"lg"}
-              borderColor={"gray.50"}
+              borderColor={borderColor}
               p={3}
               mt={2}
               as={"button"}

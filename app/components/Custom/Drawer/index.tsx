@@ -8,6 +8,7 @@ import {
   type ModalFooterProps,
   ModalHeader,
   ModalOverlay,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { H6 } from "../../../common/theme/components/text";
 import { IconCloseLine } from "../Icon";
@@ -36,6 +37,7 @@ export function BasicDrawer(props: ModalProps) {
     footerStyle,
     rightIcon,
   } = props;
+  const bg = useColorModeValue("white", "black");
 
   return (
     <Modal
@@ -46,13 +48,7 @@ export function BasicDrawer(props: ModalProps) {
       motionPreset="slideInBottom"
     >
       <ModalOverlay backdropFilter="blur(10px)" />
-      <ModalContent
-        alignSelf={"flex-end"}
-        bg={"white"}
-        px={2.5}
-        pt={2.5}
-        pb={5}
-      >
+      <ModalContent alignSelf={"flex-end"} bg={bg} px={2.5} pt={2.5} pb={5}>
         {(!!title || !hideClose) && (
           <ModalHeader
             display={"flex"}
@@ -63,13 +59,7 @@ export function BasicDrawer(props: ModalProps) {
             {hideClose ? (
               <Box w={6} h={6} />
             ) : (
-              <IconCloseLine
-                w={6}
-                h={6}
-                cursor={"pointer"}
-                fill={"black"}
-                onClick={onClose}
-              />
+              <IconCloseLine w={6} h={6} cursor={"pointer"} onClick={onClose} />
             )}
             {!!title && <H6>{title}</H6>}
             {!!rightIcon ? rightIcon : <Box w={6} h={6} />}

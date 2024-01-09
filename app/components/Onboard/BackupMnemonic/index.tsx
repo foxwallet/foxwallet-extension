@@ -13,6 +13,7 @@ import { Content } from "../../../layouts/Content";
 import { IconPreventScreenshot } from "../../Custom/Icon";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
+import { useThemeStyle } from "@/hooks/useThemeStyle";
 
 function Dot(props: BoxProps) {
   return <Box w={1.5} h={1.5} borderRadius={3} bg={"gray.500"} {...props} />;
@@ -79,6 +80,8 @@ export const BackupMnemonicStep = (props: {
     createWallet?.();
   }, [createWallet]);
 
+  const { borderColor } = useThemeStyle();
+
   if (!mnemonic) {
     return null;
   }
@@ -114,7 +117,7 @@ export const BackupMnemonicStep = (props: {
         borderRadius={"lg"}
         borderStyle={"solid"}
         borderWidth={"2px"}
-        borderColor={"gray.50"}
+        borderColor={borderColor}
         p={2}
       >
         {tips.map((tip, index) => (

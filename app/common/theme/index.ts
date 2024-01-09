@@ -17,6 +17,9 @@ import { inputTheme } from "./components/input";
 import { checkBoxTheme } from "./components/checkbox";
 import { modalTheme } from "./components/modal";
 import { textAreaTheme } from "./components/textarea";
+import { hoverTheme } from "./components/hover";
+import { svgIconTheme } from "./components/svg";
+import { dividerTheme } from "./components/divider";
 
 const config: ThemeConfig = {
   initialColorMode: "light",
@@ -62,5 +65,8 @@ export const theme = extendBaseTheme({
     Checkbox: checkBoxTheme,
     Modal: modalTheme,
     Textarea: textAreaTheme,
+    Hover: hoverTheme,
+    SvgIcon: svgIconTheme,
+    Divider: dividerTheme,
   },
 });

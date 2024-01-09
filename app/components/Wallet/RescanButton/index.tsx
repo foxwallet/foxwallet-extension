@@ -1,6 +1,7 @@
 import { IconLoading, IconRescan } from "@/components/Custom/Icon";
 import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { useSyncProgress } from "@/hooks/useSyncProgress";
+import { useThemeStyle } from "@/hooks/useThemeStyle";
 import { Flex, Text, keyframes } from "@chakra-ui/react";
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -22,6 +23,7 @@ const RescanButton = (props: RescanButtonProps) => {
     uniqueId,
     selectedAccount.address,
   );
+  const { borderColor } = useThemeStyle();
 
   const onRescan = useCallback(() => {
     getProgress();
@@ -37,7 +39,7 @@ const RescanButton = (props: RescanButtonProps) => {
       onClick={onRescan}
       borderWidth={"1px"}
       borderRadius={"4px"}
-      borderColor={"#EAECEC"}
+      borderColor={borderColor}
       h={5}
       px={1}
       justify={"center"}
