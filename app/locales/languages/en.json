@@ -179,6 +179,10 @@
     "autoDecrypt": "Dapp can decrypt record without request.",
     "onChainHistory": "Dapp can access your on-chain history."
   },
+  "Resync": {
+    "remind": "After reset, wallet will resync account's data, please confirm",
+    "setting": "Reset current account's status"
+  },
   "Common": {
     "confirm": "Confirm",
     "cancel": "Cancel",
