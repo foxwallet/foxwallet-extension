@@ -33,7 +33,11 @@ export const AccountInfoHeader = () => {
   const navigate = useNavigate();
   const { selectedAccount, uniqueId } = useCurrAccount();
   const { nativeCurrency } = useCoinService(uniqueId);
-  const { balance } = useBalance(uniqueId, selectedAccount.address, 4000);
+  const { balance, loadingBalance } = useBalance(
+    uniqueId,
+    selectedAccount.address,
+    4000,
+  );
   const { selectedWallet } = useCurrWallet();
   const { t } = useTranslation();
   const showBalance = usePopupSelector((state) => state.account.showBalance);
@@ -52,7 +56,7 @@ export const AccountInfoHeader = () => {
       {
         title: t("Send:title"),
         icon: <IconSend />,
-        disabled: sendingAleoTx,
+        disabled: sendingAleoTx || loadingBalance || !balance?.total,
         onPress: () => navigate("/send_aleo"),
       },
     ],
@@ -145,7 +149,7 @@ export const AccountInfoHeader = () => {
           <Box fontSize={24} fontWeight={600}>
             {showBalance ? (
               <TokenNum
-                amount={balance?.total || 0n}
+                amount={balance?.total}
                 decimals={nativeCurrency.decimals}
                 symbol={nativeCurrency.symbol}
               />

@@ -40,7 +40,7 @@ export const AssetList = () => {
         </Flex>
         {showBalance ? (
           <TokenNum
-            amount={balance?.total || 0n}
+            amount={balance?.total}
             decimals={nativeCurrency.decimals}
             symbol={""}
           />
