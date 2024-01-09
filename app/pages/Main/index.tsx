@@ -47,7 +47,6 @@ function MainScreen() {
           left={0}
           right={0}
           height={59}
-          bg={"white"}
           borderTopWidth={1}
           borderColor={"#E6E8EC"}
         >
@@ -88,7 +87,7 @@ const CustomTab = forwardRef<any, any>((props, ref) => {
       as={"button"}
     >
       {isSelected ? selected : unselected}
-      <Text fontWeight={500} color={"#000"} fontSize={12}>
+      <Text fontWeight={500} fontSize={12}>
         {tabProps.children}
       </Text>
     </Flex>

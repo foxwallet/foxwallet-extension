@@ -172,7 +172,7 @@ const TokenDetailScreen = () => {
         <Flex align={"center"}>
           <IconAleo mr={2.5} w={6} h={6} />
           <Flex direction={"column"}>
-            <Text color={"black"} fontSize={13} fontWeight={"bold"}>
+            <Text fontSize={13} fontWeight={"bold"}>
               {nativeCurrency.symbol}
             </Text>
             <Text color={"#777E90"} fontSize={10}>

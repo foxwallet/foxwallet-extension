@@ -42,7 +42,7 @@ export const BackupReminderView = () => {
       borderColor={"#E6E8EC"}
     >
       <Flex direction={"column"} justify={"center"}>
-        <Text color={"#000"} fontWeight={500} fontSize={13} maxW={150}>
+        <Text fontWeight={500} fontSize={13} maxW={150}>
           {t("Wallet:backupTips")}
         </Text>
         <Flex cursor={"pointer"} align={"center"} mt={1} onClick={onBackup}>

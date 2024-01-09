@@ -12,6 +12,7 @@ import { IconCheckLineBlack } from "@/components/Custom/Icon";
 import { showEditWalletNameDrawer } from "@/components/Wallet/EditWalletNameDrawer";
 import { usePopupDispatch } from "@/hooks/useStore";
 import { CoinType } from "core/types";
+import Hover from "@/components/Custom/Hover";
 
 interface WalletItemProps {
   wallet: DisplayWallet;
@@ -66,7 +67,8 @@ const WalletItem: React.FC<WalletItemProps> = ({
           {wallet.walletName}
         </Text>
       </Flex>
-      <Text
+      <Hover
+        variant="cell"
         position={"absolute"}
         right={2.5}
         alignSelf={"center"}
@@ -75,10 +77,9 @@ const WalletItem: React.FC<WalletItemProps> = ({
         onClick={handleCheckAccounts}
         px={0.5}
         borderRadius={"4px"}
-        _hover={{ backgroundColor: "#F5F5F5" }}
       >
         {t("Wallet:Manage:checkAccounts")}
-      </Text>
+      </Hover>
     </Flex>
   );
 };

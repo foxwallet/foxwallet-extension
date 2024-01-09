@@ -63,7 +63,7 @@ const WalletOptionDrawer = (props: Props) => {
             onClick={handleExportPhrase}
           >
             <IconExportPhrase />
-            <Text ml={2.5} color={"#000"} fontSize={12} fontWeight={500}>
+            <Text ml={2.5} fontSize={12} fontWeight={500}>
               {isBackuped
                 ? t("Wallet:Export:seedPhrase")
                 : t("Wallet:Create:backupMnemonic")}

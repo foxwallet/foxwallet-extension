@@ -7,6 +7,7 @@ import { useBalance } from "@/hooks/useBalance";
 import { useNavigate } from "react-router-dom";
 import { useCallback } from "react";
 import { usePopupSelector } from "@/hooks/useStore";
+import Hover from "@/components/Custom/Hover";
 
 export const AssetList = () => {
   const navigate = useNavigate();
@@ -22,32 +23,31 @@ export const AssetList = () => {
 
   return (
     <TabPanel>
-      <Flex
-        w={"100%"}
-        py={3}
-        px={5}
-        align={"center"}
-        justify={"space-between"}
-        _hover={{ background: "#F5F5F5" }}
-        cursor={"pointer"}
-        onClick={onTokenDetail}
-      >
-        <Flex align={"center"}>
-          <IconAleo />
-          <Text ml={2.5} fontSize={13} fontWeight={600}>
-            {nativeCurrency.symbol}
-          </Text>
+      <Hover variant="cell" onClick={onTokenDetail}>
+        <Flex
+          w={"100%"}
+          py={3}
+          px={5}
+          align={"center"}
+          justify={"space-between"}
+        >
+          <Flex align={"center"}>
+            <IconAleo />
+            <Text ml={2.5} fontSize={13} fontWeight={600}>
+              {nativeCurrency.symbol}
+            </Text>
+          </Flex>
+          {showBalance ? (
+            <TokenNum
+              amount={balance?.total || 0n}
+              decimals={nativeCurrency.decimals}
+              symbol={""}
+            />
+          ) : (
+            <Text>*****</Text>
+          )}
         </Flex>
-        {showBalance ? (
-          <TokenNum
-            amount={balance?.total || 0n}
-            decimals={nativeCurrency.decimals}
-            symbol={""}
-          />
-        ) : (
-          <Text>*****</Text>
-        )}
-      </Flex>
+      </Hover>
     </TabPanel>
   );
 };

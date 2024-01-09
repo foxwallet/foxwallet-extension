@@ -73,13 +73,7 @@ function ReceiveScreen() {
           borderRadius={8}
           p={2.5}
         >
-          <Text
-            noOfLines={3}
-            maxW={274}
-            color={"black"}
-            fontSize={12}
-            fontWeight={500}
-          >
+          <Text noOfLines={3} maxW={274} fontSize={12} fontWeight={500}>
             {selectedAccount.address}
           </Text>
           <Flex

@@ -41,7 +41,7 @@ const AccountListItem: React.FC<AccountListItemProps> = ({
       onClick={handleSelected}
     >
       <Flex direction={"column"}>
-        <Text fontSize={13} fontWeight={500} color={"#000"} align={"start"}>
+        <Text fontSize={13} fontWeight={500} align={"start"}>
           {account.accountName}
         </Text>
         <Box fontSize={9} color={"#777E90"} noOfLines={1}>
@@ -116,7 +116,7 @@ const WalletsDrawer = (props: Props) => {
         <Flex flexDirection={"column"} px={1.5}>
           <Flex align={"center"} justify={"flex-start"}>
             <IconAleo />
-            <Text ml={1} fontSize={14} fontWeight={500} color={"black"}>
+            <Text ml={1} fontSize={14} fontWeight={500}>
               ALEO
             </Text>
           </Flex>

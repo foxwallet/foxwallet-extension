@@ -3,11 +3,18 @@ import { createModel } from "@rematch/core";
 import { RootModel } from ".";
 import { SupportLanguages, changeLanguage } from "@/locales/i18";
 
+export enum ColorMode {
+  Light = "light",
+  Dark = "dark",
+  System = "system",
+}
+
 type SettingModel = {
   currency: SupportCurrency;
   initCurrencyByLocation: boolean;
   currencyFiat: SupportCurrency;
   language: SupportLanguages;
+  colorMode: ColorMode;
 };
 
 export const setting = createModel<RootModel>()({
@@ -17,6 +24,7 @@ export const setting = createModel<RootModel>()({
     initCurrencyByLocation: false,
     currencyFiat: SupportCurrency.USD,
     language: SupportLanguages.EN,
+    colorMode: ColorMode.Light,
   } as SettingModel,
   reducers: {
     updateCurrency(state, payload: { currency: SupportCurrency }) {
@@ -38,6 +46,12 @@ export const setting = createModel<RootModel>()({
       return {
         ...state,
         language,
+      };
+    },
+    changeColorModel(state, payload: { colorMode: ColorMode }) {
+      return {
+        ...state,
+        colorMode: payload.colorMode,
       };
     },
   },
