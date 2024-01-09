@@ -5,6 +5,7 @@ interface SettingItemProps {
   icon: React.ReactNode;
   title: string;
   subtitle?: string;
+  noNext?: boolean;
   onPress: () => void;
 }
 
@@ -12,6 +13,7 @@ const SettingItem: React.FC<SettingItemProps> = ({
   icon,
   title,
   subtitle,
+  noNext,
   onPress,
 }) => {
   return (
@@ -35,7 +37,7 @@ const SettingItem: React.FC<SettingItemProps> = ({
             {subtitle}
           </Text>
         )}
-        <IconChevronRight w={4} h={4} />
+        {!noNext && <IconChevronRight w={4} h={4} />}
       </Flex>
     </Flex>
   );

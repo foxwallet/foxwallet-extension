@@ -38,6 +38,7 @@ import {
 import { Mutex } from "async-mutex";
 import { Program } from "aleo_wasm";
 import { AleoApiService } from "./instances/sync";
+import { AleoSyncAccount } from "../types/AleoSyncAccount";
 
 const CREDITS_MAPPING_NAME = "account";
 
@@ -961,6 +962,10 @@ export class AleoService {
 
   async clearAddressLocalData(adderss: string) {
     await this.aleoStorage.clearAddressLocalData(this.chainId, adderss);
+  }
+
+  async setAleoSyncAccount(account: AleoSyncAccount) {
+    await this.aleoStorage.setAccountInfo(account);
   }
 
   formatRequestTransactionInputsAndFee = async (

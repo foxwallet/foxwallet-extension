@@ -32,7 +32,9 @@ export const MeTab = () => {
   }, [navigate]);
 
   const onWalletDetail = useCallback(() => {
-    navigate(`/wallet_detail/${selectedWallet?.walletId}`);
+    if (selectedWallet) {
+      navigate(`/wallet_detail/${selectedWallet.walletId}`);
+    }
   }, [navigate, selectedWallet?.walletId]);
 
   const onGuide = useCallback(() => {

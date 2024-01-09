@@ -193,5 +193,9 @@
   },
   "Me": {
     "title": "Tôi"
+  },
+  "Reset": {
+    "remind": "Tất cả lịch sử của bạn đối với tài khoản này sẽ được đặt lại và mạng sẽ được đồng bộ hóa lại. Hãy xác nhận để tiếp tục.",
+    "account": "Cài đặt lại tài khoản"
   }
 }
