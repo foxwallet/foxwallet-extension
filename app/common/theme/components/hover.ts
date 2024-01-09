@@ -6,7 +6,7 @@ export const hoverTheme = defineStyleConfig({
   baseStyle: (props) => {
     return {
       _hover: {
-        background: mode("#F5F5F5", "gray.800")(props),
+        background: mode("#F5F5F5", "gray.900")(props),
       },
       cursor: "pointer",
     };

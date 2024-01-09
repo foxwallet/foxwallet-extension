@@ -1,4 +1,4 @@
-import { Flex, Text, UseTabProps, useTab } from "@chakra-ui/react";
+import { Flex, Text, useTab } from "@chakra-ui/react";
 import { useCallback, forwardRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabList, TabPanels } from "@chakra-ui/react";
@@ -8,12 +8,11 @@ import { useLocation } from "react-router-dom";
 import {
   IconMeSelected,
   IconMeUnselected,
-  IconSettingSelected,
-  IconSettingUnselected,
   IconWalletSelected,
   IconWalletUnselected,
 } from "@/components/Custom/Icon";
 import { useTranslation } from "react-i18next";
+import { useThemeStyle } from "@/hooks/useThemeStyle";
 
 function MainScreen() {
   const location = useLocation();
@@ -28,6 +27,8 @@ function MainScreen() {
   const handleTabsChange = useCallback((index: number) => {
     navigate(`?tab=${index}`);
   }, []);
+
+  const { borderColor } = useThemeStyle();
 
   return (
     <Flex flexDirection={"column"} flex={1} alignItems={"stretch"}>
@@ -48,7 +49,7 @@ function MainScreen() {
           right={0}
           height={59}
           borderTopWidth={1}
-          borderColor={"#E6E8EC"}
+          borderColor={borderColor}
         >
           <CustomTab
             key={"wallet"}

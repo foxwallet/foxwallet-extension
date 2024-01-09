@@ -1,10 +1,11 @@
-import { Button, chakra, defineStyleConfig } from "@chakra-ui/react";
+import { defineStyleConfig } from "@chakra-ui/react";
+import { mode } from "@chakra-ui/theme-tools";
 
 export const modalTheme = defineStyleConfig({
-  baseStyle: {
+  baseStyle: (props) => ({
     overlay: {
       opacity: "0.3 !important",
-      bg: "black",
+      bg: mode("black", "gray.700")(props),
     },
-  },
+  }),
 });

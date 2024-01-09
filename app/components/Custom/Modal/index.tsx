@@ -10,6 +10,7 @@ import {
   ModalHeader,
   ModalOverlay,
   useDisclosure,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import { H6 } from "../../../common/theme/components/text";
@@ -39,6 +40,7 @@ export function BasicModal(props: ModalProps) {
     footerStyle,
     isCentered,
   } = props;
+  const bg = useColorModeValue("white", "black");
 
   return (
     <Modal
@@ -51,7 +53,7 @@ export function BasicModal(props: ModalProps) {
       <ModalOverlay backdropFilter="blur(10px)" />
       <ModalContent
         alignSelf={"center"}
-        bg={"white"}
+        bg={bg}
         p={"4"}
         m={2.5}
         borderRadius={"md"}

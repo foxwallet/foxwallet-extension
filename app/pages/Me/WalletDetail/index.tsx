@@ -19,6 +19,7 @@ import {
 } from "@/components/Wallet/WalletOptionDrawer";
 import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
+import { useThemeStyle } from "@/hooks/useThemeStyle";
 import { useWallets } from "@/hooks/useWallets";
 import { PageWithHeader } from "@/layouts/Page";
 import { SelectedAccount } from "@/scripts/background/store/vault/types/keyring";
@@ -136,12 +137,12 @@ const AccountListItem: React.FC<AccountListItemProps> = ({ account }) => {
   }, [account, onExportPrivateKey, onChangeVisibility]);
 
   const titleColor = useColorModeValue("black", "white");
-
+  const { borderColor } = useThemeStyle();
   return (
     <Flex
       mt={2.5}
       borderWidth={1}
-      borderColor={"#E6E8EC"}
+      borderColor={borderColor}
       borderRadius={8}
       px={2.5}
       flex={1}

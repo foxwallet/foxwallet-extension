@@ -13,6 +13,7 @@ import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { usePopupDispatch } from "@/hooks/useStore";
 import { CoinType } from "core/types";
+import { useThemeStyle } from "@/hooks/useThemeStyle";
 
 interface AccountListItemProps {
   account: DisplayAccount;
@@ -28,10 +29,11 @@ const AccountListItem: React.FC<AccountListItemProps> = ({
     onSelected(account);
   }, [account, onSelected]);
 
+  const { selectedBorderColor, borderColor } = useThemeStyle();
   return (
     <Flex
       borderWidth={1}
-      borderColor={isSelected ? "#000" : "#E6E8EC"}
+      borderColor={isSelected ? selectedBorderColor : borderColor}
       borderRadius={8}
       px={2.5}
       mt={2.5}

@@ -31,6 +31,7 @@ import RescanButton from "../RescanButton";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
 import { useIsSendingAleoTx } from "@/hooks/useSendingTxStatus";
 import Hover from "@/components/Custom/Hover";
+import { useThemeStyle } from "@/hooks/useThemeStyle";
 
 const rotateAnimation = keyframes`
   from { transform: rotate(0deg) }
@@ -89,6 +90,7 @@ export const AccountInfoHeader = () => {
     "linear(to-br, #ECFFF2, #FFFFFF, #ECFFF2)",
     "linear(to-br, #14321A, #000000, #14321A)",
   );
+  const { borderColor } = useThemeStyle();
 
   return (
     <Box
@@ -97,7 +99,7 @@ export const AccountInfoHeader = () => {
       py={5}
       bgGradient={bgGradient}
       borderBottomWidth={1}
-      borderColor={"#E6E8EC"}
+      borderColor={borderColor}
     >
       <Flex justify={"space-between"} align={"center"}>
         <Flex

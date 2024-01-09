@@ -11,6 +11,7 @@ import {
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import SettingItem from "@/components/Setting/SettingItem";
 import { useCurrAccount } from "@/hooks/useCurrAccount";
+import { useThemeStyle } from "@/hooks/useThemeStyle";
 import { useCurrWallet } from "@/hooks/useWallets";
 import { Content } from "@/layouts/Content";
 import { Box, Divider, Flex, TabPanel, Text } from "@chakra-ui/react";
@@ -58,6 +59,8 @@ export const SettingTab = () => {
     navigate("/settings");
   }, [navigate]);
 
+  const { borderColor } = useThemeStyle();
+
   return (
     <TabPanel>
       <Flex
@@ -68,7 +71,7 @@ export const SettingTab = () => {
         align={"center"}
         justify={"space-between"}
         borderBottomWidth={"1px"}
-        borderColor={"#E6E8EC"}
+        borderColor={borderColor}
         w={"100%"}
         onClick={onSwitchWallet}
       >
@@ -106,13 +109,13 @@ export const SettingTab = () => {
           icon={<IconCommunity w={4} h={4} />}
           onPress={onCummunity}
         />
-        <Divider bg={"#E6E8EC"} h={"1px"} mb={2.5} />
+        <Divider h={"1px"} mb={2.5} />
         <SettingItem
           title={t("Setting:securityTips")}
           icon={<IconSecurityTips w={4} h={4} />}
           onPress={onSecurityTips}
         />
-        <Divider bg={"#E6E8EC"} h={"1px"} mb={2.5} />
+        <Divider h={"1px"} mb={2.5} />
         <SettingItem
           title={t("Setting:settings")}
           icon={<IconSettings w={4} h={4} />}

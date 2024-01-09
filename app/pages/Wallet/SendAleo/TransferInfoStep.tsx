@@ -295,7 +295,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
           </Flex>
         </Flex>
       </Flex>
-      <Divider bgColor={"gray.50"} h={"1px"} mt={3} mb={5} />
+      <Divider h={"1px"} mt={3} mb={5} />
       <BaseInputGroup
         title={t("Send:to")}
         inputProps={{

@@ -1,6 +1,13 @@
 import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { PageWithHeader } from "@/layouts/Page";
-import { Flex, Text, VStack, chakra, useClipboard } from "@chakra-ui/react";
+import {
+  Flex,
+  Text,
+  VStack,
+  chakra,
+  useClipboard,
+  useColorModeValue,
+} from "@chakra-ui/react";
 import { QRCodeSVG } from "qrcode.react";
 // @ts-ignore
 import WALLET_LOGO from "@/common/assets/image/logo.png";
@@ -10,6 +17,7 @@ import { IconAleo, IconCopyBlack, IconWarning } from "@/components/Custom/Icon";
 import { useCallback } from "react";
 import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
 import { useTranslation } from "react-i18next";
+import { useThemeStyle } from "@/hooks/useThemeStyle";
 
 const QRCode = chakra(QRCodeSVG);
 
@@ -23,6 +31,9 @@ function ReceiveScreen() {
     onCopy();
     showToast();
   }, [onCopy, showToast]);
+
+  const { borderColor } = useThemeStyle();
+  const iconBg = useColorModeValue("gray.50", "#777E90");
 
   return (
     <PageWithHeader
@@ -69,7 +80,7 @@ function ReceiveScreen() {
           align={"center"}
           justify={"space-between"}
           borderWidth={1}
-          borderColor={"#E6E8EC"}
+          borderColor={borderColor}
           borderRadius={8}
           p={2.5}
         >
@@ -79,7 +90,7 @@ function ReceiveScreen() {
           <Flex
             h={6}
             w={6}
-            bg={"#E6E8EC"}
+            bg={iconBg}
             justify={"center"}
             align={"center"}
             borderRadius={12}

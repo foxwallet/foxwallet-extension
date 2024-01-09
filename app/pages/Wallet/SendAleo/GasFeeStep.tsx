@@ -368,7 +368,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
             symbol={nativeCurrency.symbol}
           />
         </Flex>
-        <Divider bgColor={"gray.50"} h={"1px"} mt={3} mb={5} />
+        <Divider h={"1px"} mt={3} mb={5} />
         <Flex mt={2} flexDir={"column"}>
           <Text>{t("Send:gasFee")}</Text>
           <Flex

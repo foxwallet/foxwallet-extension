@@ -34,6 +34,7 @@ import { ALE0_EXPOLER_TRANSACTION_URL } from "@/common/constants";
 import { useTxHistory } from "@/hooks/useTxHistory";
 import { useIsSendingAleoTx } from "@/hooks/useSendingTxStatus";
 import { useRecords } from "@/hooks/useRecord";
+import { useThemeStyle } from "@/hooks/useThemeStyle";
 
 interface TokenTxHistoryItemProps {
   item: AleoHistoryItem;
@@ -67,11 +68,13 @@ const TokenTxHistoryItem: React.FC<TokenTxHistoryItemProps> = ({
   );
   const amount = useMemo(() => BigInt(item.amount || 0n), [item.amount]);
 
+  const { borderColor } = useThemeStyle();
+
   return (
     <Flex
       align={"center"}
       justify={"space-between"}
-      borderColor={"#E6E8EC"}
+      borderColor={borderColor}
       borderBottomWidth={"1px"}
       py={2.5}
       mt={2.5}
@@ -180,7 +183,7 @@ const TokenDetailScreen = () => {
             </Text>
           </Flex>
         </Flex>
-        <Divider orientation="horizontal" h={"1px"} bg={"#E6E8EC"} my={2.5} />
+        <Divider orientation="horizontal" h={"1px"} my={2.5} />
         <Flex align={"center"} justify={"space-between"}>
           <Flex align={"center"}>
             <Flex flexDir={"column"} pt={2} fontSize={"smaller"}>
@@ -244,11 +247,11 @@ const TokenDetailScreen = () => {
           </Button>
         </Flex>
       </Flex>
-      <Divider orientation="horizontal" h={"1px"} bg={"#E6E8EC"} />
+      <Divider orientation="horizontal" h={"1px"} />
       <Flex direction={"column"} px={5} py={2.5}>
         <Text fontWeight={"bold"}>{t("TokenDetail:tx_records")}</Text>
         {history && history?.length > 0 ? (
-          <Flex direction={"column"} maxH={340} overflowY="auto">
+          <Flex direction={"column"} maxH={320} overflowY="auto">
             {history?.map(renderTxHistoryItem)}
           </Flex>
         ) : (

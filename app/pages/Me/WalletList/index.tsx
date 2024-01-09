@@ -13,6 +13,7 @@ import { showEditWalletNameDrawer } from "@/components/Wallet/EditWalletNameDraw
 import { usePopupDispatch } from "@/hooks/useStore";
 import { CoinType } from "core/types";
 import Hover from "@/components/Custom/Hover";
+import { useThemeStyle } from "@/hooks/useThemeStyle";
 
 interface WalletItemProps {
   wallet: DisplayWallet;
@@ -36,11 +37,13 @@ const WalletItem: React.FC<WalletItemProps> = ({
     onCheckAccounts(wallet);
   }, [wallet, onCheckAccounts]);
 
+  const { borderColor, selectedBorderColor } = useThemeStyle();
+
   return (
     <Flex
       mt={2.5}
       borderWidth={1}
-      borderColor={isSelected ? "#000" : "#E6E8EC"}
+      borderColor={isSelected ? selectedBorderColor : borderColor}
       borderRadius={8}
       position={"relative"}
     >
@@ -57,13 +60,7 @@ const WalletItem: React.FC<WalletItemProps> = ({
         ) : (
           <Box height={18} width={18} />
         )}
-        <Text
-          ml={1}
-          fontSize={12}
-          fontWeight={500}
-          color={"#000"}
-          align={"start"}
-        >
+        <Text ml={1} fontSize={12} fontWeight={500} align={"start"}>
           {wallet.walletName}
         </Text>
       </Flex>

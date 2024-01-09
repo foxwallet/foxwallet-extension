@@ -1,3 +1,4 @@
+import Hover from "@/components/Custom/Hover";
 import {
   IconArrowBackup,
   IconBackupReminder,
@@ -5,7 +6,8 @@ import {
 } from "@/components/Custom/Icon";
 import { showPasswordVerifyDrawer } from "@/components/Custom/PasswordVerifyDrawer";
 import { usePopupSelector } from "@/hooks/useStore";
-import { Box, Flex, Text } from "@chakra-ui/react";
+import { useThemeStyle } from "@/hooks/useThemeStyle";
+import { Flex, Text } from "@chakra-ui/react";
 import { isEqual } from "lodash";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -31,6 +33,7 @@ export const BackupReminderView = () => {
     confirmed && navigate(`/backup_mnemonic/${selectedAccount.walletId}`);
   }, [navigate, selectedAccount.walletId, showPasswordVerifyDrawer]);
 
+  const { borderColor } = useThemeStyle();
   if (backupedMnemonic || !visible) return null;
 
   return (
@@ -39,7 +42,7 @@ export const BackupReminderView = () => {
       py={3}
       justify={"space-between"}
       borderBottomWidth={1}
-      borderColor={"#E6E8EC"}
+      borderColor={borderColor}
     >
       <Flex direction={"column"} justify={"center"}>
         <Text fontWeight={500} fontSize={13} maxW={150}>
@@ -54,9 +57,9 @@ export const BackupReminderView = () => {
       </Flex>
       <Flex align={"flex-start"}>
         <IconBackupReminder mt={1} />
-        <Box cursor={"pointer"} onClick={() => setVisible((prev) => !prev)}>
+        <Hover onClick={() => setVisible((prev) => !prev)}>
           <IconCloseLineGray w={4} h={4} />
-        </Box>
+        </Hover>
       </Flex>
     </Flex>
   );
