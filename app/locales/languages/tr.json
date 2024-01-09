@@ -193,5 +193,9 @@
   },
   "Me": {
     "title": "Ben"
+  },
+  "Reset": {
+    "remind": "Bu hesaba ilişkin tüm geçmişiniz sıfırlanacak ve ağ yeniden senkronize edilecek. Devam etmek için lütfen onaylayın.",
+    "account": "Hesabı sıfırla"
   }
 }

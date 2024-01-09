@@ -193,5 +193,9 @@
   },
   "Me": {
     "title": "Aku"
+  },
+  "Reset": {
+    "remind": "Semua riwayat Anda untuk akun ini akan disetel ulang dan jaringan akan disinkronkan ulang. Harap konfirmasi untuk melanjutkan.",
+    "account": "Setel ulang akun"
   }
 }
