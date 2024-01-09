@@ -1,19 +1,18 @@
-import { Flex, Text, UseTabProps, useTab } from "@chakra-ui/react";
+import { Flex, Text, useTab } from "@chakra-ui/react";
 import { useCallback, forwardRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabList, TabPanels } from "@chakra-ui/react";
 import { WalletTab } from "./WalletTab";
-import { SettingTab } from "./SettingTab";
+import { MeTab } from "./MeTab";
 import { useLocation } from "react-router-dom";
 import {
   IconMeSelected,
   IconMeUnselected,
-  IconSettingSelected,
-  IconSettingUnselected,
   IconWalletSelected,
   IconWalletUnselected,
 } from "@/components/Custom/Icon";
 import { useTranslation } from "react-i18next";
+import { useThemeStyle } from "@/hooks/useThemeStyle";
 
 function MainScreen() {
   const location = useLocation();
@@ -29,6 +28,8 @@ function MainScreen() {
     navigate(`?tab=${index}`);
   }, []);
 
+  const { borderColor } = useThemeStyle();
+
   return (
     <Flex flexDirection={"column"} flex={1} alignItems={"stretch"}>
       <Tabs
@@ -39,7 +40,7 @@ function MainScreen() {
       >
         <TabPanels h={"100%"}>
           <WalletTab />
-          <SettingTab />
+          <MeTab />
         </TabPanels>
         <TabList
           sx={{ position: "sticky" }}
@@ -47,9 +48,8 @@ function MainScreen() {
           left={0}
           right={0}
           height={59}
-          bg={"white"}
           borderTopWidth={1}
-          borderColor={"#E6E8EC"}
+          borderColor={borderColor}
         >
           <CustomTab
             key={"wallet"}
@@ -88,7 +88,7 @@ const CustomTab = forwardRef<any, any>((props, ref) => {
       as={"button"}
     >
       {isSelected ? selected : unselected}
-      <Text fontWeight={500} color={"#000"} fontSize={12}>
+      <Text fontWeight={500} fontSize={12}>
         {tabProps.children}
       </Text>
     </Flex>

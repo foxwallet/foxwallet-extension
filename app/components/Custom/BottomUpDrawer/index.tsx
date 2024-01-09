@@ -7,6 +7,7 @@ import {
   type ModalFooterProps,
   ModalHeader,
   ModalOverlay,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { H6 } from "../../../common/theme/components/text";
 import { IconCloseLine } from "../Icon";
@@ -34,6 +35,8 @@ export function BottomUpDrawer(props: BottomUpDrawerProps) {
     footerStyle,
   } = props;
 
+  const bg = useColorModeValue("white", "black");
+
   return (
     <Modal
       closeOnEsc
@@ -43,12 +46,7 @@ export function BottomUpDrawer(props: BottomUpDrawerProps) {
       motionPreset="slideInBottom"
     >
       <ModalOverlay backdropFilter="blur(10px)" />
-      <ModalContent
-        alignSelf={"flex-end"}
-        bg={"white"}
-        p={4}
-        borderTopRadius={8}
-      >
+      <ModalContent alignSelf={"flex-end"} bg={bg} p={4} borderTopRadius={8}>
         {(!!title || !hideClose) && (
           <ModalHeader
             display={"flex"}
@@ -57,13 +55,7 @@ export function BottomUpDrawer(props: BottomUpDrawerProps) {
             mb={4}
           >
             {!!title && <H6>{title}</H6>}
-            <IconCloseLine
-              w={6}
-              h={6}
-              cursor={"pointer"}
-              fill={"black"}
-              onClick={onClose}
-            />
+            <IconCloseLine w={6} h={6} cursor={"pointer"} onClick={onClose} />
           </ModalHeader>
         )}
         <ModalBody {...bodyStyle}>{body}</ModalBody>

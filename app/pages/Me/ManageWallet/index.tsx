@@ -15,6 +15,7 @@ import {
 } from "@/components/Custom/Icon";
 import { usePopupDispatch } from "@/hooks/useStore";
 import { CoinType } from "core/types";
+import { useThemeStyle } from "@/hooks/useThemeStyle";
 
 interface WalletItemProps {
   wallet: DisplayWallet;
@@ -39,12 +40,14 @@ const WalletItem: React.FC<WalletItemProps> = ({
     onDelete(wallet);
   }, [onDelete, wallet]);
 
+  const { borderColor, selectedBorderColor } = useThemeStyle();
+
   return (
     <Flex
       mt={2.5}
       px={2.5}
       borderWidth={1}
-      borderColor={isSelected ? "#000" : "#E6E8EC"}
+      borderColor={isSelected ? selectedBorderColor : borderColor}
       borderRadius={8}
       position={"relative"}
       justify={"space-between"}

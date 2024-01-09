@@ -10,6 +10,7 @@ import {
   MenuItem,
   MenuButton,
   MenuList,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import React, { useState, useRef, useCallback } from "react";
 import { B3, H4, L1 } from "../../../common/theme/components/text";
@@ -56,6 +57,7 @@ function OnboardHomeScreen() {
   }, []);
   const { t } = useTranslation();
 
+  const menuBgColor = useColorModeValue("white", "black");
   return (
     <Flex direction={"column"} w={"full"} h={"full"}>
       <Flex pl="6" pr="4" mt="4" justify={"space-between"}>
@@ -90,7 +92,7 @@ function OnboardHomeScreen() {
                 borderColor={"black"}
                 paddingX={"3"}
                 paddingY={"2"}
-                bg={"white"}
+                bg={menuBgColor}
               >
                 {Object.values(SupportLanguages).map((item) => (
                   <MenuItem

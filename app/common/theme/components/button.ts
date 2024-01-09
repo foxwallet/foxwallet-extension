@@ -1,4 +1,4 @@
-import { Button, chakra, defineStyleConfig } from "@chakra-ui/react";
+import { Button, chakra, defineStyleConfig, propNames } from "@chakra-ui/react";
 import { mode } from "@chakra-ui/theme-tools";
 import { textStyles } from "./text";
 
@@ -94,9 +94,9 @@ export const buttonTheme = defineStyleConfig({
 
       if (c === "menu") {
         return {
-          bg: `white`,
-          color: "black",
-          borderColor: "black",
+          bg: mode("white", "black")(props),
+          color: mode("black", "white")(props),
+          borderColor: mode("black", "#777E90")(props),
           borderWidth: "1px",
           borderStyle: "solid",
           _disabled: {
@@ -107,8 +107,8 @@ export const buttonTheme = defineStyleConfig({
       }
 
       return {
-        bg: `black`,
-        color: "green.500",
+        bg: mode("black", "green.500")(props),
+        color: mode("green.500", "black")(props),
         _hover: {
           bg: `${c}.600`,
         },
@@ -116,7 +116,8 @@ export const buttonTheme = defineStyleConfig({
           bg: `${c}.700`,
         },
         _disabled: {
-          bg: "gray.500",
+          opacity: mode(1, 0.5)(props),
+          bg: mode("gray.500", "green.500")(props),
           cursor: "not-allowed",
         },
       };

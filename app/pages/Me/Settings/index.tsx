@@ -1,4 +1,5 @@
 import {
+  IconChevronDown,
   IconCurrency,
   IconEdit,
   IconInfo,
@@ -14,6 +15,7 @@ import { isEqual } from "lodash";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import TestTheme from "../TestTheme";
 
 const SettingsScreen = () => {
   const { t } = useTranslation();
@@ -67,6 +69,8 @@ const SettingsScreen = () => {
           icon={<IconInfo w={4} h={4} />}
           onPress={onAbout}
         />
+        {/* todo */}
+        <TestTheme />
       </Content>
     </PageWithHeader>
   );

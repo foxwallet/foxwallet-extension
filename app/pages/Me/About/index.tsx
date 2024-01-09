@@ -21,9 +21,9 @@ const AboutScreen = () => {
       <Content>
         <Flex align={"center"} flexDir={"column"} mt={4}>
           <Image src={WALLET_LOGO} w={"60px"} h={"60px"} />
-          <IconFoxWallet w={120} h={20} mt={-3} />
+          <IconFoxWallet w={120} h={20} mt={-3} fill={"white"} />
         </Flex>
-        <Divider h={"1px"} bg={"#E6E8EC"} />
+        <Divider h={"1px"} />
         <Flex py={2.5} mb={2.5} align={"center"} justify={"space-between"}>
           <Text fontSize={13}>{t("About:version")}</Text>
           <Text>v{version}</Text>

@@ -9,7 +9,14 @@ import {
   IconSend,
 } from "@/components/Custom/Icon";
 import { useCurrAccount } from "@/hooks/useCurrAccount";
-import { Box, Flex, Text, keyframes, useClipboard } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  Text,
+  keyframes,
+  useClipboard,
+  useColorModeValue,
+} from "@chakra-ui/react";
 import { TokenNum } from "../TokenNum";
 import { useCoinService } from "@/hooks/useCoinService";
 import { useBalance } from "@/hooks/useBalance";
@@ -23,6 +30,8 @@ import { useTranslation } from "react-i18next";
 import RescanButton from "../RescanButton";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
 import { useIsSendingAleoTx } from "@/hooks/useSendingTxStatus";
+import Hover from "@/components/Custom/Hover";
+import { useThemeStyle } from "@/hooks/useThemeStyle";
 
 const rotateAnimation = keyframes`
   from { transform: rotate(0deg) }
@@ -77,14 +86,20 @@ export const AccountInfoHeader = () => {
     [],
   );
 
+  const bgGradient = useColorModeValue(
+    "linear(to-br, #ECFFF2, #FFFFFF, #ECFFF2)",
+    "linear(to-br, #14321A, #000000, #14321A)",
+  );
+  const { borderColor } = useThemeStyle();
+
   return (
     <Box
       w="100%"
       px={5}
       py={5}
-      bgGradient="linear(to-br, #ECFFF2, #FFFFFF, #ECFFF2)"
+      bgGradient={bgGradient}
       borderBottomWidth={1}
-      borderColor={"#E6E8EC"}
+      borderColor={borderColor}
     >
       <Flex justify={"space-between"} align={"center"}>
         <Flex
@@ -95,7 +110,7 @@ export const AccountInfoHeader = () => {
         >
           <IconLogo w={8} h={8} mr={1} />
           <Flex direction={"column"} align={"flex-start"}>
-            <Text fontSize={12} lineHeight={4} color={"#000"} fontWeight={500}>
+            <Text fontSize={12} lineHeight={4} fontWeight={500}>
               {selectedWallet?.walletName}
             </Text>
             <Text fontSize={10} color={"#777E90"} fontWeight={500}>
@@ -130,15 +145,9 @@ export const AccountInfoHeader = () => {
         <Box maxW={128} noOfLines={1} fontSize={11} color={"#777E90"}>
           <MiddleEllipsisText text={selectedAccount.address} width={128} />
         </Box>
-        <Flex
-          justify={"center"}
-          align={"center"}
-          cursor={"pointer"}
-          px={2}
-          onClick={onCopyAddress}
-        >
+        <Hover onClick={onCopyAddress}>
           <IconCopy w={3} h={3} />
-        </Flex>
+        </Hover>
       </Flex>
       <Flex direction={"row"} align={"center"} justify={"space-between"} mt={2}>
         <Flex align={"center"}>
@@ -194,12 +203,7 @@ const ActionButton: React.FC<ActionButtonProps> = ({
       direction={"column"}
     >
       {icon}
-      <Text
-        mt={1}
-        fontSize={12}
-        fontWeight={500}
-        color={disabled ? "gray" : "#000"}
-      >
+      <Text mt={1} fontSize={12} fontWeight={500}>
         {title}
       </Text>
     </Flex>

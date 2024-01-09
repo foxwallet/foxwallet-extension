@@ -69,7 +69,7 @@ const AccountOptionDrawer = (props: Props) => {
             onClick={handleExportPrivateKey}
           >
             <IconExportPhrase />
-            <Text ml={2.5} color={"#000"} fontSize={12} fontWeight={500}>
+            <Text ml={2.5} fontSize={12} fontWeight={500}>
               {t("Wallet:Export:privateKey")}
             </Text>
           </Flex>

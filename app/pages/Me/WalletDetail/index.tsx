@@ -1,4 +1,5 @@
 import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
+import Hover from "@/components/Custom/Hover";
 import {
   IconAleo,
   IconCopy,
@@ -18,10 +19,18 @@ import {
 } from "@/components/Wallet/WalletOptionDrawer";
 import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
+import { useThemeStyle } from "@/hooks/useThemeStyle";
 import { useWallets } from "@/hooks/useWallets";
 import { PageWithHeader } from "@/layouts/Page";
 import { SelectedAccount } from "@/scripts/background/store/vault/types/keyring";
-import { Box, Button, Flex, Text, useClipboard } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Flex,
+  Text,
+  useClipboard,
+  useColorModeValue,
+} from "@chakra-ui/react";
 import { CoinType } from "core/types";
 import { nanoid } from "nanoid";
 import { useCallback, useMemo } from "react";
@@ -127,11 +136,13 @@ const AccountListItem: React.FC<AccountListItemProps> = ({ account }) => {
     });
   }, [account, onExportPrivateKey, onChangeVisibility]);
 
+  const titleColor = useColorModeValue("black", "white");
+  const { borderColor } = useThemeStyle();
   return (
     <Flex
       mt={2.5}
       borderWidth={1}
-      borderColor={"#E6E8EC"}
+      borderColor={borderColor}
       borderRadius={8}
       px={2.5}
       flex={1}
@@ -145,20 +156,14 @@ const AccountListItem: React.FC<AccountListItemProps> = ({ account }) => {
             mr={1}
             fontSize={13}
             fontWeight={"bold"}
-            color={!!account.hide ? "#777E90" : "#000"}
+            color={!!account.hide ? "#777E90" : titleColor}
             align={"start"}
           >
             {account.accountName}
           </Text>
-          <Box
-            cursor={"pointer"}
-            onClick={handleEditName}
-            p={1}
-            borderRadius={11}
-            _hover={{ backgroundColor: "#F5F5F5" }}
-          >
+          <Hover p={1} onClick={handleEditName}>
             <IconEdit />
-          </Box>
+          </Hover>
         </Flex>
         <Flex align={"center"}>
           <Box
@@ -170,26 +175,14 @@ const AccountListItem: React.FC<AccountListItemProps> = ({ account }) => {
           >
             <MiddleEllipsisText text={account.address} width={240} />
           </Box>
-          <Box
-            cursor={"pointer"}
-            onClick={handleCopyAddress}
-            p={1}
-            borderRadius={12}
-            _hover={{ backgroundColor: "#F5F5F5" }}
-          >
+          <Hover onClick={handleCopyAddress} p={1}>
             <IconCopy h={4} w={4} />
-          </Box>
+          </Hover>
         </Flex>
       </Flex>
-      <Box
-        cursor={"pointer"}
-        onClick={handleShowMore}
-        p={1}
-        borderRadius={13}
-        _hover={{ backgroundColor: "#F5F5F5" }}
-      >
+      <Hover onClick={handleShowMore} p={1}>
         <IconMore />
-      </Box>
+      </Hover>
     </Flex>
   );
 };
@@ -291,21 +284,15 @@ const WalletDetailScreen = () => {
     <PageWithHeader
       title={walletInfo?.walletName}
       rightIcon={
-        <Box
-          cursor={"pointer"}
-          onClick={onWalletMoreAction}
-          p={1}
-          borderRadius={13}
-          _hover={{ backgroundColor: "#F5F5F5" }}
-        >
+        <Hover onClick={onWalletMoreAction}>
           <IconMore />
-        </Box>
+        </Hover>
       }
     >
       <Flex direction={"column"} flex={1} px={5} pb={4} pt={2.5}>
         <Flex align={"center"} justify={"flex-start"}>
           <IconAleo />
-          <Text ml={1} fontSize={14} fontWeight={500} color={"black"}>
+          <Text ml={1} fontSize={14} fontWeight={500}>
             ALEO
           </Text>
         </Flex>
