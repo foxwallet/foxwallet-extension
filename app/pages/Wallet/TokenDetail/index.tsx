@@ -193,7 +193,7 @@ const TokenDetailScreen = () => {
                   <Spinner w={2} h={2} />
                 ) : (
                   <TokenNum
-                    amount={balance?.publicBalance || 0n}
+                    amount={balance?.publicBalance}
                     decimals={nativeCurrency.decimals}
                     symbol={nativeCurrency.symbol}
                   />
@@ -206,7 +206,7 @@ const TokenDetailScreen = () => {
                     <Spinner w={2} h={2} />
                   ) : (
                     <TokenNum
-                      amount={balance?.privateBalance || 0n}
+                      amount={balance?.privateBalance}
                       decimals={nativeCurrency.decimals}
                       symbol={nativeCurrency.symbol}
                     />
@@ -215,7 +215,7 @@ const TokenDetailScreen = () => {
                     <Flex>
                       (<Text>{recordStr}</Text>&nbsp;
                       <TokenNum
-                        amount={records[0].parsedContent?.microcredits || 0n}
+                        amount={records[0].parsedContent?.microcredits}
                         decimals={nativeCurrency.decimals}
                         symbol={nativeCurrency.symbol}
                       />
@@ -240,7 +240,7 @@ const TokenDetailScreen = () => {
             ml={3}
             colorScheme="normal"
             borderColor={"black"}
-            isDisabled={sendingAleoTx}
+            isDisabled={sendingAleoTx || loadingBalance || !balance?.total}
             onClick={onSend}
           >
             {t("Send:title")}

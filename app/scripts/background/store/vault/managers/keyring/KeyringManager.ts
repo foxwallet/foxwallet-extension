@@ -396,16 +396,16 @@ export class KeyringManager {
     coinType: CoinType;
     accountId: string;
   }) {
+    const token = this.#getToken();
+    if (!token) {
+      throw new Error(ERROR_CODE.NOT_AUTH);
+    }
     const wallet = await this.#storage.getHDWallet(walletId);
     const account = wallet.accountsMap[coinType].find(
       (item) => item.accountId === accountId,
     );
     if (!account) {
       throw new Error("Account not found " + accountId);
-    }
-    const token = this.#getToken();
-    if (!token) {
-      throw new Error(ERROR_CODE.NOT_AUTH);
     }
     const encryptedPrivateKey = account.privateKey;
     const privateKey = decryptStr(token, encryptedPrivateKey);
@@ -419,13 +419,13 @@ export class KeyringManager {
     coinType: CoinType;
     address: string;
   }) {
-    const keyring = await this.#storage.getKeyring();
-    if (!keyring) {
-      throw new Error("Empty keyring");
-    }
     const token = this.#getToken();
     if (!token) {
       throw new Error(ERROR_CODE.NOT_AUTH);
+    }
+    const keyring = await this.#storage.getKeyring();
+    if (!keyring) {
+      throw new Error("Empty keyring");
     }
     const { HD: hdWallets, SIMPLE: simpleWallets } = keyring;
     if (hdWallets) {
@@ -464,6 +464,10 @@ export class KeyringManager {
     coinType: CoinType;
     address: string;
   }) {
+    const token = this.#getToken();
+    if (!token) {
+      throw new Error(ERROR_CODE.NOT_AUTH);
+    }
     const keyring = await this.#storage.getKeyring();
     if (!keyring) {
       throw new Error("Empty keyring");
@@ -475,7 +479,7 @@ export class KeyringManager {
           (item) => item.address === address,
         );
         if (!account) {
-          throw new Error("Account not found " + address);
+          continue;
         }
         return account.viewKey;
       }
@@ -486,12 +490,12 @@ export class KeyringManager {
           (item) => item.address === address,
         );
         if (!account) {
-          throw new Error("Account not found " + address);
+          continue;
         }
         return account.viewKey;
       }
     }
-    return null;
+    throw new Error("Account not found " + address);
   }
 
   async hasWallet() {
@@ -507,13 +511,13 @@ export class KeyringManager {
   }
 
   async getHDMnemonic(walletId: string): Promise<string> {
-    const keyring = await this.#storage.getKeyring();
-    if (!keyring) {
-      throw new Error("Empty keyring");
-    }
     const token = this.#getToken();
     if (!token) {
       throw new Error(ERROR_CODE.NOT_AUTH);
+    }
+    const keyring = await this.#storage.getKeyring();
+    if (!keyring) {
+      throw new Error("Empty keyring");
     }
     const { HD: hdWallets } = keyring;
     if (hdWallets) {
@@ -527,25 +531,25 @@ export class KeyringManager {
   }
 
   async deleteWallet(walletId: string): Promise<void> {
-    const keyring = await this.#storage.getKeyring();
-    if (!keyring) {
-      throw new Error("Empty keyring");
-    }
     const token = this.#getToken();
     if (!token) {
       throw new Error(ERROR_CODE.NOT_AUTH);
+    }
+    const keyring = await this.#storage.getKeyring();
+    if (!keyring) {
+      throw new Error("Empty keyring");
     }
     return await this.#storage.deleteWallet(walletId);
   }
 
   async changeAccountHideState(params: ChangeAccountStateProps) {
-    const keyring = await this.#storage.getKeyring();
-    if (!keyring) {
-      throw new Error("Empty keyring");
-    }
     const token = this.#getToken();
     if (!token) {
       throw new Error(ERROR_CODE.NOT_AUTH);
+    }
+    const keyring = await this.#storage.getKeyring();
+    if (!keyring) {
+      throw new Error("Empty keyring");
     }
     return await this.#storage.changeAccountHideState(params);
   }

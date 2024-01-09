@@ -13,7 +13,7 @@ export const TokenNum = ({
   symbol,
   placeholder,
 }: {
-  amount: bigint;
+  amount?: bigint;
   decimals: number;
   commify?: boolean;
   precision?: number;
@@ -21,6 +21,9 @@ export const TokenNum = ({
   placeholder?: string;
 }) => {
   const amountStr = useMemo(() => {
+    if (amount === undefined) {
+      return "---";
+    }
     return formatTokenNum(
       amount,
       decimals,

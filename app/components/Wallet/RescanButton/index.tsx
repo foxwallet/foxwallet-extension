@@ -51,7 +51,7 @@ const RescanButton = (props: RescanButtonProps) => {
         <IconRescan />
       )}
       <Text ml={1} fontSize={10}>
-        {paused ? t("Common:paused") : `${progress ?? 0}%`}
+        {paused ? t("Common:paused") : progress ? `${progress}%` : ""}
       </Text>
     </Flex>
   );

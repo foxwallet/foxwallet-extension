@@ -176,7 +176,7 @@ export interface IPopupServer {
 
   getAllWallet: () => Promise<DisplayKeyring>;
 
-  rescanAleo(params: ResyncAleoProps): Promise<boolean>;
+  rescanAleo(): Promise<boolean>;
 
   sendAleoTransaction(params: AleoSendTxProps): Promise<void>;
 

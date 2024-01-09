@@ -32,6 +32,7 @@ import {
   isSendingAleoTransaction,
   sendDeployment,
   sendTransaction,
+  stopSending,
   stopSync,
   syncBlocks,
 } from "../offscreen";
@@ -52,6 +53,7 @@ import {
 } from "core/coins/ALEO/types/Tranaction";
 import { CoinServiceEntry } from "core/coins/CoinServiceEntry";
 import { ChainUniqueId, InnerChainUniqueId } from "core/types/ChainUniqueId";
+import { TaskPriority } from "core/coins/ALEO/types/SyncTask";
 
 export type OnRequestFinishCallback = (
   error: null | Error,
@@ -233,7 +235,7 @@ export class PopupWalletServer implements IPopupServer {
               status: AleoTxStatus.QUEUED,
             };
             await this.coinService
-              .getInstance(InnerChainUniqueId.ALEO_TESTNET3)
+              .getInstance(params.uniqueId)
               .setAddressLocalTx(address, txInfo);
             await browser.windows.remove(popupId);
 
@@ -252,7 +254,7 @@ export class PopupWalletServer implements IPopupServer {
                   error: "sendTransaction failed",
                 };
                 await this.coinService
-                  .getInstance(InnerChainUniqueId.ALEO_TESTNET3)
+                  .getInstance(params.uniqueId)
                   .setAddressLocalTx(address, finalTxInfo);
               }
             });
@@ -314,7 +316,7 @@ export class PopupWalletServer implements IPopupServer {
               deploy: true,
             };
             await this.coinService
-              .getInstance(InnerChainUniqueId.ALEO_TESTNET3)
+              .getInstance(params.uniqueId)
               .setAddressLocalTx(address, txInfo);
             await browser.windows.remove(popupId);
 
@@ -333,7 +335,7 @@ export class PopupWalletServer implements IPopupServer {
                   error: "sendDeployment failed",
                 };
                 await this.coinService
-                  .getInstance(InnerChainUniqueId.ALEO_TESTNET3)
+                  .getInstance(params.uniqueId)
                   .setAddressLocalTx(address, finalTxInfo);
               }
             });
@@ -596,17 +598,45 @@ export class PopupWalletServer implements IPopupServer {
     return await this.keyringManager.getAllWallet();
   }
 
-  async rescanAleo(params: ResyncAleoProps): Promise<boolean> {
-    const { uniqueId, account } = params;
-    // stop sync
-    await stopSync();
-    // clear local data
-    await this.coinService
-      .getInstance(uniqueId)
-      .clearAddressLocalData(account.address);
-    // continue sync
-    await syncBlocks();
-    return true;
+  async rescanAleo(): Promise<boolean> {
+    try {
+      await stopSending();
+      await stopSync();
+      const selectedAccount = await this.getSelectedAccount({
+        coinType: CoinType.ALEO,
+      });
+      const selectedUniqueId = await this.getSelectedUniqueId({
+        coinType: CoinType.ALEO,
+      });
+      if (selectedAccount) {
+        await this.coinService
+          .getInstance(selectedUniqueId)
+          .clearAddressLocalData(selectedAccount.address);
+        const viewKey = await this.keyringManager.getViewKey({
+          coinType: CoinType.ALEO,
+          address: selectedAccount.address,
+        });
+        if (viewKey) {
+          await this.coinService
+            .getInstance(selectedUniqueId)
+            .setAleoSyncAccount({
+              walletId: selectedAccount.walletId,
+              accountId: selectedAccount.accountId,
+              address: selectedAccount.address,
+              viewKey,
+              priority: TaskPriority.MEDIUM,
+            });
+        } else {
+          console.error("===> rescanAleo error: viewKey is null");
+        }
+      }
+      return true;
+    } catch (err) {
+      console.error("===> rescanAleo error: ", err);
+      return false;
+    } finally {
+      syncBlocks();
+    }
   }
 
   async sendAleoTransaction(params: AleoSendTxProps): Promise<void> {
@@ -628,7 +658,7 @@ export class PopupWalletServer implements IPopupServer {
           error: "sendTransaction failed",
         };
         await this.coinService
-          .getInstance(InnerChainUniqueId.ALEO_TESTNET3)
+          .getInstance(params.uniqueId)
           .setAddressLocalTx(rest.address, finalTxInfo);
       }
     });
