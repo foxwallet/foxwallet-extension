@@ -3,6 +3,7 @@ import {
   IconEdit,
   IconInfo,
   IconLanguage,
+  IconReset,
 } from "@/components/Custom/Icon";
 import { showConfirmResyncDialog } from "@/components/Setting/ConfirmResyncDialog";
 import SettingItem from "@/components/Setting/SettingItem";
@@ -81,8 +82,8 @@ const SettingsScreen = () => {
         /> */}
         {selectedAccount.coinType === CoinType.ALEO && (
           <SettingItem
-            title={t("Reset current account's status")}
-            icon={<IconCurrency w={4} h={4} />}
+            title={t("Reset:account")}
+            icon={<IconReset w={4} h={4} />}
             noNext
             onPress={onResetAleoStatus}
           />

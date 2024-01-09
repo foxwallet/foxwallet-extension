@@ -20,7 +20,7 @@ const ConfirmResyncDialog = (props: Props) => {
       onClose={onCancel}
       isCentered
       title={t("Common:warning")}
-      body={<P3 textAlign={"center"}>{t("Resync:remind")}</P3>}
+      body={<P3 textAlign={"center"}>{t("Reset:remind")}</P3>}
       footer={
         <Flex flex={1}>
           <Button flex={1} mr="2" onClick={onConfirm}>
