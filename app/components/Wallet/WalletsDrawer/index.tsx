@@ -76,6 +76,8 @@ const WalletsDrawer = (props: Props) => {
 
   const onSelectAccount = useCallback(
     (account: DisplayAccount) => {
+      if (!selectedWallet?.walletId) return;
+
       dispatch.account.setSelectedAccount({
         selectedAccount: {
           walletId: selectedWallet?.walletId,

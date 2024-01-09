@@ -21,7 +21,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import browser from "webextension-polyfill";
 
-export const SettingTab = () => {
+export const MeTab = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { selectedAccount } = useCurrAccount();
@@ -32,7 +32,7 @@ export const SettingTab = () => {
   }, [navigate]);
 
   const onWalletDetail = useCallback(() => {
-    navigate(`/wallet_detail/${selectedWallet.walletId}`);
+    navigate(`/wallet_detail/${selectedWallet?.walletId}`);
   }, [navigate, selectedWallet?.walletId]);
 
   const onGuide = useCallback(() => {

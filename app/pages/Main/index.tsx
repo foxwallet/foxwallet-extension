@@ -3,7 +3,7 @@ import { useCallback, forwardRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabList, TabPanels } from "@chakra-ui/react";
 import { WalletTab } from "./WalletTab";
-import { SettingTab } from "./SettingTab";
+import { MeTab } from "./MeTab";
 import { useLocation } from "react-router-dom";
 import {
   IconMeSelected,
@@ -40,7 +40,7 @@ function MainScreen() {
       >
         <TabPanels h={"100%"}>
           <WalletTab />
-          <SettingTab />
+          <MeTab />
         </TabPanels>
         <TabList
           sx={{ position: "sticky" }}
