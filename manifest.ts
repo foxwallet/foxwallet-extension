@@ -5,7 +5,7 @@ export default defineManifest((env) => {
   return {
     manifest_version: 3,
     name: "FoxWallet",
-    description: "",
+    description: "Browser Wallet for Aleo powered by FoxWallet",
     version,
     icons: {
       "128": "logo.png",
