@@ -400,7 +400,7 @@ export class KeyringManager {
     if (!token) {
       throw new Error(ERROR_CODE.NOT_AUTH);
     }
-    const wallet = await this.#storage.getHDWallet(walletId);
+    const wallet = await this.#storage.getWallet(walletId);
     const account = wallet.accountsMap[coinType].find(
       (item) => item.accountId === accountId,
     );
