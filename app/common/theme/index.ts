@@ -22,8 +22,8 @@ import { svgIconTheme } from "./components/svg";
 import { dividerTheme } from "./components/divider";
 
 export const config: ThemeConfig = {
-  initialColorMode: "system",
-  useSystemColorMode: true,
+  initialColorMode: "light",
+  useSystemColorMode: false,
 };
 
 export const theme = extendBaseTheme({
