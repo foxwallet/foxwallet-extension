@@ -87,7 +87,8 @@
     "delete": "Löschen",
     "warning": "Warnung",
     "copySuccess": "Kopiererfolg!",
-    "paused": "Angehalten"
+    "paused": "Angehalten",
+    "lock": "Sperren"
   },
   "Send": {
     "title": "Schicken",

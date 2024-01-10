@@ -87,7 +87,8 @@
     "delete": "Borrar",
     "warning": "Advertencia",
     "copySuccess": "¡Copia exitosa!",
-    "paused": "En pausa"
+    "paused": "En pausa",
+    "lock": "Cerrar"
   },
   "Send": {
     "title": "Enviar",

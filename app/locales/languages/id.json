@@ -87,7 +87,8 @@
     "delete": "Menghapus",
     "warning": "Peringatan",
     "copySuccess": "Salin Sukses!",
-    "paused": "Dijeda"
+    "paused": "Dijeda",
+    "lock": "Kunci"
   },
   "Send": {
     "title": "Mengirim",
