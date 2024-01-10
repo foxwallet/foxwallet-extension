@@ -80,6 +80,19 @@ export class VaultStorage {
     return simpleWallet;
   }
 
+  async getWallet(walletId: string) {
+    const keyring = (await this.getKeyring()) || {};
+    const hdWallets = keyring[WalletType.HD] || [];
+    const simpleWallets = keyring[WalletType.SIMPLE] || [];
+    const wallet =
+      hdWallets.find((item) => item.walletId === walletId) ||
+      simpleWallets.find((item) => item.walletId === walletId);
+    if (!wallet) {
+      throw new Error("wallet not exists " + walletId);
+    }
+    return wallet;
+  }
+
   async getAllHDWallets() {
     const keyring = (await this.getKeyring()) || {};
     return keyring[WalletType.HD] || [];
