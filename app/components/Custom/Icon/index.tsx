@@ -1,4 +1,9 @@
-import { ChakraComponent, chakra, useStyleConfig } from "@chakra-ui/react";
+import {
+  ChakraComponent,
+  chakra,
+  useColorModeValue,
+  useStyleConfig,
+} from "@chakra-ui/react";
 import CheckCircle from "@/common/assets/image/icon_check_circle.svg";
 import CheckLine from "@/common/assets/image/icon_check_line.svg";
 import CloseLine from "@/common/assets/image/icon_close_line.svg";
@@ -64,24 +69,32 @@ import MeUnselected from "@/common/assets/image/icon_me_unselected.svg";
 import Reset from "@/common/assets/image/icon_reset.svg";
 import Lock from "@/common/assets/image/icon_lock.svg";
 
-const AdaptColorModeIcon: (i: any) => ChakraComponent<any, any> =
+const ThemeIconFill: (i: any) => ChakraComponent<any, any> =
   (icon: any) => (props: ChakraComponent<any, any>) => {
     const styles = useStyleConfig("SvgIcon");
     const OriginIcon = chakra(icon);
     return <OriginIcon __css={styles} {...props} />;
   };
 
+const ThemeIconStroke: (i: any) => ChakraComponent<any, any> =
+  (icon: any) => (props: ChakraComponent<any, any>) => {
+    const iconStrokeColor = useColorModeValue("black", "white");
+
+    const OriginIcon = chakra(icon);
+    return <OriginIcon stroke={iconStrokeColor} {...props} />;
+  };
+
 export const IconCheckCircle = chakra(CheckCircle);
 
 export const IconCheckLine = chakra(CheckLine);
 
-export const IconCloseLine = AdaptColorModeIcon(CloseLine);
+export const IconCloseLine = ThemeIconFill(CloseLine);
 
-export const IconEyeClose = AdaptColorModeIcon(EyeClose);
+export const IconEyeClose = ThemeIconFill(EyeClose);
 
-export const IconEyeOn = AdaptColorModeIcon(Eye);
+export const IconEyeOn = ThemeIconFill(Eye);
 
-export const IconLeft = AdaptColorModeIcon(Left);
+export const IconLeft = ThemeIconFill(Left);
 
 export const OnboardLogo = chakra(Logo);
 
@@ -89,9 +102,9 @@ export const IconPreventScreenshot = chakra(PreventScreenshot);
 
 export const IconCloseCircle = chakra(CloseCircle);
 
-export const IconArrowRight = AdaptColorModeIcon(ArrowRight);
+export const IconArrowRight = ThemeIconFill(ArrowRight);
 export const IconLogo = chakra(LogoNew);
-export const IconCopy = AdaptColorModeIcon(Copy);
+export const IconCopy = ThemeIconFill(Copy);
 export const IconReceive = chakra(Receive);
 export const IconSend = chakra(Send);
 export const IconBuyDisabled = chakra(BuyDisabled);
@@ -99,48 +112,48 @@ export const IconSwapDisabled = chakra(SwapDisabled);
 export const IconArrowBackup = chakra(ArrowBackup);
 export const IconBackupReminder = chakra(BackupReminder);
 export const IconCloseLineGray = chakra(CloseLineGray);
-export const IconWalletSelected = AdaptColorModeIcon(WalletSelected);
-export const IconWalletUnselected = AdaptColorModeIcon(WalletUnselected);
+export const IconWalletSelected = ThemeIconFill(WalletSelected);
+export const IconWalletUnselected = ThemeIconFill(WalletUnselected);
 export const IconSettingSelected = chakra(SettingSelected);
 export const IconSettingUnselected = chakra(SettingUnselected);
 export const IconAleo = chakra(Aleo);
-export const IconCloseLineBlack = AdaptColorModeIcon(CloseLineBlack);
+export const IconCloseLineBlack = ThemeIconFill(CloseLineBlack);
 export const IconWarning = chakra(Warning);
 export const IconShare = chakra(Share);
-export const IconCopyBlack = AdaptColorModeIcon(CopyBlack);
-export const IconCheckLineBlack = AdaptColorModeIcon(CheckLineBlack);
-export const IconFoxWallet = AdaptColorModeIcon(FoxWallet);
-export const IconChevronLeft = AdaptColorModeIcon(ChevronLeft);
-export const IconChevronRight = AdaptColorModeIcon(ChevronRight);
-export const IconChevronUp = AdaptColorModeIcon(ChevronUp);
-export const IconChevronDown = AdaptColorModeIcon(ChevronDown);
-export const IconWallet = AdaptColorModeIcon(Wallet);
-export const IconEdit = AdaptColorModeIcon(Edit);
-export const IconMore = AdaptColorModeIcon(More);
-export const IconExportPhrase = AdaptColorModeIcon(ExportPhrase);
+export const IconCopyBlack = ThemeIconFill(CopyBlack);
+export const IconCheckLineBlack = ThemeIconFill(CheckLineBlack);
+export const IconFoxWallet = ThemeIconFill(FoxWallet);
+export const IconChevronLeft = ThemeIconFill(ChevronLeft);
+export const IconChevronRight = ThemeIconFill(ChevronRight);
+export const IconChevronUp = ThemeIconFill(ChevronUp);
+export const IconChevronDown = ThemeIconFill(ChevronDown);
+export const IconWallet = ThemeIconFill(Wallet);
+export const IconEdit = ThemeIconFill(Edit);
+export const IconMore = ThemeIconFill(More);
+export const IconExportPhrase = ThemeIconFill(ExportPhrase);
 export const IconDelete = chakra(Delete);
 export const IconQuestionCircle = chakra(QuestionCircle);
 export const IconCheckCircleBlack = chakra(CheckCircleBlack);
 export const IconUncheckCircleGray = chakra(UncheckCircleGray);
-export const IconRescan = AdaptColorModeIcon(Rescan);
-export const IconLoading = AdaptColorModeIcon(Loading);
+export const IconRescan = ThemeIconFill(Rescan);
+export const IconLoading = ThemeIconFill(Loading);
 export const IconEmptyTxPlaceholder = chakra(EmptyTxPlaceholder);
 export const IconSendBlack = chakra(SendBlack);
 export const IconReceiveBlack = chakra(ReceiveBlack);
-export const IconGuide = AdaptColorModeIcon(Guide);
-export const IconCommunity = AdaptColorModeIcon(Community);
-export const IconSecurityTips = AdaptColorModeIcon(SecurityTips);
-export const IconSettings = AdaptColorModeIcon(Settings);
-export const IconTelegram = AdaptColorModeIcon(Telegram);
-export const IconMedium = AdaptColorModeIcon(Medium);
-export const IconTwitter = AdaptColorModeIcon(Twitter);
-export const IconDiscord = AdaptColorModeIcon(Discord);
-export const IconYoutube = AdaptColorModeIcon(Youtube);
-export const IconLanguage = AdaptColorModeIcon(Language);
+export const IconGuide = ThemeIconFill(Guide);
+export const IconCommunity = ThemeIconFill(Community);
+export const IconSecurityTips = ThemeIconFill(SecurityTips);
+export const IconSettings = ThemeIconFill(Settings);
+export const IconTelegram = ThemeIconFill(Telegram);
+export const IconMedium = ThemeIconFill(Medium);
+export const IconTwitter = ThemeIconFill(Twitter);
+export const IconDiscord = ThemeIconFill(Discord);
+export const IconYoutube = ThemeIconFill(Youtube);
+export const IconLanguage = ThemeIconFill(Language);
 export const IconCurrency = chakra(Currency);
-export const IconInfo = AdaptColorModeIcon(Info);
+export const IconInfo = ThemeIconFill(Info);
 export const IconWeb = chakra(Web);
-export const IconMeSelected = AdaptColorModeIcon(MeSelected);
-export const IconMeUnselected = AdaptColorModeIcon(MeUnselected);
-export const IconReset = chakra(Reset);
-export const IconLock = chakra(Lock);
+export const IconMeSelected = ThemeIconFill(MeSelected);
+export const IconMeUnselected = ThemeIconFill(MeUnselected);
+export const IconReset = ThemeIconStroke(Reset);
+export const IconLock = ThemeIconStroke(Lock);
