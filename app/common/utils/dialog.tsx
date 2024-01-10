@@ -1,4 +1,9 @@
-import { useDisclosure, ChakraBaseProvider } from "@chakra-ui/react";
+import {
+  useDisclosure,
+  ChakraBaseProvider,
+  useColorMode,
+  ColorMode,
+} from "@chakra-ui/react";
 import React, { useEffect, useImperativeHandle, useState } from "react";
 import ReactDOM from "react-dom/client";
 import { theme } from "../theme";
@@ -159,14 +164,20 @@ export function promisifyChooseDialogWrapper<
 
 export const GlobalModal = () => {
   const [Dialog, setDialog] = useState<JSX.Element | null>(null);
+  const { setColorMode } = useColorMode();
 
   useEffect(() => {
     popupEvents.on("showDialog", (node: JSX.Element) => {
       setDialog(node);
     });
 
+    popupEvents.on("changeColorMode", (colorMode: ColorMode) => {
+      setColorMode(colorMode);
+    });
+
     return () => {
       popupEvents.off("showDialog");
+      popupEvents.off("changeColorMode");
     };
   }, []);
 
