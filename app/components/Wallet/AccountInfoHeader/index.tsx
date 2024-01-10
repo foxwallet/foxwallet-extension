@@ -97,7 +97,7 @@ export const AccountInfoHeader = () => {
     "linear(to-br, #ECFFF2, #FFFFFF, #ECFFF2)",
     "linear(to-br, #14321A, #000000, #14321A)",
   );
-  const { borderColor } = useThemeStyle();
+  const { borderColor, selectedBorderColor } = useThemeStyle();
 
   return (
     <>
@@ -133,13 +133,14 @@ export const AccountInfoHeader = () => {
             borderWidth={"1px"}
             borderRadius={"lg"}
             borderStyle={"solid"}
+            borderColor={selectedBorderColor}
             px={2}
             py={1}
             cursor={"pointer"}
             onClick={() => lock()}
           >
-            <IconLock w={4} h={4} />
-            <Text ml={2}>{t("Common:lock")}</Text>
+            <IconLock w={5} h={5} />
+            <Text ml={1}>{t("Common:lock")}</Text>
           </Flex>
         </Flex>
         <Flex mt={6} direction={"row"} align={"center"}>

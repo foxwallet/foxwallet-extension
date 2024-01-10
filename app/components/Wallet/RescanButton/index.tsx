@@ -23,7 +23,7 @@ const RescanButton = (props: RescanButtonProps) => {
     uniqueId,
     selectedAccount.address,
   );
-  const { borderColor } = useThemeStyle();
+  const { borderColor, selectedBorderColor } = useThemeStyle();
 
   const onRescan = useCallback(() => {
     getProgress();
@@ -39,7 +39,7 @@ const RescanButton = (props: RescanButtonProps) => {
       onClick={onRescan}
       borderWidth={"1px"}
       borderRadius={"4px"}
-      borderColor={borderColor}
+      borderColor={selectedBorderColor}
       h={5}
       px={1}
       justify={"center"}
