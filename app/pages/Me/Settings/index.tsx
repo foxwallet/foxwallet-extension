@@ -85,7 +85,7 @@ const SettingsScreen = () => {
         {selectedAccount.coinType === CoinType.ALEO && (
           <SettingItem
             title={t("Reset:account")}
-            icon={<IconReset w={4} h={4} />}
+            icon={<IconReset w={"16px"} h={"16px"} />}
             noNext
             onPress={onResetAleoStatus}
           />
