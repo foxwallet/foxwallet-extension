@@ -73,7 +73,7 @@ const PasswordVerifyDrawer = (props: Props) => {
                   setViewPass((curr) => !curr);
                 }}
               >
-                {viewPass ? (
+                {!viewPass ? (
                   <IconEyeClose w={"5"} h="full" />
                 ) : (
                   <IconEyeOn w={"5"} h="full" />
