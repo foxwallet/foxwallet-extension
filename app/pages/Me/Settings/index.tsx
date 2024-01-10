@@ -96,7 +96,7 @@ const SettingsScreen = () => {
           onPress={onAbout}
         />
         {/* todo */}
-        <TestTheme />
+        {/* <TestTheme /> */}
       </Content>
     </PageWithHeader>
   );

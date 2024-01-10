@@ -18,10 +18,10 @@ function App() {
     }
 
     // for inintial color mode
-    const colorMode = store.getState().setting.colorMode;
-    if (colorMode === ColorMode.System) {
-      localStorageManager.set("system");
-    }
+    // const colorMode = store.getState().setting.colorMode;
+    // if (colorMode === ColorMode.System) {
+    //   localStorageManager.set("system");
+    // }
   }, []);
 
   return (
