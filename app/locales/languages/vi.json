@@ -87,7 +87,8 @@
     "delete": "Xóa bỏ",
     "warning": "Cảnh báo",
     "copySuccess": "Sao chép thành công!",
-    "paused": "Đã tạm dừng"
+    "paused": "Đã tạm dừng",
+    "lock": "Khóa"
   },
   "Send": {
     "title": "Gửi",

@@ -4,6 +4,7 @@ import {
   IconEyeClose,
   IconEyeOn,
   IconLoading,
+  IconLock,
   IconLogo,
   IconReceive,
   IconSend,
@@ -32,6 +33,7 @@ import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
 import { useIsSendingAleoTx } from "@/hooks/useSendingTxStatus";
 import Hover from "@/components/Custom/Hover";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
+import { useAuth } from "@/hooks/useAuth";
 
 const rotateAnimation = keyframes`
   from { transform: rotate(0deg) }
@@ -54,6 +56,7 @@ export const AccountInfoHeader = () => {
   const { showToast } = useCopyToast();
   const { onCopy } = useClipboard(selectedAccount.address);
   const { sendingAleoTx } = useIsSendingAleoTx(uniqueId);
+  const { lock } = useAuth();
 
   const options: ActionButtonProps[] = useMemo(
     () => [
@@ -97,93 +100,121 @@ export const AccountInfoHeader = () => {
   const { borderColor } = useThemeStyle();
 
   return (
-    <Box
-      w="100%"
-      px={5}
-      py={5}
-      bgGradient={bgGradient}
-      borderBottomWidth={1}
-      borderColor={borderColor}
-    >
-      <Flex justify={"space-between"} align={"center"}>
+    <>
+      <Box
+        w="100%"
+        px={5}
+        py={5}
+        bgGradient={bgGradient}
+        borderBottomWidth={1}
+        borderColor={borderColor}
+      >
+        <Flex justify={"space-between"} align={"center"}>
+          <Flex
+            cursor={"pointer"}
+            onClick={onChangeWallet}
+            direction={"row"}
+            align={"center"}
+          >
+            <IconLogo w={8} h={8} mr={1} />
+            <Flex direction={"column"} align={"flex-start"}>
+              <Text fontSize={12} lineHeight={4} fontWeight={500}>
+                {selectedWallet?.walletName}
+              </Text>
+              <Text fontSize={10} color={"#777E90"} fontWeight={500}>
+                {selectedAccount.accountName}
+              </Text>
+            </Flex>
+            <IconArrowRight w={18} h={18} />
+          </Flex>
+          <Flex
+            align={"center"}
+            justify={"center"}
+            borderWidth={"1px"}
+            borderRadius={"lg"}
+            borderStyle={"solid"}
+            px={2}
+            py={1}
+            cursor={"pointer"}
+            onClick={() => lock()}
+          >
+            <IconLock w={4} h={4} />
+            <Text ml={2}>{t("Common:lock")}</Text>
+          </Flex>
+        </Flex>
+        <Flex mt={6} direction={"row"} align={"center"}>
+          <Box maxW={128} noOfLines={1} fontSize={11} color={"#777E90"}>
+            <MiddleEllipsisText text={selectedAccount.address} width={128} />
+          </Box>
+          <Hover onClick={onCopyAddress}>
+            <IconCopy w={3} h={3} />
+          </Hover>
+        </Flex>
         <Flex
-          cursor={"pointer"}
-          onClick={onChangeWallet}
           direction={"row"}
           align={"center"}
+          justify={"space-between"}
+          mt={2}
         >
-          <IconLogo w={8} h={8} mr={1} />
-          <Flex direction={"column"} align={"flex-start"}>
-            <Text fontSize={12} lineHeight={4} fontWeight={500}>
-              {selectedWallet?.walletName}
-            </Text>
-            <Text fontSize={10} color={"#777E90"} fontWeight={500}>
-              {selectedAccount.accountName}
-            </Text>
+          <Flex align={"center"}>
+            <Box fontSize={24} fontWeight={600}>
+              {showBalance ? (
+                <TokenNum
+                  amount={balance?.total}
+                  decimals={nativeCurrency.decimals}
+                  symbol={nativeCurrency.symbol}
+                />
+              ) : (
+                "*****"
+              )}
+            </Box>
+            <Box
+              cursor={"pointer"}
+              ml={1}
+              onClick={() => dispatch.account.changeBalanceState()}
+            >
+              {!showBalance ? (
+                <IconEyeOn w={4} h={4} />
+              ) : (
+                <IconEyeClose w={4} h={4} />
+              )}
+            </Box>
           </Flex>
-          <IconArrowRight w={18} h={18} />
+          <RescanButton paused={!!sendingAleoTx} />
         </Flex>
-        {!!sendingAleoTx && (
-          <Flex
-            bgColor={"green.50"}
-            p={2}
-            borderRadius={"lg"}
-            justify={"center"}
-            align={"center"}
-            onClick={() => navigate(`/token_detail/${uniqueId}`)}
-          >
-            <IconLoading
-              w={4}
-              h={4}
-              mr={1}
-              stroke={"green.600"}
-              animation={`${rotateAnimation} infinite 2s linear`}
-            />
-            <Text color={"green.600"} fontSize={"smaller"}>
-              {t("Send:sendingAleoTx")}
-            </Text>
-          </Flex>
-        )}
-      </Flex>
-      <Flex mt={6} direction={"row"} align={"center"}>
-        <Box maxW={128} noOfLines={1} fontSize={11} color={"#777E90"}>
-          <MiddleEllipsisText text={selectedAccount.address} width={128} />
-        </Box>
-        <Hover onClick={onCopyAddress}>
-          <IconCopy w={3} h={3} />
-        </Hover>
-      </Flex>
-      <Flex direction={"row"} align={"center"} justify={"space-between"} mt={2}>
-        <Flex align={"center"}>
-          <Box fontSize={24} fontWeight={600}>
-            {showBalance ? (
-              <TokenNum
-                amount={balance?.total}
-                decimals={nativeCurrency.decimals}
-                symbol={nativeCurrency.symbol}
-              />
-            ) : (
-              "*****"
-            )}
-          </Box>
-          <Box
-            cursor={"pointer"}
-            ml={1}
-            onClick={() => dispatch.account.changeBalanceState()}
-          >
-            {!showBalance ? (
-              <IconEyeOn w={4} h={4} />
-            ) : (
-              <IconEyeClose w={4} h={4} />
-            )}
-          </Box>
+        <Flex
+          direction={"row"}
+          align={"center"}
+          justify={"space-around"}
+          mt={6}
+        >
+          {options.map(renderActionItem)}
         </Flex>
-        <RescanButton paused={!!sendingAleoTx} />
-      </Flex>
-      <Flex direction={"row"} align={"center"} justify={"space-around"} mt={6}>
-        {options.map(renderActionItem)}
-      </Flex>
-    </Box>
+      </Box>
+      {!!sendingAleoTx && (
+        <Flex
+          bgColor={"green.50"}
+          p={2}
+          borderRadius={"lg"}
+          justify={"center"}
+          align={"center"}
+          mt={2}
+          mx={6}
+          onClick={() => navigate(`/token_detail/${uniqueId}`)}
+        >
+          <IconLoading
+            w={4}
+            h={4}
+            mr={1}
+            stroke={"green.600"}
+            animation={`${rotateAnimation} infinite 2s linear`}
+          />
+          <Text color={"green.600"} fontSize={"smaller"}>
+            {t("Send:sendingAleoTx")}
+          </Text>
+        </Flex>
+      )}
+    </>
   );
 };
 

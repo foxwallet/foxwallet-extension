@@ -193,7 +193,8 @@
     "delete": "Delete",
     "warning": "Warning",
     "copySuccess": "Copy Success!",
-    "paused": "Paused"
+    "paused": "Paused",
+    "lock": "Lock"
   },
   "Error": {
     "invalidPassword": "Invalid password"
