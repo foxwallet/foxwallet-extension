@@ -72,7 +72,7 @@ export const AccountInfoHeader = () => {
         onPress: () => navigate("/send_aleo"),
       },
     ],
-    [navigate, t, sendingAleoTx],
+    [navigate, t, sendingAleoTx, balance],
   );
 
   const onChangeWallet = useCallback(() => {
