@@ -5,6 +5,8 @@ import { ViewPort } from "./components/Custom/ViewPort";
 import { store } from "./store/store";
 import { useEffect } from "react";
 import { changeLanguage } from "./locales/i18";
+import { ColorMode } from "./store/setting";
+import { localStorageManager } from "@chakra-ui/react";
 
 function App() {
   const routes = useRoutes(routesConfig);
@@ -13,6 +15,12 @@ function App() {
     const language = store.getState().setting.language;
     if (language) {
       changeLanguage(language);
+    }
+
+    // for inintial color mode
+    const colorMode = store.getState().setting.colorMode;
+    if (colorMode === ColorMode.System) {
+      localStorageManager.set("system");
     }
   }, []);
 

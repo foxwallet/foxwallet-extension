@@ -21,9 +21,9 @@ import { hoverTheme } from "./components/hover";
 import { svgIconTheme } from "./components/svg";
 import { dividerTheme } from "./components/divider";
 
-const config: ThemeConfig = {
-  initialColorMode: "light",
-  useSystemColorMode: false,
+export const config: ThemeConfig = {
+  initialColorMode: "system",
+  useSystemColorMode: true,
 };
 
 export const theme = extendBaseTheme({

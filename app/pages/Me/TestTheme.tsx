@@ -1,3 +1,4 @@
+import { popupEvents } from "@/common/utils/event";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
 import { ColorMode } from "@/store/setting";
 import {
@@ -7,10 +8,11 @@ import {
   MenuItem,
   MenuList,
   Text,
+  localStorageManager,
   useColorMode,
 } from "@chakra-ui/react";
 import { isEqual } from "lodash";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 
 const TestTheme = () => {
   const dispatch = usePopupDispatch();
@@ -36,6 +38,7 @@ const TestTheme = () => {
           <MenuItem
             onClick={() => {
               setColorMode("light");
+              popupEvents.emit("changeColorMode", "light");
               dispatch.setting.changeColorModel({ colorMode: ColorMode.Light });
             }}
           >
@@ -44,6 +47,7 @@ const TestTheme = () => {
           <MenuItem
             onClick={() => {
               setColorMode("dark");
+              popupEvents.emit("changeColorMode", "dark");
               dispatch.setting.changeColorModel({ colorMode: ColorMode.Dark });
             }}
           >
@@ -52,6 +56,7 @@ const TestTheme = () => {
           <MenuItem
             onClick={() => {
               setColorMode("system");
+              popupEvents.emit("changeColorMode", "system");
               dispatch.setting.changeColorModel({
                 colorMode: ColorMode.System,
               });
