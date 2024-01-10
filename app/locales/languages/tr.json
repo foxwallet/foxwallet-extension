@@ -87,7 +87,8 @@
     "delete": "Silmek",
     "warning": "Uyarı",
     "copySuccess": "Başarıyı Kopyala!",
-    "paused": "Duraklatıldı"
+    "paused": "Duraklatıldı",
+    "lock": "Kilit"
   },
   "Send": {
     "title": "Göndermek",

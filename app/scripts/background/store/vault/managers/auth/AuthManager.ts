@@ -7,7 +7,7 @@ import { logger } from "../../../../../../common/utils/logger";
 import { vaultStorage, type VaultStorage } from "../../VaultStorage";
 
 const EXPIRE_TIME = 1000 * 60 * 60 * 4;
-const LOCK_TIME = 1000 * 60 * 15;
+const LOCK_TIME = 1000 * 60 * 60 * 3;
 export class AuthManager {
   #storage: VaultStorage;
   #token?: string;
