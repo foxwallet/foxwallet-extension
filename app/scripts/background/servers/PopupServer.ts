@@ -682,54 +682,60 @@ export class PopupWalletServer implements IPopupServer {
   }
 
   async deleteWallet(walletId: string): Promise<DisplayKeyring> {
-    await stopSync();
-    const selectedAccount = await this.accountSettingStorage.getSelectedAccount(
-      CoinType.ALEO,
-    );
-    let newSelectedAccount: SelectedAccount | null = null;
-    if (selectedAccount?.walletId === walletId) {
-      const allWallets = await this.keyringManager.getAllWallet(false);
-      if (allWallets) {
-        const otherHDWallet = allWallets[WalletType.HD]?.filter(
-          (item) => item.walletId !== walletId,
-        )[0];
-        if (otherHDWallet) {
-          const otherAccount = otherHDWallet.accountsMap[CoinType.ALEO].find(
-            (account) => !account.hide,
-          );
-          if (otherAccount) {
-            newSelectedAccount = {
-              walletId: otherHDWallet.walletId,
-              coinType: CoinType.ALEO,
-              ...otherAccount,
-            };
-          }
-        } else {
-          const otherSimpleWallet = allWallets[WalletType.SIMPLE]?.filter(
+    try {
+      await stopSync();
+      const selectedAccount =
+        await this.accountSettingStorage.getSelectedAccount(CoinType.ALEO);
+      let newSelectedAccount: SelectedAccount | null = null;
+      if (selectedAccount?.walletId === walletId) {
+        const allWallets = await this.keyringManager.getAllWallet(false);
+        if (allWallets) {
+          const otherHDWallet = allWallets[WalletType.HD]?.filter(
             (item) => item.walletId !== walletId,
           )[0];
-          if (otherSimpleWallet) {
-            const otherAccount = otherSimpleWallet.accountsMap[
-              CoinType.ALEO
-            ].find((account) => !account.hide);
+          if (otherHDWallet) {
+            const otherAccount = otherHDWallet.accountsMap[CoinType.ALEO].find(
+              (account) => !account.hide,
+            );
             if (otherAccount) {
               newSelectedAccount = {
-                walletId: otherSimpleWallet.walletId,
+                walletId: otherHDWallet.walletId,
                 coinType: CoinType.ALEO,
                 ...otherAccount,
               };
             }
+          } else {
+            const otherSimpleWallet = allWallets[WalletType.SIMPLE]?.filter(
+              (item) => item.walletId !== walletId,
+            )[0];
+            if (otherSimpleWallet) {
+              const otherAccount = otherSimpleWallet.accountsMap[
+                CoinType.ALEO
+              ].find((account) => !account.hide);
+              if (otherAccount) {
+                newSelectedAccount = {
+                  walletId: otherSimpleWallet.walletId,
+                  coinType: CoinType.ALEO,
+                  ...otherAccount,
+                };
+              }
+            }
           }
         }
+        if (newSelectedAccount) {
+          await this.accountSettingStorage.setSelectedAccount(
+            newSelectedAccount,
+          );
+        } else {
+          await this.accountSettingStorage.removeSelectedAccount(CoinType.ALEO);
+        }
       }
-      if (newSelectedAccount) {
-        await this.accountSettingStorage.setSelectedAccount(newSelectedAccount);
-      } else {
-        await this.accountSettingStorage.removeSelectedAccount(CoinType.ALEO);
-      }
+      await this.keyringManager.deleteWallet(walletId);
+    } catch (err) {
+      console.error("===> deleteWallet error: ", err);
+    } finally {
+      syncBlocks();
     }
-    await this.keyringManager.deleteWallet(walletId);
-    syncBlocks();
     return await this.getAllWallet();
   }
 

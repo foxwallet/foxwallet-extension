@@ -68,7 +68,7 @@ export const AccountInfoHeader = () => {
       {
         title: t("Send:title"),
         icon: <IconSend />,
-        disabled: sendingAleoTx || !balance?.total,
+        disabled: sendingAleoTx || balance === undefined,
         onPress: () => navigate("/send_aleo"),
       },
     ],

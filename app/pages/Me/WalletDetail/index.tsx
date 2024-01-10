@@ -302,7 +302,7 @@ const WalletDetailScreen = () => {
         <Flex direction={"column"} maxH={435} overflowY="auto">
           {accountList.map(renderAccountItem)}
         </Flex>
-        {walletInfo.walletType === WalletType.HD && (
+        {walletInfo?.walletType === WalletType.HD && (
           <Button
             position={"absolute"}
             bottom={5}
