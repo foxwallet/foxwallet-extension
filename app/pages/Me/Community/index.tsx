@@ -37,7 +37,7 @@ const CommunityList: Community[] = [
   },
   {
     title: "Twitter",
-    icon: <IconTwitter h={4} w={4} />,
+    icon: <IconTwitter h={"12px"} w={"12px"} />,
     url: "https://twitter.com/FoxWallet",
   },
   {

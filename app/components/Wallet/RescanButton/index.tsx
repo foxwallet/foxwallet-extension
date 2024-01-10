@@ -23,7 +23,7 @@ const RescanButton = (props: RescanButtonProps) => {
     uniqueId,
     selectedAccount.address,
   );
-  const { borderColor, selectedBorderColor } = useThemeStyle();
+  const { selectedBorderColor } = useThemeStyle();
 
   const onRescan = useCallback(() => {
     getProgress();
@@ -35,7 +35,6 @@ const RescanButton = (props: RescanButtonProps) => {
 
   return (
     <Flex
-      cursor={"pointer"}
       onClick={onRescan}
       borderWidth={"1px"}
       borderRadius={"4px"}
