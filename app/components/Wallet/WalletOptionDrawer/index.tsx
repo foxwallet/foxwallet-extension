@@ -4,7 +4,10 @@ import { useCallback, useMemo } from "react";
 import { BottomUpDrawer } from "@/components/Custom/BottomUpDrawer";
 import { useTranslation } from "react-i18next";
 import { IconDelete, IconExportPhrase } from "@/components/Custom/Icon";
-import { DisplayWallet } from "@/scripts/background/store/vault/types/keyring";
+import {
+  DisplayWallet,
+  WalletType,
+} from "@/scripts/background/store/vault/types/keyring";
 import { usePopupSelector } from "@/hooks/useStore";
 import { isEqual } from "lodash";
 
@@ -56,19 +59,21 @@ const WalletOptionDrawer = (props: Props) => {
       title={t("Common:more")}
       body={
         <Flex flexDirection={"column"}>
-          <Flex
-            align={"center"}
-            as={"button"}
-            mb={4}
-            onClick={handleExportPhrase}
-          >
-            <IconExportPhrase />
-            <Text ml={2.5} fontSize={12} fontWeight={500}>
-              {isBackuped
-                ? t("Wallet:Export:seedPhrase")
-                : t("Wallet:Create:backupMnemonic")}
-            </Text>
-          </Flex>
+          {wallet.walletType === WalletType.HD && (
+            <Flex
+              align={"center"}
+              as={"button"}
+              mb={4}
+              onClick={handleExportPhrase}
+            >
+              <IconExportPhrase />
+              <Text ml={2.5} fontSize={12} fontWeight={500}>
+                {isBackuped
+                  ? t("Wallet:Export:seedPhrase")
+                  : t("Wallet:Create:backupMnemonic")}
+              </Text>
+            </Flex>
+          )}
           <Flex align={"center"} as={"button"} mb={1} onClick={handleDelete}>
             <IconDelete />
             <Text ml={2.5} color={"#EF466F"} fontSize={12} fontWeight={500}>

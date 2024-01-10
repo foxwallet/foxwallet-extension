@@ -22,7 +22,10 @@ import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
 import { useWallets } from "@/hooks/useWallets";
 import { PageWithHeader } from "@/layouts/Page";
-import { SelectedAccount } from "@/scripts/background/store/vault/types/keyring";
+import {
+  SelectedAccount,
+  WalletType,
+} from "@/scripts/background/store/vault/types/keyring";
 import {
   Box,
   Button,
@@ -299,15 +302,17 @@ const WalletDetailScreen = () => {
         <Flex direction={"column"} maxH={435} overflowY="auto">
           {accountList.map(renderAccountItem)}
         </Flex>
-        <Button
-          position={"absolute"}
-          bottom={5}
-          left={5}
-          right={5}
-          onClick={onAddAccount}
-        >
-          {t("Wallet:Manage:addAccount")}
-        </Button>
+        {walletInfo.walletType === WalletType.HD && (
+          <Button
+            position={"absolute"}
+            bottom={5}
+            left={5}
+            right={5}
+            onClick={onAddAccount}
+          >
+            {t("Wallet:Manage:addAccount")}
+          </Button>
+        )}
       </Flex>
     </PageWithHeader>
   );
