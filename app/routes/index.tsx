@@ -47,7 +47,6 @@ const About = lazy(async () => await import("../pages/Me/About"));
 const ChangePassword = lazy(
   async () => await import("../pages/Me/ChangePassword"),
 );
-const WalletList = lazy(async () => await import("../pages/Me/WalletList"));
 const WalletDetail = lazy(async () => await import("../pages/Me/WalletDetail"));
 
 // Onboard
@@ -172,10 +171,6 @@ export const routesConfig: RouteObject[] = [
       {
         path: "change_password",
         element: <ChangePassword />,
-      },
-      {
-        path: "wallet_list",
-        element: <WalletList />,
       },
     ],
   },
