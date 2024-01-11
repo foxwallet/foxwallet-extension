@@ -119,7 +119,24 @@
     "privateFee": "Private record to pay fee",
     "feeHint": "You can use either the public balance or any of the following private records below to pay the gas fee.",
     "sendingAleoTx": "Sending aleo transaction",
-    "insufficientBalance": "Insufficient balance"
+    "insufficientBalance": "Insufficient balance",
+    "insufficientFee": "Insufficient balance to pay fee"
+  },
+  "JoinSplit": {
+    "title": "Join&Split",
+    "join": "Join",
+    "split": "Split",
+    "selectRecords": "Select {{COUNT}} records to continue.",
+    "splitWarning": "After the split, some records may have very small value (less than the privacy transaction fee). Please consider this before continuing.",
+    "splitRecord1Remind": "1st record's value",
+    "splitRecord2Remind": "2nd record's value({{VALUE}} Aleo for fee)",
+    "recordValue": "Record's value",
+    "selectMethod": "Select method",
+    "joinDesc": "Join two records into one.",
+    "splitDesc": "Split one record into two."
+  },
+  "Faucet": {
+    "title": "Faucet"
   },
   "Receive": {
     "title": "Receive",
@@ -195,7 +212,8 @@
     "warning": "Warning",
     "copySuccess": "Copy Success!",
     "paused": "Paused",
-    "lock": "Lock"
+    "lock": "Lock",
+    "total": "Total"
   },
   "Error": {
     "invalidPassword": "Invalid password"

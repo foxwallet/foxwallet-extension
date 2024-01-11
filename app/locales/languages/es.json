@@ -88,7 +88,8 @@
     "warning": "Advertencia",
     "copySuccess": "¡Copia exitosa!",
     "paused": "En pausa",
-    "lock": "Cerrar"
+    "lock": "Cerrar",
+    "total": "Total"
   },
   "Send": {
     "title": "Enviar",
@@ -128,7 +129,8 @@
     "privateFee": "Registro privado para pagar la tasa",
     "feeHint": "Puede utilizar el saldo público o cualquiera de los siguientes registros privados a continuación para pagar la tarifa del gas.",
     "sendingAleoTx": "Enviando transacción aleo",
-    "insufficientBalance": "Saldo insuficiente"
+    "insufficientBalance": "Saldo insuficiente",
+    "insufficientFee": "Saldo insuficiente para pagar la tarifa"
   },
   "PrivateKey": {
     "title": "Llave privada",
@@ -199,5 +201,21 @@
   "Reset": {
     "remind": "Se restablecerá todo el historial de esta cuenta y se resincronizará la red. Por favor confirme para continuar.",
     "account": "Restablecer cuenta"
+  },
+  "JoinSplit": {
+    "title": "Unirse y dividir",
+    "join": "Unirse",
+    "split": "Dividir",
+    "selectRecords": "Seleccione {{COUNT}} registros para continuar.",
+    "splitWarning": "Después de la división, algunos registros pueden tener un valor muy pequeño (menos que la tarifa de transacción de privacidad). Por favor considere esto antes de continuar.",
+    "splitRecord1Remind": "Valor del primer registro",
+    "splitRecord2Remind": "Valor del segundo registro ({{VALUE}} Aleo por tarifa)",
+    "recordValue": "valor del registro",
+    "selectMethod": "Seleccionar método",
+    "joinDesc": "Une dos registros en uno.",
+    "splitDesc": "Divida un registro en dos."
+  },
+  "Faucet": {
+    "title": "Grifo"
   }
 }

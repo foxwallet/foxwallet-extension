@@ -31,6 +31,7 @@ export const ALEO_CHAIN_CONFIGS: { [key in string]: AleoConfig } = {
       tx: "/transaction/{txid}",
       address: "",
     },
+    faucetApi: "https://app.aleoswap.org/faucet",
     testnet: true,
   },
 };

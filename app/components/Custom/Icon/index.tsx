@@ -68,6 +68,8 @@ import MeSelected from "@/common/assets/image/icon_me_selected.svg";
 import MeUnselected from "@/common/assets/image/icon_me_unselected.svg";
 import Reset from "@/common/assets/image/icon_reset.svg";
 import Lock from "@/common/assets/image/icon_lock.svg";
+import Faucet from "@/common/assets/image/icon_faucet.svg";
+import JoinSplit from "@/common/assets/image/icon_join_split.svg";
 
 const ThemeIconFill: (i: any) => ChakraComponent<any, any> =
   (icon: any) => (props: ChakraComponent<any, any>) => {
@@ -85,28 +87,21 @@ const ThemeIconStroke: (i: any) => ChakraComponent<any, any> =
   };
 
 export const IconCheckCircle = chakra(CheckCircle);
-
 export const IconCheckLine = chakra(CheckLine);
-
 export const IconCloseLine = ThemeIconFill(CloseLine);
-
 export const IconEyeClose = ThemeIconFill(EyeClose);
-
 export const IconEyeOn = ThemeIconFill(Eye);
-
 export const IconLeft = ThemeIconFill(Left);
-
 export const OnboardLogo = chakra(Logo);
-
 export const IconPreventScreenshot = chakra(PreventScreenshot);
-
 export const IconCloseCircle = chakra(CloseCircle);
-
 export const IconArrowRight = ThemeIconFill(ArrowRight);
 export const IconLogo = chakra(LogoNew);
 export const IconCopy = ThemeIconFill(Copy);
 export const IconReceive = chakra(Receive);
 export const IconSend = chakra(Send);
+export const IconFaucet = chakra(Faucet);
+export const IconJoinSplit = chakra(JoinSplit);
 export const IconBuyDisabled = chakra(BuyDisabled);
 export const IconSwapDisabled = chakra(SwapDisabled);
 export const IconArrowBackup = chakra(ArrowBackup);

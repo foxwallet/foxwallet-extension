@@ -88,7 +88,8 @@
     "warning": "Cảnh báo",
     "copySuccess": "Sao chép thành công!",
     "paused": "Đã tạm dừng",
-    "lock": "Khóa"
+    "lock": "Khóa",
+    "total": "Tổng cộng"
   },
   "Send": {
     "title": "Gửi",
@@ -128,7 +129,8 @@
     "privateFee": "Hồ sơ riêng để nộp lệ phí",
     "feeHint": "Bạn có thể sử dụng số dư công khai hoặc bất kỳ hồ sơ cá nhân nào dưới đây để thanh toán phí gas.",
     "sendingAleoTx": "Gửi giao dịch aleo",
-    "insufficientBalance": "Thiếu cân bằng"
+    "insufficientBalance": "Thiếu cân bằng",
+    "insufficientFee": "Số dư không đủ để trả phí"
   },
   "PrivateKey": {
     "title": "Khóa riêng",
@@ -199,5 +201,21 @@
   "Reset": {
     "remind": "Tất cả lịch sử của bạn đối với tài khoản này sẽ được đặt lại và mạng sẽ được đồng bộ hóa lại. Hãy xác nhận để tiếp tục.",
     "account": "Cài đặt lại tài khoản"
+  },
+  "JoinSplit": {
+    "title": "Tham gia & Chia tách",
+    "join": "Tham gia",
+    "split": "Tách ra",
+    "selectRecords": "Chọn {{COUNT}} bản ghi để tiếp tục.",
+    "splitWarning": "Sau khi phân chia, một số hồ sơ có thể có giá trị rất nhỏ (thấp hơn phí giao dịch quyền riêng tư). Hãy cân nhắc điều này trước khi tiếp tục.",
+    "splitRecord1Remind": "Giá trị của bản ghi thứ 1",
+    "splitRecord2Remind": "Giá trị của bản ghi thứ 2({{VALUE}} Aleo tính phí)",
+    "recordValue": "Giá trị bản ghi",
+    "selectMethod": "Chọn phương pháp",
+    "joinDesc": "Nối hai bản ghi thành một.",
+    "splitDesc": "Chia một bản ghi thành hai."
+  },
+  "Faucet": {
+    "title": "Vòi"
   }
 }

@@ -5,3 +5,5 @@ export const NATIVE_TOKEN_PROGRAM_ID = "credits.aleo";
 export const LOCAL_TX_EXPIRE_TIME = 1000 * 60 * 60;
 
 export const FAILED_TX_REMOVE_TIME = 1000 * 60 * 60 * 24;
+
+export const SPLIT_RECORD_FEE = "0.01";
