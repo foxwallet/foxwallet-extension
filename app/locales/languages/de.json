@@ -127,7 +127,8 @@
     "publicFee": "Öffentliches Guthaben zur Zahlung einer Gebühr",
     "privateFee": "Private Aufzeichnung zur Zahlung der Gebühr",
     "feeHint": "Sie können entweder das öffentliche Guthaben oder eine der folgenden privaten Aufzeichnungen verwenden, um die Gasgebühr zu bezahlen.",
-    "sendingAleoTx": "Aleo-Transaktion wird gesendet"
+    "sendingAleoTx": "Aleo-Transaktion wird gesendet",
+    "insufficientBalance": "Mangelhaftes Gleichgewicht"
   },
   "PrivateKey": {
     "title": "Privat Schlüssel",

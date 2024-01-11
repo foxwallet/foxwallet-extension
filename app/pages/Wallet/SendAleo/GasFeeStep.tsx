@@ -1,6 +1,7 @@
 import { showErrorToast } from "@/components/Custom/ErrorToast";
 import { IconChevronRight } from "@/components/Custom/Icon";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
+import { WarningArea } from "@/components/Custom/WarningArea";
 import { showSelectFeeTypeDialog } from "@/components/Send/SelectFeeType";
 import { TokenNum } from "@/components/Wallet/TokenNum";
 import { useBalance } from "@/hooks/useBalance";
@@ -325,6 +326,13 @@ export const GasFeeStep = (props: GasFeeProps) => {
     feeInfo,
   ]);
 
+  const errorInfo = useMemo(() => {
+    if (!amountValid) {
+      return t("Send:insufficientBalance");
+    }
+    return "";
+  }, [amountValid, t]);
+
   return (
     <Content>
       <Flex flexDir={"column"}>
@@ -418,6 +426,9 @@ export const GasFeeStep = (props: GasFeeProps) => {
             )}
           </Flex>
         </Flex>
+        {!!errorInfo && (
+          <WarningArea content={errorInfo} container={{ mt: 2 }} />
+        )}
       </Flex>
       <Button
         position={"absolute"}

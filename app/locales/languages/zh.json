@@ -127,7 +127,8 @@
     "publicFee": "公共余额支付费用",
     "privateFee": "隐私记录支付费用",
     "feeHint": "您可以使用公共余额或以下任何隐私记录来支付手续费。",
-    "sendingAleoTx": "正在发送aleo交易"
+    "sendingAleoTx": "正在发送aleo交易",
+    "insufficientBalance": "余额不足"
   },
   "PrivateKey": {
     "title": "私钥",

@@ -127,7 +127,8 @@
     "publicFee": "Ücret ödemek için kamu bakiyesi",
     "privateFee": "Ücret ödemek için özel kayıt",
     "feeHint": "Gaz ücretini ödemek için kamu bakiyesini veya aşağıdaki özel kayıtlardan herhangi birini kullanabilirsiniz.",
-    "sendingAleoTx": "Aleo işlemi gönderiliyor"
+    "sendingAleoTx": "Aleo işlemi gönderiliyor",
+    "insufficientBalance": "Yetersiz bakiye"
   },
   "PrivateKey": {
     "title": "Özel anahtar",
