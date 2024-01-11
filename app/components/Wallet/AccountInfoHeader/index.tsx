@@ -77,7 +77,7 @@ export const AccountInfoHeader = () => {
 
   const onChangeWallet = useCallback(() => {
     showWalletsDrawer({
-      onManageWallet: () => navigate("/wallet_list"),
+      onManageWallet: () => navigate("/manage_wallet"),
     });
   }, [showWalletsDrawer, navigate]);
 

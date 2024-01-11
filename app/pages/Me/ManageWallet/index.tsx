@@ -1,6 +1,6 @@
 import { PageWithHeader } from "@/layouts/Page";
 import { Box, Button, Flex, Text, useDisclosure } from "@chakra-ui/react";
-import { useCallback } from "react";
+import { SyntheticEvent, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCurrWallet, useWallets } from "@/hooks/useWallets";
 import {
@@ -11,11 +11,14 @@ import { useTranslation } from "react-i18next";
 import {
   IconCheckLineBlack,
   IconDelete,
+  IconEdit,
   IconLogo,
 } from "@/components/Custom/Icon";
 import { usePopupDispatch } from "@/hooks/useStore";
 import { CoinType } from "core/types";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
+import Hover from "@/components/Custom/Hover";
+import { showEditWalletNameDrawer } from "@/components/Wallet/EditWalletNameDrawer";
 
 interface WalletItemProps {
   wallet: DisplayWallet;
@@ -40,6 +43,14 @@ const WalletItem: React.FC<WalletItemProps> = ({
     onDelete(wallet);
   }, [onDelete, wallet]);
 
+  const handleEditName = useCallback(
+    (event: SyntheticEvent) => {
+      showEditWalletNameDrawer({ wallet });
+      event.stopPropagation();
+    },
+    [showEditWalletNameDrawer, wallet],
+  );
+
   const { borderColor, selectedBorderColor } = useThemeStyle();
 
   return (
@@ -49,9 +60,9 @@ const WalletItem: React.FC<WalletItemProps> = ({
       borderWidth={1}
       borderColor={isSelected ? selectedBorderColor : borderColor}
       borderRadius={8}
-      position={"relative"}
       justify={"space-between"}
       align={"center"}
+      cursor={"pointer"}
     >
       <Flex
         pr={2}
@@ -69,6 +80,9 @@ const WalletItem: React.FC<WalletItemProps> = ({
         <Text fontSize={13} fontWeight={500} align={"start"}>
           {wallet.walletName}
         </Text>
+        <Hover p={1} onClick={handleEditName}>
+          <IconEdit />
+        </Hover>
       </Flex>
       {isSelected ? (
         <IconCheckLineBlack height={18} width={18} />

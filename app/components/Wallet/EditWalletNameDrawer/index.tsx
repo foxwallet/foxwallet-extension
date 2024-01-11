@@ -1,4 +1,4 @@
-import { Box, Button, Flex, Text } from "@chakra-ui/react";
+import { Button, Flex, Text } from "@chakra-ui/react";
 import { promisifyChooseDialogWrapper } from "../../../common/utils/dialog";
 import { useCurrWallet, useWallets } from "@/hooks/useWallets";
 import React, { useCallback, useMemo, useState } from "react";
@@ -6,20 +6,22 @@ import { BottomUpDrawer } from "@/components/Custom/BottomUpDrawer";
 import { BaseInput } from "@/components/Custom/Input";
 import { useTranslation } from "react-i18next";
 import { WarningArea } from "@/components/Custom/WarningArea";
+import { DisplayWallet } from "@/scripts/background/store/vault/types/keyring";
 
 interface Props {
+  wallet: DisplayWallet;
   isOpen: boolean;
   onCancel: () => void;
   onConfirm: () => void;
 }
 
 const EditWalletNameDrawer = (props: Props) => {
-  const { isOpen, onCancel, onConfirm } = props;
+  const { wallet, isOpen, onCancel, onConfirm } = props;
   const { t } = useTranslation();
   const { walletList } = useWallets();
-  const { selectedWallet, changeWalletName } = useCurrWallet();
+  const { changeWalletName } = useCurrWallet();
 
-  const [walletName, setWalletName] = useState(selectedWallet?.walletName);
+  const [walletName, setWalletName] = useState(wallet?.walletName);
 
   const onWalletNameChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,18 +34,17 @@ const EditWalletNameDrawer = (props: Props) => {
   const handleConfirmName = useCallback(async () => {
     if (!walletName) return;
 
-    await changeWalletName(selectedWallet!.walletId, walletName);
+    await changeWalletName(wallet?.walletId, walletName);
     onConfirm?.();
-  }, [onConfirm, walletName, changeWalletName, selectedWallet?.walletId]);
+  }, [onConfirm, walletName, changeWalletName, wallet?.walletId]);
 
   const dupWalletName = useMemo(() => {
     if (!walletName) return false;
     return walletList?.some(
       (item) =>
-        item.walletName === walletName &&
-        walletName !== selectedWallet?.walletName,
+        item.walletName === walletName && walletName !== wallet?.walletName,
     );
-  }, [walletList, walletName, selectedWallet?.walletName]);
+  }, [walletList, walletName, wallet?.walletName]);
 
   const isInvalidName = useMemo(() => {
     return !walletName || dupWalletName;
