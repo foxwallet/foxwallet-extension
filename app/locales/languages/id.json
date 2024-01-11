@@ -127,7 +127,8 @@
     "publicFee": "Keseimbangan publik untuk membayar biaya",
     "privateFee": "Catatan pribadi untuk membayar biaya",
     "feeHint": "Anda dapat menggunakan saldo publik atau salah satu catatan pribadi berikut di bawah ini untuk membayar biaya bahan bakar.",
-    "sendingAleoTx": "Mengirim transaksi aleo"
+    "sendingAleoTx": "Mengirim transaksi aleo",
+    "insufficientBalance": "Saldo tidak mencukupi"
   },
   "PrivateKey": {
     "title": "Kunci pribadi",

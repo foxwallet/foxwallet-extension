@@ -127,7 +127,8 @@
     "publicFee": "Saldo público para pagar cuota",
     "privateFee": "Registro privado para pagar la tasa",
     "feeHint": "Puede utilizar el saldo público o cualquiera de los siguientes registros privados a continuación para pagar la tarifa del gas.",
-    "sendingAleoTx": "Enviando transacción aleo"
+    "sendingAleoTx": "Enviando transacción aleo",
+    "insufficientBalance": "Saldo insuficiente"
   },
   "PrivateKey": {
     "title": "Llave privada",
