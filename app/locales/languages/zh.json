@@ -65,7 +65,8 @@
     "warning": "警告",
     "copySuccess": "复制成功！",
     "paused": "暂停",
-    "lock": "锁定"
+    "lock": "锁定",
+    "total": "全部"
   },
   "Password": {
     "title": "密码",
@@ -128,7 +129,8 @@
     "privateFee": "隐私记录支付费用",
     "feeHint": "您可以使用公共余额或以下任何隐私记录来支付手续费。",
     "sendingAleoTx": "正在发送aleo交易",
-    "insufficientBalance": "余额不足"
+    "insufficientBalance": "余额不足",
+    "insufficientFee": "余额不足以支付费用"
   },
   "PrivateKey": {
     "title": "私钥",
@@ -199,5 +201,21 @@
   "Reset": {
     "remind": "您此帐户的所有历史记录都将被重置，网络将重新同步。请确认后再继续。",
     "account": "重置账户"
+  },
+  "JoinSplit": {
+    "title": "合并&拆分",
+    "join": "合并",
+    "split": "拆分",
+    "selectRecords": "选择 {{COUNT}} 条记录以继续。",
+    "splitWarning": "拆分后，某些记录的价值可能非常小（小于隐私交易费用）。请在继续之前考虑这一点。",
+    "splitRecord1Remind": "第一条记录的值",
+    "splitRecord2Remind": "第二条记录的价值（{{VALUE}} Aleo 费用）",
+    "recordValue": "记录的值",
+    "selectMethod": "选择方法",
+    "joinDesc": "将两条记录合并为一条。",
+    "splitDesc": "将一条记录分成两条。"
+  },
+  "Faucet": {
+    "title": "龙头"
   }
 }

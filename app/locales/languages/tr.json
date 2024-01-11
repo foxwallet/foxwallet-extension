@@ -88,7 +88,8 @@
     "warning": "Uyarı",
     "copySuccess": "Başarıyı Kopyala!",
     "paused": "Duraklatıldı",
-    "lock": "Kilit"
+    "lock": "Kilit",
+    "total": "Toplam"
   },
   "Send": {
     "title": "Göndermek",
@@ -128,7 +129,8 @@
     "privateFee": "Ücret ödemek için özel kayıt",
     "feeHint": "Gaz ücretini ödemek için kamu bakiyesini veya aşağıdaki özel kayıtlardan herhangi birini kullanabilirsiniz.",
     "sendingAleoTx": "Aleo işlemi gönderiliyor",
-    "insufficientBalance": "Yetersiz bakiye"
+    "insufficientBalance": "Yetersiz bakiye",
+    "insufficientFee": "Ücret ödemek için yeterli bakiye yok"
   },
   "PrivateKey": {
     "title": "Özel anahtar",
@@ -199,5 +201,21 @@
   "Reset": {
     "remind": "Bu hesaba ilişkin tüm geçmişiniz sıfırlanacak ve ağ yeniden senkronize edilecek. Devam etmek için lütfen onaylayın.",
     "account": "Hesabı sıfırla"
+  },
+  "JoinSplit": {
+    "title": "Katıl ve Böl",
+    "join": "Katılmak",
+    "split": "Bölmek",
+    "selectRecords": "Devam etmek için {{COUNT}} kayıt seçin.",
+    "splitWarning": "Bölünmeden sonra bazı kayıtların değeri çok küçük olabilir (gizlilik işlem ücretinden daha az). Devam etmeden önce lütfen bunu göz önünde bulundurun.",
+    "splitRecord1Remind": "1. kaydın değeri",
+    "splitRecord2Remind": "2. kaydın değeri (ücret karşılığında {{VALUE}} Aleo)",
+    "recordValue": "Kaydın değeri",
+    "selectMethod": "Yöntem seç",
+    "joinDesc": "İki kaydı bir kayıtta birleştirin.",
+    "splitDesc": "Bir kaydı ikiye bölün."
+  },
+  "Faucet": {
+    "title": "Musluk"
   }
 }

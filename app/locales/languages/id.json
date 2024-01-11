@@ -88,7 +88,8 @@
     "warning": "Peringatan",
     "copySuccess": "Salin Sukses!",
     "paused": "Dijeda",
-    "lock": "Kunci"
+    "lock": "Kunci",
+    "total": "Total"
   },
   "Send": {
     "title": "Mengirim",
@@ -128,7 +129,8 @@
     "privateFee": "Catatan pribadi untuk membayar biaya",
     "feeHint": "Anda dapat menggunakan saldo publik atau salah satu catatan pribadi berikut di bawah ini untuk membayar biaya bahan bakar.",
     "sendingAleoTx": "Mengirim transaksi aleo",
-    "insufficientBalance": "Saldo tidak mencukupi"
+    "insufficientBalance": "Saldo tidak mencukupi",
+    "insufficientFee": "Saldo tidak cukup untuk membayar biaya"
   },
   "PrivateKey": {
     "title": "Kunci pribadi",
@@ -199,5 +201,21 @@
   "Reset": {
     "remind": "Semua riwayat Anda untuk akun ini akan disetel ulang dan jaringan akan disinkronkan ulang. Harap konfirmasi untuk melanjutkan.",
     "account": "Setel ulang akun"
+  },
+  "JoinSplit": {
+    "title": "Gabung & Pisahkan",
+    "join": "Bergabung",
+    "split": "Membelah",
+    "selectRecords": "Pilih {{COUNT}} data untuk melanjutkan.",
+    "splitWarning": "Setelah pemisahan, beberapa catatan mungkin memiliki nilai yang sangat kecil (kurang dari biaya transaksi privasi). Harap pertimbangkan ini sebelum melanjutkan.",
+    "splitRecord1Remind": "nilai rekor pertama",
+    "splitRecord2Remind": "Nilai rekor ke-2 ({{VALUE}} Aleo berbayar)",
+    "recordValue": "Nilai rekaman",
+    "selectMethod": "Pilih metode",
+    "joinDesc": "Gabungkan dua catatan menjadi satu.",
+    "splitDesc": "Pisahkan satu rekaman menjadi dua."
+  },
+  "Faucet": {
+    "title": "Keran"
   }
 }

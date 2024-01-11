@@ -1,6 +1,6 @@
 import { L1 } from "@/common/theme/components/text";
 import { formatTokenNum } from "@/common/utils/num";
-import { Text, chakra } from "@chakra-ui/react";
+import { Text, TextProps, chakra } from "@chakra-ui/react";
 import { BigNumber, utils } from "ethers";
 import { formatUnits } from "ethers/lib/utils";
 import { useMemo } from "react";
@@ -12,6 +12,7 @@ export const TokenNum = ({
   precision,
   symbol,
   placeholder,
+  ...rest
 }: {
   amount?: bigint;
   decimals: number;
@@ -19,7 +20,7 @@ export const TokenNum = ({
   precision?: number;
   symbol?: string;
   placeholder?: string;
-}) => {
+} & TextProps) => {
   const amountStr = useMemo(() => {
     if (amount === undefined) {
       return "---";
@@ -34,5 +35,5 @@ export const TokenNum = ({
     );
   }, [amount, decimals, precision, commify, placeholder, symbol]);
 
-  return <Text>{amountStr}</Text>;
+  return <Text {...rest}>{amountStr}</Text>;
 };

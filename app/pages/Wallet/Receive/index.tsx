@@ -36,11 +36,7 @@ function ReceiveScreen() {
   const iconBg = useColorModeValue("gray.50", "#777E90");
 
   return (
-    <PageWithHeader
-      enableBack
-      title={t("Receive:title")}
-      backIconType={HeaderLeftIconType.Close}
-    >
+    <PageWithHeader enableBack title={t("Receive:title")}>
       <Content>
         <VStack>
           <IconAleo h={10} w={10} />

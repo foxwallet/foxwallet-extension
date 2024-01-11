@@ -3,6 +3,8 @@ import {
   IconCopy,
   IconEyeClose,
   IconEyeOn,
+  IconFaucet,
+  IconJoinSplit,
   IconLoading,
   IconLock,
   IconLogo,
@@ -34,6 +36,11 @@ import { useIsSendingAleoTx } from "@/hooks/useSendingTxStatus";
 import Hover from "@/components/Custom/Hover";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
 import { useAuth } from "@/hooks/useAuth";
+import Browser from "webextension-polyfill";
+import {
+  SelectJoinSplitOption,
+  showSelectJoinSplitDialog,
+} from "@/components/Send/SelectJoinSplit";
 
 const rotateAnimation = keyframes`
   from { transform: rotate(0deg) }
@@ -43,7 +50,7 @@ const rotateAnimation = keyframes`
 export const AccountInfoHeader = () => {
   const navigate = useNavigate();
   const { selectedAccount, uniqueId } = useCurrAccount();
-  const { nativeCurrency } = useCoinService(uniqueId);
+  const { nativeCurrency, chainConfig } = useCoinService(uniqueId);
   const { balance, loadingBalance } = useBalance(
     uniqueId,
     selectedAccount.address,
@@ -58,8 +65,8 @@ export const AccountInfoHeader = () => {
   const { sendingAleoTx } = useIsSendingAleoTx(uniqueId);
   const { lock } = useAuth();
 
-  const options: ActionButtonProps[] = useMemo(
-    () => [
+  const options: ActionButtonProps[] = useMemo(() => {
+    const initOptions = [
       {
         title: t("Receive:title"),
         icon: <IconReceive />,
@@ -71,9 +78,30 @@ export const AccountInfoHeader = () => {
         disabled: sendingAleoTx || balance === undefined,
         onPress: () => navigate("/send_aleo"),
       },
-    ],
-    [navigate, t, sendingAleoTx, balance],
-  );
+      {
+        title: t("JoinSplit:title"),
+        icon: <IconJoinSplit />,
+        onPress: async () => {
+          const { confirmed, data } = await showSelectJoinSplitDialog();
+          if (confirmed && data) {
+            if (data === SelectJoinSplitOption.SPLIT) {
+              navigate("/split");
+            } else {
+              navigate("/join");
+            }
+          }
+        },
+      },
+    ];
+    if (chainConfig.testnet && chainConfig.faucetApi) {
+      return initOptions.concat({
+        title: t("Faucet:title"),
+        icon: <IconFaucet />,
+        onPress: () => Browser.tabs.create({ url: chainConfig.faucetApi }),
+      });
+    }
+    return initOptions;
+  }, [navigate, t, sendingAleoTx, balance, chainConfig]);
 
   const onChangeWallet = useCallback(() => {
     showWalletsDrawer({

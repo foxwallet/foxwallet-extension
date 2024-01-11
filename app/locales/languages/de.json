@@ -88,7 +88,8 @@
     "warning": "Warnung",
     "copySuccess": "Kopiererfolg!",
     "paused": "Angehalten",
-    "lock": "Sperren"
+    "lock": "Sperren",
+    "total": "Gesamt"
   },
   "Send": {
     "title": "Schicken",
@@ -128,7 +129,8 @@
     "privateFee": "Private Aufzeichnung zur Zahlung der Gebühr",
     "feeHint": "Sie können entweder das öffentliche Guthaben oder eine der folgenden privaten Aufzeichnungen verwenden, um die Gasgebühr zu bezahlen.",
     "sendingAleoTx": "Aleo-Transaktion wird gesendet",
-    "insufficientBalance": "Mangelhaftes Gleichgewicht"
+    "insufficientBalance": "Mangelhaftes Gleichgewicht",
+    "insufficientFee": "Unzureichendes Guthaben zur Zahlung der Gebühr"
   },
   "PrivateKey": {
     "title": "Privat Schlüssel",
@@ -199,5 +201,21 @@
   "Reset": {
     "remind": "Ihr gesamter Verlauf für dieses Konto wird zurückgesetzt und das Netzwerk wird erneut synchronisiert. Bitte bestätigen Sie, um fortzufahren.",
     "account": "Konto zurücksetzen"
+  },
+  "JoinSplit": {
+    "title": "Beitreten und teilen",
+    "join": "Verbinden",
+    "split": "Teilt",
+    "selectRecords": "Wählen Sie {{COUNT}} Datensätze aus, um fortzufahren.",
+    "splitWarning": "Nach der Aufteilung haben einige Datensätze möglicherweise einen sehr geringen Wert (weniger als die Datenschutz-Transaktionsgebühr). Bitte bedenken Sie dies, bevor Sie fortfahren.",
+    "splitRecord1Remind": "Wert des 1. Datensatzes",
+    "splitRecord2Remind": "Wert des 2. Datensatzes ({{VALUE}} Aleo gegen Gebühr)",
+    "recordValue": "Wert des Datensatzes",
+    "selectMethod": "Methode auswählen",
+    "joinDesc": "Verbinden Sie zwei Datensätze zu einem.",
+    "splitDesc": "Teilen Sie einen Datensatz in zwei auf."
+  },
+  "Faucet": {
+    "title": "Wasserhahn"
   }
 }

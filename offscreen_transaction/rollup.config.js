@@ -17,7 +17,9 @@ export default {
     sourcemap: true,
   },
   plugins: [
-    nodeResolve(),
+    nodeResolve({
+      preferBuiltins: false,
+    }),
     commonJs(),
     typescript(),
     importMetaAssets({

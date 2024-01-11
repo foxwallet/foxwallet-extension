@@ -19,8 +19,11 @@ import {
   AleoRequestDeploymentParams,
 } from "./types";
 import { AleoRpcService } from "./instances/rpc";
+import { utils } from "ethers";
+import { parseU64 } from "./utils/num";
 
 const NATIVE_TOKEN_PROGRAM_ID = "credits.aleo";
+const NATIVE_TOKEN_DECIMALS = 6;
 
 export class AleoTxWorker {
   rpcService: AleoRpcService;
@@ -270,26 +273,33 @@ export class AleoTxWorker {
       );
       const totalProverTiime = performance.now() - startProverTime;
       console.log("===> after getProverKeyPair ", totalProverTiime);
-      const baseFeeStr = `${baseFee}u64`;
-      const priorityFeeStr = `${priorityFee}u64`;
-      const feeMethod = feeRecordStr ? "fee_private" : "fee_public";
-      const placeHolderExecutionId =
-        "1143400038019697993839685533973968560341409464418545224213773009891993380112field";
-      const feeInputs = feeRecordStr
-        ? [feeRecordStr, baseFeeStr, priorityFeeStr, placeHolderExecutionId]
-        : [baseFeeStr, priorityFeeStr, placeHolderExecutionId];
-      console.log("===> before getFeeProverKeyPair ");
-      const startFeeProverTime = performance.now();
-      const { proverFile: feeProverFile, verifierFile: feeVerifierKey } =
-        await this.getProverKeyPair(
+      let feeProverFile: ProvingKey | undefined;
+      let feeVerifierKey: VerifyingKey | undefined;
+      const isSplitTx =
+        programId === NATIVE_TOKEN_PROGRAM_ID && functionName === "split";
+      if (!isSplitTx) {
+        const baseFeeStr = `${baseFee}u64`;
+        const priorityFeeStr = `${priorityFee}u64`;
+        const feeMethod = feeRecordStr ? "fee_private" : "fee_public";
+        const placeHolderExecutionId =
+          "1143400038019697993839685533973968560341409464418545224213773009891993380112field";
+        const feeInputs = feeRecordStr
+          ? [feeRecordStr, baseFeeStr, priorityFeeStr, placeHolderExecutionId]
+          : [baseFeeStr, priorityFeeStr, placeHolderExecutionId];
+        console.log("===> before getFeeProverKeyPair ");
+        const startFeeProverTime = performance.now();
+        const keys = await this.getProverKeyPair(
           privateKeyObj,
           chainId,
           NATIVE_TOKEN_PROGRAM_ID,
           feeMethod,
           feeInputs,
         );
-      const totalFeeProverTiime = performance.now() - startFeeProverTime;
-      console.log("===> after getFeeProverKeyPair ", totalFeeProverTiime);
+        feeProverFile = keys.proverFile;
+        feeVerifierKey = keys.verifierFile;
+        const totalFeeProverTiime = performance.now() - startFeeProverTime;
+        console.log("===> after getFeeProverKeyPair ", totalFeeProverTiime);
+      }
 
       pendingTxInfo.status = AleoTxStatus.GENERATING_TRANSACTION;
       await this.storage.setAddressLocalTx(chainId, address, pendingTxInfo);
@@ -300,21 +310,33 @@ export class AleoTxWorker {
         : undefined;
       console.log("===> before buildExecutionTransaction ");
       // TODO: regenerate tx when encounter inclusion error
-      const tx = await ProgramManager.buildExecutionTransaction(
-        privateKeyObj,
-        programStr,
-        functionName,
-        inputs,
-        BigInt(baseFee),
-        BigInt(priorityFee),
-        feeRecord,
-        this.rpcService.currConfig(),
-        imports,
-        proverFile,
-        verifierFile,
-        feeProverFile,
-        feeVerifierKey,
-      );
+      let tx: Transaction;
+      if (!isSplitTx) {
+        tx = await ProgramManager.buildExecutionTransaction(
+          privateKeyObj,
+          programStr,
+          functionName,
+          inputs,
+          BigInt(baseFee),
+          BigInt(priorityFee),
+          feeRecord,
+          this.rpcService.currConfig(),
+          imports,
+          proverFile,
+          verifierFile,
+          feeProverFile,
+          feeVerifierKey,
+        );
+      } else {
+        tx = await ProgramManager.buildSplitTransaction(
+          privateKeyObj,
+          Number(utils.formatUnits(parseU64(inputs[1]), NATIVE_TOKEN_DECIMALS)),
+          RecordPlaintext.fromString(inputs[0]),
+          this.rpcService.currConfig(),
+          proverFile,
+          verifierFile,
+        );
+      }
       console.log("===> before submitTransaction ", tx.toString());
 
       pendingTxInfo.status = AleoTxStatus.BROADCASTING;
