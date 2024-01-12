@@ -2,6 +2,7 @@ import React, { lazy } from "react";
 import { Navigate, Outlet, type RouteObject } from "react-router-dom";
 import { CheckOnboard } from "../components/Onboard/CheckOnboard";
 import { CheckAuth } from "@/components/Onboard/CheckAuth";
+import { CheckVersion } from "@/components/Onboard/CheckVersion";
 
 // WalletTab
 const MainPage = lazy(async () => await import("../pages/Main"));
@@ -67,11 +68,13 @@ export const routesConfig: RouteObject[] = [
   {
     path: "/",
     element: (
-      <CheckOnboard>
-        <CheckAuth>
-          <Outlet />
-        </CheckAuth>
-      </CheckOnboard>
+      <CheckVersion>
+        <CheckOnboard>
+          <CheckAuth>
+            <Outlet />
+          </CheckAuth>
+        </CheckOnboard>
+      </CheckVersion>
     ),
     children: [
       {

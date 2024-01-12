@@ -46,6 +46,10 @@
     "Home": {
       "slogan1": "The best Web3 wallet",
       "slogan2": "Entrance to crypto world"
+    },
+    "Upgrade": {
+      "reminderTips": "The current browser version is too old, please upgrade to the latest version to use the FoxWallet extension wallet.",
+      "upgradeBtn": "Upgrade"
     }
   },
   "Agreement": {
