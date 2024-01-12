@@ -165,7 +165,7 @@ export class AleoWorker {
         transition_index: transitionIndex,
         output_index: outputIndex,
         block_height: height,
-        timestamp,
+        block_time: timestamp,
       } = recordRawInfo;
       const record = this.parseRecordCiphertext(ciphertext);
       if (!record) {

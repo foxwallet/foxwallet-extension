@@ -10,7 +10,7 @@ export interface RecordRawInfo {
   transition_index: number;
   output_index: number;
   block_height: number;
-  timestamp: number;
+  block_time: number;
 }
 
 export interface SyncResp<T> {
