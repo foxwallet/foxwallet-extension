@@ -624,22 +624,18 @@ export class MainLoop {
     try {
       const addressList = await this.aleoStorage.getAccountsAddress();
       console.log("===> addressList ", addressList.length, addressList);
-      const accounts: AleoSyncAccount[] = [];
-      for (const address of addressList) {
-        const account = await this.aleoStorage.getAccountInfo(address);
-        if (!account) {
-          console.log("===> can't get account info");
-          continue;
-        }
-        accounts.push({
-          ...account,
-        });
+      const selectedAccount =
+        await this.accountSettingStorage.getSelectedAccount(CoinType.ALEO);
+      if (!selectedAccount) {
+        console.error("selected account not found");
+        await sleep(5000);
+        return this.loop();
       }
-      accounts.sort((account1, account2) => {
-        return account1.priority - account2.priority;
-      });
-      if (accounts.length === 0) {
-        // no account, sleep & retry
+      const accountToSync = await this.aleoStorage.getAccountInfo(
+        selectedAccount.address,
+      );
+      if (!accountToSync) {
+        console.error("selected accountViewKey not found");
         await sleep(2000);
         return this.loop();
       }
@@ -654,10 +650,10 @@ export class MainLoop {
         return this.loop();
       }
       await this.initWorker();
-      await this.checkAccountRecordRange(chainId, accounts);
+      await this.checkAccountRecordRange(chainId, [accountToSync]);
       const batchMap = await this.initAccountsSyncTask(
         chainId,
-        accounts,
+        [accountToSync],
         lastRecordIndex,
       );
       console.log(
