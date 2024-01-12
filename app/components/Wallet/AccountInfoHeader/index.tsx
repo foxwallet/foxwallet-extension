@@ -81,6 +81,7 @@ export const AccountInfoHeader = () => {
       {
         title: t("JoinSplit:title"),
         icon: <IconJoinSplit />,
+        disabled: sendingAleoTx || balance === undefined,
         onPress: async () => {
           const { confirmed, data } = await showSelectJoinSplitDialog();
           if (confirmed && data) {
@@ -261,13 +262,18 @@ const ActionButton: React.FC<ActionButtonProps> = ({
 }) => {
   return (
     <Flex
-      cursor={"pointer"}
+      cursor={disabled ? "not-allowed" : "pointer"}
       onClick={!disabled ? onPress : undefined}
       align={"center"}
       direction={"column"}
     >
       {icon}
-      <Text mt={1} fontSize={12} fontWeight={500}>
+      <Text
+        mt={1}
+        fontSize={12}
+        fontWeight={500}
+        color={disabled ? "gray.500" : "black"}
+      >
         {title}
       </Text>
     </Flex>
