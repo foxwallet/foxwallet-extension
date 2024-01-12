@@ -16,9 +16,9 @@ export const aleoAccountStorageInstance = localForage.createInstance({
   storeName: "aleo",
 });
 
-export const aleoBlockStorageInstance = localForage.createInstance({
-  driver: localForage.INDEXEDDB,
-});
+// export const aleoBlockStorageInstance = localForage.createInstance({
+//   driver: localForage.INDEXEDDB,
+// });
 
 export enum StorageKey {
   RECORD = "record",

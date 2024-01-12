@@ -236,6 +236,7 @@ export class AleoTxWorker {
   }: AleoSendTxParams): Promise<null | AleoTransaction> {
     const pendingTxInfo: AleoLocalTxInfo = {
       localId,
+      address,
       programId,
       functionName,
       inputs,
@@ -377,6 +378,7 @@ export class AleoTxWorker {
   }: AleoRequestDeploymentParams) {
     const pendingTxInfo: AleoLocalTxInfo = {
       localId,
+      address,
       programId,
       functionName: "",
       inputs: [],

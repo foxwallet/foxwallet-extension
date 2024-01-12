@@ -536,195 +536,202 @@ export class AleoService {
     address: string,
     program?: string,
   ): Promise<AleoLocalHistoryItem[]> {
-    const chainTxList: AleoLocalHistoryItem[] = [];
-
-    const localIds = await this.aleoStorage.getAddressLocalTxIds(
+    const localTxs = await this.aleoStorage.getAddressLocalTxs(
       this.chainId,
       address,
     );
 
-    await Promise.all(
-      localIds.map(async (localId) => {
-        const localTxInfo = await this.getLocalTxInfo(
-          address,
-          localId,
-          program,
-        );
-        if (localTxInfo) {
-          chainTxList.push(localTxInfo);
-        }
-        // const txInfo = await this.aleoStorage.getAddressLocalTx(
-        //   this.chainId,
-        //   address,
-        //   localId,
-        // );
-        // if (!txInfo) {
-        //   return;
-        // }
-        // switch (txInfo.status) {
-        //   case AleoTxStatus.QUEUED:
-        //   case AleoTxStatus.GENERATING_PROVER_FILES:
-        //   case AleoTxStatus.GENERATING_TRANSACTION:
-        //   case AleoTxStatus.BROADCASTING: {
-        //     chainTxList.push({
-        //       type: AleoHistoryType.LOCAL,
-        //       localId: localId,
-        //       status: txInfo.status,
-        //       programId: txInfo.programId,
-        //       functionName: txInfo.functionName,
-        //       inputs: txInfo.inputs,
-        //       timestamp: txInfo.timestamp,
-        //       addressType: AleoTxAddressType.SEND,
-        //       amount: txInfo.amount,
-        //     });
-        //     break;
-        //   }
-        //   case AleoTxStatus.COMPLETED: {
-        //     const txId = txInfo.transaction?.id;
-        //     try {
-        //       if (!txId) {
-        //         console.error("===> Completed txId is null: ", txInfo);
-        //         chainTxList.push({
-        //           type: AleoHistoryType.LOCAL,
-        //           localId: localId,
-        //           status: txInfo.status,
-        //           programId: txInfo.programId,
-        //           functionName: txInfo.functionName,
-        //           inputs: txInfo.inputs,
-        //           timestamp: txInfo.timestamp,
-        //           addressType: AleoTxAddressType.SEND,
-        //           amount: txInfo.amount,
-        //         });
-        //         break;
-        //       }
-        //       const tx = await this.getTxInfoOnChain(txId);
-        //       if (!tx) {
-        //         chainTxList.push({
-        //           type: AleoHistoryType.LOCAL,
-        //           localId: localId,
-        //           status: txInfo.status,
-        //           programId: txInfo.programId,
-        //           functionName: txInfo.functionName,
-        //           inputs: txInfo.inputs,
-        //           timestamp: txInfo.timestamp,
-        //           addressType: AleoTxAddressType.SEND,
-        //           amount: txInfo.amount,
-        //           txId,
-        //         });
-        //       } else {
-        //         chainTxList.push({
-        //           type: AleoHistoryType.LOCAL,
-        //           localId: localId,
-        //           status: AleoTxStatus.FINALIZD,
-        //           programId: txInfo.programId,
-        //           functionName: txInfo.functionName,
-        //           inputs: txInfo.inputs,
-        //           timestamp: txInfo.timestamp,
-        //           addressType: AleoTxAddressType.SEND,
-        //           amount: txInfo.amount,
-        //           txId,
-        //         });
-        //         const newTxInfo = {
-        //           ...txInfo,
-        //           status: AleoTxStatus.FINALIZD,
-        //         };
-        //         await this.aleoStorage.setAddressLocalTx(
-        //           this.chainId,
-        //           address,
-        //           newTxInfo,
-        //         );
-        //       }
-        //     } catch (err) {
-        //       console.error("===> Completed tx error: ", err);
-        //       const now = Date.now();
-        //       const timestamp = txInfo.timestamp;
-        //       if (now - timestamp >= LOCAL_TX_EXPIRE_TIME) {
-        //         const errorMsg = "Transaction expired";
-        //         await this.aleoStorage.setAddressLocalTx(
-        //           this.chainId,
-        //           address,
-        //           {
-        //             ...txInfo,
-        //             error: errorMsg,
-        //             status: AleoTxStatus.REJECTED,
-        //           },
-        //         );
-        //         chainTxList.push({
-        //           type: AleoHistoryType.LOCAL,
-        //           localId: localId,
-        //           status: AleoTxStatus.REJECTED,
-        //           programId: txInfo.programId,
-        //           functionName: txInfo.functionName,
-        //           inputs: txInfo.inputs,
-        //           error: errorMsg,
-        //           timestamp: txInfo.timestamp,
-        //           addressType: AleoTxAddressType.SEND,
-        //           amount: txInfo.amount,
-        //           txId,
-        //         });
-        //       } else {
-        //         chainTxList.push({
-        //           type: AleoHistoryType.LOCAL,
-        //           localId: localId,
-        //           status: txInfo.status,
-        //           programId: txInfo.programId,
-        //           functionName: txInfo.functionName,
-        //           inputs: txInfo.inputs,
-        //           timestamp: txInfo.timestamp,
-        //           addressType: AleoTxAddressType.SEND,
-        //           amount: txInfo.amount,
-        //           txId,
-        //         });
-        //       }
-        //     }
-        //     break;
-        //   }
-        //   case AleoTxStatus.FAILED:
-        //   case AleoTxStatus.REJECTED: {
-        //     const now = Date.now();
-        //     const timestamp = txInfo.timestamp;
-        //     if (now - timestamp >= FAILED_TX_REMOVE_TIME) {
-        //       await this.aleoStorage.removeAddressLocalTx(
-        //         this.chainId,
-        //         address,
-        //         localId,
-        //       );
-        //     } else {
-        //       chainTxList.push({
-        //         type: AleoHistoryType.LOCAL,
-        //         localId: localId,
-        //         status: txInfo.status,
-        //         programId: txInfo.programId,
-        //         functionName: txInfo.functionName,
-        //         inputs: txInfo.inputs,
-        //         error: txInfo.error,
-        //         timestamp: txInfo.timestamp,
-        //         addressType: AleoTxAddressType.SEND,
-        //         amount: txInfo.amount,
-        //       });
-        //     }
-        //     break;
-        //   }
-        //   case AleoTxStatus.FINALIZD: {
-        //     chainTxList.push({
-        //       type: AleoHistoryType.LOCAL,
-        //       localId: localId,
-        //       txId: txInfo.transaction?.id,
-        //       status: txInfo.status,
-        //       programId: txInfo.programId,
-        //       functionName: txInfo.functionName,
-        //       inputs: txInfo.inputs,
-        //       timestamp: txInfo.timestamp,
-        //       addressType: AleoTxAddressType.SEND,
-        //       amount: txInfo.amount,
-        //     });
-        //     break;
-        //   }
-        // }
-      }),
-    );
+    return localTxs.map((item) => {
+      return {
+        ...item,
+        addressType: AleoTxAddressType.SEND,
+        type: AleoHistoryType.LOCAL,
+        txId: item.transaction?.id,
+      };
+    });
 
-    return chainTxList;
+    // await Promise.all(
+    //   localIds.map(async (localId) => {
+    //     const localTxInfo = await this.getLocalTxInfo(
+    //       address,
+    //       localId,
+    //       program,
+    //     );
+    //     if (localTxInfo) {
+    //       chainTxList.push(localTxInfo);
+    //     }
+    //     // const txInfo = await this.aleoStorage.getAddressLocalTx(
+    //     //   this.chainId,
+    //     //   address,
+    //     //   localId,
+    //     // );
+    //     // if (!txInfo) {
+    //     //   return;
+    //     // }
+    //     // switch (txInfo.status) {
+    //     //   case AleoTxStatus.QUEUED:
+    //     //   case AleoTxStatus.GENERATING_PROVER_FILES:
+    //     //   case AleoTxStatus.GENERATING_TRANSACTION:
+    //     //   case AleoTxStatus.BROADCASTING: {
+    //     //     chainTxList.push({
+    //     //       type: AleoHistoryType.LOCAL,
+    //     //       localId: localId,
+    //     //       status: txInfo.status,
+    //     //       programId: txInfo.programId,
+    //     //       functionName: txInfo.functionName,
+    //     //       inputs: txInfo.inputs,
+    //     //       timestamp: txInfo.timestamp,
+    //     //       addressType: AleoTxAddressType.SEND,
+    //     //       amount: txInfo.amount,
+    //     //     });
+    //     //     break;
+    //     //   }
+    //     //   case AleoTxStatus.COMPLETED: {
+    //     //     const txId = txInfo.transaction?.id;
+    //     //     try {
+    //     //       if (!txId) {
+    //     //         console.error("===> Completed txId is null: ", txInfo);
+    //     //         chainTxList.push({
+    //     //           type: AleoHistoryType.LOCAL,
+    //     //           localId: localId,
+    //     //           status: txInfo.status,
+    //     //           programId: txInfo.programId,
+    //     //           functionName: txInfo.functionName,
+    //     //           inputs: txInfo.inputs,
+    //     //           timestamp: txInfo.timestamp,
+    //     //           addressType: AleoTxAddressType.SEND,
+    //     //           amount: txInfo.amount,
+    //     //         });
+    //     //         break;
+    //     //       }
+    //     //       const tx = await this.getTxInfoOnChain(txId);
+    //     //       if (!tx) {
+    //     //         chainTxList.push({
+    //     //           type: AleoHistoryType.LOCAL,
+    //     //           localId: localId,
+    //     //           status: txInfo.status,
+    //     //           programId: txInfo.programId,
+    //     //           functionName: txInfo.functionName,
+    //     //           inputs: txInfo.inputs,
+    //     //           timestamp: txInfo.timestamp,
+    //     //           addressType: AleoTxAddressType.SEND,
+    //     //           amount: txInfo.amount,
+    //     //           txId,
+    //     //         });
+    //     //       } else {
+    //     //         chainTxList.push({
+    //     //           type: AleoHistoryType.LOCAL,
+    //     //           localId: localId,
+    //     //           status: AleoTxStatus.FINALIZD,
+    //     //           programId: txInfo.programId,
+    //     //           functionName: txInfo.functionName,
+    //     //           inputs: txInfo.inputs,
+    //     //           timestamp: txInfo.timestamp,
+    //     //           addressType: AleoTxAddressType.SEND,
+    //     //           amount: txInfo.amount,
+    //     //           txId,
+    //     //         });
+    //     //         const newTxInfo = {
+    //     //           ...txInfo,
+    //     //           status: AleoTxStatus.FINALIZD,
+    //     //         };
+    //     //         await this.aleoStorage.setAddressLocalTx(
+    //     //           this.chainId,
+    //     //           address,
+    //     //           newTxInfo,
+    //     //         );
+    //     //       }
+    //     //     } catch (err) {
+    //     //       console.error("===> Completed tx error: ", err);
+    //     //       const now = Date.now();
+    //     //       const timestamp = txInfo.timestamp;
+    //     //       if (now - timestamp >= LOCAL_TX_EXPIRE_TIME) {
+    //     //         const errorMsg = "Transaction expired";
+    //     //         await this.aleoStorage.setAddressLocalTx(
+    //     //           this.chainId,
+    //     //           address,
+    //     //           {
+    //     //             ...txInfo,
+    //     //             error: errorMsg,
+    //     //             status: AleoTxStatus.REJECTED,
+    //     //           },
+    //     //         );
+    //     //         chainTxList.push({
+    //     //           type: AleoHistoryType.LOCAL,
+    //     //           localId: localId,
+    //     //           status: AleoTxStatus.REJECTED,
+    //     //           programId: txInfo.programId,
+    //     //           functionName: txInfo.functionName,
+    //     //           inputs: txInfo.inputs,
+    //     //           error: errorMsg,
+    //     //           timestamp: txInfo.timestamp,
+    //     //           addressType: AleoTxAddressType.SEND,
+    //     //           amount: txInfo.amount,
+    //     //           txId,
+    //     //         });
+    //     //       } else {
+    //     //         chainTxList.push({
+    //     //           type: AleoHistoryType.LOCAL,
+    //     //           localId: localId,
+    //     //           status: txInfo.status,
+    //     //           programId: txInfo.programId,
+    //     //           functionName: txInfo.functionName,
+    //     //           inputs: txInfo.inputs,
+    //     //           timestamp: txInfo.timestamp,
+    //     //           addressType: AleoTxAddressType.SEND,
+    //     //           amount: txInfo.amount,
+    //     //           txId,
+    //     //         });
+    //     //       }
+    //     //     }
+    //     //     break;
+    //     //   }
+    //     //   case AleoTxStatus.FAILED:
+    //     //   case AleoTxStatus.REJECTED: {
+    //     //     const now = Date.now();
+    //     //     const timestamp = txInfo.timestamp;
+    //     //     if (now - timestamp >= FAILED_TX_REMOVE_TIME) {
+    //     //       await this.aleoStorage.removeAddressLocalTx(
+    //     //         this.chainId,
+    //     //         address,
+    //     //         localId,
+    //     //       );
+    //     //     } else {
+    //     //       chainTxList.push({
+    //     //         type: AleoHistoryType.LOCAL,
+    //     //         localId: localId,
+    //     //         status: txInfo.status,
+    //     //         programId: txInfo.programId,
+    //     //         functionName: txInfo.functionName,
+    //     //         inputs: txInfo.inputs,
+    //     //         error: txInfo.error,
+    //     //         timestamp: txInfo.timestamp,
+    //     //         addressType: AleoTxAddressType.SEND,
+    //     //         amount: txInfo.amount,
+    //     //       });
+    //     //     }
+    //     //     break;
+    //     //   }
+    //     //   case AleoTxStatus.FINALIZD: {
+    //     //     chainTxList.push({
+    //     //       type: AleoHistoryType.LOCAL,
+    //     //       localId: localId,
+    //     //       txId: txInfo.transaction?.id,
+    //     //       status: txInfo.status,
+    //     //       programId: txInfo.programId,
+    //     //       functionName: txInfo.functionName,
+    //     //       inputs: txInfo.inputs,
+    //     //       timestamp: txInfo.timestamp,
+    //     //       addressType: AleoTxAddressType.SEND,
+    //     //       amount: txInfo.amount,
+    //     //     });
+    //     //     break;
+    //     //   }
+    //     // }
+    //   }),
+    // );
+
+    // return chainTxList;
   }
 
   async getLocalTxInfo(

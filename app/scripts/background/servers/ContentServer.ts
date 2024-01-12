@@ -43,10 +43,6 @@ import { DecryptPermission } from "../types/permission";
 import { ViewKey, Program } from "aleo_wasm";
 import { CoinServiceEntry } from "core/coins/CoinServiceEntry";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
-import {
-  AleoLocalTxInfo,
-  AleoTxStatus,
-} from "core/coins/ALEO/types/Tranaction";
 import { AleoLocalHistoryItem } from "core/coins/ALEO/types/History";
 import { NATIVE_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
 

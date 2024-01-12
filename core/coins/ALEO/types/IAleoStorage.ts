@@ -39,7 +39,12 @@ export interface IAleoStorage {
     info: AleoLocalTxInfo,
   ): Promise<void>;
 
-  getAddressLocalTxIds(chainId: string, address: string): Promise<string[]>;
+  // getAddressLocalTxIds(chainId: string, address: string): Promise<string[]>;
+
+  getAddressLocalTxs(
+    chainId: string,
+    address: string,
+  ): Promise<AleoLocalTxInfo[]>;
 
   getAddressLocalTx(
     chainId: string,
@@ -53,7 +58,7 @@ export interface IAleoStorage {
     localId: string,
   ): Promise<void>;
 
-  clearAddressLocalData(chainId: string, address: string): Promise<boolean>;
+  clearAddressLocalData(chainId: string, address: string): Promise<void>;
 
   getProgramContent(chainId: string, programId: string): Promise<string | null>;
 

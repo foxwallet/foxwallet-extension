@@ -49,6 +49,7 @@
     "crypto-es": "^2.0.4",
     "dayjs": "^1.11.9",
     "detect-browser": "^5.3.0",
+    "dexie": "^3.2.4",
     "ethereum-cryptography": "^2.1.2",
     "ethereumjs-util": "^7.1.5",
     "ethers": "^5.7.0",
