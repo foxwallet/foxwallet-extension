@@ -26,3 +26,5 @@ export const ALE0_EXPOLER_TRANSACTION_URL =
 export const HELP_CENTER_URL = "https://hc.foxwallet.com";
 export const PRIVACY_POLICY_URL = "https://hc.foxwallet.com/privacy-policy";
 export const TERMS_OF_SERVICE_URL = "https://hc.foxwallet.com/terms-of-service";
+
+export const CHROME_MIN_VERSION = "120.0.0.0";

@@ -70,6 +70,8 @@ import Reset from "@/common/assets/image/icon_reset.svg";
 import Lock from "@/common/assets/image/icon_lock.svg";
 import Faucet from "@/common/assets/image/icon_faucet.svg";
 import JoinSplit from "@/common/assets/image/icon_join_split.svg";
+import UpgradeReminder from "@/common/assets/image/icon_upgrade_reminder.svg";
+import UpgradeReminderDark from "@/common/assets/image/icon_upgrade_reminder_dark.svg";
 
 const ThemeIconFill: (i: any) => ChakraComponent<any, any> =
   (icon: any) => (props: ChakraComponent<any, any>) => {
@@ -152,3 +154,5 @@ export const IconMeSelected = ThemeIconFill(MeSelected);
 export const IconMeUnselected = ThemeIconFill(MeUnselected);
 export const IconReset = ThemeIconStroke(Reset);
 export const IconLock = ThemeIconStroke(Lock);
+export const IconUpgradeReminder = chakra(UpgradeReminder);
+export const IconUpgradeReminderDark = chakra(UpgradeReminderDark);
