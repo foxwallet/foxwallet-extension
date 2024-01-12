@@ -236,49 +236,61 @@ export class AleoWorker {
 
     try {
       const recordsInRange = await this.getRecordsInRange(chainId, begin, end);
-      for (let i = recordsInRange.length - 1; i >= 0; i--) {
-        const recordRawInfo = recordsInRange[i];
+      if (recordsInRange.length === 0) {
         syncParams.forEach((syncParam) => {
-          const { address, viewKey } = syncParam;
-          const cache = addressCache[address];
-          let viewKeyObj: ViewKey;
-          let skTag: Field;
-          if (!cache) {
-            viewKeyObj = this.parseViewKey(viewKey);
-            skTag = viewKeyObj.skTag();
-            addressCache[address] = {
-              viewKey: viewKeyObj,
-              skTag,
-            };
-          } else {
-            viewKeyObj = cache.viewKey;
-            skTag = cache.skTag;
-          }
-
-          const decryptedRecord = this.decryptRecord(
-            viewKeyObj,
-            skTag,
-            recordRawInfo,
-          );
-          const resultMap = addressResultMap[address] ?? {
+          const { address } = syncParam;
+          const resultMap = {
             recordsMap: {},
             ...syncParam,
-            range: [i === 0 ? begin : recordRawInfo.id, end],
+            range: [begin, end],
           };
-
-          if (decryptedRecord) {
-            const { programId } = decryptedRecord;
-            resultMap.recordsMap[programId] = {
-              ...(resultMap.recordsMap[programId] ?? {}),
-              [decryptedRecord.commitment]: decryptedRecord,
-            };
-          }
-
-          resultMap.range[0] = i === 0 ? begin : recordRawInfo.id;
           addressResultMap[address] = resultMap;
-
-          this.currIndex = recordRawInfo.id;
         });
+      } else {
+        for (let i = recordsInRange.length - 1; i >= 0; i--) {
+          const recordRawInfo = recordsInRange[i];
+          syncParams.forEach((syncParam) => {
+            const { address, viewKey } = syncParam;
+            const cache = addressCache[address];
+            let viewKeyObj: ViewKey;
+            let skTag: Field;
+            if (!cache) {
+              viewKeyObj = this.parseViewKey(viewKey);
+              skTag = viewKeyObj.skTag();
+              addressCache[address] = {
+                viewKey: viewKeyObj,
+                skTag,
+              };
+            } else {
+              viewKeyObj = cache.viewKey;
+              skTag = cache.skTag;
+            }
+
+            const decryptedRecord = this.decryptRecord(
+              viewKeyObj,
+              skTag,
+              recordRawInfo,
+            );
+            const resultMap = addressResultMap[address] ?? {
+              recordsMap: {},
+              ...syncParam,
+              range: [i === 0 ? begin : recordRawInfo.id, end],
+            };
+
+            if (decryptedRecord) {
+              const { programId } = decryptedRecord;
+              resultMap.recordsMap[programId] = {
+                ...(resultMap.recordsMap[programId] ?? {}),
+                [decryptedRecord.commitment]: decryptedRecord,
+              };
+            }
+
+            resultMap.range[0] = i === 0 ? begin : recordRawInfo.id;
+            addressResultMap[address] = resultMap;
+
+            this.currIndex = recordRawInfo.id;
+          });
+        }
       }
     } catch (err) {
       this.error("===> syncRecords error: ", err);
