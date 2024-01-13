@@ -12,7 +12,7 @@ export const CheckBrowserVersion = (props: { children: React.ReactNode }) => {
     const matched = userAgent.match(/chrome\/[\d.]+/gi);
     if (matched?.[0]) {
       const versionCmps = matched[0].split("/");
-      return parseFloat(versionCmps[1]) >= parseFloat(CHROME_MIN_VERSION);
+      return parseFloat(versionCmps[1]) < parseFloat(CHROME_MIN_VERSION);
     }
 
     return false;
