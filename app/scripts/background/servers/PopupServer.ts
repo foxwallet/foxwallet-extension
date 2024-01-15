@@ -53,7 +53,6 @@ import { CoinServiceEntry } from "core/coins/CoinServiceEntry";
 import { ChainUniqueId, InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { TaskPriority } from "core/coins/ALEO/types/SyncTask";
 import { AleoConnectHistory, DappRequest } from "@/database/types/dapp";
-import { setEngine } from "crypto";
 
 export type OnRequestFinishCallback = (
   error: null | Error,
