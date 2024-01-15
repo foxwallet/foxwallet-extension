@@ -4,12 +4,14 @@ import { useClient } from "@/hooks/useClient";
 import { Body } from "@/layouts/Body";
 import { PageWithHeader } from "@/layouts/Page";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 
 const ExportSeedPhrase = () => {
   const { walletId } = useParams();
   const { popupServerClient } = useClient();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [mnemonic, setMnemonic] = useState("");
 
@@ -22,7 +24,7 @@ const ExportSeedPhrase = () => {
   }, [walletId]);
 
   return (
-    <PageWithHeader title={"Backup Seed Phrase"}>
+    <PageWithHeader title={t("Mnemonic:backup")}>
       <Body>
         <BackupMnemonicStep
           mnemonic={mnemonic}

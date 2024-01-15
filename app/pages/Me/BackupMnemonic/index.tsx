@@ -6,6 +6,7 @@ import { Body } from "@/layouts/Body";
 import { PageWithHeader } from "@/layouts/Page";
 import { CoinType } from "core/types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 
 const BackupMnemonicScreen = () => {
@@ -17,6 +18,7 @@ const BackupMnemonicScreen = () => {
   const walletIdRef = useRef(walletIdFromRoute || "");
   const navigate = useNavigate();
   const dispatch = usePopupDispatch();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const fetchMnemonic = async () => {
@@ -56,9 +58,9 @@ const BackupMnemonicScreen = () => {
   }, [dispatch.account, step, mnemonic, navigate]);
 
   const title = useMemo(() => {
-    if (step === 1) return "Backup Seed Phrase";
-    return "Seed Phrase Verification";
-  }, [step]);
+    if (step === 1) return t("Menmonic:backup");
+    return t("Mnemonic:verification");
+  }, [step, t]);
 
   return (
     <PageWithHeader
