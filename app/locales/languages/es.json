@@ -79,7 +79,9 @@
     "checkTips": "Por favor marque \"{{WORD}}\"",
     "warning1": "Anote la frase inicial en orden.",
     "warning2": "Por favor cópielo y guárdelo en un lugar seguro.",
-    "warning3": "La frase inicial o la clave privada son la única forma de recuperar su billetera. Una vez perdido, no se puede recuperar. No los guardes mediante capturas de pantalla o redes sociales."
+    "warning3": "La frase inicial o la clave privada son la única forma de recuperar su billetera. Una vez perdido, no se puede recuperar. No los guardes mediante capturas de pantalla o redes sociales.",
+    "backup": "Fase semilla de respaldo",
+    "verification": "Verificación de la fase de semilla"
   },
   "Common": {
     "confirm": "Confirmar",
@@ -138,7 +140,9 @@
   },
   "PrivateKey": {
     "title": "Llave privada",
-    "enterPlaceholder": "Introduce la clave privada"
+    "enterPlaceholder": "Introduce la clave privada",
+    "backupTips1": "Guárdelo en un lugar seguro.",
+    "backupTips2": "La frase inicial o la clave privada son la única forma de recuperar su billetera. Una vez perdido, no se puede recuperar. No los guardes mediante capturas de pantalla o redes sociales."
   },
   "Receive": {
     "title": "Recibir",

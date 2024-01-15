@@ -44,7 +44,7 @@ const SelectJoinSplit = (props: Props) => {
     <Drawer isOpen={isOpen} placement="bottom" onClose={onCancel}>
       <DrawerOverlay />
       <DrawerContent bg={"white"} px="6" py="4">
-        <DrawerCloseButton position={"absolute"} top={6} right={6} />
+        <DrawerCloseButton position={"absolute"} top={5} right={6} />
         <DrawerHeader
           display={"flex"}
           justifyContent={"center"}

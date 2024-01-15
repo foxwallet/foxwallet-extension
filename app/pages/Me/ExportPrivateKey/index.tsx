@@ -3,15 +3,9 @@ import { Content } from "@/layouts/Content";
 import { PageWithHeader } from "@/layouts/Page";
 import { Box, Button, Flex, Text } from "@chakra-ui/react";
 import { CoinType } from "core/types";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
-
-const tips = [
-  "Please note down the seed phrase in order.",
-  "Please copy and keep it in a safe place.",
-  "Seed phrase or private key are the only way to recover your wallet. Once lost, it cannot be retrieved. Do not save them via screenshots or social medias.",
-];
 
 const ExportPrivateKeyScreen = () => {
   const { popupServerClient } = useClient();
@@ -34,6 +28,10 @@ const ExportPrivateKeyScreen = () => {
   useEffect(() => {
     fetchPrivateKey();
   }, [fetchPrivateKey]);
+
+  const tips = useMemo(() => {
+    return [t("PrivateKey:backupTips1"), t("PrivateKey:backupTips2")];
+  }, [t]);
 
   return (
     <PageWithHeader title="Backup private key">

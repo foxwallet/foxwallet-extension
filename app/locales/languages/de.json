@@ -79,7 +79,9 @@
     "checkTips": "Bitte überprüfen Sie „{{WORD}}“",
     "warning1": "Bitte notieren Sie sich die Startphrase der Reihe nach.",
     "warning2": "Bitte kopieren Sie es und bewahren Sie es an einem sicheren Ort auf.",
-    "warning3": "Seed-Phrase oder privater Schlüssel sind die einzige Möglichkeit, Ihr Wallet wiederherzustellen. Sobald es verloren geht, kann es nicht mehr wiederhergestellt werden. Speichern Sie sie nicht über Screenshots oder soziale Medien."
+    "warning3": "Seed-Phrase oder privater Schlüssel sind die einzige Möglichkeit, Ihr Wallet wiederherzustellen. Sobald es verloren geht, kann es nicht mehr wiederhergestellt werden. Speichern Sie sie nicht über Screenshots oder soziale Medien.",
+    "backup": "Backup-Seed-Phase",
+    "verification": "Überprüfung der Saatphase"
   },
   "Common": {
     "confirm": "Bestätigen",
@@ -138,7 +140,9 @@
   },
   "PrivateKey": {
     "title": "Privat Schlüssel",
-    "enterPlaceholder": "Geben Sie den privaten Schlüssel ein"
+    "enterPlaceholder": "Geben Sie den privaten Schlüssel ein",
+    "backupTips1": "Bitte bewahren Sie es an einem sicheren Ort auf.",
+    "backupTips2": "Seed-Phrase oder privater Schlüssel sind die einzige Möglichkeit, Ihr Wallet wiederherzustellen. Sobald es verloren geht, kann es nicht mehr wiederhergestellt werden. Speichern Sie sie nicht über Screenshots oder soziale Medien."
   },
   "Receive": {
     "title": "Erhalten",

@@ -79,7 +79,9 @@
     "checkTips": "Silakan periksa \"{{WORD}}\"",
     "warning1": "Harap catat frase awal secara berurutan.",
     "warning2": "Harap salin dan simpan di tempat yang aman.",
-    "warning3": "Frase benih atau kunci pribadi adalah satu-satunya cara untuk memulihkan dompet Anda. Sekali hilang, tidak dapat diambil kembali. Jangan menyimpannya melalui screenshot atau media sosial."
+    "warning3": "Frase benih atau kunci pribadi adalah satu-satunya cara untuk memulihkan dompet Anda. Sekali hilang, tidak dapat diambil kembali. Jangan menyimpannya melalui screenshot atau media sosial.",
+    "backup": "Fase benih cadangan",
+    "verification": "Verifikasi fase benih"
   },
   "Common": {
     "confirm": "Mengonfirmasi",
@@ -138,7 +140,9 @@
   },
   "PrivateKey": {
     "title": "Kunci pribadi",
-    "enterPlaceholder": "Masukkan kunci pribadi"
+    "enterPlaceholder": "Masukkan kunci pribadi",
+    "backupTips1": "Harap simpan di tempat yang aman.",
+    "backupTips2": "Frase benih atau kunci pribadi adalah satu-satunya cara untuk memulihkan dompet Anda. Sekali hilang, tidak dapat diambil kembali. Jangan menyimpannya melalui screenshot atau media sosial."
   },
   "Receive": {
     "title": "Menerima",

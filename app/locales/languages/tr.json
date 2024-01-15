@@ -79,7 +79,9 @@
     "checkTips": "Lütfen \"{{WORD}}\" ifadesini kontrol edin",
     "warning1": "Lütfen tohum ifadesini sırayla not edin.",
     "warning2": "Lütfen kopyalayıp güvenli bir yerde saklayın.",
-    "warning3": "Cüzdanınızı kurtarmanın tek yolu tohum cümlesi veya özel anahtardır. Kaybedildikten sonra geri getirilemez. Bunları ekran görüntüleri veya sosyal medya aracılığıyla kaydetmeyin."
+    "warning3": "Cüzdanınızı kurtarmanın tek yolu tohum cümlesi veya özel anahtardır. Kaybedildikten sonra geri getirilemez. Bunları ekran görüntüleri veya sosyal medya aracılığıyla kaydetmeyin.",
+    "backup": "Yedekleme tohum aşaması",
+    "verification": "Tohum aşaması doğrulaması"
   },
   "Common": {
     "confirm": "Onaylamak",
@@ -138,7 +140,9 @@
   },
   "PrivateKey": {
     "title": "Özel anahtar",
-    "enterPlaceholder": "Özel anahtarı girin"
+    "enterPlaceholder": "Özel anahtarı girin",
+    "backupTips1": "Lütfen onu güvenli bir yerde saklayın.",
+    "backupTips2": "Cüzdanınızı kurtarmanın tek yolu tohum cümlesi veya özel anahtardır. Kaybedildikten sonra geri getirilemez. Bunları ekran görüntüleri veya sosyal medya aracılığıyla kaydetmeyin."
   },
   "Receive": {
     "title": "Almak",

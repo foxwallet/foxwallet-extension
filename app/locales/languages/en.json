@@ -71,6 +71,8 @@
   },
   "Mnemonic": {
     "title": "Seed phase",
+    "backup": "Backup seed phase",
+    "verification": "Seed phase verification",
     "backupTips1": "Click here to display seed phase",
     "backupTips2": "Please confirm that the surroundings are safe",
     "warning1": "Please note down the seed phrase in order.",
@@ -83,7 +85,9 @@
   },
   "PrivateKey": {
     "title": "Private key",
-    "enterPlaceholder": "Enter private key"
+    "enterPlaceholder": "Enter private key",
+    "backupTips1": "Please keep it in a safe place.",
+    "backupTips2": "Seed phrase or private key are the only way to recover your wallet. Once lost, it cannot be retrieved. Do not save them via screenshots or social medias."
   },
   "Send": {
     "title": "Send",
