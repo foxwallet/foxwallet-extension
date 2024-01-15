@@ -46,6 +46,10 @@
     "Home": {
       "slogan1": "La mejor billetera Web3",
       "slogan2": "Entrada al mundo criptográfico"
+    },
+    "Upgrade": {
+      "reminderTips": "La versión actual del navegador es demasiado antigua; actualice a la última versión para utilizar la extensión de billetera FoxWallet.",
+      "upgradeBtn": "Mejora"
     }
   },
   "Agreement": {

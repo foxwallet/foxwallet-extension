@@ -46,6 +46,10 @@
     "Home": {
       "slogan1": "Die beste Web3-Wallet",
       "slogan2": "Eintritt in die Kryptowelt"
+    },
+    "Upgrade": {
+      "reminderTips": "Die aktuelle Browserversion ist zu alt. Bitte aktualisieren Sie auf die neueste Version, um die FoxWallet-Erweiterungsbrieftasche verwenden zu können.",
+      "upgradeBtn": "Aktualisierung"
     }
   },
   "Agreement": {

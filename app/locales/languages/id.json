@@ -46,6 +46,10 @@
     "Home": {
       "slogan1": "Dompet Web3 terbaik",
       "slogan2": "Pintu masuk ke dunia kripto"
+    },
+    "Upgrade": {
+      "reminderTips": "Versi browser saat ini terlalu lama, harap tingkatkan ke versi terbaru untuk menggunakan dompet ekstensi FoxWallet.",
+      "upgradeBtn": "Meningkatkan"
     }
   },
   "Agreement": {
