@@ -15,6 +15,7 @@ import { useCurrAccount } from "@/hooks/useCurrAccount";
 import {
   Box,
   Flex,
+  FlexProps,
   Text,
   keyframes,
   useClipboard,
@@ -117,7 +118,9 @@ export const AccountInfoHeader = () => {
 
   const renderActionItem = useCallback(
     (item: ActionButtonProps, index: number) => {
-      return <ActionButton key={`${item.title}${index}`} {...item} />;
+      return (
+        <ActionButton key={`${item.title}${index}`} {...item} maxW={"20%"} />
+      );
     },
     [],
   );
@@ -159,17 +162,11 @@ export const AccountInfoHeader = () => {
           <Flex
             align={"center"}
             justify={"center"}
-            borderWidth={"1px"}
-            borderRadius={"lg"}
-            borderStyle={"solid"}
             borderColor={selectedBorderColor}
-            px={2}
-            py={1}
             cursor={"pointer"}
             onClick={() => lock()}
           >
             <IconLock w={5} h={5} />
-            <Text ml={1}>{t("Common:lock")}</Text>
           </Flex>
         </Flex>
         <Flex mt={6} direction={"row"} align={"center"}>
@@ -212,12 +209,7 @@ export const AccountInfoHeader = () => {
           </Flex>
           <RescanButton paused={!!sendingAleoTx} />
         </Flex>
-        <Flex
-          direction={"row"}
-          align={"center"}
-          justify={"space-around"}
-          mt={6}
-        >
+        <Flex direction={"row"} justify={"space-around"} mt={6}>
           {options.map(renderActionItem)}
         </Flex>
       </Box>
@@ -254,18 +246,20 @@ interface ActionButtonProps {
   disabled?: boolean;
   onPress: () => void;
 }
-const ActionButton: React.FC<ActionButtonProps> = ({
+const ActionButton = ({
   title,
   icon,
   disabled = false,
   onPress,
-}) => {
+  ...rest
+}: ActionButtonProps & FlexProps) => {
   return (
     <Flex
       cursor={disabled ? "not-allowed" : "pointer"}
       onClick={!disabled ? onPress : undefined}
       align={"center"}
       direction={"column"}
+      {...rest}
     >
       {icon}
       <Text
