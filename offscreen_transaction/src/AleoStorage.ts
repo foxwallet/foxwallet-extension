@@ -5,11 +5,6 @@ import { AleoLocalTxInfo } from "./types";
 export class AleoStorage {
   static instance: AleoStorage;
 
-  // #aleoBlockStorage: LocalForage;
-  // #aleoBlockStorageMap = new Map<string, LocalForage>();
-  // #aleoAccountStorage: LocalForage;
-  // #aleoProgramStorageMap = new Map<string, LocalForage>();
-
   static getInstance() {
     if (!AleoStorage.instance) {
       AleoStorage.instance = new AleoStorage();
@@ -26,12 +21,6 @@ export class AleoStorage {
   }
 
   async getAddressLocalTxs(chainId: string, address: string) {
-    // const instance = this.getAleoStorageInstance(
-    //   chainId,
-    //   address,
-    //   StorageKey.LOCAL_TX,
-    // );
-    // return await instance.keys();
     const instance = await this.getBlockDBInstance(chainId);
     const data = await instance.txs.where({ address: address }).toArray();
     return data;
@@ -42,12 +31,6 @@ export class AleoStorage {
     address: string,
     localId: string,
   ): Promise<AleoLocalTxInfo | null> {
-    // const instance = this.getAleoStorageInstance(
-    //   chainId,
-    //   address,
-    //   StorageKey.LOCAL_TX,
-    // );
-    // return await instance.getItem(localId);
     const instance = await this.getBlockDBInstance(chainId);
     const data = await instance.txs.where({ localId }).first();
     return data ? data : null;
@@ -58,12 +41,6 @@ export class AleoStorage {
     address: string,
     info: AleoLocalTxInfo,
   ): Promise<void> {
-    // const instance = this.getAleoStorageInstance(
-    //   chainId,
-    //   address,
-    //   StorageKey.LOCAL_TX,
-    // );
-    // await instance.setItem(info.localId, { ...info });
     const instance = await this.getBlockDBInstance(chainId);
     await instance.txs.put(info, "localId");
   }
@@ -73,12 +50,6 @@ export class AleoStorage {
     address: string,
     localId: string,
   ): Promise<void> {
-    // const instance = this.getAleoStorageInstance(
-    //   chainId,
-    //   address,
-    //   StorageKey.LOCAL_TX,
-    // );
-    // await instance.removeItem(localId);
     const instance = await this.getBlockDBInstance(chainId);
     await instance.txs.delete(localId);
   }
@@ -92,8 +63,6 @@ export class AleoStorage {
     chainId: string,
     programId: string,
   ): Promise<string | null> {
-    // const instance = this.getAleoProgramStorageInstance(chainId, programId);
-    // return await instance.getItem("content");
     const instance = await this.getBlockDBInstance(chainId);
     const data = await instance.programs
       .where({ programId: programId })
@@ -109,8 +78,6 @@ export class AleoStorage {
     programId: string,
     program: string,
   ): Promise<void> {
-    // const instance = this.getAleoProgramStorageInstance(chainId, programId);
-    // await instance.setItem("content", program);
     const instance = await this.getBlockDBInstance(chainId);
     const count = await instance.programs.where({ programId }).count();
     if (count) {
@@ -145,7 +112,6 @@ export class AleoStorage {
     programId: string,
     functionName: string,
   ): Promise<{ proverFile: Uint8Array; verifierFile: Uint8Array } | null> {
-    // const instance = this.getAleoProgramStorageInstance(chainId, programId);
     const instance = await this.getBlockDBInstance(chainId);
     const data = await instance.programs.where({ programId }).first();
     if (!data) {
@@ -155,12 +121,6 @@ export class AleoStorage {
     if (!keypair) {
       return null;
     }
-    // const keyPair = (await instance.getItem(
-    //   `${functionName}-keyPair`,
-    // )) as ProverKeyPair | null;
-    // if (!keyPair) {
-    //   return null;
-    // }
     const { proverFile, verifierFile, proverSha1, verifierSha1 } = keypair;
     const [existProverSha1, existVerifierSha1] = await Promise.all([
       this.calculateSHA1(proverFile),
@@ -183,10 +143,7 @@ export class AleoStorage {
     functionName: string,
     keyPair: { proverFile: Uint8Array; verifierFile: Uint8Array },
   ) {
-    // const instance = this.getAleoProgramStorageInstance(chainId, programId);
     const { proverFile, verifierFile } = keyPair;
-    // const proverFile = keyPair.proverFile.copy().toBytes();
-    // const verifierFile = keyPair.verifierFile.copy().toBytes();
     const [proverSha1, verifierSha1] = await Promise.all([
       this.calculateSHA1(proverFile),
       this.calculateSHA1(verifierFile),

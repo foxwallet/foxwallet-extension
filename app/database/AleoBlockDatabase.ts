@@ -1,8 +1,8 @@
 import Dexie from "dexie";
-import { AleoAddressInfo } from "./AleoAddressInfo.di";
-import { AddressRecords } from "./AddressRecords.di";
-import { AleoLocalTx } from "./AleoLocalTx.di";
-import { AleoProgram } from "./AleoProgram.di";
+import { AleoAddressInfo } from "./types/address";
+import { AddressRecords } from "./types/records";
+import { AleoLocalTx } from "./types/tx";
+import { AleoProgram } from "./types/program";
 
 export class AleoBlockDatabase extends Dexie {
   infos: Dexie.Table<AleoAddressInfo, string>;

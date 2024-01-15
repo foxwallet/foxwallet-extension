@@ -1,11 +1,5 @@
-import {
-  createAccountSettingStorage,
-  createDappHistoryStorage,
-} from "@/common/utils/indexeddb";
+import { createAccountSettingStorage } from "@/common/utils/indexeddb";
 import { ChainUniqueId, InnerChainUniqueId } from "core/types/ChainUniqueId";
-import { AleoConnectHistory } from "../../types/connect";
-import { uniqBy } from "lodash";
-import { DappRequest } from "../../types/dapp";
 import { CoinType } from "core/types";
 import { DisplayAccount, SelectedAccount } from "../vault/types/keyring";
 import { chainUniqueIdToCoinType } from "core/helper/CoinType";

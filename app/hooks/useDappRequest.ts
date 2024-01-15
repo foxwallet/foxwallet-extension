@@ -1,9 +1,9 @@
-import { DappRequest } from "@/scripts/background/types/dapp";
+import { DappRequest } from "@/database/types/dapp";
 import { dappService } from "@/services/dapp/DappService";
 import { useCallback, useEffect, useState } from "react";
 
 export const useDappRequest = (requestId?: string) => {
-  const [dappRequest, setDappRequest] = useState<DappRequest | null>(null);
+  const [dappRequest, setDappRequest] = useState<DappRequest | undefined>();
   const [loading, setLoading] = useState(false);
 
   const getDappRequest = useCallback(async () => {

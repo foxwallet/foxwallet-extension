@@ -8,12 +8,7 @@ import {
 } from "../store/vault/types/keyring";
 import { logger } from "../../../common/utils/logger";
 import { ChainUniqueId } from "core/types/ChainUniqueId";
-import {
-  AleoSendTxParams,
-  AleoTransaction,
-  AleoTxStatus,
-} from "core/coins/ALEO/types/Tranaction";
-import { DecryptPermission } from "../types/permission";
+import { AleoSendTxParams } from "core/coins/ALEO/types/Tranaction";
 import { CustomRecord } from "core/coins/ALEO/types/Record";
 import {
   AleoDeployment,
@@ -21,6 +16,7 @@ import {
 } from "core/coins/ALEO/types/Deployment";
 import { SiteInfo } from "@/scripts/content/host";
 import { ImportPrivateKeyTypeMap } from "core/types/CoinBasic";
+import { DecryptPermission } from "@/database/types/dapp";
 
 export type PopupServerMethod = keyof IPopupServer;
 

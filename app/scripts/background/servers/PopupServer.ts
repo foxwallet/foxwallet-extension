@@ -41,9 +41,7 @@ import { DappStorage } from "../store/dapp/DappStorage";
 import { CoinType } from "core/types";
 import browser from "webextension-polyfill";
 import { nanoid } from "nanoid";
-import { DappRequest } from "../types/dapp";
 import { createPopup } from "../helper/popup";
-import { AleoConnectHistory } from "../types/connect";
 import { SiteInfo } from "@/scripts/content/host";
 import { PrivateKey } from "aleo_wasm";
 import { hexToUint8Array } from "@/common/utils/buffer";
@@ -54,6 +52,8 @@ import {
 import { CoinServiceEntry } from "core/coins/CoinServiceEntry";
 import { ChainUniqueId, InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { TaskPriority } from "core/coins/ALEO/types/SyncTask";
+import { AleoConnectHistory, DappRequest } from "@/database/types/dapp";
+import { setEngine } from "crypto";
 
 export type OnRequestFinishCallback = (
   error: null | Error,
@@ -149,11 +149,18 @@ export class PopupWalletServer implements IPopupServer {
 
   async createConnectPopup(params: ConnectProps, siteInfo: SiteInfo) {
     const requestId = nanoid();
+    const selectedAccount = await this.getSelectedAccount({
+      coinType: CoinType.ALEO,
+    });
+    if (!selectedAccount) {
+      throw new Error("No selected account");
+    }
     const request: DappRequest = {
       id: requestId,
       type: "connect",
       coinType: CoinType.ALEO,
       siteInfo,
+      address: selectedAccount.address,
       payload: params,
     };
     await this.dappStorage.setDappRequest(request);
@@ -175,6 +182,7 @@ export class PopupWalletServer implements IPopupServer {
             const connectHistory: AleoConnectHistory = {
               site: siteInfo,
               ...params,
+              address: data,
               lastConnectTime: Date.now(),
             };
             await this.dappStorage.addConnectHistory(
@@ -199,11 +207,21 @@ export class PopupWalletServer implements IPopupServer {
   async createRequestTxPopup(params: AleoRequestTxProps, siteInfo: SiteInfo) {
     const { coinType, address, localId } = params;
     const requestId = nanoid();
+    const selectedAccount = await this.getSelectedAccount({
+      coinType: CoinType.ALEO,
+    });
+    if (!selectedAccount) {
+      throw new Error("No selected account");
+    }
+    if (selectedAccount.address !== address) {
+      throw new Error("Selected account is not match");
+    }
     const request: DappRequest = {
       id: requestId,
       type: "requestTransaction",
       coinType: CoinType.ALEO,
       siteInfo,
+      address: params.address,
       payload: params,
     };
     await this.dappStorage.setDappRequest(request);
@@ -277,11 +295,21 @@ export class PopupWalletServer implements IPopupServer {
   ) {
     const { coinType, address, localId } = params;
     const requestId = nanoid();
+    const selectedAccount = await this.getSelectedAccount({
+      coinType: CoinType.ALEO,
+    });
+    if (!selectedAccount) {
+      throw new Error("No selected account");
+    }
+    if (selectedAccount.address !== address) {
+      throw new Error("Selected account is not match");
+    }
     const request: DappRequest = {
       id: requestId,
       type: "requestDeploy",
       coinType: CoinType.ALEO,
       siteInfo,
+      address: address,
       payload: params,
     };
     await this.dappStorage.setDappRequest(request);
@@ -359,11 +387,18 @@ export class PopupWalletServer implements IPopupServer {
   ) {
     const { message } = params;
     const requestId = nanoid();
+    const selectedAccount = await this.getSelectedAccount({
+      coinType: CoinType.ALEO,
+    });
+    if (!selectedAccount) {
+      throw new Error("No selected account");
+    }
     const request: DappRequest = {
       id: requestId,
       type: "signMessage",
       coinType: CoinType.ALEO,
       siteInfo,
+      address: selectedAccount.address,
       payload: params,
     };
     await this.dappStorage.setDappRequest(request);

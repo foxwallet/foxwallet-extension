@@ -1,37 +1,29 @@
-import {
-  createDappHistoryStorage,
-  dappRequestStorage,
-} from "@/common/utils/indexeddb";
-import { ChainUniqueId } from "core/types/ChainUniqueId";
-import { AleoConnectHistory } from "../../types/connect";
-import { uniqBy } from "lodash";
-import { DappRequest } from "../../types/dapp";
 import { CoinType } from "core/types";
+import { dappDB } from "@/database/DappDatabase";
+import { AleoConnectHistory, DappRequest } from "@/database/types/dapp";
 
 export class DappStorage {
-  #dappHistoryMap = new Map<CoinType, LocalForage>();
-  #dappRequestInstance: LocalForage;
+  constructor() {}
 
-  constructor() {
-    this.#dappHistoryMap = new Map();
-    this.#dappRequestInstance = dappRequestStorage;
+  async getStorageInstance() {
+    if (!dappDB.isOpen) {
+      await dappDB.open();
+    }
+    return dappDB;
   }
 
-  getDappHistoryInstance = (coinType: CoinType) => {
-    const existInstance = this.#dappHistoryMap.get(coinType);
-    if (existInstance) {
-      return existInstance;
-    }
-    const newInstance = createDappHistoryStorage(coinType);
-    this.#dappHistoryMap.set(coinType, newInstance);
-    return newInstance;
-  };
-
   getConnectHistory = async (coinType: CoinType, address: string) => {
-    const instance = this.getDappHistoryInstance(coinType);
-    const history: AleoConnectHistory[] | null =
-      await instance.getItem(address);
-    return history || [];
+    const instance = await this.getStorageInstance();
+    switch (coinType) {
+      case CoinType.ALEO: {
+        const historyList = await instance.aleo_connect_history
+          .where({
+            address,
+          })
+          .toArray();
+        return historyList;
+      }
+    }
   };
 
   addConnectHistory = async (
@@ -39,43 +31,87 @@ export class DappStorage {
     address: string,
     history: AleoConnectHistory,
   ) => {
-    const instance = this.getDappHistoryInstance(coinType);
-    const historyList = await this.getConnectHistory(coinType, address);
-    const newHistoryList = uniqBy(
-      [history, ...historyList],
-      (item) => item.site.origin + item.network,
-    );
-    await instance.setItem(address, newHistoryList);
+    const instance = await this.getStorageInstance();
+    switch (coinType) {
+      case CoinType.ALEO: {
+        const count = await instance.aleo_connect_history
+          .where({
+            address,
+            network: history.network,
+            "site.origin": history.site.origin,
+          })
+          .count();
+        if (count) {
+          await instance.aleo_connect_history
+            .where({
+              address,
+              network: history.network,
+              "site.origin": history.site.origin,
+            })
+            .modify((item) => {
+              item.decryptPermission =
+                history.decryptPermission || item.decryptPermission;
+              item.disconnected = false;
+              item.lastConnectTime = Date.now();
+              item.programs = history.programs;
+            });
+        } else {
+          await instance.aleo_connect_history.add({
+            ...history,
+            address,
+          });
+        }
+      }
+    }
   };
 
-  disconnect = async (coinType: CoinType, address: string, chainId: string) => {
-    const instance = this.getDappHistoryInstance(coinType);
-    const historyList = await this.getConnectHistory(coinType, address);
-    const newHistoryList = historyList.map((item) => {
-      if (item.network === chainId) {
-        return {
-          ...item,
-          disconnected: true,
-        };
+  disconnect = async (
+    coinType: CoinType,
+    address: string,
+    chainId: string,
+    origin: string,
+  ) => {
+    const instance = await this.getStorageInstance();
+    switch (coinType) {
+      case CoinType.ALEO: {
+        await instance.aleo_connect_history
+          .where({
+            address,
+            network: chainId,
+            "site.origin": origin,
+          })
+          .modify((item) => {
+            item.disconnected = true;
+          });
       }
-      return item;
-    });
-    await instance.setItem(address, newHistoryList);
+    }
   };
 
   getDappRequest = async (id: string) => {
-    const instance = this.#dappRequestInstance;
-    const request: DappRequest | null = await instance.getItem(id);
-    return request;
+    const instance = await this.getStorageInstance();
+    return await instance.request.get(id);
   };
 
   setDappRequest = async (request: DappRequest) => {
-    const instance = this.#dappRequestInstance;
-    await instance.setItem(request.id, request);
+    const instance = await this.getStorageInstance();
+    const item = await instance.request.get(request.id);
+    if (item) {
+      await instance.request.put(
+        {
+          ...item,
+          ...request,
+        },
+        request.id,
+      );
+    } else {
+      await instance.request.add({
+        ...request,
+      });
+    }
   };
 
   removeDappRequest = async (id: string) => {
-    const instance = this.#dappRequestInstance;
-    await instance.removeItem(id);
+    const instance = await this.getStorageInstance();
+    await instance.request.delete(id);
   };
 }

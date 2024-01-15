@@ -10,7 +10,6 @@ import { useDappRequest } from "@/hooks/useDappRequest";
 import { useTxHistory } from "@/hooks/useTxHistory";
 import { Content } from "@/layouts/Content";
 import { PageWithHeader } from "@/layouts/Page";
-import { DecryptPermission } from "@/scripts/background/types/permission";
 import { Button, Flex, Image, Text, keyframes } from "@chakra-ui/react";
 import BaseCheckbox from "../../../components/Custom/Checkbox";
 
@@ -27,6 +26,7 @@ import { DappInfo } from "@/components/Dapp/DappInfo";
 import { ResponsiveFlex } from "@/components/Custom/ResponsiveFlex";
 import { AccountInfo } from "@/components/Dapp/AccountInfo";
 import { useTranslation } from "react-i18next";
+import { DecryptPermission } from "@/database/types/dapp";
 
 const shakeAnimation = keyframes`
   10%, 90% {
