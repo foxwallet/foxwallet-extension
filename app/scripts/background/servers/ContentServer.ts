@@ -27,28 +27,19 @@ import {
   AleoRequestTxProps,
   AleoRequestDeploymentProps,
 } from "./IWalletServer";
-import { ALEO_CHAIN_CONFIGS } from "core/coins/ALEO/config/chains";
-import { DappRequest } from "../types/dapp";
 import { nanoid } from "nanoid";
-import { getActiveTabHost } from "../helper/host";
 import { CoinType } from "core/types";
 import { DappStorage } from "../store/dapp/DappStorage";
-import { AleoConnectHistory } from "../types/connect";
 import { AccountSettingStorage } from "../store/account/AccountStorage";
-import browser from "webextension-polyfill";
 import { PopupWalletServer } from "./PopupServer";
 import { SiteInfo } from "@/scripts/content/host";
 import { DAPP_CONNECTION_EXPIRE_TIME } from "@/common/constants";
-import { DecryptPermission } from "../types/permission";
 import { ViewKey, Program } from "aleo_wasm";
 import { CoinServiceEntry } from "core/coins/CoinServiceEntry";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
-import {
-  AleoLocalTxInfo,
-  AleoTxStatus,
-} from "core/coins/ALEO/types/Tranaction";
 import { AleoLocalHistoryItem } from "core/coins/ALEO/types/History";
 import { NATIVE_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
+import { DecryptPermission } from "@/database/types/dapp";
 
 export class ContentWalletServer implements IContentServer {
   authManager: AuthManager;
@@ -130,7 +121,12 @@ export class ContentWalletServer implements IContentServer {
     if (!address) {
       throw new Error("Address is null");
     }
-    await this.dappStorage.disconnect(CoinType.ALEO, address, network);
+    await this.dappStorage.disconnect(
+      CoinType.ALEO,
+      address,
+      network,
+      siteInfo.origin,
+    );
     return true;
   };
 

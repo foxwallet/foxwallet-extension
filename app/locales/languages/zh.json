@@ -46,6 +46,10 @@
     "Home": {
       "slogan1": "最好用的 Web3 钱包",
       "slogan2": "你的区块链世界入口"
+    },
+    "Upgrade": {
+      "reminderTips": "当前浏览器版本过旧，请升级至最新版本以使用 FoxWallet。",
+      "upgradeBtn": "升级"
     }
   },
   "Agreement": {

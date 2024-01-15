@@ -132,35 +132,6 @@ export class MainLoop {
     return ranges;
   }
 
-  async checkAccountRecordRange(chainId: string, accounts: AleoSyncAccount[]) {
-    await Promise.all(
-      accounts.map(async (account) => {
-        const ranges = await this.aleoStorage.getAleoRecordRanges(
-          chainId,
-          account.address,
-        );
-        const startStopMap = new Map<number, number>();
-        for (let i = 0; i < ranges.length; i++) {
-          const range = ranges[i];
-          const [start, stop] = range.split("-").map((item) => Number(item));
-          const existStop = startStopMap.get(start);
-          if (existStop) {
-            const removeStop = Math.min(existStop, stop);
-            const removeKey = `${start}-${removeStop}`;
-            console.log("===> remove dup range: ", removeKey);
-            await this.aleoStorage.removeAleoRecords(
-              chainId,
-              account.address,
-              removeKey,
-            );
-          } else {
-            startStopMap.set(start, stop);
-          }
-        }
-      }),
-    );
-  }
-
   async initAccountsSyncTask(
     chainId: string,
     accounts: AleoSyncAccount[],
@@ -439,7 +410,7 @@ export class MainLoop {
           newKey,
           newRange,
         );
-        await this.aleoStorage.removeAleoRecords(chainId, address, key);
+        // await this.aleoStorage.removeAleoRecords(chainId, address, key);
         console.log("===> storeBlockResult remove: ", key);
         await this.aleoStorage.setAleoRecords(chainId, address, newKey, {
           ...merged,
@@ -650,7 +621,6 @@ export class MainLoop {
         return this.loop();
       }
       await this.initWorker();
-      await this.checkAccountRecordRange(chainId, [accountToSync]);
       const batchMap = await this.initAccountsSyncTask(
         chainId,
         [accountToSync],

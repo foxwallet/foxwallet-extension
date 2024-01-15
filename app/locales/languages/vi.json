@@ -46,6 +46,10 @@
     "Home": {
       "slogan1": "Ví Web3 tốt nhất",
       "slogan2": "Lối vào thế giới tiền điện tử"
+    },
+    "Upgrade": {
+      "reminderTips": "Phiên bản trình duyệt hiện tại đã quá cũ, vui lòng nâng cấp lên phiên bản mới nhất để sử dụng ví mở rộng FoxWallet.",
+      "upgradeBtn": "Nâng cấp"
     }
   },
   "Agreement": {

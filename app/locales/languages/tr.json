@@ -46,6 +46,10 @@
     "Home": {
       "slogan1": "En iyi Web3 cüzdanı",
       "slogan2": "Kripto dünyasına giriş"
+    },
+    "Upgrade": {
+      "reminderTips": "Mevcut tarayıcı sürümü çok eski. FoxWallet eklenti cüzdanını kullanmak için lütfen en son sürüme yükseltin.",
+      "upgradeBtn": "Güncelleme"
     }
   },
   "Agreement": {

@@ -105,6 +105,7 @@ function SendScreen() {
         const timestamp = Date.now();
         const pendingTx: AleoLocalTxInfo = {
           localId,
+          address: address,
           programId: nativeCurrency.address,
           functionName: finalTransferMethod,
           inputs,

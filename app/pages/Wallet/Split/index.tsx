@@ -53,6 +53,7 @@ function SplitScreen() {
         ).toString();
         const pendingTx: AleoLocalTxInfo = {
           localId,
+          address,
           programId: nativeCurrency.address,
           functionName: "split",
           inputs,

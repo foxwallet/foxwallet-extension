@@ -4,8 +4,8 @@ import {
   TransactionParam,
 } from "../background/servers/IWalletServer";
 import { BaseProvider } from "./BaseProvider";
-import { DecryptPermission } from "../background/types/permission";
 import { hexToUint8Array, uint8ArrayToHex } from "@/common/utils/buffer";
+import { DecryptPermission } from "@/database/types/dapp";
 
 export class AleoProvider extends BaseProvider {
   #publicKey: string | null;

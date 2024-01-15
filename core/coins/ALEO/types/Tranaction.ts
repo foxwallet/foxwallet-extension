@@ -19,7 +19,7 @@ export type AleoTransaction = Transaction;
 
 export type AleoLocalTxInfo = Omit<
   AleoSendTxParams,
-  "privateKey" | "chainId" | "address"
+  "privateKey" | "chainId"
 > & {
   error?: string;
   status: AleoTxStatus;

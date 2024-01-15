@@ -16,30 +16,6 @@ export const aleoAccountStorageInstance = localForage.createInstance({
   storeName: "aleo",
 });
 
-export const aleoBlockStorageInstance = localForage.createInstance({
-  driver: localForage.INDEXEDDB,
-});
-
-export enum StorageKey {
-  RECORD = "record",
-  INFO = "info",
-  LOCAL_TX = "local_tx",
-}
-
-export const createDappHistoryStorage = (coinType: CoinType) => {
-  return localForage.createInstance({
-    driver: localForage.INDEXEDDB,
-    name: "dapp",
-    storeName: coinType,
-  });
-};
-
-export const dappRequestStorage = localForage.createInstance({
-  driver: localForage.INDEXEDDB,
-  name: "dapp",
-  storeName: "wallet_request",
-});
-
 // To remember the selected account
 export const createAccountSettingStorage = (coinType: CoinType) => {
   return localForage.createInstance({

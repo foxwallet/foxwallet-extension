@@ -56,6 +56,7 @@ function JoinScreen() {
           (selectedRecordsRef.current[1]?.parsedContent?.microcredits ?? 0n);
         const pendingTx: AleoLocalTxInfo = {
           localId,
+          address,
           programId: nativeCurrency.address,
           functionName: "join",
           inputs,

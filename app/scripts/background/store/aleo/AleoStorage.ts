@@ -1,8 +1,4 @@
-import {
-  StorageKey,
-  aleoAccountStorageInstance,
-  aleoBlockStorageInstance,
-} from "@/common/utils/indexeddb";
+import { aleoAccountStorageInstance } from "@/common/utils/indexeddb";
 import { IAleoStorage } from "core/coins/ALEO/types/IAleoStorage";
 import { AleoSyncAccount } from "core/coins/ALEO/types/AleoSyncAccount";
 import {
@@ -12,15 +8,13 @@ import {
 import { ProverKeyPair } from "core/coins/ALEO/types/ProverKeyPair";
 import { AleoLocalTxInfo } from "core/coins/ALEO/types/Tranaction";
 import { ALEO_CHAIN_IDS } from "core/coins/ALEO/config/chains";
-import localforage from "localforage";
+import { getBlockDatabaseByChainId } from "@/database/AleoBlockDatabase";
+import { AddressRecords } from "@/database/types/records";
 
 export class AleoStorage implements IAleoStorage {
   static instance: AleoStorage;
 
-  #aleoBlockStorage: LocalForage;
-  #aleoBlockStorageMap = new Map<string, LocalForage>();
   #aleoAccountStorage: LocalForage;
-  #aleoProgramStorageMap = new Map<string, LocalForage>();
 
   static getInstance() {
     if (!AleoStorage.instance) {
@@ -31,44 +25,15 @@ export class AleoStorage implements IAleoStorage {
 
   private constructor() {
     this.#aleoAccountStorage = aleoAccountStorageInstance;
-    this.#aleoBlockStorage = aleoBlockStorageInstance;
   }
 
-  private getAleoStorageInstance = (
-    chainId: string,
-    address: string,
-    prefix: StorageKey,
-  ) => {
-    const key = `${chainId}-${prefix}-${address}`;
-    const existInstance = this.#aleoBlockStorageMap.get(key);
-    if (existInstance) {
-      return existInstance;
+  async getBlockDBInstance(chainId: string) {
+    const instance = getBlockDatabaseByChainId(chainId);
+    if (!instance.isOpen()) {
+      await instance.open();
     }
-    const newInstance = this.#aleoBlockStorage.createInstance({
-      name: chainId,
-      storeName: `${prefix}-${address}`,
-      driver: localforage.INDEXEDDB,
-    });
-    this.#aleoBlockStorageMap.set(key, newInstance);
-    return newInstance;
-  };
-
-  private getAleoProgramStorageInstance = (
-    chainId: string,
-    programId: string,
-  ) => {
-    const key = `${chainId}-${programId}`;
-    const existInstance = this.#aleoProgramStorageMap.get(key);
-    if (existInstance) {
-      return existInstance;
-    }
-    const newInstance = this.#aleoBlockStorage.createInstance({
-      name: chainId,
-      storeName: `program-${programId}`,
-    });
-    this.#aleoProgramStorageMap.set(key, newInstance);
-    return newInstance;
-  };
+    return instance;
+  }
 
   async getAccountsAddress(): Promise<string[]> {
     const instance = this.#aleoAccountStorage;
@@ -93,55 +58,32 @@ export class AleoStorage implements IAleoStorage {
     const instance = this.#aleoAccountStorage;
     await instance.removeItem(address);
     for (let chainId of ALEO_CHAIN_IDS) {
-      await this.clearAccountBlockData(chainId, address);
+      await this.clearAddressLocalData(chainId, address);
     }
     return true;
-  }
-
-  async clearAccountBlockData(chainId: string, address: string) {
-    try {
-      const instance = this.getAleoStorageInstance(
-        chainId,
-        address,
-        StorageKey.INFO,
-      );
-      let keys = await instance.keys();
-      for (let key of keys) {
-        await instance.removeItem(key);
-      }
-      const recordInstance = this.getAleoStorageInstance(
-        chainId,
-        address,
-        StorageKey.RECORD,
-      );
-      keys = await recordInstance.keys();
-      for (let key of keys) {
-        await recordInstance.removeItem(key);
-      }
-      const txInstance = this.getAleoStorageInstance(
-        chainId,
-        address,
-        StorageKey.LOCAL_TX,
-      );
-      keys = await txInstance.keys();
-      for (let key of keys) {
-        await txInstance.removeItem(key);
-      }
-    } catch (err) {
-      console.error("clearAccountBlockData failed: ", err);
-    }
   }
 
   async getAleoRecordRanges(
     chainId: string,
     address: string,
   ): Promise<string[]> {
-    const instance = this.getAleoStorageInstance(
-      chainId,
-      address,
-      StorageKey.RECORD,
-    );
-    return await instance.keys();
+    const instance = await this.getBlockDBInstance(chainId);
+    const data = await instance.records.where({ address: address }).toArray();
+    return data.map((item) => `${item.begin}-${item.end}`);
+  }
+
+  async getAleoRecords(
+    chainId: string,
+    address: string,
+  ): Promise<SyncRecordResultWithDuration[]> {
+    const instance = await this.getBlockDBInstance(chainId);
+    const data = await instance.records
+      .where({ address: address })
+      .sortBy("begin");
+    return data.map((item) => ({
+      ...item,
+      range: [item.begin, item.end],
+    }));
   }
 
   async setAleoRecords(
@@ -150,21 +92,16 @@ export class AleoStorage implements IAleoStorage {
     key: string,
     blockInfo: SyncRecordResultWithDuration,
   ): Promise<SyncRecordResultWithDuration> {
-    const instance = this.getAleoStorageInstance(
-      chainId,
-      address,
-      StorageKey.RECORD,
-    );
-    return await instance.setItem(key, blockInfo);
-  }
-
-  async removeAleoRecords(chainId: string, address: string, key: string) {
-    const instance = this.getAleoStorageInstance(
-      chainId,
-      address,
-      StorageKey.RECORD,
-    );
-    return await instance.removeItem(key);
+    const instance = await this.getBlockDBInstance(chainId);
+    const data = {
+      address: address,
+      begin: blockInfo.range[0],
+      end: blockInfo.range[1],
+      recordsMap: blockInfo.recordsMap,
+      measure: blockInfo.measure,
+    };
+    await instance.setRecords(address, data);
+    return blockInfo;
   }
 
   async getAleoRecordsInfo(
@@ -172,24 +109,35 @@ export class AleoStorage implements IAleoStorage {
     address: string,
     key: string,
   ): Promise<SyncRecordResultWithDuration | null> {
-    const instance = this.getAleoStorageInstance(
-      chainId,
-      address,
-      StorageKey.RECORD,
-    );
-    return await instance.getItem(key);
+    const instance = await this.getBlockDBInstance(chainId);
+    const keyArr = key.split("-");
+    const begin = parseInt(keyArr[0]);
+    const end = parseInt(keyArr[1]);
+    const data = await instance.records
+      .where({ address: address, begin: begin, end: end })
+      .first();
+    if (!data) {
+      return null;
+    }
+    return {
+      ...data,
+      range: [data.begin, data.end],
+    };
   }
 
   async getAddressInfo(
     chainId: string,
     address: string,
   ): Promise<AleoAddressInfo | null> {
-    const instance = this.getAleoStorageInstance(
-      chainId,
-      address,
-      StorageKey.INFO,
-    );
-    return await instance.getItem(address);
+    const instance = await this.getBlockDBInstance(chainId);
+    const data = await instance.infos.where({ address: address }).first();
+    if (!data) {
+      return null;
+    }
+    return {
+      ...data,
+      range: [data.begin, data.end],
+    };
   }
 
   async setAddressInfo(
@@ -197,21 +145,21 @@ export class AleoStorage implements IAleoStorage {
     address: string,
     info: AleoAddressInfo,
   ): Promise<AleoAddressInfo> {
-    const instance = this.getAleoStorageInstance(
-      chainId,
-      address,
-      StorageKey.INFO,
-    );
-    return await instance.setItem(address, { ...info });
+    const instance = await this.getBlockDBInstance(chainId);
+    const data = {
+      address: address,
+      begin: info.range[0],
+      end: info.range[1],
+      recordsMap: info.recordsMap,
+    };
+    await instance.infos.put(data, "address");
+    return info;
   }
 
-  async getAddressLocalTxIds(chainId: string, address: string) {
-    const instance = this.getAleoStorageInstance(
-      chainId,
-      address,
-      StorageKey.LOCAL_TX,
-    );
-    return await instance.keys();
+  async getAddressLocalTxs(chainId: string, address: string) {
+    const instance = await this.getBlockDBInstance(chainId);
+    const data = await instance.txs.where({ address: address }).toArray();
+    return data;
   }
 
   async getAddressLocalTx(
@@ -219,12 +167,9 @@ export class AleoStorage implements IAleoStorage {
     address: string,
     localId: string,
   ): Promise<AleoLocalTxInfo | null> {
-    const instance = this.getAleoStorageInstance(
-      chainId,
-      address,
-      StorageKey.LOCAL_TX,
-    );
-    return await instance.getItem(localId);
+    const instance = await this.getBlockDBInstance(chainId);
+    const data = await instance.txs.where({ localId }).first();
+    return data ? data : null;
   }
 
   async setAddressLocalTx(
@@ -232,12 +177,8 @@ export class AleoStorage implements IAleoStorage {
     address: string,
     info: AleoLocalTxInfo,
   ): Promise<void> {
-    const instance = this.getAleoStorageInstance(
-      chainId,
-      address,
-      StorageKey.LOCAL_TX,
-    );
-    await instance.setItem(info.localId, { ...info });
+    const instance = await this.getBlockDBInstance(chainId);
+    await instance.txs.put(info, "localId");
   }
 
   async removeAddressLocalTx(
@@ -245,50 +186,27 @@ export class AleoStorage implements IAleoStorage {
     address: string,
     localId: string,
   ): Promise<void> {
-    const instance = this.getAleoStorageInstance(
-      chainId,
-      address,
-      StorageKey.LOCAL_TX,
-    );
-    await instance.removeItem(localId);
+    const instance = await this.getBlockDBInstance(chainId);
+    await instance.txs.delete(localId);
   }
 
-  async clearAddressLocalData(
-    chainId: string,
-    address: string,
-  ): Promise<boolean> {
-    try {
-      const txInstance = this.getAleoStorageInstance(
-        chainId,
-        address,
-        StorageKey.LOCAL_TX,
-      );
-      await txInstance.clear();
-      const recordInstance = this.getAleoStorageInstance(
-        chainId,
-        address,
-        StorageKey.RECORD,
-      );
-      await recordInstance.clear();
-      const infoInstance = this.getAleoStorageInstance(
-        chainId,
-        address,
-        StorageKey.INFO,
-      );
-      await infoInstance.clear();
-      return true;
-    } catch (err) {
-      console.error("===> clearAddressLocalData failed: ", err);
-      return false;
-    }
+  async clearAddressLocalData(chainId: string, address: string): Promise<void> {
+    const instance = await this.getBlockDBInstance(chainId);
+    await instance.deleteAddressData(address);
   }
 
   async getProgramContent(
     chainId: string,
     programId: string,
   ): Promise<string | null> {
-    const instance = this.getAleoProgramStorageInstance(chainId, programId);
-    return await instance.getItem("content");
+    const instance = await this.getBlockDBInstance(chainId);
+    const data = await instance.programs
+      .where({ programId: programId })
+      .first();
+    if (!data) {
+      return null;
+    }
+    return data.content;
   }
 
   async setProgramContent(
@@ -296,8 +214,19 @@ export class AleoStorage implements IAleoStorage {
     programId: string,
     program: string,
   ): Promise<void> {
-    const instance = this.getAleoProgramStorageInstance(chainId, programId);
-    await instance.setItem("content", program);
+    const instance = await this.getBlockDBInstance(chainId);
+    const count = await instance.programs.where({ programId }).count();
+    if (count) {
+      await instance.programs.where({ programId }).modify((data) => {
+        data.content = program;
+      });
+    } else {
+      await instance.programs.add({
+        programId,
+        content: program,
+        keypairs: {},
+      });
+    }
   }
 
   private async calculateSHA1(data: Uint8Array): Promise<string> {
@@ -319,14 +248,16 @@ export class AleoStorage implements IAleoStorage {
     programId: string,
     functionName: string,
   ): Promise<{ proverFile: Uint8Array; verifierFile: Uint8Array } | null> {
-    const instance = this.getAleoProgramStorageInstance(chainId, programId);
-    const keyPair = (await instance.getItem(
-      `${functionName}-keyPair`,
-    )) as ProverKeyPair | null;
-    if (!keyPair) {
+    const instance = await this.getBlockDBInstance(chainId);
+    const data = await instance.programs.where({ programId }).first();
+    if (!data) {
       return null;
     }
-    const { proverFile, verifierFile, proverSha1, verifierSha1 } = keyPair;
+    const keypair = data.keypairs[functionName];
+    if (!keypair) {
+      return null;
+    }
+    const { proverFile, verifierFile, proverSha1, verifierSha1 } = keypair;
     const [existProverSha1, existVerifierSha1] = await Promise.all([
       this.calculateSHA1(proverFile),
       this.calculateSHA1(verifierFile),
@@ -348,10 +279,7 @@ export class AleoStorage implements IAleoStorage {
     functionName: string,
     keyPair: { proverFile: Uint8Array; verifierFile: Uint8Array },
   ) {
-    const instance = this.getAleoProgramStorageInstance(chainId, programId);
     const { proverFile, verifierFile } = keyPair;
-    // const proverFile = keyPair.proverFile.copy().toBytes();
-    // const verifierFile = keyPair.verifierFile.copy().toBytes();
     const [proverSha1, verifierSha1] = await Promise.all([
       this.calculateSHA1(proverFile),
       this.calculateSHA1(verifierFile),
@@ -365,6 +293,20 @@ export class AleoStorage implements IAleoStorage {
       verifierFile,
       verifierSha1,
     };
-    return await instance.setItem(`${functionName}-keyPair`, value);
+    const instance = await this.getBlockDBInstance(chainId);
+    const count = await instance.programs.where({ programId }).count();
+    if (count) {
+      await instance.programs.where({ programId }).modify((data) => {
+        data.keypairs[functionName] = value;
+      });
+    } else {
+      await instance.programs.add({
+        programId,
+        content: "",
+        keypairs: {
+          [functionName]: value,
+        },
+      });
+    }
   }
 }
