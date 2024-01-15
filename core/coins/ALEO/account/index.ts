@@ -3,11 +3,7 @@ import { encode as bs58Encode, decode as bs58Decode } from "bs58";
 import { CoinBasic } from "../../CoinBasic";
 import { CoinType } from "../../../types/CoinType";
 import { ALEO_PRIVATE_PREFIX } from "../constants";
-import {
-  AleoAccountOption,
-  AleoExportPKType,
-  AleoImportPKType,
-} from "../types/AleoAccount";
+import { AleoExportPKType, AleoImportPKType } from "../types/AleoAccount";
 import { CoreError, CoreErrorCode } from "../../../types/Error";
 import { logger } from "@/common/utils/logger";
 

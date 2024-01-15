@@ -1,6 +1,4 @@
 import { get, post } from "@/common/utils/request";
-import { Block } from "../../types/AleoBlock";
-import { Transaction } from "../../types/AleoTransaction";
 import { RecordRawInfo, SyncResp } from "./sync.di";
 
 export class AleoSyncApi {
@@ -94,5 +92,22 @@ export class AleoSyncApi {
       throw new Error(resp.msg);
     }
     return resp.data.spent;
+  }
+
+  async getNodeStatus(): Promise<{
+    syncHeight: number;
+    referenceHeight: number;
+  }> {
+    const resp =
+      await this.fetchData<
+        SyncResp<{ sync_height: number; reference_height: number }>
+      >(`/height/status`);
+    if (resp.status !== 0) {
+      throw new Error(resp.msg);
+    }
+    return {
+      syncHeight: resp.data.sync_height,
+      referenceHeight: resp.data.reference_height,
+    };
   }
 }

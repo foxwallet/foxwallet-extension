@@ -29,8 +29,6 @@ const RescanButton = (props: RescanButtonProps) => {
     getProgress();
   }, [getProgress]);
 
-  const isRescaning = useMemo(() => !progress || progress < 100, [progress]);
-
   if (!error && progress && progress >= 100) return null;
 
   return (
@@ -44,11 +42,7 @@ const RescanButton = (props: RescanButtonProps) => {
       justify={"center"}
       align={"center"}
     >
-      {isRescaning ? (
-        <IconLoading animation={`${rotateAnimation} infinite 2s linear`} />
-      ) : (
-        <IconRescan />
-      )}
+      <IconLoading animation={`${rotateAnimation} infinite 2s linear`} />
       <Text ml={1} fontSize={10}>
         {paused ? t("Common:paused") : progress ? `${progress}%` : ""}
       </Text>
