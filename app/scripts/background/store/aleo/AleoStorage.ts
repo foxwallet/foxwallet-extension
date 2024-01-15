@@ -9,6 +9,7 @@ import { ProverKeyPair } from "core/coins/ALEO/types/ProverKeyPair";
 import { AleoLocalTxInfo } from "core/coins/ALEO/types/Tranaction";
 import { ALEO_CHAIN_IDS } from "core/coins/ALEO/config/chains";
 import { getBlockDatabaseByChainId } from "@/database/AleoBlockDatabase";
+import { AddressRecords } from "@/database/types/records";
 
 export class AleoStorage implements IAleoStorage {
   static instance: AleoStorage;
@@ -69,6 +70,20 @@ export class AleoStorage implements IAleoStorage {
     const instance = await this.getBlockDBInstance(chainId);
     const data = await instance.records.where({ address: address }).toArray();
     return data.map((item) => `${item.begin}-${item.end}`);
+  }
+
+  async getAleoRecords(
+    chainId: string,
+    address: string,
+  ): Promise<SyncRecordResultWithDuration[]> {
+    const instance = await this.getBlockDBInstance(chainId);
+    const data = await instance.records
+      .where({ address: address })
+      .sortBy("begin");
+    return data.map((item) => ({
+      ...item,
+      range: [item.begin, item.end],
+    }));
   }
 
   async setAleoRecords(

@@ -9,6 +9,10 @@ export interface IAleoStorage {
   setAccountInfo(account: AleoSyncAccount): Promise<AleoSyncAccount>;
 
   getAleoRecordRanges(chainId: string, address: string): Promise<string[]>;
+  getAleoRecords(
+    chainId: string,
+    address: string,
+  ): Promise<SyncRecordResultWithDuration[]>;
   setAleoRecords(
     chainId: string,
     address: string,
@@ -38,8 +42,6 @@ export interface IAleoStorage {
     address: string,
     info: AleoLocalTxInfo,
   ): Promise<void>;
-
-  // getAddressLocalTxIds(chainId: string, address: string): Promise<string[]>;
 
   getAddressLocalTxs(
     chainId: string,

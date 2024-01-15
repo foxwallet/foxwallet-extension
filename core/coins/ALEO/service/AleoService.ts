@@ -128,19 +128,14 @@ export class AleoService {
         address,
       );
 
-      const recordRanges = await this.aleoStorage.getAleoRecordRanges(
+      const records = await this.aleoStorage.getAleoRecords(
         this.chainId,
         address,
       );
 
-      if (recordRanges.length === 0) {
+      if (records.length === 0) {
         return null;
       }
-      recordRanges.sort((range1, range2) => {
-        const [start1] = range1.split("-");
-        const [start2] = range2.split("-");
-        return parseInt(start1) - parseInt(start2);
-      });
 
       const allRecordsMap: {
         [program in string]?: {
@@ -149,23 +144,9 @@ export class AleoService {
       } = addressInfo?.recordsMap ?? {};
       let [existBegin, existEnd] = addressInfo?.range ?? [];
 
-      for (let i = 0; i < recordRanges.length; i += 1) {
-        const blockRange = recordRanges[i];
-        const blockInfo = await this.aleoStorage.getAleoRecordsInfo(
-          this.chainId,
-          address,
-          blockRange,
-        );
+      for (let i = 0; i < records.length; i += 1) {
+        const blockInfo = records[i];
 
-        if (!blockInfo) {
-          logger.error(
-            "===> getBalance blockInfo is null",
-            this.chainId,
-            address,
-            blockRange,
-          );
-          continue;
-        }
         const { recordsMap, range } = blockInfo;
         const [recordBegin, recordEnd] = range;
         if (existBegin !== undefined && existEnd !== undefined) {
@@ -338,8 +319,6 @@ export class AleoService {
   private getPriorityFeeInTx(tx: AleoTransaction) {
     const fee = tx.fee;
     if (fee) {
-      // const { transition } = fee;
-      // const { inputs } = transition;
       const inputs = fee?.transition?.inputs;
       if (inputs) {
         const value = inputs[1].value;
@@ -532,219 +511,12 @@ export class AleoService {
     return await this.rpcService.currInstance().getTransaction(txId);
   }
 
-  async getLocalTxHistory(
+  async processLocalTxInfo(
     address: string,
+    txInfo?: AleoLocalTxInfo | null,
     program?: string,
-  ): Promise<AleoLocalHistoryItem[]> {
-    const localTxs = await this.aleoStorage.getAddressLocalTxs(
-      this.chainId,
-      address,
-    );
-
-    return localTxs.map((item) => {
-      return {
-        ...item,
-        addressType: AleoTxAddressType.SEND,
-        type: AleoHistoryType.LOCAL,
-        txId: item.transaction?.id,
-      };
-    });
-
-    // await Promise.all(
-    //   localIds.map(async (localId) => {
-    //     const localTxInfo = await this.getLocalTxInfo(
-    //       address,
-    //       localId,
-    //       program,
-    //     );
-    //     if (localTxInfo) {
-    //       chainTxList.push(localTxInfo);
-    //     }
-    //     // const txInfo = await this.aleoStorage.getAddressLocalTx(
-    //     //   this.chainId,
-    //     //   address,
-    //     //   localId,
-    //     // );
-    //     // if (!txInfo) {
-    //     //   return;
-    //     // }
-    //     // switch (txInfo.status) {
-    //     //   case AleoTxStatus.QUEUED:
-    //     //   case AleoTxStatus.GENERATING_PROVER_FILES:
-    //     //   case AleoTxStatus.GENERATING_TRANSACTION:
-    //     //   case AleoTxStatus.BROADCASTING: {
-    //     //     chainTxList.push({
-    //     //       type: AleoHistoryType.LOCAL,
-    //     //       localId: localId,
-    //     //       status: txInfo.status,
-    //     //       programId: txInfo.programId,
-    //     //       functionName: txInfo.functionName,
-    //     //       inputs: txInfo.inputs,
-    //     //       timestamp: txInfo.timestamp,
-    //     //       addressType: AleoTxAddressType.SEND,
-    //     //       amount: txInfo.amount,
-    //     //     });
-    //     //     break;
-    //     //   }
-    //     //   case AleoTxStatus.COMPLETED: {
-    //     //     const txId = txInfo.transaction?.id;
-    //     //     try {
-    //     //       if (!txId) {
-    //     //         console.error("===> Completed txId is null: ", txInfo);
-    //     //         chainTxList.push({
-    //     //           type: AleoHistoryType.LOCAL,
-    //     //           localId: localId,
-    //     //           status: txInfo.status,
-    //     //           programId: txInfo.programId,
-    //     //           functionName: txInfo.functionName,
-    //     //           inputs: txInfo.inputs,
-    //     //           timestamp: txInfo.timestamp,
-    //     //           addressType: AleoTxAddressType.SEND,
-    //     //           amount: txInfo.amount,
-    //     //         });
-    //     //         break;
-    //     //       }
-    //     //       const tx = await this.getTxInfoOnChain(txId);
-    //     //       if (!tx) {
-    //     //         chainTxList.push({
-    //     //           type: AleoHistoryType.LOCAL,
-    //     //           localId: localId,
-    //     //           status: txInfo.status,
-    //     //           programId: txInfo.programId,
-    //     //           functionName: txInfo.functionName,
-    //     //           inputs: txInfo.inputs,
-    //     //           timestamp: txInfo.timestamp,
-    //     //           addressType: AleoTxAddressType.SEND,
-    //     //           amount: txInfo.amount,
-    //     //           txId,
-    //     //         });
-    //     //       } else {
-    //     //         chainTxList.push({
-    //     //           type: AleoHistoryType.LOCAL,
-    //     //           localId: localId,
-    //     //           status: AleoTxStatus.FINALIZD,
-    //     //           programId: txInfo.programId,
-    //     //           functionName: txInfo.functionName,
-    //     //           inputs: txInfo.inputs,
-    //     //           timestamp: txInfo.timestamp,
-    //     //           addressType: AleoTxAddressType.SEND,
-    //     //           amount: txInfo.amount,
-    //     //           txId,
-    //     //         });
-    //     //         const newTxInfo = {
-    //     //           ...txInfo,
-    //     //           status: AleoTxStatus.FINALIZD,
-    //     //         };
-    //     //         await this.aleoStorage.setAddressLocalTx(
-    //     //           this.chainId,
-    //     //           address,
-    //     //           newTxInfo,
-    //     //         );
-    //     //       }
-    //     //     } catch (err) {
-    //     //       console.error("===> Completed tx error: ", err);
-    //     //       const now = Date.now();
-    //     //       const timestamp = txInfo.timestamp;
-    //     //       if (now - timestamp >= LOCAL_TX_EXPIRE_TIME) {
-    //     //         const errorMsg = "Transaction expired";
-    //     //         await this.aleoStorage.setAddressLocalTx(
-    //     //           this.chainId,
-    //     //           address,
-    //     //           {
-    //     //             ...txInfo,
-    //     //             error: errorMsg,
-    //     //             status: AleoTxStatus.REJECTED,
-    //     //           },
-    //     //         );
-    //     //         chainTxList.push({
-    //     //           type: AleoHistoryType.LOCAL,
-    //     //           localId: localId,
-    //     //           status: AleoTxStatus.REJECTED,
-    //     //           programId: txInfo.programId,
-    //     //           functionName: txInfo.functionName,
-    //     //           inputs: txInfo.inputs,
-    //     //           error: errorMsg,
-    //     //           timestamp: txInfo.timestamp,
-    //     //           addressType: AleoTxAddressType.SEND,
-    //     //           amount: txInfo.amount,
-    //     //           txId,
-    //     //         });
-    //     //       } else {
-    //     //         chainTxList.push({
-    //     //           type: AleoHistoryType.LOCAL,
-    //     //           localId: localId,
-    //     //           status: txInfo.status,
-    //     //           programId: txInfo.programId,
-    //     //           functionName: txInfo.functionName,
-    //     //           inputs: txInfo.inputs,
-    //     //           timestamp: txInfo.timestamp,
-    //     //           addressType: AleoTxAddressType.SEND,
-    //     //           amount: txInfo.amount,
-    //     //           txId,
-    //     //         });
-    //     //       }
-    //     //     }
-    //     //     break;
-    //     //   }
-    //     //   case AleoTxStatus.FAILED:
-    //     //   case AleoTxStatus.REJECTED: {
-    //     //     const now = Date.now();
-    //     //     const timestamp = txInfo.timestamp;
-    //     //     if (now - timestamp >= FAILED_TX_REMOVE_TIME) {
-    //     //       await this.aleoStorage.removeAddressLocalTx(
-    //     //         this.chainId,
-    //     //         address,
-    //     //         localId,
-    //     //       );
-    //     //     } else {
-    //     //       chainTxList.push({
-    //     //         type: AleoHistoryType.LOCAL,
-    //     //         localId: localId,
-    //     //         status: txInfo.status,
-    //     //         programId: txInfo.programId,
-    //     //         functionName: txInfo.functionName,
-    //     //         inputs: txInfo.inputs,
-    //     //         error: txInfo.error,
-    //     //         timestamp: txInfo.timestamp,
-    //     //         addressType: AleoTxAddressType.SEND,
-    //     //         amount: txInfo.amount,
-    //     //       });
-    //     //     }
-    //     //     break;
-    //     //   }
-    //     //   case AleoTxStatus.FINALIZD: {
-    //     //     chainTxList.push({
-    //     //       type: AleoHistoryType.LOCAL,
-    //     //       localId: localId,
-    //     //       txId: txInfo.transaction?.id,
-    //     //       status: txInfo.status,
-    //     //       programId: txInfo.programId,
-    //     //       functionName: txInfo.functionName,
-    //     //       inputs: txInfo.inputs,
-    //     //       timestamp: txInfo.timestamp,
-    //     //       addressType: AleoTxAddressType.SEND,
-    //     //       amount: txInfo.amount,
-    //     //     });
-    //     //     break;
-    //     //   }
-    //     // }
-    //   }),
-    // );
-
-    // return chainTxList;
-  }
-
-  async getLocalTxInfo(
-    address: string,
-    localId: string,
-    program?: string,
-  ): Promise<AleoLocalHistoryItem | null> {
+  ) {
     let result: AleoLocalHistoryItem | null = null;
-    const txInfo = await this.aleoStorage.getAddressLocalTx(
-      this.chainId,
-      address,
-      localId,
-    );
     if (!txInfo) {
       return null;
     }
@@ -758,7 +530,7 @@ export class AleoService {
       case AleoTxStatus.BROADCASTING: {
         result = {
           type: AleoHistoryType.LOCAL,
-          localId: localId,
+          localId: txInfo.localId,
           status: txInfo.status,
           programId: txInfo.programId,
           functionName: txInfo.functionName,
@@ -776,7 +548,7 @@ export class AleoService {
             console.error("===> Completed txId is null: ", txInfo);
             result = {
               type: AleoHistoryType.LOCAL,
-              localId: localId,
+              localId: txInfo.localId,
               status: txInfo.status,
               programId: txInfo.programId,
               functionName: txInfo.functionName,
@@ -791,7 +563,7 @@ export class AleoService {
           if (!tx) {
             result = {
               type: AleoHistoryType.LOCAL,
-              localId: localId,
+              localId: txInfo.localId,
               status: txInfo.status,
               programId: txInfo.programId,
               functionName: txInfo.functionName,
@@ -804,7 +576,7 @@ export class AleoService {
           } else {
             result = {
               type: AleoHistoryType.LOCAL,
-              localId: localId,
+              localId: txInfo.localId,
               status: AleoTxStatus.FINALIZD,
               programId: txInfo.programId,
               functionName: txInfo.functionName,
@@ -837,7 +609,7 @@ export class AleoService {
             });
             result = {
               type: AleoHistoryType.LOCAL,
-              localId: localId,
+              localId: txInfo.localId,
               status: AleoTxStatus.REJECTED,
               programId: txInfo.programId,
               functionName: txInfo.functionName,
@@ -851,7 +623,7 @@ export class AleoService {
           } else {
             result = {
               type: AleoHistoryType.LOCAL,
-              localId: localId,
+              localId: txInfo.localId,
               status: txInfo.status,
               programId: txInfo.programId,
               functionName: txInfo.functionName,
@@ -873,12 +645,12 @@ export class AleoService {
           await this.aleoStorage.removeAddressLocalTx(
             this.chainId,
             address,
-            localId,
+            txInfo.localId,
           );
         } else {
           result = {
             type: AleoHistoryType.LOCAL,
-            localId: localId,
+            localId: txInfo.localId,
             status: txInfo.status,
             programId: txInfo.programId,
             functionName: txInfo.functionName,
@@ -887,6 +659,7 @@ export class AleoService {
             timestamp: txInfo.timestamp,
             addressType: AleoTxAddressType.SEND,
             amount: txInfo.amount,
+            txId: txInfo.transaction?.id,
           };
         }
         break;
@@ -894,7 +667,7 @@ export class AleoService {
       case AleoTxStatus.FINALIZD: {
         result = {
           type: AleoHistoryType.LOCAL,
-          localId: localId,
+          localId: txInfo.localId,
           txId: txInfo.transaction?.id,
           status: txInfo.status,
           programId: txInfo.programId,
@@ -908,6 +681,36 @@ export class AleoService {
       }
     }
     return result;
+  }
+
+  async getLocalTxHistory(
+    address: string,
+    program?: string,
+  ): Promise<AleoLocalHistoryItem[]> {
+    const localTxs = await this.aleoStorage.getAddressLocalTxs(
+      this.chainId,
+      address,
+    );
+
+    const txs = await Promise.all(
+      localTxs.map(async (item) => {
+        return await this.processLocalTxInfo(address, item, program);
+      }),
+    );
+    return txs.filter((item) => !!item) as AleoLocalHistoryItem[];
+  }
+
+  async getLocalTxInfo(
+    address: string,
+    localId: string,
+    program?: string,
+  ): Promise<AleoLocalHistoryItem | null> {
+    const txInfo = await this.aleoStorage.getAddressLocalTx(
+      this.chainId,
+      address,
+      localId,
+    );
+    return await this.processLocalTxInfo(address, txInfo, program);
   }
 
   async getTxHistory(
