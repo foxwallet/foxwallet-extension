@@ -79,7 +79,9 @@
     "checkTips": "Vui lòng kiểm tra \"{{WORD}}\"",
     "warning1": "Hãy ghi lại cụm từ hạt giống theo thứ tự.",
     "warning2": "Vui lòng sao chép và giữ nó ở nơi an toàn.",
-    "warning3": "Cụm từ gốc hoặc khóa riêng là cách duy nhất để khôi phục ví của bạn. Một khi đã mất thì không thể lấy lại được. Không lưu chúng qua ảnh chụp màn hình hoặc phương tiện truyền thông xã hội."
+    "warning3": "Cụm từ gốc hoặc khóa riêng là cách duy nhất để khôi phục ví của bạn. Một khi đã mất thì không thể lấy lại được. Không lưu chúng qua ảnh chụp màn hình hoặc phương tiện truyền thông xã hội.",
+    "backup": "Giai đoạn hạt giống dự phòng",
+    "verification": "Xác minh giai đoạn hạt giống"
   },
   "Common": {
     "confirm": "Xác nhận",
@@ -138,7 +140,9 @@
   },
   "PrivateKey": {
     "title": "Khóa riêng",
-    "enterPlaceholder": "Nhập khóa riêng"
+    "enterPlaceholder": "Nhập khóa riêng",
+    "backupTips1": "Xin vui lòng giữ nó ở một nơi an toàn.",
+    "backupTips2": "Cụm từ gốc hoặc khóa riêng là cách duy nhất để khôi phục ví của bạn. Một khi đã mất thì không thể lấy lại được. Không lưu chúng qua ảnh chụp màn hình hoặc phương tiện truyền thông xã hội."
   },
   "Receive": {
     "title": "Nhận được",
