@@ -76,10 +76,13 @@ async function executeTask() {
     } catch (err) {
       postMessage({ data: null, error: (err as Error).message });
     } finally {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
       if (taskQuene.length === 0) {
-        postMessage({ type: "finished" });
-        return;
+        // wait 2s for possible task
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        if (taskQuene.length === 0) {
+          postMessage({ type: "finished" });
+          return;
+        }
       }
     }
   }
