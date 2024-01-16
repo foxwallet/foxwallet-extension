@@ -12,9 +12,15 @@ browser.runtime.onMessage.addListener(handleMessages);
 let isSendingTx = false;
 let inited = false;
 
-const worker: Worker = new Worker(new URL("worker.js", import.meta.url), {
-  type: "module",
-});
+let worker: Worker | null = null;
+const getWorker = () => {
+  if (!worker) {
+    worker = new Worker(new URL("worker.js", import.meta.url), {
+      type: "module",
+    });
+  }
+  return worker;
+};
 
 async function handleMessages(
   message: BackgroundMessage,
@@ -44,6 +50,7 @@ async function handleMessages(
     case OffscreenMethod.SEND_TX: {
       await new Promise<void>((resolve, reject) => {
         isSendingTx = true;
+        const worker = getWorker();
         worker.addEventListener("error", (err) => {
           sendResponse({
             type: OffscreenMessageType.RESPONSE,
@@ -101,6 +108,7 @@ async function handleMessages(
     case OffscreenMethod.DEPLOY: {
       await new Promise<void>((resolve, reject) => {
         isSendingTx = true;
+        const worker = getWorker();
         worker.addEventListener("error", (err) => {
           sendResponse({
             type: OffscreenMessageType.RESPONSE,
