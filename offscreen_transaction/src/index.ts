@@ -9,10 +9,10 @@ import {
 
 browser.runtime.onMessage.addListener(handleMessages);
 
-let worker: Worker | null = null;
-
 let isSendingTx = false;
+let inited = false;
 
+let worker: Worker | null = null;
 const getWorker = () => {
   if (!worker) {
     worker = new Worker(new URL("worker.js", import.meta.url), {
@@ -62,30 +62,30 @@ async function handleMessages(
         worker.addEventListener("message", (event) => {
           console.log("===> worker message: ", event);
           if (event.data?.type === "inited") {
+            inited = true;
             worker.postMessage({
               type: "sendTx",
               payload: message.payload,
             });
             return;
+          } else if (event.data?.type === "finished") {
+            sendResponse({
+              type: OffscreenMessageType.RESPONSE,
+              origin: MessageOrigin.OFFSCREEN_TX_TO_BACKGROUND,
+              payload: { error: null, data: "finished" },
+            });
+            resolve();
           } else {
             const { error, data } = event.data;
-            if (error) {
-              sendResponse({
-                type: OffscreenMessageType.RESPONSE,
-                origin: MessageOrigin.OFFSCREEN_TX_TO_BACKGROUND,
-                payload: { error, data: null },
-              });
-              resolve();
-            } else {
-              sendResponse({
-                type: OffscreenMessageType.RESPONSE,
-                origin: MessageOrigin.OFFSCREEN_TX_TO_BACKGROUND,
-                payload: { error: null, data },
-              });
-              resolve();
-            }
+            console.log("===> task resp: ", error, data);
           }
         });
+        if (inited) {
+          worker.postMessage({
+            type: "sendTx",
+            payload: message.payload,
+          });
+        }
       })
         .then(() => {
           isSendingTx = false;
@@ -120,30 +120,30 @@ async function handleMessages(
         worker.addEventListener("message", (event) => {
           console.log("===> worker message: ", event);
           if (event.data?.type === "inited") {
+            inited = true;
             worker.postMessage({
               type: "deploy",
               payload: message.payload,
             });
             return;
+          } else if (event.data?.type === "finished") {
+            sendResponse({
+              type: OffscreenMessageType.RESPONSE,
+              origin: MessageOrigin.OFFSCREEN_TX_TO_BACKGROUND,
+              payload: { error: null, data: "finished" },
+            });
+            resolve();
           } else {
             const { error, data } = event.data;
-            if (error) {
-              sendResponse({
-                type: OffscreenMessageType.RESPONSE,
-                origin: MessageOrigin.OFFSCREEN_TX_TO_BACKGROUND,
-                payload: { error, data: null },
-              });
-              resolve();
-            } else {
-              sendResponse({
-                type: OffscreenMessageType.RESPONSE,
-                origin: MessageOrigin.OFFSCREEN_TX_TO_BACKGROUND,
-                payload: { error: null, data },
-              });
-              resolve();
-            }
+            console.log("===> deploy task resp: ", error, data);
           }
         });
+        if (inited) {
+          worker.postMessage({
+            type: "deploy",
+            payload: message.payload,
+          });
+        }
       })
         .then(() => {
           isSendingTx = false;

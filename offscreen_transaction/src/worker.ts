@@ -8,6 +8,11 @@ let inited = false;
 
 await initThreadPool();
 
+const taskQuene: {
+  taskType: "sendTx" | "deploy";
+  payload: any;
+}[] = [];
+
 function initAleoTxWorker(rpcList: string[], enableMeasure: boolean) {
   if (!aleoTxWorker) {
     aleoTxWorker = new AleoTxWorker(0, rpcList, enableMeasure);
@@ -30,29 +35,54 @@ async function deploy(params: AleoRequestDeploymentParams) {
 }
 
 addEventListener("message", async (event) => {
-  try {
-    switch (event.data.type) {
-      case "sendTx": {
-        const { rpcList } = event.data.payload;
-        initAleoTxWorker(rpcList, true);
-        const result = await sendTransaction(event.data.payload);
-        postMessage({ data: result, error: null });
-        return;
-      }
-      case "deploy": {
-        const { rpcList } = event.data.payload;
-        initAleoTxWorker(rpcList, true);
-        const result = await deploy(event.data.payload);
-        postMessage({ data: result, error: null });
-        return;
-      }
-    }
-  } catch (err) {
-    postMessage({ data: null, error: (err as Error).message });
-  }
+  const data = event.data;
+  taskQuene.push({
+    taskType: data.type,
+    payload: data.payload,
+  });
 });
 
 if (!inited) {
   inited = true;
   postMessage({ type: "inited" });
 }
+
+async function executeTask() {
+  while (true) {
+    const task = taskQuene.shift();
+    console.log("===> execute task: ", task);
+    if (!task) {
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      continue;
+    }
+    const { taskType, payload } = task;
+    try {
+      switch (taskType) {
+        case "sendTx": {
+          const { rpcList } = payload;
+          initAleoTxWorker(rpcList, true);
+          const result = await sendTransaction(payload);
+          postMessage({ data: result?.id, error: null });
+          break;
+        }
+        case "deploy": {
+          const { rpcList } = payload;
+          initAleoTxWorker(rpcList, true);
+          const result = await deploy(payload);
+          postMessage({ data: result?.id, error: null });
+          break;
+        }
+      }
+    } catch (err) {
+      postMessage({ data: null, error: (err as Error).message });
+    } finally {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      if (taskQuene.length === 0) {
+        postMessage({ type: "finished" });
+        return;
+      }
+    }
+  }
+}
+
+executeTask();
