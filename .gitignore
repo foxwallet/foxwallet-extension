@@ -20,7 +20,10 @@ dist-ssr
 .DS_Store
 
 coverage/
-env/
 **/target
 **/pkg
 **/pkg-parallel
+
+.env
+.env.development
+.env.production
