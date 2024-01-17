@@ -1,27 +1,14 @@
 import { ERROR_CODE } from "@/common/types/error";
 import { IconFoxWallet, IconLogo } from "@/components/Custom/Icon";
-import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
-import { TokenNum } from "@/components/Wallet/TokenNum";
-import { useBalance } from "@/hooks/useBalance";
 import { useClient } from "@/hooks/useClient";
-import { useCoinService } from "@/hooks/useCoinService";
 import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { useDappRequest } from "@/hooks/useDappRequest";
-import { useTxHistory } from "@/hooks/useTxHistory";
 import { Content } from "@/layouts/Content";
-import { PageWithHeader } from "@/layouts/Page";
-import { Button, Flex, Image, Text, keyframes } from "@chakra-ui/react";
+import { Button, Flex, Text, keyframes } from "@chakra-ui/react";
 import BaseCheckbox from "../../../components/Custom/Checkbox";
 
-import { NATIVE_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
-import {
-  AleoHistoryItem,
-  AleoTxAddressType,
-} from "core/coins/ALEO/types/History";
-import { AleoTxStatus } from "core/coins/ALEO/types/Tranaction";
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { B2, B3 } from "@/common/theme/components/text";
 import { DappInfo } from "@/components/Dapp/DappInfo";
 import { ResponsiveFlex } from "@/components/Custom/ResponsiveFlex";
 import { AccountInfo } from "@/components/Dapp/AccountInfo";

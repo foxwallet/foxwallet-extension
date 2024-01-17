@@ -6,10 +6,9 @@ import {
   SyncRecordResultWithDuration,
 } from "core/coins/ALEO/types/SyncTask";
 import { ProverKeyPair } from "core/coins/ALEO/types/ProverKeyPair";
-import { AleoLocalTxInfo } from "core/coins/ALEO/types/Tranaction";
+import { AleoLocalTxInfo } from "core/coins/ALEO/types/Transaction";
 import { ALEO_CHAIN_IDS } from "core/coins/ALEO/config/chains";
 import { getBlockDatabaseByChainId } from "@/database/AleoBlockDatabase";
-import { AddressRecords } from "@/database/types/records";
 
 export class AleoStorage implements IAleoStorage {
   static instance: AleoStorage;

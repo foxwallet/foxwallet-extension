@@ -32,7 +32,6 @@ import {
 import { PortName } from "../types/port";
 import { logger } from "./logger";
 import { type IPort, Port } from "./port";
-import { AleoTransaction } from "core/coins/ALEO/types/Tranaction";
 import { nanoid } from "nanoid";
 import { CoinType } from "core/types";
 

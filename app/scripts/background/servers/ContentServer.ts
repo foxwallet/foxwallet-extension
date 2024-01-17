@@ -506,7 +506,7 @@ export class ContentWalletServer implements IContentServer {
         const { program } = params;
         const txs = await this.coinService
           .getInstance(InnerChainUniqueId.ALEO_TESTNET3)
-          .getTxHistory(address, program);
+          .getTxHistory(address, {}, program);
         return {
           transactions: txs.map((item, i) => ({
             id: (item as AleoLocalHistoryItem).localId || i.toString(),

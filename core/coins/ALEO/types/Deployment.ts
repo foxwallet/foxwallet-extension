@@ -18,3 +18,9 @@ export interface AleoRequestDeploymentParams {
   feeRecord: string | null;
   timestamp: number;
 }
+
+export interface AleoDeploymentInTx {
+  edition: number;
+  program: string;
+  verifying_keys: [[string, [string]]];
+}

@@ -4,23 +4,15 @@ import { ResponsiveFlex } from "@/components/Custom/ResponsiveFlex";
 import { AccountInfo } from "@/components/Dapp/AccountInfo";
 import { DappInfo } from "@/components/Dapp/DappInfo";
 import { TokenNum } from "@/components/Wallet/TokenNum";
-import { useBalance } from "@/hooks/useBalance";
 import { useClient } from "@/hooks/useClient";
-import { useCoinBasic, useCoinService } from "@/hooks/useCoinService";
+import { useCoinService } from "@/hooks/useCoinService";
 import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { useDappRequest } from "@/hooks/useDappRequest";
-import { useTxHistory } from "@/hooks/useTxHistory";
 import { Content } from "@/layouts/Content";
 import { Button, Flex, Text } from "@chakra-ui/react";
-import { NATIVE_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
-import {
-  AleoHistoryItem,
-  AleoTxAddressType,
-} from "core/coins/ALEO/types/History";
-import { AleoTxStatus } from "core/coins/ALEO/types/Tranaction";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 function RequestTxScreen() {
   const { selectedAccount, uniqueId } = useCurrAccount();

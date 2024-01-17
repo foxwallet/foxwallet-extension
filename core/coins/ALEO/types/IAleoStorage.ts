@@ -1,6 +1,6 @@
 import { AleoSyncAccount } from "./AleoSyncAccount";
 import { AleoAddressInfo, SyncRecordResultWithDuration } from "./SyncTask";
-import { AleoLocalTxInfo } from "./Tranaction";
+import { AleoLocalTxInfo } from "./Transaction";
 
 export interface IAleoStorage {
   getAccountsAddress(): Promise<string[]>;

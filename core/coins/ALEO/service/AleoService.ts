@@ -1,7 +1,11 @@
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { AleoConfig } from "../types/AleoConfig";
 import { IAleoStorage } from "../types/IAleoStorage";
-import { AleoAddressInfo, RecordDetailWithSpent } from "../types/SyncTask";
+import {
+  AleoAddressInfo,
+  FutureJSON,
+  RecordDetailWithSpent,
+} from "../types/SyncTask";
 import { parseU64 } from "../utils/num";
 import { logger } from "@/common/utils/logger";
 import { AutoSwitch, AutoSwitchServiceType } from "core/utils/retry";
@@ -19,7 +23,7 @@ import {
   AleoLocalTxInfo,
   AleoTransaction,
   AleoTxStatus,
-} from "../types/Tranaction";
+} from "../types/Transaction";
 import { AleoGasFee } from "core/types/GasFee";
 import {
   FAILED_TX_REMOVE_TIME,
@@ -32,11 +36,14 @@ import {
   AleoLocalHistoryItem,
   AleoOnChainHistoryItem,
   AleoTxAddressType,
+  AleoTxType,
 } from "../types/History";
 import { Mutex } from "async-mutex";
-import { Program } from "aleo_wasm";
+import { Program, ViewKey, Future, Field, RecordCiphertext } from "aleo_wasm";
 import { AleoApiService } from "./instances/sync";
 import { AleoSyncAccount } from "../types/AleoSyncAccount";
+import { AleoWalletService } from "./instances/api";
+import { Pagination } from "../types/Pagination";
 
 const CREDITS_MAPPING_NAME = "account";
 
@@ -53,6 +60,7 @@ export class AleoService {
   private aleoStorage: IAleoStorage;
   private rpcService: AleoRpcService;
   private apiService: AleoApiService;
+  private walletService: AleoWalletService;
   private cachedSyncBlock: AleoAddressInfo | null = null;
   private lastSyncBlockTime: number = 0;
 
@@ -68,6 +76,12 @@ export class AleoService {
     });
     this.apiService = new AleoApiService({
       configs: config.syncApiList.map((item) => ({
+        url: item,
+        chainId: config.chainId,
+      })),
+    });
+    this.walletService = new AleoWalletService({
+      configs: config.walletApiList.map((item) => ({
         url: item,
         chainId: config.chainId,
       })),
@@ -373,6 +387,53 @@ export class AleoService {
     }
   };
 
+  private parseViewKey = (viewKeyStr: string): ViewKey => {
+    try {
+      const viewKey = ViewKey.from_string(viewKeyStr);
+      return viewKey;
+    } catch (err) {
+      throw new Error("Invalid view key");
+    }
+  };
+
+  private parseFuture = (futureStr?: string): FutureJSON | undefined => {
+    if (!futureStr) {
+      return undefined;
+    }
+    try {
+      const future = Future.fromString(futureStr);
+      const futureObj = JSON.parse(future.toJSON());
+      return futureObj;
+    } catch (err) {
+      console.error("===> parseFuture error: ", err);
+      return undefined;
+    }
+  };
+
+  private parseRecordCiphertext = (recordCiphertextStr: string) => {
+    try {
+      return RecordCiphertext.fromString(recordCiphertextStr);
+    } catch (err) {
+      console.error("===> parseRecordCiphertext error: ", err);
+      return undefined;
+    }
+  };
+
+  private isRecordOwner(viewKey: ViewKey, ciphertext: string): boolean {
+    try {
+      const record = this.parseRecordCiphertext(ciphertext);
+      if (!record) {
+        return false;
+      }
+      const newViewKey = viewKey.clone();
+      const isOwner = record.isOwner(newViewKey);
+      return isOwner;
+    } catch (err) {
+      console.error("==> record decrypt error: ", err);
+    }
+    return false;
+  }
+
   @AutoSwitch({ serviceType: AutoSwitchServiceType.RPC })
   async getProgramContent(chainId: string, programId: string) {
     const cache = await this.aleoStorage.getProgramContent(chainId, programId);
@@ -502,12 +563,35 @@ export class AleoService {
     }
   }
 
-  async getOnChainTxHistory(
+  private async getPublicHistory(address: string, cursor?: string) {
+    return await this.walletService
+      .currInstance()
+      .getPublicHistory(address, cursor);
+  }
+
+  async getPublicTxHistory(
     address: string,
-    limit: number = 1000,
-    program?: string,
+    pagination: Pagination,
   ): Promise<AleoOnChainHistoryItem[]> {
-    return [];
+    const { cursor } = pagination;
+    const publicHistory = await this.getPublicHistory(address, cursor);
+    return publicHistory.map((item) => {
+      return {
+        type: AleoHistoryType.ON_CHAIN,
+        txId: item.transactionId,
+        programId: item.executionProgram,
+        functionName: item.executionFunction,
+        height: item.blockHeight,
+        timestamp: item.blockTime,
+        addressType: AleoTxAddressType.SEND,
+        amount: (!!item.executionValue
+          ? parseU64(item.executionValue)
+          : 0n
+        ).toString(),
+        txType: AleoTxType.EXECUTION, // TODO: split EXECUTION and DEPLOYMENT
+        status: AleoTxStatus.FINALIZD,
+      };
+    });
   }
 
   @AutoSwitch({ serviceType: AutoSwitchServiceType.RPC })
@@ -542,6 +626,7 @@ export class AleoService {
           timestamp: txInfo.timestamp,
           addressType: AleoTxAddressType.SEND,
           amount: txInfo.amount,
+          txType: txInfo.txType || AleoTxType.EXECUTION,
         };
         break;
       }
@@ -560,6 +645,7 @@ export class AleoService {
               timestamp: txInfo.timestamp,
               addressType: AleoTxAddressType.SEND,
               amount: txInfo.amount,
+              txType: txInfo.txType || AleoTxType.EXECUTION,
             };
             break;
           }
@@ -575,6 +661,7 @@ export class AleoService {
               timestamp: txInfo.timestamp,
               addressType: AleoTxAddressType.SEND,
               amount: txInfo.amount,
+              txType: txInfo.txType || AleoTxType.EXECUTION,
               txId,
             };
           } else {
@@ -588,6 +675,7 @@ export class AleoService {
               timestamp: txInfo.timestamp,
               addressType: AleoTxAddressType.SEND,
               amount: txInfo.amount,
+              txType: txInfo.txType || AleoTxType.EXECUTION,
               txId,
             };
             const newTxInfo = {
@@ -622,6 +710,7 @@ export class AleoService {
               timestamp: txInfo.timestamp,
               addressType: AleoTxAddressType.SEND,
               amount: txInfo.amount,
+              txType: txInfo.txType || AleoTxType.EXECUTION,
               txId,
             };
           } else {
@@ -635,6 +724,7 @@ export class AleoService {
               timestamp: txInfo.timestamp,
               addressType: AleoTxAddressType.SEND,
               amount: txInfo.amount,
+              txType: txInfo.txType || AleoTxType.EXECUTION,
               txId,
             };
           }
@@ -664,6 +754,7 @@ export class AleoService {
             addressType: AleoTxAddressType.SEND,
             amount: txInfo.amount,
             txId: txInfo.transaction?.id,
+            txType: txInfo.txType || AleoTxType.EXECUTION,
           };
         }
         break;
@@ -680,6 +771,7 @@ export class AleoService {
           timestamp: txInfo.timestamp,
           addressType: AleoTxAddressType.SEND,
           amount: txInfo.amount,
+          txType: txInfo.txType || AleoTxType.EXECUTION,
         };
         break;
       }
@@ -719,12 +811,151 @@ export class AleoService {
 
   async getTxHistory(
     address: string,
+    pagination: Pagination,
     program?: string,
   ): Promise<AleoHistoryItem[]> {
-    const [onChainTxList, localTxList] = await Promise.all([
-      this.getOnChainTxHistory(address, 1000, program),
+    const [publicHistory, localTxList] = await Promise.all([
+      this.getPublicTxHistory(address, pagination),
       this.getLocalTxHistory(address, program),
     ]);
+    const lastHeight = pagination.cursor
+      ? parseInt(pagination.cursor)
+      : undefined;
+    const startHeight = publicHistory[publicHistory.length - 1].height;
+    const syncBlocksResult = await this.debounceSyncBlocks(address);
+    const account = await this.aleoStorage.getAccountInfo(address);
+    let privateHistory: AleoHistoryItem[] = [];
+    if (account) {
+      const viewKeyObj = this.parseViewKey(account.viewKey);
+      const recordsMap = syncBlocksResult?.recordsMap ?? {};
+      const records = [];
+      for (let recordMap of Object.values(recordsMap)) {
+        if (!recordMap) {
+          continue;
+        }
+        for (let record of Object.values(recordMap)) {
+          if (!record) {
+            continue;
+          }
+          records.push(record);
+        }
+      }
+      const recordsInRange = records.filter((item) => {
+        if (lastHeight !== undefined && item.height > lastHeight) {
+          return false;
+        }
+        if (item.height < startHeight) {
+          return false;
+        }
+        // record occurred in public history
+        if (
+          publicHistory.some((history) => history.txId === item.transactionId)
+        ) {
+          return false;
+        }
+        // record occured in local history
+        if (
+          localTxList.some((history) => history.txId === item.transactionId)
+        ) {
+          return false;
+        }
+        return true;
+      });
+      const recordTxIds = new Set<string>();
+      recordsInRange.forEach((item) => {
+        recordTxIds.add(item.transactionId);
+      });
+      const privateTxs = await Promise.all(
+        [...recordTxIds].map(async (item) => {
+          const tx = await this.walletService
+            .currInstance()
+            .getTransaction(item);
+          return tx;
+        }),
+      );
+      privateHistory = privateTxs
+        .map((item) => {
+          let txType = AleoTxType.EXECUTION;
+          if (item.origin_data.deployment) {
+            txType = AleoTxType.DEPLOYMENT;
+          }
+          const isRejected =
+            !item.origin_data.deployment && !item.origin_data.execution;
+          let programId = "";
+          let funcName = "";
+          if (item.origin_data.execution?.transitions) {
+            const transitions = item.origin_data.execution.transitions;
+            const lastTransition = transitions[transitions.length - 1];
+            programId = lastTransition.program;
+            funcName = lastTransition.function;
+          } else if (item.origin_data.deployment.program) {
+            const program = item.origin_data.deployment.program;
+            const programObj = this.parseProgram(program);
+            programId = programObj.id();
+          }
+          const feeTransition = item.origin_data.fee?.transition;
+          let fee = 0n;
+          let isSender = false;
+          if (feeTransition) {
+            switch (feeTransition.function) {
+              case "fee_public": {
+                const output = feeTransition.outputs?.[0];
+                if (!output || output.type !== "future") {
+                  return undefined;
+                }
+                const futureObj = this.parseFuture(output.value);
+                if (!futureObj) {
+                  return undefined;
+                }
+                // 当前地址付 fee
+                if (futureObj.arguments && futureObj.arguments[0] === address) {
+                  fee = parseU64(futureObj.arguments[1]);
+                  isSender = true;
+                }
+                break;
+              }
+              case "fee_private": {
+                const outputs = feeTransition.outputs;
+                if (!outputs?.[0]) {
+                  return undefined;
+                }
+                const output = outputs[0];
+                if (output.type === "record") {
+                  const isOwner = this.isRecordOwner(viewKeyObj, output.value);
+                  if (isOwner) {
+                    isSender = true;
+                    const baseFee = parseU64(
+                      feeTransition.inputs?.[1].value || "",
+                    );
+                    const priorityFee = parseU64(
+                      feeTransition.inputs?.[2].value || "",
+                    );
+                    fee = baseFee + priorityFee;
+                  }
+                }
+                break;
+              }
+            }
+          }
+
+          const history: AleoHistoryItem = {
+            type: AleoHistoryType.ON_CHAIN,
+            txId: item.origin_data.id,
+            programId: programId,
+            functionName: funcName,
+            height: item.height,
+            timestamp: item.timestamp,
+            addressType: isSender
+              ? AleoTxAddressType.SEND
+              : AleoTxAddressType.RECEIVE,
+            status: AleoTxStatus.FINALIZD,
+            txType: txType,
+          };
+          return history;
+        })
+        .filter((item) => !!item) as AleoHistoryItem[];
+    }
+
     const otherTxList = [];
     const finishedLocalTxList = [];
     for (const tx of localTxList) {
@@ -746,7 +977,7 @@ export class AleoService {
       }
     }
     const txList = uniqBy(
-      [...finishedLocalTxList, ...onChainTxList],
+      [...finishedLocalTxList, ...publicHistory, ...privateHistory],
       (item) => item.txId,
     );
     const historyList = [...txList, ...otherTxList];

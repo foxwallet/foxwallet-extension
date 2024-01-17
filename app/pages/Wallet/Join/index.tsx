@@ -12,11 +12,12 @@ import { nanoid } from "nanoid";
 import {
   AleoLocalTxInfo,
   AleoTxStatus,
-} from "core/coins/ALEO/types/Tranaction";
+} from "core/coins/ALEO/types/Transaction";
 import { useClient } from "@/hooks/useClient";
 import { useNavigate } from "react-router-dom";
 import { showErrorToast } from "@/components/Custom/ErrorToast";
 import { SelectRecordsStep } from "@/components/Send/SelectRecordsStep";
+import { AleoTxType } from "core/coins/ALEO/types/History";
 
 function JoinScreen() {
   const { t } = useTranslation();
@@ -66,6 +67,7 @@ function JoinScreen() {
           status: AleoTxStatus.QUEUED,
           timestamp,
           amount: amount.toString(),
+          txType: AleoTxType.EXECUTION,
         };
         await coinService.setAddressLocalTx(address, pendingTx);
         popupServerClient
