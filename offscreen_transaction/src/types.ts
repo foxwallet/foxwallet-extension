@@ -208,6 +208,29 @@ export type Transaction = {
 
 export type AleoTransaction = Transaction;
 
+export enum AleoHistoryType {
+  ON_CHAIN = "on_chain",
+  LOCAL = "local",
+}
+
+export enum AleoTxType {
+  EXECUTION = "execution",
+  DEPLOYMENT = "deployment",
+}
+
+export interface AleoOnChainHistoryItem {
+  type: AleoHistoryType.ON_CHAIN;
+  txType: AleoTxType;
+  txId: string;
+  programId: string;
+  functionName: string;
+  height: number;
+  timestamp: number;
+  addressType: AleoTxAddressType;
+  amount?: string;
+  status: AleoTxStatus;
+}
+
 export type AleoLocalTxInfo = Omit<
   AleoSendTxParams,
   "privateKey" | "chainId"

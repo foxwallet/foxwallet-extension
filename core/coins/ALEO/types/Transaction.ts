@@ -25,6 +25,14 @@ export type AleoTransaction = {
   deployment: AleoDeploymentInTx;
   fee?: Fee;
 };
+
+export type AleoTransactionWithHeight = {
+  height: number;
+  status: "accepted" | "rejected" | -1;
+  timestamp: number;
+  origin_data: AleoTransaction;
+};
+
 export type AleoLocalTxInfo = Omit<
   AleoSendTxParams,
   "privateKey" | "chainId"

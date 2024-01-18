@@ -1,4 +1,3 @@
-import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { AleoConfig } from "../types/AleoConfig";
 import { IAleoStorage } from "../types/IAleoStorage";
 import {
@@ -563,18 +562,14 @@ export class AleoService {
     }
   }
 
-  private async getPublicHistory(address: string, cursor?: string) {
-    return await this.walletService
-      .currInstance()
-      .getPublicHistory(address, cursor);
-  }
-
   async getPublicTxHistory(
     address: string,
     pagination: Pagination,
   ): Promise<AleoOnChainHistoryItem[]> {
     const { cursor } = pagination;
-    const publicHistory = await this.getPublicHistory(address, cursor);
+    const publicHistory = await this.walletService
+      .currInstance()
+      .getPublicHistory(address, cursor);
     return publicHistory.map((item) => {
       return {
         type: AleoHistoryType.ON_CHAIN,
@@ -584,10 +579,9 @@ export class AleoService {
         height: item.blockHeight,
         timestamp: item.blockTime,
         addressType: AleoTxAddressType.SEND,
-        amount: (!!item.executionValue
-          ? parseU64(item.executionValue)
-          : 0n
-        ).toString(),
+        amount: !!item.executionValue
+          ? parseU64(item.executionValue).toString()
+          : undefined,
         txType: AleoTxType.EXECUTION, // TODO: split EXECUTION and DEPLOYMENT
         status: AleoTxStatus.FINALIZD,
       };
@@ -809,6 +803,176 @@ export class AleoService {
     return await this.processLocalTxInfo(address, txInfo, program);
   }
 
+  private async getConfirmedTransactionInfo(
+    txId: string,
+    viewKey: ViewKey,
+    address: string,
+  ) {
+    const cachedTx = await this.aleoStorage.getCachedTransaction(
+      this.chainId,
+      txId,
+    );
+    if (cachedTx) {
+      return cachedTx;
+    }
+    const item = await this.walletService.currInstance().getTransaction(txId);
+    let txType = AleoTxType.EXECUTION;
+    if (item.origin_data.deployment) {
+      txType = AleoTxType.DEPLOYMENT;
+    }
+    const isRejected =
+      !item.origin_data.deployment && !item.origin_data.execution;
+    let programId = "";
+    let funcName = "";
+    if (item.origin_data.execution?.transitions) {
+      const transitions = item.origin_data.execution.transitions;
+      const lastTransition = transitions[transitions.length - 1];
+      programId = lastTransition.program;
+      funcName = lastTransition.function;
+    } else if (item.origin_data.deployment.program) {
+      const program = item.origin_data.deployment.program;
+      const programObj = this.parseProgram(program);
+      programId = programObj.id();
+    }
+    const feeTransition = item.origin_data.fee?.transition;
+    let fee = 0n;
+    let isSender = false;
+    if (feeTransition) {
+      switch (feeTransition.function) {
+        case "fee_public": {
+          const output = feeTransition.outputs?.[0];
+          if (!output || output.type !== "future") {
+            return undefined;
+          }
+          const futureObj = this.parseFuture(output.value);
+          if (!futureObj) {
+            return undefined;
+          }
+          // 当前地址付 fee
+          if (futureObj.arguments && futureObj.arguments[0] === address) {
+            fee = parseU64(futureObj.arguments[1]);
+            isSender = true;
+          }
+          break;
+        }
+        case "fee_private": {
+          const outputs = feeTransition.outputs;
+          if (!outputs?.[0]) {
+            return undefined;
+          }
+          const output = outputs[0];
+          if (output.type === "record") {
+            const isOwner = this.isRecordOwner(viewKey, output.value);
+            if (isOwner) {
+              isSender = true;
+              const baseFee = parseU64(feeTransition.inputs?.[1].value || "");
+              const priorityFee = parseU64(
+                feeTransition.inputs?.[2].value || "",
+              );
+              fee = baseFee + priorityFee;
+            }
+          }
+          break;
+        }
+      }
+    }
+
+    const history: AleoOnChainHistoryItem = {
+      type: AleoHistoryType.ON_CHAIN,
+      txId: item.origin_data.id,
+      programId: programId,
+      functionName: funcName,
+      height: item.height,
+      timestamp: item.timestamp,
+      addressType: isSender
+        ? AleoTxAddressType.SEND
+        : AleoTxAddressType.RECEIVE,
+      status: AleoTxStatus.FINALIZD,
+      txType: txType,
+    };
+    await this.aleoStorage.cacheTransaction(this.chainId, history);
+    return history;
+  }
+
+  async getOnChainHistory(
+    address: string,
+    pagination: Pagination,
+  ): Promise<AleoOnChainHistoryItem[]> {
+    const [publicHistory] = await Promise.all([
+      this.getPublicTxHistory(address, pagination),
+    ]);
+    const lastHeight = pagination.cursor
+      ? parseInt(pagination.cursor)
+      : undefined;
+    const startHeight = publicHistory[publicHistory.length - 1].height;
+    const syncBlocksResult = await this.debounceSyncBlocks(address);
+    const account = await this.aleoStorage.getAccountInfo(address);
+    let privateHistory: AleoOnChainHistoryItem[] = [];
+    if (account) {
+      const viewKeyObj = this.parseViewKey(account.viewKey);
+      const recordsMap = syncBlocksResult?.recordsMap ?? {};
+      const records = [];
+      for (let recordMap of Object.values(recordsMap)) {
+        if (!recordMap) {
+          continue;
+        }
+        for (let record of Object.values(recordMap)) {
+          if (!record) {
+            continue;
+          }
+          records.push(record);
+        }
+      }
+      const recordsInRange = records.filter((item) => {
+        if (lastHeight !== undefined && item.height > lastHeight) {
+          return false;
+        }
+        if (item.height < startHeight) {
+          return false;
+        }
+        // record occurred in public history
+        if (
+          publicHistory.some((history) => history.txId === item.transactionId)
+        ) {
+          return false;
+        }
+        return true;
+      });
+      const recordTxIds = new Set<string>();
+      recordsInRange.forEach((item) => {
+        recordTxIds.add(item.transactionId);
+      });
+      const privateTxs = await Promise.all(
+        [...recordTxIds].map(async (item) => {
+          const tx = await this.getConfirmedTransactionInfo(
+            item,
+            viewKeyObj,
+            address,
+          );
+          return tx;
+        }),
+      );
+      privateHistory = privateTxs.filter(
+        (item) => !!item,
+      ) as AleoOnChainHistoryItem[];
+    }
+    const historyList = [...publicHistory, ...privateHistory];
+    historyList.sort((item1, item2) => {
+      if (
+        (item1 as AleoOnChainHistoryItem).height &&
+        (item2 as AleoOnChainHistoryItem).height
+      ) {
+        return (
+          (item2 as AleoOnChainHistoryItem).height -
+          (item1 as AleoOnChainHistoryItem).height
+        );
+      }
+      return item2.timestamp - item1.timestamp;
+    });
+
+    return historyList;
+  }
+
   async getTxHistory(
     address: string,
     pagination: Pagination,
@@ -867,93 +1031,15 @@ export class AleoService {
       });
       const privateTxs = await Promise.all(
         [...recordTxIds].map(async (item) => {
-          const tx = await this.walletService
-            .currInstance()
-            .getTransaction(item);
+          const tx = await this.getConfirmedTransactionInfo(
+            item,
+            viewKeyObj,
+            address,
+          );
           return tx;
         }),
       );
-      privateHistory = privateTxs
-        .map((item) => {
-          let txType = AleoTxType.EXECUTION;
-          if (item.origin_data.deployment) {
-            txType = AleoTxType.DEPLOYMENT;
-          }
-          const isRejected =
-            !item.origin_data.deployment && !item.origin_data.execution;
-          let programId = "";
-          let funcName = "";
-          if (item.origin_data.execution?.transitions) {
-            const transitions = item.origin_data.execution.transitions;
-            const lastTransition = transitions[transitions.length - 1];
-            programId = lastTransition.program;
-            funcName = lastTransition.function;
-          } else if (item.origin_data.deployment.program) {
-            const program = item.origin_data.deployment.program;
-            const programObj = this.parseProgram(program);
-            programId = programObj.id();
-          }
-          const feeTransition = item.origin_data.fee?.transition;
-          let fee = 0n;
-          let isSender = false;
-          if (feeTransition) {
-            switch (feeTransition.function) {
-              case "fee_public": {
-                const output = feeTransition.outputs?.[0];
-                if (!output || output.type !== "future") {
-                  return undefined;
-                }
-                const futureObj = this.parseFuture(output.value);
-                if (!futureObj) {
-                  return undefined;
-                }
-                // 当前地址付 fee
-                if (futureObj.arguments && futureObj.arguments[0] === address) {
-                  fee = parseU64(futureObj.arguments[1]);
-                  isSender = true;
-                }
-                break;
-              }
-              case "fee_private": {
-                const outputs = feeTransition.outputs;
-                if (!outputs?.[0]) {
-                  return undefined;
-                }
-                const output = outputs[0];
-                if (output.type === "record") {
-                  const isOwner = this.isRecordOwner(viewKeyObj, output.value);
-                  if (isOwner) {
-                    isSender = true;
-                    const baseFee = parseU64(
-                      feeTransition.inputs?.[1].value || "",
-                    );
-                    const priorityFee = parseU64(
-                      feeTransition.inputs?.[2].value || "",
-                    );
-                    fee = baseFee + priorityFee;
-                  }
-                }
-                break;
-              }
-            }
-          }
-
-          const history: AleoHistoryItem = {
-            type: AleoHistoryType.ON_CHAIN,
-            txId: item.origin_data.id,
-            programId: programId,
-            functionName: funcName,
-            height: item.height,
-            timestamp: item.timestamp,
-            addressType: isSender
-              ? AleoTxAddressType.SEND
-              : AleoTxAddressType.RECEIVE,
-            status: AleoTxStatus.FINALIZD,
-            txType: txType,
-          };
-          return history;
-        })
-        .filter((item) => !!item) as AleoHistoryItem[];
+      privateHistory = privateTxs.filter((item) => !!item) as AleoHistoryItem[];
     }
 
     const otherTxList = [];

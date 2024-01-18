@@ -1,6 +1,6 @@
 import { get, post } from "@/common/utils/request";
 import { SyncResp } from "./sync.di";
-import { AleoTransaction } from "../../types/Transaction";
+import { AleoTransactionWithHeight } from "../../types/Transaction";
 
 export class AleoWalletApi {
   host: string;
@@ -96,14 +96,14 @@ export class AleoWalletApi {
       return {
         id: item.id,
         blockHeight: item.block_height,
-        blockTime: item.block_time,
+        blockTime: item.block_time * 1000,
         transactionIndex: item.transaction_index,
         transactionId: item.transaction_id,
         transitionId: item.transition_id,
         feeFutureValue: item.fee_future_value,
         feeValue: item.fee_value,
         feeAddress: item.fee_address,
-        createTime: item.create_time,
+        createTime: item.create_time * 1000,
         executionTransitionId: item.execution_transition_id,
         executionProgram: item.execution_program,
         executionFunction: item.execution_function,
@@ -114,12 +114,12 @@ export class AleoWalletApi {
   }
 
   async getTransaction(id: string) {
-    const resp = await this.fetchData<{
-      height: number;
-      status: "accepted" | "rejected" | -1;
-      timestamp: number;
-      origin_data: AleoTransaction;
-    }>(`/transaction/${id}`);
-    return resp;
+    const resp = await this.fetchData<AleoTransactionWithHeight>(
+      `/transaction/${id}`,
+    );
+    return {
+      ...resp,
+      timestamp: resp.timestamp * 1000,
+    };
   }
 }

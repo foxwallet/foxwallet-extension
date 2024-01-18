@@ -1,4 +1,5 @@
 import { AleoSyncAccount } from "./AleoSyncAccount";
+import { AleoOnChainHistoryItem } from "./History";
 import { AleoAddressInfo, SyncRecordResultWithDuration } from "./SyncTask";
 import { AleoLocalTxInfo } from "./Transaction";
 
@@ -61,6 +62,13 @@ export interface IAleoStorage {
   ): Promise<void>;
 
   clearAddressLocalData(chainId: string, address: string): Promise<void>;
+
+  cacheTransaction(chainId: string, tx: AleoOnChainHistoryItem): Promise<void>;
+
+  getCachedTransaction(
+    chainId: string,
+    txId: string,
+  ): Promise<AleoOnChainHistoryItem | undefined>;
 
   getProgramContent(chainId: string, programId: string): Promise<string | null>;
 

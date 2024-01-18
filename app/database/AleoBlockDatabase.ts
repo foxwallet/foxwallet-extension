@@ -3,12 +3,14 @@ import { AleoAddressInfo } from "./types/address";
 import { AddressRecords } from "./types/records";
 import { AleoLocalTx } from "./types/tx";
 import { AleoProgram } from "./types/program";
+import { AleoOnChainHistoryItem } from "core/coins/ALEO/types/History";
 
 export class AleoBlockDatabase extends Dexie {
   infos: Dexie.Table<AleoAddressInfo, string>;
   records: Dexie.Table<AddressRecords, string>;
   txs: Dexie.Table<AleoLocalTx, string>;
   programs: Dexie.Table<AleoProgram, string>;
+  cacheTxs: Dexie.Table<AleoOnChainHistoryItem>;
 
   constructor(chainId: string) {
     super(chainId);
@@ -20,10 +22,15 @@ export class AleoBlockDatabase extends Dexie {
       programs: "programId",
     });
 
+    this.version(2).stores({
+      cacheTxs: "txId",
+    });
+
     this.infos = this.table("infos");
     this.records = this.table("records");
     this.txs = this.table("txs");
     this.programs = this.table("programs");
+    this.cacheTxs = this.table("cacheTxs");
   }
 
   async deleteAddressData(address: string): Promise<void> {

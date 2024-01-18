@@ -9,6 +9,7 @@ import { ProverKeyPair } from "core/coins/ALEO/types/ProverKeyPair";
 import { AleoLocalTxInfo } from "core/coins/ALEO/types/Transaction";
 import { ALEO_CHAIN_IDS } from "core/coins/ALEO/config/chains";
 import { getBlockDatabaseByChainId } from "@/database/AleoBlockDatabase";
+import { AleoOnChainHistoryItem } from "core/coins/ALEO/types/History";
 
 export class AleoStorage implements IAleoStorage {
   static instance: AleoStorage;
@@ -187,6 +188,24 @@ export class AleoStorage implements IAleoStorage {
   ): Promise<void> {
     const instance = await this.getBlockDBInstance(chainId);
     await instance.txs.delete(localId);
+  }
+
+  async cacheTransaction(chainId: string, tx: AleoOnChainHistoryItem) {
+    const instance = await this.getBlockDBInstance(chainId);
+    const count = await instance.cacheTxs.where({ txId: tx.txId }).count();
+    if (count) {
+      await instance.cacheTxs.where({ txId: tx.txId }).modify((data) => {
+        Object.assign(data, tx);
+      });
+    } else {
+      await instance.cacheTxs.add(tx);
+    }
+  }
+
+  async getCachedTransaction(chainId: string, txId: string) {
+    const instance = await this.getBlockDBInstance(chainId);
+    const data = await instance.cacheTxs.where({ txId: txId }).first();
+    return data;
   }
 
   async clearAddressLocalData(chainId: string, address: string): Promise<void> {
