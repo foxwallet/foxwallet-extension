@@ -12,13 +12,14 @@ import { nanoid } from "nanoid";
 import {
   AleoLocalTxInfo,
   AleoTxStatus,
-} from "core/coins/ALEO/types/Tranaction";
+} from "core/coins/ALEO/types/Transaction";
 import { useClient } from "@/hooks/useClient";
 import { useNavigate } from "react-router-dom";
 import { showErrorToast } from "@/components/Custom/ErrorToast";
 import { SelectRecordsStep } from "@/components/Send/SelectRecordsStep";
 import { formatUnits, parseUnits } from "ethers/lib/utils";
 import { SPLIT_RECORD_FEE } from "core/coins/ALEO/constants";
+import { AleoTxType } from "core/coins/ALEO/types/History";
 
 function SplitScreen() {
   const { t } = useTranslation();
@@ -64,6 +65,7 @@ function SplitScreen() {
           timestamp,
           amount:
             selectedRecordsRef.current[0]?.parsedContent?.microcredits?.toString(),
+          txType: AleoTxType.EXECUTION,
         };
         await coinService.setAddressLocalTx(address, pendingTx);
         popupServerClient

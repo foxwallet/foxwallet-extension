@@ -1,4 +1,7 @@
-import { Transaction } from "./AleoTransaction";
+import { Execution } from "./AleoExecution";
+import { Fee } from "./AleoFee";
+import { AleoDeploymentInTx } from "./Deployment";
+import { AleoTxType } from "./History";
 
 export interface AleoSendTxParams {
   privateKey: string;
@@ -15,7 +18,20 @@ export interface AleoSendTxParams {
   amount?: string;
 }
 
-export type AleoTransaction = Transaction;
+export type AleoTransaction = {
+  type: string;
+  id: string;
+  execution?: Execution;
+  deployment: AleoDeploymentInTx;
+  fee?: Fee;
+};
+
+export type AleoTransactionWithHeight = {
+  height: number;
+  status: "accepted" | "rejected" | -1;
+  timestamp: number;
+  origin_data: AleoTransaction;
+};
 
 export type AleoLocalTxInfo = Omit<
   AleoSendTxParams,
@@ -25,10 +41,10 @@ export type AleoLocalTxInfo = Omit<
   status: AleoTxStatus;
   timestamp: number;
   transaction?: AleoTransaction;
-  deploy?: boolean;
+  txType: AleoTxType;
 };
 
-export type AleoTxWithTime = Transaction & {
+export type AleoTxWithTime = AleoTransaction & {
   status: AleoTxStatus;
   timestamp: number;
 };

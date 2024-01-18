@@ -17,6 +17,8 @@ export const ALEO_CHAIN_CONFIGS: { [key in string]: AleoConfig } = {
     rpcList: ReserveChainConfigs[InnerChainUniqueId.ALEO_TESTNET3].rpcList,
     syncApiList:
       ReserveChainConfigs[InnerChainUniqueId.ALEO_TESTNET3].syncApiList,
+    walletApiList:
+      ReserveChainConfigs[InnerChainUniqueId.ALEO_TESTNET3].walletApiList,
     nativeCurrency: {
       name: "Aleo",
       decimals: 6,

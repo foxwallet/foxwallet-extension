@@ -8,7 +8,7 @@ import { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 import {
   AleoLocalTxInfo,
   AleoTxStatus,
-} from "core/coins/ALEO/types/Tranaction";
+} from "core/coins/ALEO/types/Transaction";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
 import { AleoGasFee } from "core/types/GasFee";
 import { nanoid } from "nanoid";
@@ -19,6 +19,7 @@ import { GasFeeStep } from "./GasFeeStep";
 import { useDataRef } from "@/hooks/useDataRef";
 import { showErrorToast } from "@/components/Custom/ErrorToast";
 import { useTranslation } from "react-i18next";
+import { AleoTxType } from "core/coins/ALEO/types/History";
 
 function SendScreen() {
   const navigate = useNavigate();
@@ -115,6 +116,7 @@ function SendScreen() {
           status: AleoTxStatus.QUEUED,
           timestamp,
           amount: amount.toString(),
+          txType: AleoTxType.EXECUTION,
         };
         await coinService.setAddressLocalTx(address, pendingTx);
         popupServerClient

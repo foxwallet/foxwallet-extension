@@ -24,7 +24,7 @@ import {
   AleoTxAddressType,
 } from "core/coins/ALEO/types/History";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { AleoTxStatus } from "../../../../offscreen_transaction/src/types";
@@ -35,6 +35,8 @@ import { useTxHistory } from "@/hooks/useTxHistory";
 import { useIsSendingAleoTx } from "@/hooks/useSendingTxStatus";
 import { useRecords } from "@/hooks/useRecord";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
+import { useBottomReach } from "@/hooks/useBottomReach";
+import { Pagination } from "core/coins/ALEO/types/Pagination";
 
 interface TokenTxHistoryItemProps {
   item: AleoHistoryItem;
@@ -131,7 +133,16 @@ const TokenDetailScreen = () => {
     selectedAccount.address,
   );
 
-  const { history } = useTxHistory(uniqueId, selectedAccount.address, 4000);
+  const { history, getMore, loading, loadingLocalTxs, loadingOnChainHistory } =
+    useTxHistory(uniqueId, selectedAccount.address, 4000);
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const reachBottom = useBottomReach(listRef);
+  useEffect(() => {
+    if (reachBottom) {
+      getMore();
+    }
+  }, [reachBottom]);
+
   const { sendingAleoTx } = useIsSendingAleoTx(uniqueId);
   const { records, loading: loadingRecords } = useRecords(
     uniqueId,
@@ -250,9 +261,17 @@ const TokenDetailScreen = () => {
       <Divider orientation="horizontal" h={"1px"} />
       <Flex direction={"column"} px={5} py={2.5}>
         <Text fontWeight={"bold"}>{t("TokenDetail:tx_records")}</Text>
-        {history && history?.length > 0 ? (
-          <Flex direction={"column"} maxH={320} overflowY="auto">
+        {loading && history.length === 0 ? (
+          <Spinner w={6} h={6} alignSelf={"center"} mt={10} />
+        ) : history.length > 0 ? (
+          <Flex ref={listRef} direction={"column"} maxH={320} overflowY="auto">
+            {loadingLocalTxs && (
+              <Spinner w={6} h={6} alignSelf={"center"} mt={10} />
+            )}
             {history?.map(renderTxHistoryItem)}
+            {loadingOnChainHistory && (
+              <Spinner w={6} h={6} alignSelf={"center"} mt={10} />
+            )}
           </Flex>
         ) : (
           <VStack mt={2.5}>

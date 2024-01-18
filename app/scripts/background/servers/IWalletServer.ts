@@ -8,7 +8,7 @@ import {
 } from "../store/vault/types/keyring";
 import { logger } from "../../../common/utils/logger";
 import { ChainUniqueId } from "core/types/ChainUniqueId";
-import { AleoSendTxParams } from "core/coins/ALEO/types/Tranaction";
+import { AleoSendTxParams } from "core/coins/ALEO/types/Transaction";
 import { CustomRecord } from "core/coins/ALEO/types/Record";
 import {
   AleoDeployment,

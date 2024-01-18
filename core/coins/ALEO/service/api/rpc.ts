@@ -1,6 +1,6 @@
 import { get, post } from "@/common/utils/request";
 import { Block } from "../../types/AleoBlock";
-import { Transaction } from "../../types/AleoTransaction";
+import { AleoTransaction } from "../../types/Transaction";
 export class AleoRpc {
   host: string;
   chainId: string;
@@ -163,8 +163,8 @@ export class AleoRpc {
    * @example
    * const transaction = networkClient.getTransaction("at1handz9xjrqeynjrr0xay4pcsgtnczdksz3e584vfsgaz0dh0lyxq43a4wj");
    */
-  async getTransaction(id: string): Promise<Transaction> {
-    return await this.fetchData<Transaction>("/transaction/" + id);
+  async getTransaction(id: string): Promise<AleoTransaction> {
+    return await this.fetchData<AleoTransaction>("/transaction/" + id);
   }
 
   /**
@@ -174,8 +174,8 @@ export class AleoRpc {
    * @example
    * const transactions = networkClient.getTransactions(654);
    */
-  async getTransactions(height: number): Promise<Array<Transaction>> {
-    return await this.fetchData<Array<Transaction>>(
+  async getTransactions(height: number): Promise<Array<AleoTransaction>> {
+    return await this.fetchData<Array<AleoTransaction>>(
       "/block/" + height.toString() + "/transactions",
     );
   }
@@ -186,8 +186,10 @@ export class AleoRpc {
    * @example
    * const transactions = networkClient.getTransactionsInMempool();
    */
-  async getTransactionsInMempool(): Promise<Array<Transaction>> {
-    return await this.fetchData<Array<Transaction>>("/memoryPool/transactions");
+  async getTransactionsInMempool(): Promise<Array<AleoTransaction>> {
+    return await this.fetchData<Array<AleoTransaction>>(
+      "/memoryPool/transactions",
+    );
   }
 
   /**

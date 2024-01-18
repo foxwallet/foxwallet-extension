@@ -1,4 +1,4 @@
-import { AleoTxStatus } from "./Tranaction";
+import { AleoTxStatus } from "./Transaction";
 
 export enum AleoHistoryType {
   ON_CHAIN = "on_chain",
@@ -10,8 +10,14 @@ export enum AleoTxAddressType {
   RECEIVE = "receive",
 }
 
+export enum AleoTxType {
+  EXECUTION = "execution",
+  DEPLOYMENT = "deployment",
+}
+
 export interface AleoOnChainHistoryItem {
   type: AleoHistoryType.ON_CHAIN;
+  txType: AleoTxType;
   txId: string;
   programId: string;
   functionName: string;
@@ -24,6 +30,7 @@ export interface AleoOnChainHistoryItem {
 
 export interface AleoLocalHistoryItem {
   type: AleoHistoryType.LOCAL;
+  txType: AleoTxType;
   localId: string;
   txId?: string;
   error?: string;

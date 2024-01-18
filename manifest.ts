@@ -40,5 +40,6 @@ export default defineManifest((env) => {
         resources: ["injector.js"],
       },
     ],
+    minimum_chrome_version: "120",
   };
 });

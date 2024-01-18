@@ -48,11 +48,12 @@ import { hexToUint8Array } from "@/common/utils/buffer";
 import {
   AleoLocalTxInfo,
   AleoTxStatus,
-} from "core/coins/ALEO/types/Tranaction";
+} from "core/coins/ALEO/types/Transaction";
 import { CoinServiceEntry } from "core/coins/CoinServiceEntry";
 import { ChainUniqueId, InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { TaskPriority } from "core/coins/ALEO/types/SyncTask";
 import { AleoConnectHistory, DappRequest } from "@/database/types/dapp";
+import { AleoTxType } from "core/coins/ALEO/types/History";
 
 export type OnRequestFinishCallback = (
   error: null | Error,
@@ -249,6 +250,7 @@ export class PopupWalletServer implements IPopupServer {
             }
             const txInfo: AleoLocalTxInfo = {
               ...params,
+              txType: AleoTxType.EXECUTION,
               status: AleoTxStatus.QUEUED,
             };
             await this.coinService
@@ -268,6 +270,7 @@ export class PopupWalletServer implements IPopupServer {
                 const finalTxInfo: AleoLocalTxInfo = {
                   ...params,
                   status: AleoTxStatus.FAILED,
+                  txType: AleoTxType.EXECUTION,
                   error: "sendTransaction failed",
                 };
                 await this.coinService
@@ -340,7 +343,7 @@ export class PopupWalletServer implements IPopupServer {
               functionName: "",
               inputs: [],
               status: AleoTxStatus.QUEUED,
-              deploy: true,
+              txType: AleoTxType.DEPLOYMENT,
             };
             await this.coinService
               .getInstance(params.uniqueId)
@@ -357,8 +360,8 @@ export class PopupWalletServer implements IPopupServer {
                   ...params,
                   functionName: "",
                   inputs: [],
-                  deploy: true,
                   status: AleoTxStatus.FAILED,
+                  txType: AleoTxType.DEPLOYMENT,
                   error: "sendDeployment failed",
                 };
                 await this.coinService
@@ -689,6 +692,7 @@ export class PopupWalletServer implements IPopupServer {
         const finalTxInfo: AleoLocalTxInfo = {
           ...params,
           status: AleoTxStatus.FAILED,
+          txType: AleoTxType.EXECUTION,
           error: "sendTransaction failed",
         };
         await this.coinService

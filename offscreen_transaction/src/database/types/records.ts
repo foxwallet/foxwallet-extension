@@ -1,4 +1,4 @@
-import { RecordDetail } from "./AleoAddressInfo.di";
+import { RecordDetail } from "./address";
 
 export interface AddressRecords {
   address: string;
