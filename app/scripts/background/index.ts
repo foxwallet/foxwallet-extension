@@ -11,6 +11,8 @@ import { AccountSettingStorage } from "./store/account/AccountStorage";
 import { DappStorage } from "./store/dapp/DappStorage";
 import { AuthManager } from "./store/vault/managers/auth/AuthManager";
 import { KeyringManager } from "./store/vault/managers/keyring/KeyringManager";
+import { extensionInfoDB } from "@/database/ExtensionDatabase";
+import { getVersion } from "@/common/utils/version";
 
 const keepAliveConnection = new Connection(
   keepAliveHandler,
@@ -59,3 +61,17 @@ const contentConnection = new Connection(
 contentConnection.connect();
 
 offscreen();
+
+async function checkVersion() {
+  const existVersion = await extensionInfoDB.getVersion();
+  const currentVersion = getVersion();
+  if (existVersion === currentVersion) {
+    return;
+  }
+  if (existVersion) {
+    // compare version and do the migration
+  }
+  await extensionInfoDB.setVersion(currentVersion);
+}
+
+checkVersion();
