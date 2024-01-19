@@ -58,4 +58,5 @@ export enum AleoTxStatus {
   REJECTED = "Rejected",
   FINALIZD = "Finalized",
   FAILED = "Failed",
+  UNACCEPTED = "Unaccepted",
 }

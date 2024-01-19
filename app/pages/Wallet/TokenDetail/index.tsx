@@ -27,7 +27,6 @@ import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
-import { AleoTxStatus } from "../../../../offscreen_transaction/src/types";
 import dayjs from "dayjs";
 import browser from "webextension-polyfill";
 import { ALE0_EXPOLER_TRANSACTION_URL } from "@/common/constants";

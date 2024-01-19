@@ -1,10 +1,9 @@
 import { ChainUniqueId } from "core/types/ChainUniqueId";
 import { useCoinService } from "./useCoinService";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import useSWR from "swr";
 import { Pagination } from "core/coins/ALEO/types/Pagination";
 import {
-  AleoHistoryItem,
   AleoLocalHistoryItem,
   AleoOnChainHistoryItem,
 } from "core/coins/ALEO/types/History";
