@@ -691,12 +691,12 @@ export class AleoService {
             await this.aleoStorage.setAddressLocalTx(this.chainId, address, {
               ...txInfo,
               error: errorMsg,
-              status: AleoTxStatus.REJECTED,
+              status: AleoTxStatus.UNACCEPTED,
             });
             result = {
               type: AleoHistoryType.LOCAL,
               localId: txInfo.localId,
-              status: AleoTxStatus.REJECTED,
+              status: AleoTxStatus.UNACCEPTED,
               programId: txInfo.programId,
               functionName: txInfo.functionName,
               inputs: txInfo.inputs,
@@ -725,32 +725,23 @@ export class AleoService {
         }
         break;
       }
+      case AleoTxStatus.UNACCEPTED:
       case AleoTxStatus.FAILED:
       case AleoTxStatus.REJECTED: {
-        const now = Date.now();
-        const timestamp = txInfo.timestamp;
-        if (now - timestamp >= FAILED_TX_REMOVE_TIME) {
-          await this.aleoStorage.removeAddressLocalTx(
-            this.chainId,
-            address,
-            txInfo.localId,
-          );
-        } else {
-          result = {
-            type: AleoHistoryType.LOCAL,
-            localId: txInfo.localId,
-            status: txInfo.status,
-            programId: txInfo.programId,
-            functionName: txInfo.functionName,
-            inputs: txInfo.inputs,
-            error: txInfo.error,
-            timestamp: txInfo.timestamp,
-            addressType: AleoTxAddressType.SEND,
-            amount: txInfo.amount,
-            txId: txInfo.transaction?.id,
-            txType: txInfo.txType || AleoTxType.EXECUTION,
-          };
-        }
+        result = {
+          type: AleoHistoryType.LOCAL,
+          localId: txInfo.localId,
+          status: txInfo.status,
+          programId: txInfo.programId,
+          functionName: txInfo.functionName,
+          inputs: txInfo.inputs,
+          error: txInfo.error,
+          timestamp: txInfo.timestamp,
+          addressType: AleoTxAddressType.SEND,
+          amount: txInfo.amount,
+          txId: txInfo.transaction?.id,
+          txType: txInfo.txType || AleoTxType.EXECUTION,
+        };
         break;
       }
       case AleoTxStatus.FINALIZD: {
@@ -1051,6 +1042,7 @@ export class AleoService {
         case AleoTxStatus.GENERATING_TRANSACTION:
         case AleoTxStatus.BROADCASTING:
         case AleoTxStatus.REJECTED:
+        case AleoTxStatus.UNACCEPTED:
         case AleoTxStatus.FAILED: {
           otherTxList.push(tx);
           break;
