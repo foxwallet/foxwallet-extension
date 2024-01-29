@@ -18,7 +18,6 @@ export default defineManifest((env) => {
       "activeTab",
       "tabs",
       "offscreen",
-      "notifications",
     ],
     content_scripts: [
       {
