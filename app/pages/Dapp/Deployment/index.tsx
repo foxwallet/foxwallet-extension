@@ -112,16 +112,16 @@ function DeploymentScreen() {
         >
           <ResponsiveFlex flexDir={"column"}>
             <Flex alignSelf={"stretch"}>
-              <Button onClick={onConfirm} flex={1} mr={"2"}>
-                {t("Common:confirm")}
-              </Button>
               <Button
                 onClick={onCancel}
                 flex={1}
                 colorScheme="secondary"
-                ml={2}
+                mr={2}
               >
                 {t("Common:cancel")}
+              </Button>
+              <Button onClick={onConfirm} flex={1} ml={"2"}>
+                {t("Common:confirm")}
               </Button>
             </Flex>
           </ResponsiveFlex>

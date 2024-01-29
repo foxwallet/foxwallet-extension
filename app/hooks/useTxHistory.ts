@@ -1,13 +1,14 @@
 import { ChainUniqueId } from "core/types/ChainUniqueId";
 import { useCoinService } from "./useCoinService";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import { Pagination } from "core/coins/ALEO/types/Pagination";
 import {
+  AleoHistoryItem,
   AleoLocalHistoryItem,
   AleoOnChainHistoryItem,
 } from "core/coins/ALEO/types/History";
-import { uniqBy } from "lodash";
+import { isEqual, uniqBy } from "lodash";
 
 export const useTxHistory = (
   uniqueId: ChainUniqueId,
@@ -57,7 +58,11 @@ export const useTxHistory = (
     }
   }, [onChainHistory]);
 
-  const history = useMemo(() => {
+  const [history, setHistory] = useState<AleoHistoryItem[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
     const uncompletedLocalTxs: AleoLocalHistoryItem[] = [];
     const completedLocalTxs: AleoLocalHistoryItem[] = [];
     for (let tx of localTxs || []) {
@@ -84,11 +89,17 @@ export const useTxHistory = (
       }
       return item2.timestamp - item1.timestamp;
     });
-    return txs;
+    setLoading(false);
+    setHistory((prev) => {
+      if (!isEqual(prev, txs)) {
+        return txs;
+      }
+      return prev;
+    });
   }, [localTxs, onChainHistory]);
 
   return {
-    loading: loadingLocalTxs || loadingOnChainHistory,
+    loading: loadingLocalTxs || loadingOnChainHistory || loading,
     loadingLocalTxs,
     loadingOnChainHistory,
     error: localTxsError || onChainHistoryError,
