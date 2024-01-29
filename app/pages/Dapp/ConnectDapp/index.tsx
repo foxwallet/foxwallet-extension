@@ -190,11 +190,11 @@ function ConnectAleoDappScreen() {
                 onClick={onCancel}
                 flex={1}
                 colorScheme="secondary"
-                ml={2}
+                mr={2}
               >
                 {t("Common:cancel")}
               </Button>
-              <Button onClick={onConnect} flex={1} mr={"2"}>
+              <Button onClick={onConnect} flex={1} ml={"2"}>
                 {t("Common:confirm")}
               </Button>
             </Flex>
