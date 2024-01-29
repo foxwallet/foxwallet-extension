@@ -16,7 +16,7 @@ export class DappStorage {
     const instance = await this.getStorageInstance();
     switch (coinType) {
       case CoinType.ALEO: {
-        const historyList = await instance.aleo_connect_history
+        const historyList = await instance.aleo_history
           .where({
             address,
           })
@@ -34,7 +34,7 @@ export class DappStorage {
     const instance = await this.getStorageInstance();
     switch (coinType) {
       case CoinType.ALEO: {
-        const count = await instance.aleo_connect_history
+        const count = await instance.aleo_history
           .where({
             address,
             network: history.network,
@@ -42,7 +42,7 @@ export class DappStorage {
           })
           .count();
         if (count) {
-          await instance.aleo_connect_history
+          await instance.aleo_history
             .where({
               address,
               network: history.network,
@@ -56,7 +56,7 @@ export class DappStorage {
               item.programs = history.programs;
             });
         } else {
-          await instance.aleo_connect_history.add({
+          await instance.aleo_history.add({
             ...history,
             address,
           });
@@ -74,7 +74,7 @@ export class DappStorage {
     const instance = await this.getStorageInstance();
     switch (coinType) {
       case CoinType.ALEO: {
-        await instance.aleo_connect_history
+        await instance.aleo_history
           .where({
             address,
             network: chainId,
