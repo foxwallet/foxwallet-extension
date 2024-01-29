@@ -260,14 +260,19 @@ const ActionButton = ({
       align={"center"}
       direction={"column"}
       {...rest}
+      position={"relative"}
     >
+      {!!disabled && (
+        <Box
+          position={"absolute"}
+          w={"100%"}
+          h={"100%"}
+          bgColor={"rgb(255, 255, 255, 0.5)"}
+          zIndex={1}
+        ></Box>
+      )}
       {icon}
-      <Text
-        mt={1}
-        fontSize={12}
-        fontWeight={500}
-        color={disabled ? "gray.500" : "black"}
-      >
+      <Text mt={1} fontSize={12} fontWeight={500} color={"black"}>
         {title}
       </Text>
     </Flex>
