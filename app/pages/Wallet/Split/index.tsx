@@ -119,7 +119,6 @@ function SplitScreen() {
       case 1:
         return (
           <SplitStep
-            records={records}
             selectedRecords={selectedRecordsRef.current}
             onConfirm={onSubmit}
           />
