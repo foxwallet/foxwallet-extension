@@ -20,9 +20,6 @@ export const FOX_DAPP_RESP = "fox_dapp_response";
 
 export const DAPP_CONNECTION_EXPIRE_TIME = 1000 * 60 * 30;
 
-export const ALE0_EXPOLER_TRANSACTION_URL =
-  "https://explorer.aleo.org/transaction";
-
 export const HELP_CENTER_URL = "https://hc.foxwallet.com";
 export const PRIVACY_POLICY_URL = "https://hc.foxwallet.com/privacy-policy";
 export const TERMS_OF_SERVICE_URL = "https://hc.foxwallet.com/terms-of-service";

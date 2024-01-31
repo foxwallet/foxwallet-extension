@@ -1,6 +1,13 @@
 import { get, post } from "@/common/utils/request";
 import { SyncResp } from "./sync.di";
 import { AleoTransactionWithHeight } from "../../types/Transaction";
+import {
+  AleoFaucetContentResp,
+  AleoFaucetStatusResp,
+  AleoRequestFaucetResp,
+} from "./api.di";
+
+const FAUCET_TYPE = "1001";
 
 export class AleoWalletApi {
   host: string;
@@ -28,11 +35,16 @@ export class AleoWalletApi {
     return await response.json();
   }
 
-  async postData<Type>(url = "/", body: any): Promise<Type> {
+  async postData<Type>(
+    url = "/",
+    body: any,
+    headers: Record<string, string>,
+  ): Promise<Type> {
     const response = await post(`${this.host}/${this.chainId}${url}`, {
       body: JSON.stringify(body),
       headers: {
         "Content-Type": "application/json",
+        ...headers,
       },
     });
     if (!response.ok) {
@@ -120,6 +132,57 @@ export class AleoWalletApi {
     return {
       ...resp,
       timestamp: resp.timestamp * 1000,
+    };
+  }
+
+  async getFaucetContent(_params: { address: string }) {
+    const res = await this.fetchData<AleoFaucetContentResp>(
+      `/faucet?type=${FAUCET_TYPE}`,
+    );
+    if (res.status !== 0 || !res.data) {
+      throw new Error(res.msg);
+    }
+    return res.data;
+  }
+
+  async requestFaucet({
+    address,
+    message,
+    signature,
+  }: {
+    address: string;
+    message: string;
+    signature: string;
+  }) {
+    const res = await this.postData<AleoRequestFaucetResp>(
+      `/faucet`,
+      {
+        type: FAUCET_TYPE,
+        address,
+        message,
+        create_time: Number(JSON.parse(message).timestamp),
+      },
+      {
+        "x-sig-faucet": signature,
+      },
+    );
+    console.log("===> requestFaucet: ", res);
+    if (res.status !== 0 || !res.data) {
+      throw new Error(res.msg);
+    }
+    return res.data;
+  }
+
+  async getFaucetStatus({ address }: { address: string }) {
+    const resp = await this.fetchData<AleoFaucetStatusResp>(
+      `/faucet/status?type=${FAUCET_TYPE}&addr=${address}`,
+    );
+    if (resp.status !== 0 || !resp.data) {
+      throw new Error(resp.msg);
+    }
+    return {
+      ...resp.data,
+      txId: resp.data?.txid,
     };
   }
 }

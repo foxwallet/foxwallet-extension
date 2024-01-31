@@ -16,6 +16,7 @@ import {
   ImportPrivateKeyProps,
   GetPrivateKeyProps,
   ChangeAccountStateProps,
+  PopupSignMessageProps,
 } from "../../scripts/background/servers/IWalletServer";
 import {
   type DisplayWallet,
@@ -206,6 +207,10 @@ export class PopupServerClient implements IClient, IPopupServer {
 
   async isSendingAleoTransaction(): Promise<boolean> {
     return await this.#send("isSendingAleoTransaction", {});
+  }
+
+  async signMessage(params: PopupSignMessageProps): Promise<string> {
+    return await this.#send("signMessage", params);
   }
 
   async onRequestFinish(params: RequestFinfishProps): Promise<void> {

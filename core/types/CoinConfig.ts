@@ -22,4 +22,5 @@ export interface CoinConfig {
   testnet?: boolean;
   faucetWebList?: string[];
   faucetApi?: string;
+  innerFaucet?: boolean;
 }

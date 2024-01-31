@@ -2,15 +2,15 @@ import { CoinType } from "core/types";
 import { AleoConfig } from "../types/AleoConfig";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { ExplorerLanguages } from "core/types/ExplorerLanguages";
-// @ts-expect-error missing type
 import AleoLogo from "../../../assets/images/chains/aleo.webp";
 import { NATIVE_TOKEN_PROGRAM_ID } from "../constants";
-import { ReserveChainConfigs } from "../../../../env";
+import { ReserveChainConfigs, WalletAPI } from "../../../../env";
 
 export const ALEO_CHAIN_CONFIGS: { [key in string]: AleoConfig } = {
   TESTNET3: {
     coinType: CoinType.ALEO,
     uniqueId: InnerChainUniqueId.ALEO_TESTNET3,
+    // @ts-expect-error missing type
     logo: AleoLogo,
     chainId: "testnet3",
     chainName: "Aleo Testnet3",
@@ -33,7 +33,8 @@ export const ALEO_CHAIN_CONFIGS: { [key in string]: AleoConfig } = {
       tx: "/transaction/{txid}",
       address: "",
     },
-    faucetApi: "https://app.aleoswap.org/faucet",
+    faucetApi: `${WalletAPI}/api/v1/aleo/testnet3/faucet`,
+    innerFaucet: true,
     testnet: true,
   },
 };

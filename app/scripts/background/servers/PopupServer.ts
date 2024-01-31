@@ -27,6 +27,7 @@ import {
   ImportPrivateKeyProps,
   GetPrivateKeyProps,
   ChangeAccountStateProps,
+  PopupSignMessageProps,
 } from "./IWalletServer";
 import {
   isSendingAleoTransaction,
@@ -775,6 +776,22 @@ export class PopupWalletServer implements IPopupServer {
       syncBlocks();
     }
     return await this.getAllWallet();
+  }
+
+  async signMessage(params: PopupSignMessageProps): Promise<string> {
+    const { walletId, accountId, coinType, message } = params;
+    const pk = await this.getPrivateKey({ walletId, accountId, coinType });
+    switch (coinType) {
+      case CoinType.ALEO: {
+        const messageArray = hexToUint8Array(message);
+        const privateKey = PrivateKey.from_string(pk);
+        const signature = privateKey.sign(messageArray).to_hex();
+        return signature;
+      }
+      default: {
+        throw new Error("Unsupported coinType " + coinType);
+      }
+    }
   }
 
   async getPrivateKey({

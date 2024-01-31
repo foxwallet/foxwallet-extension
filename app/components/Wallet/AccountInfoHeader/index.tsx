@@ -16,6 +16,7 @@ import {
   Box,
   Flex,
   FlexProps,
+  Spinner,
   Text,
   keyframes,
   useClipboard,
@@ -42,6 +43,17 @@ import {
   SelectJoinSplitOption,
   showSelectJoinSplitDialog,
 } from "@/components/Send/SelectJoinSplit";
+import { useFaucetStatus } from "@/hooks/useFaucetStatus";
+import { FaucetStatus } from "core/coins/ALEO/types/Faucet";
+import { showFaucetClaimedDialog } from "../FaucetClaimedDialog";
+import { SupportLanguages, getCurrLanguage } from "@/locales/i18";
+import { ExplorerLanguages } from "core/types/ExplorerLanguages";
+import { chainUniqueIdToCoinType } from "core/helper/CoinType";
+import { showSignMessageDialog } from "../SignMessageDrawer";
+import { useClient } from "@/hooks/useClient";
+import { showErrorToast } from "@/components/Custom/ErrorToast";
+import { Buffer } from "buffer";
+import { stringToHex } from "@/common/utils/hex";
 
 const rotateAnimation = keyframes`
   from { transform: rotate(0deg) }
@@ -51,13 +63,14 @@ const rotateAnimation = keyframes`
 export const AccountInfoHeader = () => {
   const navigate = useNavigate();
   const { selectedAccount, uniqueId } = useCurrAccount();
-  const { nativeCurrency, chainConfig } = useCoinService(uniqueId);
+  const { nativeCurrency, chainConfig, coinService } = useCoinService(uniqueId);
   const { balance, loadingBalance } = useBalance(
     uniqueId,
     selectedAccount.address,
     4000,
   );
   const { selectedWallet } = useCurrWallet();
+  const { popupServerClient } = useClient();
   const { t } = useTranslation();
   const showBalance = usePopupSelector((state) => state.account.showBalance);
   const dispatch = usePopupDispatch();
@@ -65,23 +78,90 @@ export const AccountInfoHeader = () => {
   const { onCopy } = useClipboard(selectedAccount.address);
   const { sendingAleoTx } = useIsSendingAleoTx(uniqueId);
   const { lock } = useAuth();
+  const [requestingFaucet, setRequestingFaucet] = useState(false);
+  const { faucetStatus, getFaucetStatus } = useFaucetStatus(
+    uniqueId,
+    selectedAccount,
+  );
+
+  const onPressFaucet = useCallback(async () => {
+    if (requestingFaucet) return;
+    setRequestingFaucet(true);
+    try {
+      if (chainConfig.innerFaucet) {
+        const status = await getFaucetStatus();
+        if (status?.status === FaucetStatus.DONE && status.txId) {
+          const { confirmed } = await showFaucetClaimedDialog();
+          if (confirmed) {
+            const lang =
+              getCurrLanguage() === SupportLanguages.ZH
+                ? ExplorerLanguages.ZH
+                : ExplorerLanguages.EN;
+            const url = coinService.getTxDetailUrl(status.txId, lang);
+            if (url) {
+              Browser.tabs.create({ url });
+            }
+          }
+          return;
+        }
+        const address = selectedAccount.address;
+        const coinType = chainUniqueIdToCoinType(uniqueId);
+        const { rawMessage, displayMessage } =
+          await coinService.faucetMessage(address);
+        const { confirmed } = await showSignMessageDialog({
+          address: address,
+          message: displayMessage,
+        });
+        if (confirmed) {
+          const signature = await popupServerClient.signMessage({
+            walletId: selectedAccount.walletId,
+            accountId: selectedAccount.accountId,
+            coinType,
+            message: stringToHex(rawMessage),
+          });
+          const res = await coinService.requestFaucet({
+            address,
+            message: rawMessage,
+            signature,
+          });
+          if (!res) {
+            throw new Error("Request faucet failed");
+          }
+          await getFaucetStatus();
+        }
+      } else {
+        Browser.tabs.create({ url: chainConfig.faucetApi });
+      }
+    } catch (err) {
+      showErrorToast({ message: (err as Error).message });
+    } finally {
+      setRequestingFaucet(false);
+    }
+  }, [
+    chainConfig,
+    getFaucetStatus,
+    coinService,
+    popupServerClient,
+    selectedAccount,
+    requestingFaucet,
+  ]);
 
   const options: ActionButtonProps[] = useMemo(() => {
-    const initOptions = [
+    const initOptions: ActionButtonProps[] = [
       {
         title: t("Receive:title"),
-        icon: <IconReceive />,
+        icon: <IconReceive w={9} h={9} />,
         onPress: () => navigate("/receive"),
       },
       {
         title: t("Send:title"),
-        icon: <IconSend />,
+        icon: <IconSend w={9} h={9} />,
         disabled: sendingAleoTx || balance === undefined,
         onPress: () => navigate("/send_aleo"),
       },
       {
         title: t("JoinSplit:title"),
-        icon: <IconJoinSplit />,
+        icon: <IconJoinSplit w={9} h={9} />,
         disabled: sendingAleoTx || balance === undefined,
         onPress: async () => {
           const { confirmed, data } = await showSelectJoinSplitDialog();
@@ -98,12 +178,22 @@ export const AccountInfoHeader = () => {
     if (chainConfig.testnet && chainConfig.faucetApi) {
       return initOptions.concat({
         title: t("Faucet:title"),
-        icon: <IconFaucet />,
-        onPress: () => Browser.tabs.create({ url: chainConfig.faucetApi }),
+        icon: <IconFaucet w={9} h={9} />,
+        onPress: onPressFaucet,
+        isLoading:
+          requestingFaucet || faucetStatus?.status === FaucetStatus.PENDING,
       });
     }
     return initOptions;
-  }, [navigate, t, sendingAleoTx, balance, chainConfig]);
+  }, [
+    navigate,
+    t,
+    sendingAleoTx,
+    balance,
+    chainConfig,
+    requestingFaucet,
+    faucetStatus,
+  ]);
 
   const onChangeWallet = useCallback(() => {
     showWalletsDrawer({
@@ -244,34 +334,51 @@ interface ActionButtonProps {
   title: string;
   icon: any;
   disabled?: boolean;
+  isLoading?: boolean;
   onPress: () => void;
 }
 const ActionButton = ({
   title,
   icon,
+  isLoading = false,
   disabled = false,
   onPress,
   ...rest
 }: ActionButtonProps & FlexProps) => {
+  const unableToClick = disabled || isLoading;
   return (
     <Flex
-      cursor={disabled ? "not-allowed" : "pointer"}
-      onClick={!disabled ? onPress : undefined}
+      cursor={unableToClick ? "not-allowed" : "pointer"}
+      onClick={!unableToClick ? onPress : undefined}
       align={"center"}
       direction={"column"}
       {...rest}
       position={"relative"}
     >
-      {!!disabled && (
+      {unableToClick && (
         <Box
           position={"absolute"}
           w={"100%"}
           h={"100%"}
           bgColor={"rgb(255, 255, 255, 0.5)"}
           zIndex={1}
+          borderRadius={"lg"}
         ></Box>
       )}
-      {icon}
+      {isLoading ? (
+        <Flex
+          justify={"center"}
+          align={"center"}
+          bgColor={"black"}
+          w={9}
+          h={9}
+          borderRadius={18}
+        >
+          <Spinner w={5} h={5} color={"green.500"} />
+        </Flex>
+      ) : (
+        icon
+      )}
       <Text mt={1} fontSize={12} fontWeight={500} color={"black"}>
         {title}
       </Text>

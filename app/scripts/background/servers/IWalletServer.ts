@@ -121,6 +121,13 @@ export type AleoRequestDeploymentProps = Omit<
   uniqueId: ChainUniqueId;
 };
 
+export type PopupSignMessageProps = {
+  walletId: string;
+  coinType: CoinType;
+  accountId: string;
+  message: string;
+};
+
 export type GetPrivateKeyProps = {
   walletId: string;
   coinType: CoinType;
@@ -177,6 +184,8 @@ export interface IPopupServer {
   sendAleoTransaction(params: AleoSendTxProps): Promise<void>;
 
   isSendingAleoTransaction(): Promise<boolean>;
+
+  signMessage(params: PopupSignMessageProps): Promise<string>;
 
   onRequestFinish(params: RequestFinfishProps): Promise<void>;
 
