@@ -1,6 +1,6 @@
 {
   "name": "foxwallet-extension",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "FoxWallet chrome extension (In development)",
   "type": "module",
   "author": "",
