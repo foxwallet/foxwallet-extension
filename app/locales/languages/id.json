@@ -95,7 +95,9 @@
     "copySuccess": "Salin Sukses!",
     "paused": "Dijeda",
     "lock": "Kunci",
-    "total": "Total"
+    "total": "Total",
+    "remind": "Mengingatkan",
+    "account": "Akun"
   },
   "Send": {
     "title": "Mengirim",
@@ -224,6 +226,13 @@
     "splitDesc": "Pisahkan satu rekaman menjadi dua."
   },
   "Faucet": {
-    "title": "Keran"
+    "title": "Keran",
+    "claimed": "Anda telah mengklaim kredit testnet Aleo.",
+    "explorer": "Periksa penjelajah"
+  },
+  "SignMessage": {
+    "title": "Tandatangani Pesan",
+    "message": "Pesan",
+    "sign": "Tanda"
   }
 }

@@ -95,7 +95,9 @@
     "copySuccess": "Sao chép thành công!",
     "paused": "Đã tạm dừng",
     "lock": "Khóa",
-    "total": "Tổng cộng"
+    "total": "Tổng cộng",
+    "remind": "Nhắc lại",
+    "account": "Tài khoản"
   },
   "Send": {
     "title": "Gửi",
@@ -224,6 +226,13 @@
     "splitDesc": "Chia một bản ghi thành hai."
   },
   "Faucet": {
-    "title": "Vòi"
+    "title": "Vòi",
+    "claimed": "Bạn đã nhận được tín dụng của mạng thử nghiệm Aleo.",
+    "explorer": "Kiểm tra trình thám hiểm"
+  },
+  "SignMessage": {
+    "title": "Ký tin nhắn",
+    "message": "Tin nhắn",
+    "sign": "Dấu hiệu"
   }
 }

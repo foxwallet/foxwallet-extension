@@ -95,7 +95,9 @@
     "copySuccess": "Kopiererfolg!",
     "paused": "Angehalten",
     "lock": "Sperren",
-    "total": "Gesamt"
+    "total": "Gesamt",
+    "remind": "Erinnern",
+    "account": "Konto"
   },
   "Send": {
     "title": "Schicken",
@@ -224,6 +226,13 @@
     "splitDesc": "Teilen Sie einen Datensatz in zwei auf."
   },
   "Faucet": {
-    "title": "Wasserhahn"
+    "title": "Wasserhahn",
+    "claimed": "Sie haben Aleo-Testnet-Credits beansprucht.",
+    "explorer": "Schauen Sie im Explorer nach"
+  },
+  "SignMessage": {
+    "title": "Nachricht unterschreiben",
+    "message": "Nachricht",
+    "sign": "Zeichen"
   }
 }

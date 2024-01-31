@@ -70,7 +70,9 @@
     "copySuccess": "复制成功！",
     "paused": "暂停",
     "lock": "锁定",
-    "total": "全部"
+    "total": "全部",
+    "remind": "提醒",
+    "account": "帐户"
   },
   "Password": {
     "title": "密码",
@@ -224,6 +226,13 @@
     "splitDesc": "将一条记录分成两条。"
   },
   "Faucet": {
-    "title": "龙头"
+    "title": "龙头",
+    "claimed": "您已领取 Aleo 测试网积分。",
+    "explorer": "在浏览器中查看"
+  },
+  "SignMessage": {
+    "title": "签名消息",
+    "message": "消息",
+    "sign": "签名"
   }
 }

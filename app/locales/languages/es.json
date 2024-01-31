@@ -95,7 +95,9 @@
     "copySuccess": "¡Copia exitosa!",
     "paused": "En pausa",
     "lock": "Cerrar",
-    "total": "Total"
+    "total": "Total",
+    "remind": "Recordar",
+    "account": "Cuenta"
   },
   "Send": {
     "title": "Enviar",
@@ -224,6 +226,13 @@
     "splitDesc": "Divida un registro en dos."
   },
   "Faucet": {
-    "title": "Grifo"
+    "title": "Grifo",
+    "claimed": "Has reclamado créditos de Aleo testnet.",
+    "explorer": "Comprobar en el explorador"
+  },
+  "SignMessage": {
+    "title": "Mensaje de firma",
+    "message": "Mensaje",
+    "sign": "Firmar"
   }
 }
