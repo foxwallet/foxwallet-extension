@@ -95,7 +95,9 @@
     "copySuccess": "Başarıyı Kopyala!",
     "paused": "Duraklatıldı",
     "lock": "Kilit",
-    "total": "Toplam"
+    "total": "Toplam",
+    "remind": "Hatırlatmak",
+    "account": "Hesap"
   },
   "Send": {
     "title": "Göndermek",
@@ -224,6 +226,13 @@
     "splitDesc": "Bir kaydı ikiye bölün."
   },
   "Faucet": {
-    "title": "Musluk"
+    "title": "Musluk",
+    "claimed": "Aleo test ağı kredilerini talep ettiniz.",
+    "explorer": "Explorer'ı kontrol edin"
+  },
+  "SignMessage": {
+    "title": "Mesajı İmzala",
+    "message": "İleti",
+    "sign": "İmza"
   }
 }

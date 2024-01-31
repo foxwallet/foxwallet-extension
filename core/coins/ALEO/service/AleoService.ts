@@ -43,6 +43,8 @@ import { AleoApiService } from "./instances/sync";
 import { AleoSyncAccount } from "../types/AleoSyncAccount";
 import { AleoWalletService } from "./instances/api";
 import { Pagination } from "../types/Pagination";
+import { FaucetMessage, FaucetResp } from "../types/Faucet";
+import { ExplorerLanguages } from "core/types/ExplorerLanguages";
 
 const CREDITS_MAPPING_NAME = "account";
 
@@ -1089,6 +1091,62 @@ export class AleoService {
 
   async setAleoSyncAccount(account: AleoSyncAccount) {
     await this.aleoStorage.setAccountInfo(account);
+  }
+
+  async faucetMessage(address: string): Promise<FaucetMessage> {
+    const content = await this.walletService
+      .currInstance()
+      .getFaucetContent({ address });
+    const message = {
+      ...content,
+      address,
+      timestamp: Date.now().toString(),
+    };
+    const messageDisplay = Object.values(message).reduce((res, value) => {
+      if (!res) {
+        return value;
+      }
+      return `${res}\n${value}`;
+    }, "");
+
+    return {
+      rawMessage: JSON.stringify(message),
+      displayMessage: messageDisplay,
+    };
+  }
+
+  async faucetStatus(address: string): Promise<FaucetResp> {
+    const status = await this.walletService
+      .currInstance()
+      .getFaucetStatus({ address });
+    return status;
+  }
+
+  async requestFaucet({
+    address,
+    message,
+    signature,
+  }: {
+    address: string;
+    message: string;
+    signature: string;
+  }): Promise<boolean> {
+    const res = await this.walletService.currInstance().requestFaucet({
+      address,
+      message,
+      signature,
+    });
+    return !!res;
+  }
+
+  getTxDetailUrl(txId: string, lang?: ExplorerLanguages): string | undefined {
+    if (!this.config.explorerUrls || !this.config.explorerPaths?.tx) {
+      return undefined;
+    }
+    return new URL(
+      this.config.explorerPaths.tx.replace("{txid}", txId),
+      this.config.explorerUrls[lang ?? ExplorerLanguages.EN],
+    ).href;
   }
 
   formatRequestTransactionInputsAndFee = async (

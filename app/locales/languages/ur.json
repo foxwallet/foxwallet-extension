@@ -95,7 +95,9 @@
     "copySuccess": "کاپی کامیابی!",
     "paused": "روک دیا گیا",
     "lock": "تالا",
-    "total": "کل"
+    "total": "کل",
+    "remind": "یاد دلانا",
+    "account": "کھاتہ"
   },
   "Send": {
     "title": "بھیجیں",
@@ -224,6 +226,13 @@
     "splitDesc": "ایک ریکارڈ کو دو میں تقسیم کریں۔"
   },
   "Faucet": {
-    "title": "ٹونٹی"
+    "title": "ٹونٹی",
+    "claimed": "آپ نے Aleo testnet کریڈٹس کا دعوی کیا ہے۔",
+    "explorer": "ایکسپلورر پر چیک کریں۔"
+  },
+  "SignMessage": {
+    "title": "دستخطی پیغام",
+    "message": "پیغام",
+    "sign": "دستخط"
   }
 }

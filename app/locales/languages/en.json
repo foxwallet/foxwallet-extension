@@ -144,7 +144,14 @@
     "splitDesc": "Split one record into two."
   },
   "Faucet": {
-    "title": "Faucet"
+    "title": "Faucet",
+    "claimed": "You've claimed Aleo testnet credits.",
+    "explorer": "Check on explorer"
+  },
+  "SignMessage": {
+    "title": "Sign Message",
+    "message": "Message",
+    "sign": "Sign"
   },
   "Receive": {
     "title": "Receive",
@@ -221,7 +228,9 @@
     "copySuccess": "Copy Success!",
     "paused": "Paused",
     "lock": "Lock",
-    "total": "Total"
+    "total": "Total",
+    "remind": "Remind",
+    "account": "Account"
   },
   "Error": {
     "invalidPassword": "Invalid password"

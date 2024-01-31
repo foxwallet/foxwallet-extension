@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import { changeLanguage } from "./locales/i18";
 import { ColorMode } from "./store/setting";
 import { localStorageManager } from "@chakra-ui/react";
+import { GlobalModal } from "./common/utils/dialog";
 
 function App() {
   const routes = useRoutes(routesConfig);
@@ -26,6 +27,9 @@ function App() {
 
   return (
     <ViewPort>
+      <ErrorBoundary>
+        <GlobalModal />
+      </ErrorBoundary>
       <ErrorBoundary>{routes}</ErrorBoundary>
     </ViewPort>
   );

@@ -29,7 +29,6 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import dayjs from "dayjs";
 import browser from "webextension-polyfill";
-import { ALE0_EXPOLER_TRANSACTION_URL } from "@/common/constants";
 import { useTxHistory } from "@/hooks/useTxHistory";
 import { useIsSendingAleoTx } from "@/hooks/useSendingTxStatus";
 import { useRecords } from "@/hooks/useRecord";
@@ -47,7 +46,7 @@ const TokenTxHistoryItem: React.FC<TokenTxHistoryItemProps> = ({
   item,
 }) => {
   const { t } = useTranslation();
-  const { nativeCurrency } = useCoinService(uniqueId);
+  const { nativeCurrency, coinService } = useCoinService(uniqueId);
 
   const timeOfItem = dayjs(item.timestamp);
   const isCurrentYear = dayjs().year() === timeOfItem.year();
@@ -59,7 +58,7 @@ const TokenTxHistoryItem: React.FC<TokenTxHistoryItemProps> = ({
     if (!item.txId) {
       return;
     }
-    const url = `${ALE0_EXPOLER_TRANSACTION_URL}/${item.txId}`;
+    const url = coinService.getTxDetailUrl(item.txId);
     browser.tabs.create({ url });
   }, [item.txId]);
 
