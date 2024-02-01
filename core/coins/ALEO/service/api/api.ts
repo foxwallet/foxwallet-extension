@@ -180,9 +180,22 @@ export class AleoWalletApi {
     if (resp.status !== 0 || !resp.data) {
       throw new Error(resp.msg);
     }
+    try {
+      const txId = resp.data?.txid;
+      if (txId) {
+        const tx = await this.getTransaction(txId);
+        if (tx.status === "accepted") {
+          return {
+            status: resp.data.status,
+            txId,
+          };
+        }
+      }
+    } catch (err) {
+      console.error("===> getFaucetStatus tx error: ", err);
+    }
     return {
-      ...resp.data,
-      txId: resp.data?.txid,
+      status: resp.data.status,
     };
   }
 }

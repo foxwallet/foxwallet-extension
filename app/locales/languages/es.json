@@ -97,7 +97,8 @@
     "lock": "Cerrar",
     "total": "Total",
     "remind": "Recordar",
-    "account": "Cuenta"
+    "account": "Cuenta",
+    "ok": "DE ACUERDO"
   },
   "Send": {
     "title": "Enviar",
@@ -228,7 +229,8 @@
   "Faucet": {
     "title": "Grifo",
     "claimed": "Has reclamado créditos de Aleo testnet.",
-    "explorer": "Comprobar en el explorador"
+    "explorer": "Comprobar en el explorador",
+    "wait": "Hemos recibido su solicitud, mientras que sus créditos de aleo testnet se enviarán en un plazo de 30 minutos."
   },
   "SignMessage": {
     "title": "Mensaje de firma",

@@ -97,7 +97,8 @@
     "lock": "Kilit",
     "total": "Toplam",
     "remind": "Hatırlatmak",
-    "account": "Hesap"
+    "account": "Hesap",
+    "ok": "TAMAM"
   },
   "Send": {
     "title": "Göndermek",
@@ -228,7 +229,8 @@
   "Faucet": {
     "title": "Musluk",
     "claimed": "Aleo test ağı kredilerini talep ettiniz.",
-    "explorer": "Explorer'ı kontrol edin"
+    "explorer": "Explorer'ı kontrol edin",
+    "wait": "Talebinizi aldık; aleo testnet kredileriniz 30 dakika içinde gönderilecektir."
   },
   "SignMessage": {
     "title": "Mesajı İmzala",

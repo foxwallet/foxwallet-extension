@@ -97,7 +97,8 @@
     "lock": "Sperren",
     "total": "Gesamt",
     "remind": "Erinnern",
-    "account": "Konto"
+    "account": "Konto",
+    "ok": "OK"
   },
   "Send": {
     "title": "Schicken",
@@ -228,7 +229,8 @@
   "Faucet": {
     "title": "Wasserhahn",
     "claimed": "Sie haben Aleo-Testnet-Credits beansprucht.",
-    "explorer": "Schauen Sie im Explorer nach"
+    "explorer": "Schauen Sie im Explorer nach",
+    "wait": "Wir haben Ihre Anfrage erhalten und Ihr aleo testnet-Guthaben wird Ihnen innerhalb von 30 Minuten zugesandt."
   },
   "SignMessage": {
     "title": "Nachricht unterschreiben",
