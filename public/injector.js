@@ -1,89 +1,77 @@
-var v = Object.defineProperty;
-var P = (s, e, t) => e in s ? v(s, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : s[e] = t;
-var g = (s, e, t) => (P(s, typeof e != "symbol" ? e + "" : e, t), t), y = (s, e, t) => {
-  if (!e.has(s))
-    throw TypeError("Cannot " + t);
+var P = Object.defineProperty;
+var v = (s, t, e) => t in s ? P(s, t, { enumerable: !0, configurable: !0, writable: !0, value: e }) : s[t] = e;
+var g = (s, t, e) => (v(s, typeof t != "symbol" ? t + "" : t, e), e), y = (s, t, e) => {
+  if (!t.has(s))
+    throw TypeError("Cannot " + e);
 };
-var i = (s, e, t) => (y(s, e, "read from private field"), t ? t.call(s) : e.get(s)), h = (s, e, t) => {
-  if (e.has(s))
+var i = (s, t, e) => (y(s, t, "read from private field"), e ? e.call(s) : t.get(s)), w = (s, t, e) => {
+  if (t.has(s))
     throw TypeError("Cannot add the same private member more than once");
-  e instanceof WeakSet ? e.add(s) : e.set(s, t);
-}, o = (s, e, t, n) => (y(s, e, "write to private field"), n ? n.call(s, t) : e.set(s, t), t);
-const T = "fox_dapp_request", _ = "fox_dapp_response";
-function k(s) {
-  return { all: s = s || /* @__PURE__ */ new Map(), on: function(e, t) {
-    var n = s.get(e);
-    n ? n.push(t) : s.set(e, [t]);
-  }, off: function(e, t) {
-    var n = s.get(e);
-    n && (t ? n.splice(n.indexOf(t) >>> 0, 1) : s.set(e, []));
-  }, emit: function(e, t) {
-    var n = s.get(e);
+  t instanceof WeakSet ? t.add(s) : t.set(s, e);
+}, o = (s, t, e, n) => (y(s, t, "write to private field"), n ? n.call(s, e) : t.set(s, e), e);
+const S = "fox_dapp_request", T = "fox_dapp_response";
+function _(s) {
+  return { all: s = s || /* @__PURE__ */ new Map(), on: function(t, e) {
+    var n = s.get(t);
+    n ? n.push(e) : s.set(t, [e]);
+  }, off: function(t, e) {
+    var n = s.get(t);
+    n && (e ? n.splice(n.indexOf(e) >>> 0, 1) : s.set(t, []));
+  }, emit: function(t, e) {
+    var n = s.get(t);
     n && n.slice().map(function(r) {
-      r(t);
+      r(e);
     }), (n = s.get("*")) && n.slice().map(function(r) {
-      r(e, t);
+      r(t, e);
     });
   } };
 }
-let A = (s = 21) => crypto.getRandomValues(new Uint8Array(s)).reduce((e, t) => (t &= 63, t < 36 ? e += t.toString(36) : t < 62 ? e += (t - 26).toString(36).toUpperCase() : t > 62 ? e += "-" : e += "_", e), "");
-var w, l, d;
+let k = (s = 21) => crypto.getRandomValues(new Uint8Array(s)).reduce((t, e) => (e &= 63, e < 36 ? t += e.toString(36) : e < 62 ? t += (e - 26).toString(36).toUpperCase() : e > 62 ? t += "-" : t += "_", t), "");
+var f, d, l;
 class M {
   constructor() {
-    h(this, w, void 0);
-    h(this, l, void 0);
-    h(this, d, void 0);
-    g(this, "onMessage", (e) => {
-      const { id: t, error: n, data: r } = e.detail, a = i(this, d).get(t);
-      a && (a(n, r), i(this, d).delete(t));
+    w(this, f, void 0);
+    w(this, d, void 0);
+    w(this, l, void 0);
+    g(this, "onMessage", (t) => {
+      const { id: e, error: n, data: r } = t.detail, a = i(this, l).get(e);
+      a && (a(n, r), i(this, l).delete(e));
     });
-    g(this, "on", (e, t) => (i(this, l).on(e, t), () => i(this, l).off(e, t)));
-    g(this, "emit", (e, t) => {
-      i(this, l).emit(e, t);
+    g(this, "on", (t, e) => (i(this, d).on(t, e), () => i(this, d).off(t, e)));
+    g(this, "emit", (t, e) => {
+      i(this, d).emit(t, e);
     });
-    o(this, w, !0), o(this, l, k()), o(this, d, /* @__PURE__ */ new Map()), window.addEventListener(_, this.onMessage);
+    o(this, f, !0), o(this, d, _()), o(this, l, /* @__PURE__ */ new Map()), window.addEventListener(T, this.onMessage);
   }
-  send(e, t, n = {}) {
+  send(t, e, n = {}) {
     return new Promise((r, a) => {
-      const f = A(), x = new CustomEvent(T, {
+      const h = k(), m = new CustomEvent(S, {
         detail: {
-          id: f,
-          method: e,
-          payload: t,
+          id: h,
+          method: t,
+          payload: e,
           metadata: n
         }
       }), q = (p, E) => {
         p ? a(p) : r(E);
       };
-      i(this, d).set(f, q), window.dispatchEvent(x);
+      i(this, l).set(h, q), window.dispatchEvent(m);
     });
   }
   get isFoxWallet() {
-    return i(this, w);
+    return i(this, f);
   }
 }
-w = new WeakMap(), l = new WeakMap(), d = new WeakMap();
+f = new WeakMap(), d = new WeakMap(), l = new WeakMap();
 function R(s) {
-  return Array.from(s).map((e) => e.toString(16).padStart(2, "0")).join("");
-}
-function S(s) {
-  if (s.length % 2 !== 0)
-    throw new Error("Hex string must have an even number of characters");
-  const e = new Uint8Array(s.length / 2);
-  for (let t = 0; t < e.length; t++) {
-    const n = parseInt(s.slice(t * 2, t * 2 + 2), 16);
-    if (isNaN(n))
-      throw new Error("Invalid hex string");
-    e[t] = n;
-  }
-  return e;
+  return Array.from(s).map((t) => t.toString(16).padStart(2, "0")).join("");
 }
 var c, u;
-class b extends M {
+class A extends M {
   constructor() {
     super();
-    h(this, c, void 0);
-    h(this, u, void 0);
+    w(this, c, void 0);
+    w(this, u, void 0);
     o(this, c, null), o(this, u, null);
   }
   get publicKey() {
@@ -92,9 +80,9 @@ class b extends M {
   get network() {
     return i(this, u);
   }
-  async connect(t, n, r) {
+  async connect(e, n, r) {
     const a = await this.send("connect", {
-      decryptPermission: t,
+      decryptPermission: e,
       network: n,
       programs: r
     });
@@ -103,65 +91,65 @@ class b extends M {
   async disconnect() {
     if (!i(this, c) || !this.network)
       throw new Error("Connect before disconnect");
-    const t = await this.send("disconnect", {});
-    return o(this, c, null), o(this, u, null), t;
+    const e = await this.send("disconnect", {});
+    return o(this, c, null), o(this, u, null), e;
   }
-  async decrypt(t, n, r, a, f) {
+  async decrypt(e, n, r, a, h) {
     return await this.send("decrypt", {
-      cipherText: t,
+      cipherText: e,
       tpk: n,
       programId: r,
       functionName: a,
-      index: f
+      index: h
     });
   }
-  async requestRecords(t) {
-    return await this.send("requestRecords", { program: t });
+  async requestRecords(e) {
+    return await this.send("requestRecords", { program: e });
   }
-  async requestTransaction(t) {
-    return await this.send("requestTransaction", { transaction: t });
+  async requestTransaction(e) {
+    return await this.send("requestTransaction", { transaction: e });
   }
-  async requestExecution(t) {
-    return await this.send("requestExecution", { transaction: t });
+  async requestExecution(e) {
+    return await this.send("requestExecution", { transaction: e });
   }
-  async requestBulkTransactions(t) {
-    return await this.send("requestBulkTransactions", { transactions: t });
+  async requestBulkTransactions(e) {
+    return await this.send("requestBulkTransactions", { transactions: e });
   }
-  async requestDeploy(t) {
-    return await this.send("requestDeploy", { deployment: t });
+  async requestDeploy(e) {
+    return await this.send("requestDeploy", { deployment: e });
   }
-  async transactionStatus(t) {
-    return await this.send("transactionStatus", { transactionId: t });
+  async transactionStatus(e) {
+    return await this.send("transactionStatus", { transactionId: e });
   }
-  async getExecution(t) {
-    return await this.send("getExecution", { transactionId: t });
+  async getExecution(e) {
+    return await this.send("getExecution", { transactionId: e });
   }
-  async requestRecordPlaintexts(t) {
-    return await this.send("requestRecordPlaintexts", { program: t });
+  async requestRecordPlaintexts(e) {
+    return await this.send("requestRecordPlaintexts", { program: e });
   }
-  async requestTransactionHistory(t) {
-    return await this.send("requestTransactionHistory", { program: t });
+  async requestTransactionHistory(e) {
+    return await this.send("requestTransactionHistory", { program: e });
   }
-  async signMessage(t) {
-    const n = R(t), r = await this.send("signMessage", {
+  async signMessage(e) {
+    const n = R(e), r = await this.send("signMessage", {
       message: n
     });
     if (!r)
       throw new Error("sign message failed");
-    return { signature: S(r.signature) };
+    return { signature: new TextEncoder().encode(r.signature) };
   }
-  send(t, n) {
-    return super.send(t, n, {
+  send(e, n) {
+    return super.send(e, n, {
       address: i(this, c),
       network: i(this, u)
     });
   }
 }
 c = new WeakMap(), u = new WeakMap();
-const m = new b();
+const x = new A();
 window.foxwallet = {
-  aleo: m
+  aleo: x
 };
-window.aleo = m;
+window.aleo = x;
 Object.freeze(window.foxwallet);
 Object.seal(window.aleo);
