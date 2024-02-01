@@ -97,7 +97,8 @@
     "lock": "Khóa",
     "total": "Tổng cộng",
     "remind": "Nhắc lại",
-    "account": "Tài khoản"
+    "account": "Tài khoản",
+    "ok": "ĐƯỢC RỒI"
   },
   "Send": {
     "title": "Gửi",
@@ -228,7 +229,8 @@
   "Faucet": {
     "title": "Vòi",
     "claimed": "Bạn đã nhận được tín dụng của mạng thử nghiệm Aleo.",
-    "explorer": "Kiểm tra trình thám hiểm"
+    "explorer": "Kiểm tra trình thám hiểm",
+    "wait": "Chúng tôi đã nhận được yêu cầu của bạn, trong khi tín dụng aleo testnet của bạn sẽ được gửi trong vòng 30 phút."
   },
   "SignMessage": {
     "title": "Ký tin nhắn",

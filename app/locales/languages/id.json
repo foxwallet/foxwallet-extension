@@ -97,7 +97,8 @@
     "lock": "Kunci",
     "total": "Total",
     "remind": "Mengingatkan",
-    "account": "Akun"
+    "account": "Akun",
+    "ok": "OKE"
   },
   "Send": {
     "title": "Mengirim",
@@ -228,7 +229,8 @@
   "Faucet": {
     "title": "Keran",
     "claimed": "Anda telah mengklaim kredit testnet Aleo.",
-    "explorer": "Periksa penjelajah"
+    "explorer": "Periksa penjelajah",
+    "wait": "Kami telah menerima permintaan Anda, sementara kredit aleo testnet Anda akan dikirim dalam waktu 30 menit."
   },
   "SignMessage": {
     "title": "Tandatangani Pesan",

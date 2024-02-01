@@ -6,12 +6,14 @@ import { useTranslation } from "react-i18next";
 
 interface Props {
   isOpen: boolean;
+  content: string;
+  onChain: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }
 
 const FaucetClaimedDialog = (props: Props) => {
-  const { isOpen, onConfirm, onCancel } = props;
+  const { content, onChain, isOpen, onConfirm, onCancel } = props;
   const { t } = useTranslation();
 
   return (
@@ -20,11 +22,11 @@ const FaucetClaimedDialog = (props: Props) => {
       onClose={onCancel}
       isCentered
       title={t("Common:remind")}
-      body={<P3 textAlign={"center"}>{t("Faucet:claimed")}</P3>}
+      body={<P3 textAlign={"center"}>{content}</P3>}
       footer={
         <Flex flex={1}>
-          <Button flex={1} onClick={onConfirm}>
-            {t("Faucet:explorer")}
+          <Button flex={1} onClick={onChain ? onConfirm : onCancel}>
+            {onChain ? t("Faucet:explorer") : t("Common:ok")}
           </Button>
         </Flex>
       }

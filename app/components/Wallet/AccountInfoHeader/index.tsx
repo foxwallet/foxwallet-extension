@@ -90,9 +90,12 @@ export const AccountInfoHeader = () => {
     try {
       if (chainConfig.innerFaucet) {
         const status = await getFaucetStatus();
-        if (status?.status === FaucetStatus.DONE && status.txId) {
-          const { confirmed } = await showFaucetClaimedDialog();
-          if (confirmed) {
+        if (status?.status === FaucetStatus.DONE) {
+          const { confirmed } = await showFaucetClaimedDialog({
+            content: status.txId ? t("Faucet:claimed") : t("Faucet:wait"),
+            onChain: !!status.txId,
+          });
+          if (confirmed && status.txId) {
             const lang =
               getCurrLanguage() === SupportLanguages.ZH
                 ? ExplorerLanguages.ZH
@@ -144,6 +147,7 @@ export const AccountInfoHeader = () => {
     popupServerClient,
     selectedAccount,
     requestingFaucet,
+    t,
   ]);
 
   const options: ActionButtonProps[] = useMemo(() => {

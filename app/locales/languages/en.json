@@ -146,6 +146,7 @@
   "Faucet": {
     "title": "Faucet",
     "claimed": "You've claimed Aleo testnet credits.",
+    "wait": "We've received your request, while your aleo testnet credits will be sent within 30 minutes.",
     "explorer": "Check on explorer"
   },
   "SignMessage": {
@@ -230,7 +231,8 @@
     "lock": "Lock",
     "total": "Total",
     "remind": "Remind",
-    "account": "Account"
+    "account": "Account",
+    "ok": "OK"
   },
   "Error": {
     "invalidPassword": "Invalid password"
