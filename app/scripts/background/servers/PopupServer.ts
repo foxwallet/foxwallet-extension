@@ -435,7 +435,7 @@ export class PopupWalletServer implements IPopupServer {
               }
               await browser.windows.remove(popupId);
               const privateKey = PrivateKey.from_string(pk);
-              const signature = privateKey.sign(messageArray).to_hex();
+              const signature = privateKey.sign(messageArray).to_string();
               resolve(signature);
             } catch (err) {
               console.error("creatSignMessagePopup callback error: ", err);

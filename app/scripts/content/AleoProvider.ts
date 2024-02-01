@@ -110,7 +110,8 @@ export class AleoProvider extends BaseProvider {
     if (!res) {
       throw new Error("sign message failed");
     }
-    const signature = hexToUint8Array(res.signature);
+    const encoder = new TextEncoder();
+    const signature = encoder.encode(res.signature);
     return { signature };
   }
 
