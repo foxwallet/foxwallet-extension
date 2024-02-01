@@ -1,7 +1,7 @@
 {
   "name": "foxwallet-extension",
   "version": "0.0.7",
-  "description": "FoxWallet chrome extension (In development)",
+  "description": "FoxWallet chrome extension",
   "type": "module",
   "author": "",
   "license": "MIT",
