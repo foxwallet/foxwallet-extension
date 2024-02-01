@@ -190,7 +190,8 @@
     "download": "Download",
     "noUpdate": "No update required",
     "privacyPolicy": "<Privacy Policy>",
-    "userAgreement": "<User Agreement>"
+    "userAgreement": "<User Agreement>",
+    "update": "Check for Updates"
   },
   "Dapp": {
     "requestConnect": "Request connection",

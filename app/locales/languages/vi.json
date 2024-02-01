@@ -204,7 +204,8 @@
     "noUpdate": "Không cần cập nhật",
     "privacyPolicy": "<Chính sách quyền riêng tư>",
     "userAgreement": "<Thỏa thuận người dùng>",
-    "version": "Phiên bản"
+    "version": "Phiên bản",
+    "update": "Kiểm tra cập nhật"
   },
   "Me": {
     "title": "Tôi"

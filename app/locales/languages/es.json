@@ -204,7 +204,8 @@
     "noUpdate": "No se requiere actualización",
     "privacyPolicy": "<Política de privacidad>",
     "userAgreement": "<Acuerdo de usuario>",
-    "version": "Versión"
+    "version": "Versión",
+    "update": "Buscar actualizaciones"
   },
   "Me": {
     "title": "A mí"
