@@ -23,5 +23,8 @@ export const DAPP_CONNECTION_EXPIRE_TIME = 1000 * 60 * 30;
 export const HELP_CENTER_URL = "https://hc.foxwallet.com";
 export const PRIVACY_POLICY_URL = "https://hc.foxwallet.com/privacy-policy";
 export const TERMS_OF_SERVICE_URL = "https://hc.foxwallet.com/terms-of-service";
+export const EXTENSION_PAGE_URL = "chrome://extensions/?id=";
+export const EXTENSION_STORE_URL =
+  "https://chromewebstore.google.com/detail/foxwallet/pmmnimefaichbcnbndcfpaagbepnjaig";
 
 export const CHROME_MIN_VERSION = "120";

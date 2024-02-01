@@ -204,7 +204,8 @@
     "noUpdate": "Kein Update erforderlich",
     "privacyPolicy": "<Datenschutzerklärung>",
     "userAgreement": "<Benutzervereinbarung>",
-    "version": "Ausführung"
+    "version": "Ausführung",
+    "update": "Auf Updates prüfen"
   },
   "Me": {
     "title": "Mich"

@@ -204,7 +204,8 @@
     "noUpdate": "无需更新",
     "privacyPolicy": "<隐私政策>",
     "userAgreement": "<用户协议>",
-    "version": "版本"
+    "version": "版本",
+    "update": "检查更新"
   },
   "Me": {
     "title": "我"

@@ -204,7 +204,8 @@
     "noUpdate": "Güncelleme gerekmez",
     "privacyPolicy": "<Gizlilik Politikası>",
     "userAgreement": "<Kullanıcı Sözleşmesi>",
-    "version": "Sürüm"
+    "version": "Sürüm",
+    "update": "Güncellemeleri kontrol et"
   },
   "Me": {
     "title": "Ben"
