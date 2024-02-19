@@ -9,7 +9,6 @@ import {
   AleoRequestFaucetResp,
 } from "./api.di";
 import { AleoCreditMethod } from "../../types/TransferMethod";
-import { BigNumber } from "ethers";
 
 const FAUCET_TYPE = "1001";
 
