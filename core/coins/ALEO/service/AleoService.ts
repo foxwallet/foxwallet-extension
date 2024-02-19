@@ -332,7 +332,14 @@ export class AleoService {
   }
 
   async getBaseFee(method: AleoCreditMethod): Promise<bigint> {
-    return ALEO_METHOD_BASE_FEE_MAP[method];
+    const fee = ALEO_METHOD_BASE_FEE_MAP[method];
+    if (fee) {
+      return fee;
+    }
+    const baseFee = await this.walletService
+      .currInstance()
+      .getBaseFee({ txType: method });
+    return baseFee;
   }
 
   private getPriorityFeeInTx(tx: AleoTransaction) {
@@ -350,21 +357,32 @@ export class AleoService {
   }
 
   async getPriorityFee(): Promise<bigint> {
-    const [latestBlock] = await Promise.all([
-      this.rpcService.currInstance().getLatestBlock(),
-    ]);
-    const feeList: bigint[] = [];
-    latestBlock.transactions?.forEach((tx) => {
-      const fee = this.getPriorityFeeInTx(tx.transaction);
-      if (fee) {
-        feeList.push(fee);
+    try {
+      const priorityFee = await this.walletService
+        .currInstance()
+        .getPriorityFee();
+      if (priorityFee) {
+        return BigInt(priorityFee);
       }
-    });
-    if (feeList.length === 0) {
-      return 10000n;
+      const [latestBlock] = await Promise.all([
+        this.rpcService.currInstance().getLatestBlock(),
+      ]);
+      const feeList: bigint[] = [];
+      latestBlock.transactions?.forEach((tx) => {
+        const fee = this.getPriorityFeeInTx(tx.transaction);
+        if (fee) {
+          feeList.push(fee);
+        }
+      });
+      if (feeList.length === 0) {
+        return 100000n;
+      }
+      feeList.sort((fee1, fee2) => Number(fee1 - fee2));
+      return feeList[Math.floor(feeList.length / 2)];
+    } catch (err) {
+      console.error("===> getPriorityFee error: ", err);
+      return 100000n;
     }
-    feeList.sort((fee1, fee2) => Number(fee1 - fee2));
-    return feeList[Math.floor(feeList.length / 2)];
   }
 
   async getGasFee(method: AleoCreditMethod): Promise<AleoGasFee> {
