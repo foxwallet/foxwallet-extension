@@ -9,3 +9,10 @@ export type AleoFaucetStatusResp = SyncResp<{
   status: FaucetStatus;
   txid?: string;
 }>;
+
+export type AleoBaseFeeResp = SyncResp<string>;
+
+export type AleoPriorityFeeResp = SyncResp<{
+  height: number;
+  recommend: number;
+}>;

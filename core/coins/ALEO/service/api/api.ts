@@ -2,10 +2,14 @@ import { get, post } from "@/common/utils/request";
 import { SyncResp } from "./sync.di";
 import { AleoTransactionWithHeight } from "../../types/Transaction";
 import {
+  AleoBaseFeeResp,
   AleoFaucetContentResp,
   AleoFaucetStatusResp,
+  AleoPriorityFeeResp,
   AleoRequestFaucetResp,
 } from "./api.di";
+import { AleoCreditMethod } from "../../types/TransferMethod";
+import { BigNumber } from "ethers";
 
 const FAUCET_TYPE = "1001";
 
@@ -197,5 +201,25 @@ export class AleoWalletApi {
     return {
       status: resp.data.status,
     };
+  }
+
+  async getBaseFee(params: { txType: AleoCreditMethod }) {
+    const { txType } = params;
+    const res: AleoBaseFeeResp = await this.fetchData(
+      `/gas?function=${txType}`,
+    );
+    if (res.status !== 0 || !res.data) {
+      throw new Error(res.msg);
+    }
+    const num = BigInt(res.data.slice(0, -3));
+    return num;
+  }
+
+  async getPriorityFee() {
+    const resp = await this.fetchData<AleoPriorityFeeResp>(`/priority_fee`);
+    if (resp.status !== 0 || !resp.data) {
+      throw new Error("get priority fee error");
+    }
+    return resp.data.recommend;
   }
 }
