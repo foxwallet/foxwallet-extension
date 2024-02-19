@@ -26,6 +26,19 @@ export class AleoBlockDatabase extends Dexie {
       cacheTxs: "txId",
     });
 
+    this.version(3)
+      .stores({
+        txs: "localId, [address+programId], notification",
+      })
+      .upgrade((transaction) => {
+        return transaction
+          .table("txs")
+          .toCollection()
+          .modify((tx) => {
+            tx.notification = true;
+          });
+      });
+
     this.infos = this.table("infos");
     this.records = this.table("records");
     this.txs = this.table("txs");

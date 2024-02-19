@@ -41,6 +41,7 @@ export interface AleoLocalHistoryItem {
   addressType: AleoTxAddressType.SEND;
   amount?: string;
   status: AleoTxStatus;
+  notification: boolean;
 }
 
 export type AleoHistoryItem = AleoOnChainHistoryItem | AleoLocalHistoryItem;

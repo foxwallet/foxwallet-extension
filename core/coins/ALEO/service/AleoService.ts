@@ -641,6 +641,7 @@ export class AleoService {
           addressType: AleoTxAddressType.SEND,
           amount: txInfo.amount,
           txType: txInfo.txType || AleoTxType.EXECUTION,
+          notification: txInfo.notification,
         };
         break;
       }
@@ -660,6 +661,7 @@ export class AleoService {
               addressType: AleoTxAddressType.SEND,
               amount: txInfo.amount,
               txType: txInfo.txType || AleoTxType.EXECUTION,
+              notification: txInfo.notification,
             };
             break;
           }
@@ -677,6 +679,7 @@ export class AleoService {
               amount: txInfo.amount,
               txType: txInfo.txType || AleoTxType.EXECUTION,
               txId,
+              notification: txInfo.notification,
             };
           } else {
             result = {
@@ -691,6 +694,7 @@ export class AleoService {
               amount: txInfo.amount,
               txType: txInfo.txType || AleoTxType.EXECUTION,
               txId,
+              notification: txInfo.notification,
             };
             const newTxInfo = {
               ...txInfo,
@@ -726,6 +730,7 @@ export class AleoService {
               amount: txInfo.amount,
               txType: txInfo.txType || AleoTxType.EXECUTION,
               txId,
+              notification: txInfo.notification,
             };
           } else {
             result = {
@@ -740,6 +745,7 @@ export class AleoService {
               amount: txInfo.amount,
               txType: txInfo.txType || AleoTxType.EXECUTION,
               txId,
+              notification: txInfo.notification,
             };
           }
         }
@@ -761,6 +767,7 @@ export class AleoService {
           amount: txInfo.amount,
           txId: txInfo.transaction?.id,
           txType: txInfo.txType || AleoTxType.EXECUTION,
+          notification: txInfo.notification,
         };
         break;
       }
@@ -777,6 +784,7 @@ export class AleoService {
           addressType: AleoTxAddressType.SEND,
           amount: txInfo.amount,
           txType: txInfo.txType || AleoTxType.EXECUTION,
+          notification: txInfo.notification,
         };
         break;
       }

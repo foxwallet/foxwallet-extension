@@ -246,6 +246,7 @@ export class AleoTxWorker {
       status: AleoTxStatus.QUEUED,
       timestamp,
       amount,
+      notification: false,
     };
     try {
       const startTime = performance.now();
@@ -387,6 +388,7 @@ export class AleoTxWorker {
       feeRecord: feeRecordStr,
       status: AleoTxStatus.QUEUED,
       timestamp,
+      notification: false,
     };
     try {
       const startTime = performance.now();

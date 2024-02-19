@@ -42,6 +42,7 @@ export type AleoLocalTxInfo = Omit<
   timestamp: number;
   transaction?: AleoTransaction;
   txType: AleoTxType;
+  notification: boolean;
 };
 
 export type AleoTxWithTime = AleoTransaction & {

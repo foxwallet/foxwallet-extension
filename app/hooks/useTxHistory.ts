@@ -1,6 +1,6 @@
 import { ChainUniqueId } from "core/types/ChainUniqueId";
 import { useCoinService } from "./useCoinService";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
 import { Pagination } from "core/coins/ALEO/types/Pagination";
 import {
@@ -9,6 +9,7 @@ import {
   AleoOnChainHistoryItem,
 } from "core/coins/ALEO/types/History";
 import { isEqual, uniqBy } from "lodash";
+import { AleoTxStatus } from "core/coins/ALEO/types/Transaction";
 
 export const useTxHistory = (
   uniqueId: ChainUniqueId,
@@ -97,6 +98,42 @@ export const useTxHistory = (
       return prev;
     });
   }, [localTxs, onChainHistory]);
+
+  const notifiedTxs = useRef<string[]>([]);
+  const newSettledTxs = useMemo(() => {
+    if (!localTxs) {
+      return [];
+    }
+    return localTxs.filter((item) => {
+      if (!item) return false;
+      if (item.notification) return false;
+      switch (item.status) {
+        case AleoTxStatus.QUEUED:
+        case AleoTxStatus.GENERATING_PROVER_FILES:
+        case AleoTxStatus.GENERATING_TRANSACTION:
+        case AleoTxStatus.BROADCASTING:
+        case AleoTxStatus.COMPLETED:
+        case AleoTxStatus.UNACCEPTED: {
+          return false;
+        }
+        case AleoTxStatus.FAILED:
+        case AleoTxStatus.FINALIZD:
+        case AleoTxStatus.REJECTED: {
+          return true;
+        }
+      }
+    });
+  }, [localTxs]);
+
+  useEffect(() => {
+    if (newSettledTxs.length > 0) {
+      for (let tx of newSettledTxs) {
+        if (!notifiedTxs.current.includes(tx.localId)) {
+          notifiedTxs.current.push(tx.localId);
+        }
+      }
+    }
+  }, [newSettledTxs]);
 
   return {
     loading: loadingLocalTxs || loadingOnChainHistory || loading,

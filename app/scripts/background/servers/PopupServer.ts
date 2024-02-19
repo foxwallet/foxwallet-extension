@@ -253,6 +253,7 @@ export class PopupWalletServer implements IPopupServer {
               ...params,
               txType: AleoTxType.EXECUTION,
               status: AleoTxStatus.QUEUED,
+              notification: false,
             };
             await this.coinService
               .getInstance(params.uniqueId)
@@ -272,6 +273,7 @@ export class PopupWalletServer implements IPopupServer {
                   ...params,
                   status: AleoTxStatus.FAILED,
                   txType: AleoTxType.EXECUTION,
+                  notification: false,
                   error: "sendTransaction failed",
                 };
                 await this.coinService
@@ -345,6 +347,7 @@ export class PopupWalletServer implements IPopupServer {
               inputs: [],
               status: AleoTxStatus.QUEUED,
               txType: AleoTxType.DEPLOYMENT,
+              notification: false,
             };
             await this.coinService
               .getInstance(params.uniqueId)
@@ -363,6 +366,7 @@ export class PopupWalletServer implements IPopupServer {
                   inputs: [],
                   status: AleoTxStatus.FAILED,
                   txType: AleoTxType.DEPLOYMENT,
+                  notification: false,
                   error: "sendDeployment failed",
                 };
                 await this.coinService
@@ -694,6 +698,7 @@ export class PopupWalletServer implements IPopupServer {
           ...params,
           status: AleoTxStatus.FAILED,
           txType: AleoTxType.EXECUTION,
+          notification: false,
           error: "sendTransaction failed",
         };
         await this.coinService
