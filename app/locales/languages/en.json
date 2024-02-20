@@ -164,7 +164,8 @@
     "title": "Token Detail",
     "balance": "Balance",
     "tx_records": "Transaction Records",
-    "empty_tx": "No transaction records"
+    "empty_tx": "No transaction records",
+    "jump_explorer": "Explorer"
   },
   "Tx": {
     "success_toast": "Transaction Successful!",

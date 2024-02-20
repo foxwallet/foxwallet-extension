@@ -168,7 +168,8 @@
     "title": "代币详情",
     "balance": "余额",
     "tx_records": "交易记录",
-    "empty_tx": "无交易记录"
+    "empty_tx": "无交易记录",
+    "jump_explorer": "浏览器"
   },
   "Language": {
     "title": "语言"

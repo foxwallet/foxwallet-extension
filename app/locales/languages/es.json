@@ -168,7 +168,8 @@
     "title": "Detalle del token",
     "balance": "Balance",
     "tx_records": "Registros de transacciones",
-    "empty_tx": "Sin registros de transacciones"
+    "empty_tx": "Sin registros de transacciones",
+    "jump_explorer": "Explorador"
   },
   "Language": {
     "title": "Idioma"

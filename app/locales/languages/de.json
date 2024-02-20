@@ -168,7 +168,8 @@
     "title": "Token-Details",
     "balance": "Gleichgewicht",
     "tx_records": "Transaktionsaufzeichnungen",
-    "empty_tx": "Keine Transaktionsaufzeichnungen"
+    "empty_tx": "Keine Transaktionsaufzeichnungen",
+    "jump_explorer": "Forscher"
   },
   "Language": {
     "title": "Sprache"

@@ -168,7 +168,8 @@
     "title": "Chi tiết mã thông báo",
     "balance": "Sự cân bằng",
     "tx_records": "Hồ sơ giao dịch",
-    "empty_tx": "Không có hồ sơ giao dịch"
+    "empty_tx": "Không có hồ sơ giao dịch",
+    "jump_explorer": "nhà thám hiểm"
   },
   "Language": {
     "title": "Ngôn ngữ"

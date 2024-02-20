@@ -168,7 +168,8 @@
     "title": "Detail Token",
     "balance": "Keseimbangan",
     "tx_records": "Catatan Transaksi",
-    "empty_tx": "Tidak ada catatan transaksi"
+    "empty_tx": "Tidak ada catatan transaksi",
+    "jump_explorer": "Penjelajah"
   },
   "Language": {
     "title": "Bahasa"
