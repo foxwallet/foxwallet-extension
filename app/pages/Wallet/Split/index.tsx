@@ -66,6 +66,7 @@ function SplitScreen() {
           amount:
             selectedRecordsRef.current[0]?.parsedContent?.microcredits?.toString(),
           txType: AleoTxType.EXECUTION,
+          notification: false,
         };
         await coinService.setAddressLocalTx(address, pendingTx);
         popupServerClient

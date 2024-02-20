@@ -117,6 +117,7 @@ function SendScreen() {
           timestamp,
           amount: amount.toString(),
           txType: AleoTxType.EXECUTION,
+          notification: false,
         };
         await coinService.setAddressLocalTx(address, pendingTx);
         popupServerClient

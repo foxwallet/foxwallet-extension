@@ -237,5 +237,9 @@
     "title": "签名消息",
     "message": "消息",
     "sign": "签名"
+  },
+  "Tx": {
+    "success_toast": "交易成功！",
+    "fail_toast": "交易失败。"
   }
 }

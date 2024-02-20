@@ -237,5 +237,9 @@
     "title": "Ký tin nhắn",
     "message": "Tin nhắn",
     "sign": "Dấu hiệu"
+  },
+  "Tx": {
+    "success_toast": "Giao dịch thành công!",
+    "fail_toast": "Giao dịch không thành công."
   }
 }

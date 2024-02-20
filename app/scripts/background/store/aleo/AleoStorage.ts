@@ -181,6 +181,11 @@ export class AleoStorage implements IAleoStorage {
     await instance.txs.put(info, "localId");
   }
 
+  async setLocalTxNotification(chainId: string, localId: string) {
+    const instance = await this.getBlockDBInstance(chainId);
+    await instance.txs.update(localId, { notification: true });
+  }
+
   async removeAddressLocalTx(
     chainId: string,
     address: string,
