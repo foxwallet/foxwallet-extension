@@ -237,5 +237,9 @@
     "title": "Mensaje de firma",
     "message": "Mensaje",
     "sign": "Firmar"
+  },
+  "Tx": {
+    "success_toast": "¡Transacción exitosa!",
+    "fail_toast": "Transacción fallida."
   }
 }

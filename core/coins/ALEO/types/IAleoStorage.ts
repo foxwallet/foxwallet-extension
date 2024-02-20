@@ -38,6 +38,8 @@ export interface IAleoStorage {
     info: AleoAddressInfo,
   ): Promise<AleoAddressInfo>;
 
+  setLocalTxNotification(chainId: string, localId: string): Promise<void>;
+
   setAddressLocalTx(
     chainId: string,
     address: string,

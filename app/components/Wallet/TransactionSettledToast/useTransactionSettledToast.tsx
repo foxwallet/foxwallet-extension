@@ -9,8 +9,7 @@ import {
 import { IconCheckLineBlack, IconCloseLineBlack } from "../../Custom/Icon";
 import { useTranslation } from "react-i18next";
 
-const ToastId = "transaction-settled-toast";
-export const useTransactionSettledToast = (success: boolean) => {
+export const useTransactionSettledToast = () => {
   const { t } = useTranslation();
   const bg = useColorModeValue("black", "white");
   const iconBg = useColorModeValue("white", "black");
@@ -18,7 +17,7 @@ export const useTransactionSettledToast = (success: boolean) => {
 
   const toast = useToast({
     position: "top",
-    render: () => (
+    render: ({ status }) => (
       <VStack>
         <Box
           mt={10}
@@ -39,10 +38,14 @@ export const useTransactionSettledToast = (success: boolean) => {
             align={"center"}
             mr={2.5}
           >
-            {success ? <IconCheckLineBlack /> : <IconCloseLineBlack />}
+            {status === "success" ? (
+              <IconCheckLineBlack />
+            ) : (
+              <IconCloseLineBlack />
+            )}
           </Flex>
           <Text color={textColor} fontWeight={500}>
-            {success ? "Transaction success!" : "Transaction failed!"}
+            {status === "success" ? t("Tx:success_toast") : t("Tx:fail_toast")}
           </Text>
         </Box>
       </VStack>
@@ -51,9 +54,15 @@ export const useTransactionSettledToast = (success: boolean) => {
   });
 
   return {
-    showToast: () => {
-      if (!toast.isActive(ToastId)) {
-        toast({ id: ToastId });
+    showToast: (success: boolean) => {
+      const toastId = `transaction-settled-toast`;
+
+      if (!toast.isActive(toastId)) {
+        toast({
+          id: toastId,
+          status: success ? "success" : "error",
+          duration: 6000,
+        });
       }
     },
   };

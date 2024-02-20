@@ -822,6 +822,10 @@ export class AleoService {
     return await this.processLocalTxInfo(address, txInfo, program);
   }
 
+  async setLocalTxNotification(localId: string) {
+    await this.aleoStorage.setLocalTxNotification(this.chainId, localId);
+  }
+
   private async getConfirmedTransactionInfo(
     txId: string,
     viewKey: ViewKey,

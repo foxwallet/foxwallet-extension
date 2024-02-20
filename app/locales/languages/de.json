@@ -237,5 +237,9 @@
     "title": "Nachricht unterschreiben",
     "message": "Nachricht",
     "sign": "Zeichen"
+  },
+  "Tx": {
+    "success_toast": "Transaktion Erfolgreich!",
+    "fail_toast": "Transaktion fehlgeschlagen."
   }
 }

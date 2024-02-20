@@ -237,5 +237,9 @@
     "title": "Mesajı İmzala",
     "message": "İleti",
     "sign": "İmza"
+  },
+  "Tx": {
+    "success_toast": "İşlem Başarılı!",
+    "fail_toast": "İşlem başarısız."
   }
 }

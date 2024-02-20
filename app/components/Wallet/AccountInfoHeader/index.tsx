@@ -25,7 +25,7 @@ import {
 import { TokenNum } from "../TokenNum";
 import { useCoinService } from "@/hooks/useCoinService";
 import { useBalance } from "@/hooks/useBalance";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
@@ -52,8 +52,8 @@ import { chainUniqueIdToCoinType } from "core/helper/CoinType";
 import { showSignMessageDialog } from "../SignMessageDrawer";
 import { useClient } from "@/hooks/useClient";
 import { showErrorToast } from "@/components/Custom/ErrorToast";
-import { Buffer } from "buffer";
 import { stringToHex } from "@/common/utils/hex";
+import { useTxsNotification } from "@/hooks/useTxHistory";
 
 const rotateAnimation = keyframes`
   from { transform: rotate(0deg) }
@@ -83,7 +83,7 @@ export const AccountInfoHeader = () => {
     uniqueId,
     selectedAccount,
   );
-
+  useTxsNotification(uniqueId, selectedAccount.address, 5000);
   const onPressFaucet = useCallback(async () => {
     if (requestingFaucet) return;
     setRequestingFaucet(true);

@@ -10,6 +10,78 @@ import {
 } from "core/coins/ALEO/types/History";
 import { isEqual, uniqBy } from "lodash";
 import { AleoTxStatus } from "core/coins/ALEO/types/Transaction";
+import { useTransactionSettledToast } from "@/components/Wallet/TransactionSettledToast/useTransactionSettledToast";
+
+const NotificationExpiredTime = 1000 * 60 * 60 * 5;
+
+export const useTxsNotification = (
+  uniqueId: ChainUniqueId,
+  address: string,
+  refreshInterval?: number,
+) => {
+  const { coinService } = useCoinService(uniqueId);
+
+  const localTxKey = `/localTxs/${uniqueId}/${address}`;
+  const getLocalTxs = useCallback(async () => {
+    const res = await coinService.getLocalTxHistory(address);
+    return res;
+  }, [coinService, address]);
+  const {
+    data: localTxs,
+    error: localTxsError,
+    isLoading: loadingLocalTxs,
+  } = useSWR(localTxKey, getLocalTxs, { refreshInterval });
+
+  const notifiedTxs = useRef<string[]>([]);
+  const newSettledTxs = useMemo(() => {
+    if (!localTxs) {
+      return [];
+    }
+    return localTxs.filter((item) => {
+      if (!item) return false;
+      if (item.notification) return false;
+      switch (item.status) {
+        case AleoTxStatus.QUEUED:
+        case AleoTxStatus.GENERATING_PROVER_FILES:
+        case AleoTxStatus.GENERATING_TRANSACTION:
+        case AleoTxStatus.BROADCASTING:
+        case AleoTxStatus.COMPLETED:
+        case AleoTxStatus.UNACCEPTED: {
+          return false;
+        }
+        case AleoTxStatus.FAILED:
+        case AleoTxStatus.FINALIZD:
+        case AleoTxStatus.REJECTED: {
+          return true;
+        }
+      }
+    });
+  }, [localTxs]);
+
+  // show toast for new settled txs
+  const { showToast } = useTransactionSettledToast();
+
+  useEffect(() => {
+    async function notification() {
+      try {
+        if (newSettledTxs.length > 0) {
+          for (let tx of newSettledTxs) {
+            if (!notifiedTxs.current.includes(tx.localId)) {
+              notifiedTxs.current.push(tx.localId);
+              if (Date.now() - tx.timestamp <= NotificationExpiredTime) {
+                showToast(tx.status === AleoTxStatus.FINALIZD);
+              }
+              await coinService.setLocalTxNotification(tx.localId);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("notification error: ", err);
+      }
+    }
+    notification();
+  }, [newSettledTxs, showToast, coinService]);
+};
 
 export const useTxHistory = (
   uniqueId: ChainUniqueId,
@@ -98,42 +170,6 @@ export const useTxHistory = (
       return prev;
     });
   }, [localTxs, onChainHistory]);
-
-  const notifiedTxs = useRef<string[]>([]);
-  const newSettledTxs = useMemo(() => {
-    if (!localTxs) {
-      return [];
-    }
-    return localTxs.filter((item) => {
-      if (!item) return false;
-      if (item.notification) return false;
-      switch (item.status) {
-        case AleoTxStatus.QUEUED:
-        case AleoTxStatus.GENERATING_PROVER_FILES:
-        case AleoTxStatus.GENERATING_TRANSACTION:
-        case AleoTxStatus.BROADCASTING:
-        case AleoTxStatus.COMPLETED:
-        case AleoTxStatus.UNACCEPTED: {
-          return false;
-        }
-        case AleoTxStatus.FAILED:
-        case AleoTxStatus.FINALIZD:
-        case AleoTxStatus.REJECTED: {
-          return true;
-        }
-      }
-    });
-  }, [localTxs]);
-
-  useEffect(() => {
-    if (newSettledTxs.length > 0) {
-      for (let tx of newSettledTxs) {
-        if (!notifiedTxs.current.includes(tx.localId)) {
-          notifiedTxs.current.push(tx.localId);
-        }
-      }
-    }
-  }, [newSettledTxs]);
 
   return {
     loading: loadingLocalTxs || loadingOnChainHistory || loading,
