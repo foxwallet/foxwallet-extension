@@ -34,7 +34,6 @@ import { useIsSendingAleoTx } from "@/hooks/useSendingTxStatus";
 import { useRecords } from "@/hooks/useRecord";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
 import { useBottomReach } from "@/hooks/useBottomReach";
-import { Pagination } from "core/coins/ALEO/types/Pagination";
 
 interface TokenTxHistoryItemProps {
   item: AleoHistoryItem;
@@ -112,7 +111,10 @@ const TokenTxHistoryItem: React.FC<TokenTxHistoryItemProps> = ({
           </Flex>
         </Flex>
       </Flex>
-      <IconChevronRight />
+      <Flex alignItems={"center"}>
+        <Text fontSize={10}>{t("TokenDetail:jump_explorer")}</Text>
+        <IconChevronRight />
+      </Flex>
     </Flex>
   );
 };
@@ -267,8 +269,11 @@ const TokenDetailScreen = () => {
               <Spinner w={6} h={6} alignSelf={"center"} mt={10} />
             )}
             {history?.map(renderTxHistoryItem)}
+
             {loadingOnChainHistory && (
-              <Spinner w={6} h={6} alignSelf={"center"} mt={10} />
+              <Flex mt={6} mb={4} alignSelf={"center"}>
+                <Spinner w={10} h={10} />
+              </Flex>
             )}
           </Flex>
         ) : (

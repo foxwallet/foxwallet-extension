@@ -168,7 +168,8 @@
     "title": "Jeton Detayı",
     "balance": "Denge",
     "tx_records": "İşlem Kayıtları",
-    "empty_tx": "İşlem kaydı yok"
+    "empty_tx": "İşlem kaydı yok",
+    "jump_explorer": "Kaşif"
   },
   "Language": {
     "title": "Dil"
