@@ -1,0 +1,70 @@
+import { get, post } from "@/common/utils/request";
+import { AllTokenResp } from "./token.di";
+import { Token } from "../../types/Token";
+
+export const TOKEN_IMG_HOST = "https://app.alphaswap.pro/ims/image/";
+
+export class TokenApi {
+  host: string;
+  chainId: string;
+
+  constructor(config: { host: string; chainId: string }) {
+    const { host, chainId } = config;
+    this.host = host;
+    this.chainId = chainId;
+  }
+
+  setChainId(chainId: string) {
+    this.chainId = chainId;
+  }
+
+  async fetchData<Type>(url = "/"): Promise<Type> {
+    const response = await get(`${this.host}/${this.chainId}${url}`);
+    if (!response.ok) {
+      throw new Error(
+        `get error: url ${url} statusCode ${
+          response.status
+        } body ${await response.text()}`,
+      );
+    }
+    return await response.json();
+  }
+
+  async postData<Type>(
+    url = "/",
+    body: any,
+    headers: Record<string, string>,
+  ): Promise<Type> {
+    const response = await post(`${this.host}/${this.chainId}${url}`, {
+      body: JSON.stringify(body),
+      headers: {
+        "Content-Type": "application/json",
+        ...headers,
+      },
+    });
+    if (!response.ok) {
+      throw new Error(
+        `get error: url ${url} statusCode ${
+          response.status
+        } body ${await response.text()}`,
+      );
+    }
+    return await response.json();
+  }
+
+  async getTokens(): Promise<Token[]> {
+    const resp = await this.fetchData<AllTokenResp>(`/tokens`);
+    if (resp.code !== 0) {
+      throw new Error(resp.msg);
+    }
+    return resp.data.tokens.map((item) => ({
+      tokenId: `${item.token_id}field`,
+      name: item.name,
+      symbol: item.symbol,
+      decimals: item.decimals,
+      logo: `${TOKEN_IMG_HOST}${item.logo}`,
+      // 1 is verified token, 2 is user created token
+      official: item.token_type === 1,
+    }));
+  }
+}

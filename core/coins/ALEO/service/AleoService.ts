@@ -5,7 +5,7 @@ import {
   FutureJSON,
   RecordDetailWithSpent,
 } from "../types/SyncTask";
-import { parseU64 } from "../utils/num";
+import { parseU128, parseU64 } from "../utils/num";
 import { logger } from "@/common/utils/logger";
 import { AutoSwitch, AutoSwitchServiceType } from "core/utils/retry";
 import {
@@ -38,15 +38,28 @@ import {
   AleoTxType,
 } from "../types/History";
 import { Mutex } from "async-mutex";
-import { Program, ViewKey, Future, Field, RecordCiphertext } from "aleo_wasm";
+import {
+  Program,
+  ViewKey,
+  Future,
+  RecordCiphertext,
+  hashBHP256,
+  Plaintext,
+} from "aleo_wasm";
 import { AleoApiService } from "./instances/sync";
 import { AleoSyncAccount } from "../types/AleoSyncAccount";
 import { AleoWalletService } from "./instances/api";
 import { Pagination } from "../types/Pagination";
 import { FaucetMessage, FaucetResp } from "../types/Faucet";
 import { ExplorerLanguages } from "core/types/ExplorerLanguages";
+import { TokenService } from "./instances/token";
+import { Token } from "../types/Token";
+
+const ALEO_TOKEN_PROGRAM_ID = "alphaswap_v1.aleo";
 
 const CREDITS_MAPPING_NAME = "account";
+
+const ALPHA_SWAP_TOKEN_MAPPING_NAME = "tokens";
 
 const mutex = new Mutex();
 
@@ -62,6 +75,7 @@ export class AleoService {
   private rpcService: AleoRpcService;
   private apiService: AleoApiService;
   private walletService: AleoWalletService;
+  private tokenService: TokenService;
   private cachedSyncBlock: AleoAddressInfo | null = null;
   private lastSyncBlockTime: number = 0;
 
@@ -87,6 +101,16 @@ export class AleoService {
         chainId: config.chainId,
       })),
     });
+    if (this.config.alphaSwapApi) {
+      this.tokenService = new TokenService({
+        configs: [
+          {
+            url: this.config.alphaSwapApi,
+            chainId: this.config.chainId,
+          },
+        ],
+      });
+    }
   }
 
   @AutoSwitch({ serviceType: AutoSwitchServiceType.API })
@@ -209,6 +233,20 @@ export class AleoService {
             microcredits: record.content.microcredits.slice(0, -11),
           };
           creditsRecords[commitment] = record;
+        }
+        allRecordsMap[NATIVE_TOKEN_PROGRAM_ID] = creditsRecords;
+      }
+      const tokenRecords = allRecordsMap[ALEO_TOKEN_PROGRAM_ID];
+      if (tokenRecords) {
+        for (const [commitment, record] of Object.entries(tokenRecords)) {
+          if (!record || record.parsedContent) {
+            continue;
+          }
+          record.parsedContent = {
+            token: record.content.token.slice(0, -8),
+            amount: record.content.amount.slice(0, -12),
+          };
+          tokenRecords[commitment] = record;
         }
         allRecordsMap[NATIVE_TOKEN_PROGRAM_ID] = creditsRecords;
       }
@@ -1259,4 +1297,84 @@ export class AleoService {
       feeRecord,
     };
   };
+
+  // tokens
+  supportToken() {
+    return !!this.config.alphaSwapApi;
+  }
+
+  @AutoSwitch({ serviceType: AutoSwitchServiceType.RPC })
+  async getTokenPublicBalance(address: string, tokenId: string) {
+    const id = hashBHP256(`{ token: ${tokenId}, address: ${address} }`);
+    const balance = await this.rpcService
+      .currInstance()
+      .getProgramMappingValue(ALEO_TOKEN_PROGRAM_ID, CREDITS_MAPPING_NAME, id);
+    if (!balance || balance === "null") {
+      return 0n;
+    }
+    return parseU128(balance);
+  }
+
+  async getTokenPrivateBalance(address: string, tokenId: string) {
+    const result = await this.getRecords(
+      address,
+      ALEO_TOKEN_PROGRAM_ID,
+      RecordFilter.UNSPENT,
+    );
+    return result.reduce((sum, record) => {
+      if (record.parsedContent) {
+        if (record.parsedContent.token !== tokenId) {
+          return sum;
+        } else {
+          return sum + BigInt(record.parsedContent.amount);
+        }
+      } else {
+        if (record.content.token.slice(0, -8) !== tokenId) {
+          return sum;
+        } else {
+          return sum + BigInt(record.content.amount.slice(0, -12));
+        }
+      }
+    }, 0n);
+  }
+
+  async getTokenBalance(address: string, tokenId: string) {
+    const [privateBalance, publicBalance] = await Promise.all([
+      this.getTokenPrivateBalance(address, tokenId),
+      this.getTokenPublicBalance(address, tokenId),
+    ]);
+    return {
+      privateBalance,
+      publicBalance,
+      total: privateBalance + publicBalance,
+    };
+  }
+
+  async getAllToken() {
+    const tokens = await this.tokenService.currInstance().getTokens();
+    return tokens;
+  }
+
+  @AutoSwitch({ serviceType: AutoSwitchServiceType.RPC })
+  async getTokenInfoOnChain(
+    tokenId: string,
+  ): Promise<Omit<Token, "logo" | "official">> {
+    const tokenRawInfo = await this.rpcService
+      .currInstance()
+      .getProgramMappingValue(
+        ALEO_TOKEN_PROGRAM_ID,
+        ALPHA_SWAP_TOKEN_MAPPING_NAME,
+        tokenId,
+      );
+    if (!tokenRawInfo) {
+      throw new Error("Token not found");
+    }
+    return JSON.parse(Plaintext.fromString(tokenRawInfo).toJSON());
+  }
+
+  async getTokenInfo(tokenId: string): Promise<Token | undefined> {
+    const allTokens = await this.getAllToken();
+    const token = allTokens.find((item) => item.tokenId === tokenId);
+    return token;
+  }
 }
