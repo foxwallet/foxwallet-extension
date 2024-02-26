@@ -168,8 +168,8 @@
     "jump_explorer": "Explorer"
   },
   "Tx": {
-    "success_toast": "Transaction Successful!",
-    "fail_toast": "Transaction Failed."
+    "successToast": "Transaction Successful!",
+    "failToast": "Transaction Failed."
   },
   "Setting": {
     "title": "Setting",
@@ -238,7 +238,8 @@
     "total": "Total",
     "remind": "Remind",
     "account": "Account",
-    "ok": "OK"
+    "ok": "OK",
+    "wrongPassword": "Incorrect password"
   },
   "Error": {
     "invalidPassword": "Invalid password"

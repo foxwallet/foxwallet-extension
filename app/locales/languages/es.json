@@ -240,7 +240,7 @@
     "sign": "Firmar"
   },
   "Tx": {
-    "success_toast": "¡Transacción exitosa!",
-    "fail_toast": "Transacción fallida."
+    "successToast": "¡Transacción exitosa!",
+    "failToast": "Transacción fallida."
   }
 }

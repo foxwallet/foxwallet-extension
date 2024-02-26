@@ -240,7 +240,7 @@
     "sign": "संकेत"
   },
   "Tx": {
-    "success_toast": "लेन-देन सफल!",
-    "fail_toast": "लेन - देन विफल।"
+    "successToast": "लेन-देन सफल!",
+    "failToast": "लेन - देन विफल।"
   }
 }

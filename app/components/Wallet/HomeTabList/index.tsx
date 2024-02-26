@@ -2,6 +2,9 @@ import {
   Box,
   Button,
   ButtonProps,
+  Flex,
+  IconButton,
+  Image,
   Tab,
   TabIndicator,
   TabList,
@@ -13,6 +16,8 @@ import {
 import { AssetList } from "../AssetList";
 import { useTranslation } from "react-i18next";
 import { useState, forwardRef, PropsWithChildren } from "react";
+import { IconAddCircle } from "@/components/Custom/Icon";
+import { useNavigate } from "react-router-dom";
 
 const CustomTab = forwardRef(
   (props: PropsWithChildren & ButtonProps, ref: any) => {
@@ -36,6 +41,7 @@ const CustomTab = forwardRef(
 
 export const HomeTabList = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [tabIndex, setTabIndex] = useState(0);
 
   return (
@@ -46,13 +52,22 @@ export const HomeTabList = () => {
       index={tabIndex}
       onChange={(index) => setTabIndex(index)}
     >
-      <TabList px={5}>
-        <CustomTab mr={6}>{t("Wallet:tabAsset")}</CustomTab>
-      </TabList>
-      {/* <TabIndicator height="2px" bg="black" borderRadius="1px" /> */}
-      <TabPanels maxH={258} overflowY="auto" pt={2.5}>
-        <AssetList />
-      </TabPanels>
+      <Flex px={5}>
+        <TabList flex={1}>
+          <CustomTab mr={6}>{t("Wallet:tabAsset")}</CustomTab>
+        </TabList>
+        <Flex>
+          <IconButton
+            aria-label="Add token"
+            icon={<IconAddCircle />}
+            colorScheme="whiteAlpha"
+            bg={"white"}
+            size={"xs"}
+            onClick={() => navigate("/add_token")}
+          />
+        </Flex>
+      </Flex>
+      <AssetList />
     </Tabs>
   );
 };

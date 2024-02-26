@@ -15,6 +15,7 @@ import {
   Button,
   Divider,
   Flex,
+  Image,
   Spinner,
   Text,
   VStack,
@@ -34,18 +35,29 @@ import { useIsSendingAleoTx } from "@/hooks/useSendingTxStatus";
 import { useRecords } from "@/hooks/useRecord";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
 import { useBottomReach } from "@/hooks/useBottomReach";
+import { useLocationParams } from "@/hooks/useLocationParams";
+import { useAssetList } from "@/hooks/useAssetList";
+import { Token } from "core/coins/ALEO/types/Token";
+import { RecordFilter } from "@/scripts/background/servers/IWalletServer";
+import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
+import {
+  ALPHA_TOKEN_PROGRAM_ID,
+  NATIVE_TOKEN_TOKEN_ID,
+} from "core/coins/ALEO/constants";
 
 interface TokenTxHistoryItemProps {
   item: AleoHistoryItem;
   uniqueId: InnerChainUniqueId;
+  token: Token;
 }
 
 const TokenTxHistoryItem: React.FC<TokenTxHistoryItemProps> = ({
   uniqueId,
   item,
+  token,
 }) => {
   const { t } = useTranslation();
-  const { nativeCurrency, coinService } = useCoinService(uniqueId);
+  const { coinService } = useCoinService(uniqueId);
 
   const timeOfItem = dayjs(item.timestamp);
   const isCurrentYear = dayjs().year() === timeOfItem.year();
@@ -99,8 +111,8 @@ const TokenTxHistoryItem: React.FC<TokenTxHistoryItemProps> = ({
               <Box fontWeight={"bold"} fontSize={12} ml={1}>
                 <TokenNum
                   amount={amount}
-                  decimals={nativeCurrency.decimals}
-                  symbol={nativeCurrency.symbol}
+                  decimals={token.decimals}
+                  symbol={token.symbol}
                 />
               </Box>
             )}
@@ -123,18 +135,44 @@ const TokenDetailScreen = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const { uniqueId = InnerChainUniqueId.ALEO_TESTNET3 } = useParams<{
-    uniqueId: InnerChainUniqueId;
-  }>();
-  const { nativeCurrency } = useCoinService(uniqueId);
   const { selectedAccount } = useCurrAccount();
-  const { balance, loadingBalance } = useBalance(
+
+  const {
+    uniqueId = InnerChainUniqueId.ALEO_TESTNET3,
+    address = selectedAccount.address,
+  } = useParams<{
+    uniqueId: InnerChainUniqueId;
+    address: string;
+  }>();
+
+  const token = useLocationParams("token");
+
+  const { nativeToken } = useAssetList(uniqueId, address);
+
+  const tokenInfo = useMemo(() => {
+    try {
+      if (!token) {
+        return nativeToken;
+      }
+      return JSON.parse(token) as Token;
+    } catch (err) {
+      return nativeToken;
+    }
+  }, [nativeToken, token]);
+
+  const { balance, loadingBalance } = useBalance({
     uniqueId,
-    selectedAccount.address,
-  );
+    address: selectedAccount.address,
+    tokenId: tokenInfo.tokenId,
+  });
 
   const { history, getMore, loading, loadingLocalTxs, loadingOnChainHistory } =
-    useTxHistory(uniqueId, selectedAccount.address, 4000);
+    useTxHistory({
+      uniqueId,
+      address: selectedAccount.address,
+      token: tokenInfo,
+      refreshInterval: 4000,
+    });
   const listRef = useRef<HTMLDivElement | null>(null);
   const reachBottom = useBottomReach(listRef);
   useEffect(() => {
@@ -144,10 +182,12 @@ const TokenDetailScreen = () => {
   }, [reachBottom]);
 
   const { sendingAleoTx } = useIsSendingAleoTx(uniqueId);
-  const { records, loading: loadingRecords } = useRecords(
+  const { records, loading: loadingRecords } = useRecords({
     uniqueId,
-    selectedAccount.address,
-  );
+    address: selectedAccount.address,
+    recordFilter: RecordFilter.UNSPENT,
+    programId: tokenInfo.programId,
+  });
 
   const recordStr = useMemo(() => {
     if (!records) {
@@ -158,6 +198,11 @@ const TokenDetailScreen = () => {
     }
     return t("Send:recordStatistics", { COUNT: records.length });
   }, [records]);
+
+  const recordAmount =
+    tokenInfo.programId === ALPHA_TOKEN_PROGRAM_ID
+      ? records[0]?.parsedContent?.amount
+      : records[0]?.parsedContent?.microcredits;
 
   const onReceive = useCallback(() => {
     navigate(`/receive`);
@@ -174,24 +219,34 @@ const TokenDetailScreen = () => {
           key={`${item.txId}${index}`}
           item={item}
           uniqueId={uniqueId}
+          token={tokenInfo}
         />
       );
     },
-    [uniqueId],
+    [uniqueId, tokenInfo],
   );
 
   return (
     <PageWithHeader title={t("TokenDetail:title")}>
       <Flex direction={"column"} px={5} py={2.5}>
         <Flex align={"center"}>
-          <IconAleo mr={2.5} w={6} h={6} />
+          <Image src={tokenInfo.logo} mr={2.5} w={6} h={6} borderRadius={12} />
           <Flex direction={"column"}>
             <Text fontSize={13} fontWeight={"bold"}>
-              {nativeCurrency.symbol}
+              {tokenInfo.symbol}
             </Text>
-            <Text color={"#777E90"} fontSize={10}>
-              {nativeCurrency.address}
-            </Text>
+            <Flex>
+              <Text color={"#777E90"} fontSize={10} mr={2}>
+                {tokenInfo.programId}
+              </Text>
+              {tokenInfo.tokenId !== NATIVE_TOKEN_TOKEN_ID && (
+                <MiddleEllipsisText
+                  text={tokenInfo.tokenId}
+                  width={150}
+                  style={{ color: "#777E90", fontSize: 10 }}
+                />
+              )}
+            </Flex>
           </Flex>
         </Flex>
         <Divider orientation="horizontal" h={"1px"} my={2.5} />
@@ -205,8 +260,8 @@ const TokenDetailScreen = () => {
                 ) : (
                   <TokenNum
                     amount={balance?.publicBalance}
-                    decimals={nativeCurrency.decimals}
-                    symbol={nativeCurrency.symbol}
+                    decimals={tokenInfo.decimals}
+                    symbol={tokenInfo.symbol}
                   />
                 )}
               </Flex>
@@ -218,17 +273,17 @@ const TokenDetailScreen = () => {
                   ) : (
                     <TokenNum
                       amount={balance?.privateBalance}
-                      decimals={nativeCurrency.decimals}
-                      symbol={nativeCurrency.symbol}
+                      decimals={tokenInfo.decimals}
+                      symbol={tokenInfo.symbol}
                     />
                   )}
                   {!!recordStr && !!records[0] && (
                     <Flex>
                       (<Text>{recordStr}</Text>&nbsp;
                       <TokenNum
-                        amount={records[0].parsedContent?.microcredits}
-                        decimals={nativeCurrency.decimals}
-                        symbol={nativeCurrency.symbol}
+                        amount={recordAmount}
+                        decimals={tokenInfo.decimals}
+                        symbol={tokenInfo.symbol}
                       />
                       )
                     </Flex>

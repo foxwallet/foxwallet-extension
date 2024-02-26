@@ -5,5 +5,6 @@ export type AleoConfig = CoinConfig & {
   chainId: string;
   syncApiList: string[];
   walletApiList: string[];
+  alphaSwapApi?: string;
   nativeCurrency: NativeTokenWithAddress;
 };

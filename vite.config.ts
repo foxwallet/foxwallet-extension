@@ -18,6 +18,7 @@ export default defineConfig(({ mode }) => ({
       transformMixedEsModules: true,
     },
     minify: mode === "production",
+    assetsInlineLimit: 0,
     rollupOptions: {
       input: {
         offscreen: "./offscreen.html",

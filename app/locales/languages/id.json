@@ -240,7 +240,7 @@
     "sign": "Tanda"
   },
   "Tx": {
-    "success_toast": "Transaksi Berhasil!",
-    "fail_toast": "Transaksi gagal."
+    "successToast": "Transaksi Berhasil!",
+    "failToast": "Transaksi gagal."
   }
 }

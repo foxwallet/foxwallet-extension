@@ -18,6 +18,7 @@ import { useNavigate } from "react-router-dom";
 import { showErrorToast } from "@/components/Custom/ErrorToast";
 import { SelectRecordsStep } from "@/components/Send/SelectRecordsStep";
 import { AleoTxType } from "core/coins/ALEO/types/History";
+import { NATIVE_TOKEN_TOKEN_ID } from "core/coins/ALEO/constants";
 
 function JoinScreen() {
   const { t } = useTranslation();
@@ -25,7 +26,10 @@ function JoinScreen() {
   const { nativeCurrency, coinService, chainConfig } = useCoinService(uniqueId);
   const { popupServerClient } = useClient();
   const navigate = useNavigate();
-  const { records } = useRecords(uniqueId, selectedAccount.address);
+  const { records } = useRecords({
+    uniqueId,
+    address: selectedAccount.address,
+  });
   const [step, setStep] = useState(0);
   const selectedRecordsRef = useRef<RecordDetailWithSpent[]>([]);
 
@@ -69,6 +73,7 @@ function JoinScreen() {
           amount: amount.toString(),
           txType: AleoTxType.EXECUTION,
           notification: false,
+          tokenId: NATIVE_TOKEN_TOKEN_ID,
         };
         await coinService.setAddressLocalTx(address, pendingTx);
         popupServerClient
@@ -88,6 +93,7 @@ function JoinScreen() {
             priorityFee: gasFee.priorityFee.toString(),
             timestamp,
             amount: amount.toString(),
+            tokenId: NATIVE_TOKEN_TOKEN_ID,
           })
           .catch(async (err) => {
             pendingTx.error = (err as Error).message;

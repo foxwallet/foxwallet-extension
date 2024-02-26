@@ -41,10 +41,10 @@ export const SplitStep = (props: SplitStepProps) => {
   const { selectedAccount, uniqueId } = useCurrAccount();
   const { nativeCurrency, coinService } = useCoinService(uniqueId);
   const { t } = useTranslation();
-  const { balance, loadingBalance } = useBalance(
+  const { balance, loadingBalance } = useBalance({
     uniqueId,
-    selectedAccount.address,
-  );
+    address: selectedAccount.address,
+  });
 
   const [amountStr, setAmountStr] = useState<string>("");
   const [amountNum, amountNumLegal] = useMemo(() => {

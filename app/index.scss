@@ -1,5 +1,4 @@
 @import "./common//styles/font.css";
-@import "./common/styles/scrollbar.scss";
 
 html {
   overflow: hidden;
@@ -26,14 +25,6 @@ html {
 }
 
 body {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
-
-  /* 确保隐藏滚动条的 WebKit 浏览器样式也应用于 body */
-  &::-webkit-scrollbar {
-    display: none;
-  }
-
   background-color: rgba(239, 238, 238, 0.05);
   position: relative;
   font-size: 14px;

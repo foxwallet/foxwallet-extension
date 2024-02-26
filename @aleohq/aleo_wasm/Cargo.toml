@@ -46,6 +46,10 @@ features = [ "async" ]
 version = "0.16.2"
 features = [ "console", "fields", "utilities" ]
 
+[dependencies.snarkvm-utilities]
+version = "0.16.2"
+features = ["wasm"]
+
 [dependencies.anyhow]
 version = "1.0"
 
