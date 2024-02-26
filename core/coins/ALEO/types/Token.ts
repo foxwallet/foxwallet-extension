@@ -1,3 +1,5 @@
+import { Balance } from "./Balance";
+
 export interface Token {
   tokenId: string;
   name: string;
@@ -6,3 +8,7 @@ export interface Token {
   logo: string;
   official: boolean;
 }
+
+export type TokenWithBalance = Token & {
+  balance: Balance;
+};

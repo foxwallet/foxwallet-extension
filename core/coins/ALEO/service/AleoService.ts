@@ -53,7 +53,7 @@ import { Pagination } from "../types/Pagination";
 import { FaucetMessage, FaucetResp } from "../types/Faucet";
 import { ExplorerLanguages } from "core/types/ExplorerLanguages";
 import { TokenService } from "./instances/token";
-import { Token } from "../types/Token";
+import { Token, TokenWithBalance } from "../types/Token";
 
 const ALEO_TOKEN_PROGRAM_ID = "alphaswap_v1.aleo";
 
@@ -1353,6 +1353,34 @@ export class AleoService {
   async getAllToken() {
     const tokens = await this.tokenService.currInstance().getTokens();
     return tokens;
+  }
+
+  async getInteractiveTokens(address: string): Promise<TokenWithBalance[]> {
+    const tokens = await this.getAllToken();
+    const top10Tokens = tokens.slice(0, 10);
+    let balances = await Promise.all(
+      top10Tokens.map(async (token) => {
+        try {
+          const balance = await this.getTokenBalance(address, token.tokenId);
+          return {
+            ...token,
+            balance,
+          };
+        } catch (err) {
+          console.error("===> getInteractiveTokens error: ", err);
+          return {
+            ...token,
+            balance: {
+              privateBalance: 0n,
+              publicBalance: 0n,
+              total: 0n,
+            },
+          };
+        }
+      }),
+    );
+    balances = balances.filter((item) => item.balance.total > 0n);
+    return balances;
   }
 
   @AutoSwitch({ serviceType: AutoSwitchServiceType.RPC })
