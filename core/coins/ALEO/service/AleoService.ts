@@ -25,6 +25,7 @@ import {
 } from "../types/Transaction";
 import { AleoGasFee } from "core/types/GasFee";
 import {
+  ALPHA_TOKEN_PROGRAM_ID,
   FAILED_TX_REMOVE_TIME,
   LOCAL_TX_EXPIRE_TIME,
   NATIVE_TOKEN_PROGRAM_ID,
@@ -54,8 +55,6 @@ import { FaucetMessage, FaucetResp } from "../types/Faucet";
 import { ExplorerLanguages } from "core/types/ExplorerLanguages";
 import { TokenService } from "./instances/token";
 import { Token, TokenWithBalance } from "../types/Token";
-
-const ALEO_TOKEN_PROGRAM_ID = "alphaswap_v1.aleo";
 
 const CREDITS_MAPPING_NAME = "account";
 
@@ -236,7 +235,7 @@ export class AleoService {
         }
         allRecordsMap[NATIVE_TOKEN_PROGRAM_ID] = creditsRecords;
       }
-      const tokenRecords = allRecordsMap[ALEO_TOKEN_PROGRAM_ID];
+      const tokenRecords = allRecordsMap[ALPHA_TOKEN_PROGRAM_ID];
       if (tokenRecords) {
         for (const [commitment, record] of Object.entries(tokenRecords)) {
           if (!record || record.parsedContent) {
@@ -1305,10 +1304,12 @@ export class AleoService {
 
   @AutoSwitch({ serviceType: AutoSwitchServiceType.RPC })
   async getTokenPublicBalance(address: string, tokenId: string) {
-    const id = hashBHP256(`{ token: ${tokenId}, address: ${address} }`);
+    const id = hashBHP256(`{ token: ${tokenId}, user: ${address} }`);
+    console.log("===> public balance id: ", tokenId, address, id);
     const balance = await this.rpcService
       .currInstance()
-      .getProgramMappingValue(ALEO_TOKEN_PROGRAM_ID, CREDITS_MAPPING_NAME, id);
+      .getProgramMappingValue(ALPHA_TOKEN_PROGRAM_ID, CREDITS_MAPPING_NAME, id);
+    console.log("===> token public balance: ", balance, id);
     if (!balance || balance === "null") {
       return 0n;
     }
@@ -1318,7 +1319,7 @@ export class AleoService {
   async getTokenPrivateBalance(address: string, tokenId: string) {
     const result = await this.getRecords(
       address,
-      ALEO_TOKEN_PROGRAM_ID,
+      ALPHA_TOKEN_PROGRAM_ID,
       RecordFilter.UNSPENT,
     );
     return result.reduce((sum, record) => {
@@ -1379,8 +1380,8 @@ export class AleoService {
         }
       }),
     );
-    balances = balances.filter((item) => item.balance.total > 0n);
-    return balances;
+    const non0Tokens = balances.filter((item) => item.balance.total > 0n);
+    return non0Tokens;
   }
 
   @AutoSwitch({ serviceType: AutoSwitchServiceType.RPC })
@@ -1390,14 +1391,17 @@ export class AleoService {
     const tokenRawInfo = await this.rpcService
       .currInstance()
       .getProgramMappingValue(
-        ALEO_TOKEN_PROGRAM_ID,
+        ALPHA_TOKEN_PROGRAM_ID,
         ALPHA_SWAP_TOKEN_MAPPING_NAME,
         tokenId,
       );
     if (!tokenRawInfo) {
       throw new Error("Token not found");
     }
-    return JSON.parse(Plaintext.fromString(tokenRawInfo).toJSON());
+    return {
+      ...JSON.parse(Plaintext.fromString(tokenRawInfo).toJSON()),
+      programId: ALPHA_TOKEN_PROGRAM_ID,
+    };
   }
 
   async getTokenInfo(tokenId: string): Promise<Token | undefined> {

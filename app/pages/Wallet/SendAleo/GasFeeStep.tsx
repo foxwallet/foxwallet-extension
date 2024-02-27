@@ -45,11 +45,11 @@ export const GasFeeStep = (props: GasFeeProps) => {
   const { selectedAccount, uniqueId } = useCurrAccount();
   const { coinService, nativeCurrency } = useCoinService(uniqueId);
 
-  const { balance, loadingBalance } = useBalance(
+  const { balance, loadingBalance } = useBalance({
     uniqueId,
-    selectedAccount.address,
-    10000,
-  );
+    address: selectedAccount.address,
+    refreshInterval: 10000,
+  });
 
   const { records, loading: loadingRecords } = useRecords(
     uniqueId,

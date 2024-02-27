@@ -33,6 +33,7 @@ export const useAllTokens = (uniqueId: ChainUniqueId) => {
 export const useInteractiveTokens = (
   uniqueId: ChainUniqueId,
   address: string,
+  autoRequest: boolean = true,
 ) => {
   const { coinService } = useCoinService(uniqueId);
 
@@ -46,7 +47,12 @@ export const useInteractiveTokens = (
     error,
     mutate: getInteractiveTokens,
     isLoading: loadingInteractiveTokens,
-  } = useSWR(key, fetchTokens);
+  } = useSWR(key, fetchTokens, {
+    revalidateIfStale: autoRequest,
+    revalidateOnFocus: autoRequest,
+    revalidateOnMount: autoRequest,
+    revalidateOnReconnect: autoRequest,
+  });
 
   const res = useMemo(() => {
     return {

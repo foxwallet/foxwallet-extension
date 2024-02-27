@@ -50,7 +50,7 @@ export const HomeTabList = () => {
         <CustomTab mr={6}>{t("Wallet:tabAsset")}</CustomTab>
       </TabList>
       {/* <TabIndicator height="2px" bg="black" borderRadius="1px" /> */}
-      <TabPanels maxH={258} overflowY="auto" pt={2.5}>
+      <TabPanels maxH={258} overflowY="auto">
         <AssetList />
       </TabPanels>
     </Tabs>

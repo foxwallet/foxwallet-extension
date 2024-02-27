@@ -33,10 +33,10 @@ export const JoinStep = (props: JoinStepProps) => {
   const { selectedAccount, uniqueId } = useCurrAccount();
   const { nativeCurrency, coinService } = useCoinService(uniqueId);
   const { t } = useTranslation();
-  const { balance, loadingBalance } = useBalance(
+  const { balance, loadingBalance } = useBalance({
     uniqueId,
-    selectedAccount.address,
-  );
+    address: selectedAccount.address,
+  });
 
   const [feeInfo, setFeeInfo] = useState<AleoGasFee | null>(null);
   const gasFee = useMemo(() => {

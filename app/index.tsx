@@ -15,6 +15,8 @@ import { PersistGate } from "redux-persist/integration/react";
 import { getPersistor } from "@rematch/persist";
 import { GlobalModal } from "./common/utils/dialog";
 import { ViewPort } from "./components/Custom/ViewPort";
+import { SWRConfig } from "swr";
+import { swrCache } from "./common/utils/indexeddb";
 
 const persistor = getPersistor();
 
@@ -22,15 +24,17 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <StrictMode>
     <HashRouter>
       <ChakraBaseProvider theme={theme}>
-        <ClientContext.Provider value={clients}>
-          <Provider store={store}>
-            <PersistGate loading={<LoadingScreen />} persistor={persistor}>
-              <Suspense fallback={<LoadingScreen />}>
-                <App />
-              </Suspense>
-            </PersistGate>
-          </Provider>
-        </ClientContext.Provider>
+        <SWRConfig value={{ provider: swrCache }}>
+          <ClientContext.Provider value={clients}>
+            <Provider store={store}>
+              <PersistGate loading={<LoadingScreen />} persistor={persistor}>
+                <Suspense fallback={<LoadingScreen />}>
+                  <App />
+                </Suspense>
+              </PersistGate>
+            </Provider>
+          </ClientContext.Provider>
+        </SWRConfig>
       </ChakraBaseProvider>
     </HashRouter>
   </StrictMode>,

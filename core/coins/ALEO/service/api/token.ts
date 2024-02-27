@@ -1,6 +1,7 @@
 import { get, post } from "@/common/utils/request";
 import { AllTokenResp } from "./token.di";
 import { Token } from "../../types/Token";
+import { ALPHA_TOKEN_PROGRAM_ID } from "../../constants";
 
 export const TOKEN_IMG_HOST = "https://app.alphaswap.pro/ims/image/";
 
@@ -19,7 +20,7 @@ export class TokenApi {
   }
 
   async fetchData<Type>(url = "/"): Promise<Type> {
-    const response = await get(`${this.host}/${this.chainId}${url}`);
+    const response = await get(`${this.host}${url}`);
     if (!response.ok) {
       throw new Error(
         `get error: url ${url} statusCode ${
@@ -35,7 +36,7 @@ export class TokenApi {
     body: any,
     headers: Record<string, string>,
   ): Promise<Type> {
-    const response = await post(`${this.host}/${this.chainId}${url}`, {
+    const response = await post(`${this.host}${url}`, {
       body: JSON.stringify(body),
       headers: {
         "Content-Type": "application/json",
@@ -65,6 +66,7 @@ export class TokenApi {
       logo: `${TOKEN_IMG_HOST}${item.logo}`,
       // 1 is verified token, 2 is user created token
       official: item.token_type === 1,
+      programId: ALPHA_TOKEN_PROGRAM_ID,
     }));
   }
 }

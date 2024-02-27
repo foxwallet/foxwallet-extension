@@ -62,11 +62,11 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
   const { selectedAccount, uniqueId } = useCurrAccount();
   const coinBasic = useCoinBasic(uniqueId);
   const { nativeCurrency } = useCoinService(uniqueId);
-  const { balance, loadingBalance } = useBalance(
+  const { balance, loadingBalance } = useBalance({
     uniqueId,
-    selectedAccount.address,
-    10000,
-  );
+    address: selectedAccount.address,
+    refreshInterval: 10000,
+  });
   const { t } = useTranslation();
 
   const { records, loading: loadingRecords } = useRecords(

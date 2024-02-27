@@ -38,7 +38,11 @@ const SelectTransferMethodDrawer = (props: Props) => {
   const { isOpen, onConfirm, onCancel, uniqueId, address, selectedMethod } =
     props;
   const { nativeCurrency } = useCoinService(uniqueId);
-  const { balance, loadingBalance } = useBalance(uniqueId, address, 10000);
+  const { balance, loadingBalance } = useBalance({
+    uniqueId,
+    address,
+    refreshInterval: 10000,
+  });
   const { records, loading: loadingRecords } = useRecords(uniqueId, address);
   const { t } = useTranslation();
 

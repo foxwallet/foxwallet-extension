@@ -36,15 +36,18 @@ export const theme = extendBaseTheme({
         bg: "bg",
       },
       "*::-webkit-scrollbar": {
-        display: "none",
+        width: "8px",
       },
       "*::-webkit-scrollbar-track": {
         background: "gray.50",
         borderRadius: "8px",
       },
       "*::-webkit-scrollbar-thumb": {
-        background: "gray.500",
+        background: "green.900",
         borderRadius: "8px",
+      },
+      "*::-webkit-scrollbar-thumb:hover": {
+        background: "gray.600",
       },
     },
   },

@@ -10,7 +10,6 @@ export const ALEO_CHAIN_CONFIGS: { [key in string]: AleoConfig } = {
   TESTNET3: {
     coinType: CoinType.ALEO,
     uniqueId: InnerChainUniqueId.ALEO_TESTNET3,
-    // @ts-expect-error missing type
     logo: AleoLogo,
     chainId: "testnet3",
     chainName: "Aleo Testnet3",
@@ -24,6 +23,7 @@ export const ALEO_CHAIN_CONFIGS: { [key in string]: AleoConfig } = {
       decimals: 6,
       symbol: "ALEO",
       address: NATIVE_TOKEN_PROGRAM_ID,
+      logo: AleoLogo,
     },
     explorerUrls: {
       [ExplorerLanguages.EN]: "https://aleo.info/en/",

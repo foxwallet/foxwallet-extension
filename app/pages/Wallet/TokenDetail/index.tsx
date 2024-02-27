@@ -128,10 +128,10 @@ const TokenDetailScreen = () => {
   }>();
   const { nativeCurrency } = useCoinService(uniqueId);
   const { selectedAccount } = useCurrAccount();
-  const { balance, loadingBalance } = useBalance(
+  const { balance, loadingBalance } = useBalance({
     uniqueId,
-    selectedAccount.address,
-  );
+    address: selectedAccount.address,
+  });
 
   const { history, getMore, loading, loadingLocalTxs, loadingOnChainHistory } =
     useTxHistory(uniqueId, selectedAccount.address, 4000);

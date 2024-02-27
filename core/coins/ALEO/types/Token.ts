@@ -7,6 +7,7 @@ export interface Token {
   decimals: number;
   logo: string;
   official: boolean;
+  programId: string;
 }
 
 export type TokenWithBalance = Token & {
