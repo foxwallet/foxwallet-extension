@@ -72,6 +72,9 @@ import Faucet from "@/common/assets/image/icon_faucet.svg";
 import JoinSplit from "@/common/assets/image/icon_join_split.svg";
 import UpgradeReminder from "@/common/assets/image/icon_upgrade_reminder.svg";
 import UpgradeReminderDark from "@/common/assets/image/icon_upgrade_reminder_dark.svg";
+import AddCircle from "@/common/assets/image/icon_add_circle.svg";
+import RemoveCircle from "@/common/assets/image/icon_remove_circle.svg";
+import Search from "@/common/assets/image/icon_search_line.svg";
 
 const ThemeIconFill: (i: any) => ChakraComponent<any, any> =
   (icon: any) => (props: ChakraComponent<any, any>) => {
@@ -156,3 +159,6 @@ export const IconReset = ThemeIconStroke(Reset);
 export const IconLock = ThemeIconStroke(Lock);
 export const IconUpgradeReminder = chakra(UpgradeReminder);
 export const IconUpgradeReminderDark = chakra(UpgradeReminderDark);
+export const IconAddCircle = ThemeIconStroke(AddCircle);
+export const IconRemoveCircle = ThemeIconStroke(RemoveCircle);
+export const IconSearch = ThemeIconStroke(Search);

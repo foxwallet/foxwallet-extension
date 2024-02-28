@@ -1351,13 +1351,18 @@ export class AleoService {
     };
   }
 
-  async getAllToken() {
+  async getAllTokens() {
     const tokens = await this.tokenService.currInstance().getTokens();
     return tokens;
   }
 
+  async searchTokens(keyword: string) {
+    const tokens = await this.tokenService.currInstance().searchTokens(keyword);
+    return tokens;
+  }
+
   async getInteractiveTokens(address: string): Promise<TokenWithBalance[]> {
-    const tokens = await this.getAllToken();
+    const tokens = await this.getAllTokens();
     const top10Tokens = tokens.slice(0, 10);
     let balances = await Promise.all(
       top10Tokens.map(async (token) => {
@@ -1405,7 +1410,7 @@ export class AleoService {
   }
 
   async getTokenInfo(tokenId: string): Promise<Token | undefined> {
-    const allTokens = await this.getAllToken();
+    const allTokens = await this.getAllTokens();
     const token = allTokens.find((item) => item.tokenId === tokenId);
     return token;
   }

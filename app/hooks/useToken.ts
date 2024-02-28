@@ -2,14 +2,20 @@ import { ChainUniqueId } from "core/types/ChainUniqueId";
 import { useCoinService } from "./useCoinService";
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
+import { useDebounce } from "use-debounce";
 
-export const useAllTokens = (uniqueId: ChainUniqueId) => {
+export const useTokens = (uniqueId: ChainUniqueId, keyword?: string) => {
   const { coinService } = useCoinService(uniqueId);
 
-  const key = `/all_tokens/${uniqueId}`;
+  const key = keyword
+    ? `/all_tokens/${uniqueId}/${keyword}`
+    : `/all_tokens/${uniqueId}`;
   const fetchTokens = useCallback(async () => {
-    return await coinService.getAllToken();
-  }, [coinService]);
+    if (keyword) {
+      return await coinService.searchTokens(keyword);
+    }
+    return await coinService.getAllTokens();
+  }, [coinService, keyword]);
 
   const {
     data: tokens,

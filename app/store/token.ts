@@ -95,7 +95,7 @@ export const tokens = createModel<RootModel>()({
       const userTokens = allChainTokens[uniqueId] ?? {};
       const addressTokens = userTokens[address] ?? [];
       const newTokens = addressTokens.filter((item: Token) => {
-        return item.tokenId.toLowerCase() !== token.tokenId.toLowerCase();
+        return item.tokenId !== token.tokenId;
       });
       return {
         ...state,
