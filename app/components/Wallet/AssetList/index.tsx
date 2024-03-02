@@ -25,32 +25,7 @@ export const AssetList = () => {
 
   return (
     <TabPanel>
-      {/* <Hover variant="cell" onClick={onTokenDetail}>
-        <Flex
-          w={"100%"}
-          py={3}
-          px={5}
-          align={"center"}
-          justify={"space-between"}
-        >
-          <Flex align={"center"}>
-            <IconAleo />
-            <Text ml={2.5} fontSize={13} fontWeight={600}>
-              {nativeCurrency.symbol}
-            </Text>
-          </Flex>
-          {showBalance ? (
-            <TokenNum
-              amount={balance?.total}
-              decimals={nativeCurrency.decimals}
-              symbol={""}
-            />
-          ) : (
-            <Text>*****</Text>
-          )}
-        </Flex>
-      </Hover> */}
-      <Flex direction={"column"} maxH={"250px"} overflowY={"auto"} mt={2}>
+      <Flex direction={"column"} maxH={"238px"} overflowY={"auto"} mt={2}>
         {assets.map((token) => (
           <TokenItemWithBalance
             key={token.tokenId}

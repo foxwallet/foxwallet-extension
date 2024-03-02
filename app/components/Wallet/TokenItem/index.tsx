@@ -14,11 +14,13 @@ export const TokenItemWithBalance = ({
   token,
   onClick,
   hover,
+  leftElement,
 }: {
   uniqueId: ChainUniqueId;
   address: string;
   token: Token;
   onClick: (token: Token) => void;
+  leftElement?: React.ReactNode;
   hover?: boolean;
 }) => {
   const showBalance = usePopupSelector((state) => state.account.showBalance);
@@ -45,6 +47,7 @@ export const TokenItemWithBalance = ({
       cursor={"pointer"}
     >
       <Flex align={"center"}>
+        {leftElement}
         <Image src={token.logo} w={8} h={8} borderRadius={16} />
         <Flex flexDir={"column"} ml={2.5}>
           <Text fontSize={13} fontWeight={600}>
@@ -72,14 +75,18 @@ export const TokenItem = ({
   token,
   onClick,
   hover,
+  hideId,
 }: {
   token: Token;
   onClick: (token: Token) => void;
   hover?: boolean;
+  hideId?: boolean;
 }) => {
   const onTokenDetail = useCallback(() => {
     onClick(token);
   }, [onClick, token]);
+
+  console.log("===> token.logo", token.logo);
 
   return (
     <Flex
@@ -98,9 +105,11 @@ export const TokenItem = ({
           <Text fontSize={13} fontWeight={600}>
             {token.symbol}
           </Text>
-          <Text maxW={"120"} noOfLines={1} fontSize={10} color={"gray.400"}>
-            {token.tokenId}
-          </Text>
+          {!hideId && (
+            <Text maxW={"120"} noOfLines={1} fontSize={10} color={"gray.400"}>
+              {token.tokenId}
+            </Text>
+          )}
         </Flex>
       </Flex>
     </Flex>

@@ -77,11 +77,17 @@ export const useInteractiveTokens = (
   return res;
 };
 
-export const useTokenInfo = (uniqueId: ChainUniqueId, tokenId: string) => {
+export const useTokenInfo = (
+  uniqueId: ChainUniqueId,
+  tokenId?: string | null,
+) => {
   const { coinService } = useCoinService(uniqueId);
 
   const key = `/token_info/${uniqueId}/${tokenId}`;
   const fetchTokens = useCallback(async () => {
+    if (!tokenId) {
+      return undefined;
+    }
     return await coinService.getTokenInfo(tokenId);
   }, [coinService, tokenId]);
 

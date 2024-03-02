@@ -12,6 +12,7 @@ import { Content } from "@/layouts/Content";
 import { Button, Divider, Flex, Text } from "@chakra-ui/react";
 import { AleoFeeMethod } from "core/coins/ALEO/types/FeeMethod";
 import { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
+import { Token } from "core/coins/ALEO/types/Token";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
 import { AleoGasFee } from "core/types/GasFee";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -22,9 +23,11 @@ interface GasFeeProps {
   amountNum: bigint;
   transferMethod: AleoTransferMethod;
   transferRecord?: RecordDetailWithSpent;
+  token: Token;
   onConfirm: (params: {
     receiverAddress: string;
     amountNum: bigint;
+    token: Token;
     transferMethod: AleoTransferMethod;
     transferRecord?: RecordDetailWithSpent;
     feeType: AleoFeeMethod;
@@ -40,7 +43,12 @@ export const GasFeeStep = (props: GasFeeProps) => {
     transferMethod,
     transferRecord,
     onConfirm,
+    token,
   } = props;
+
+  const recordAmount = token.tokenId
+    ? transferRecord?.parsedContent?.amount
+    : transferRecord?.parsedContent?.microcredits;
 
   const { selectedAccount, uniqueId } = useCurrAccount();
   const { coinService, nativeCurrency } = useCoinService(uniqueId);
@@ -246,10 +254,10 @@ export const GasFeeStep = (props: GasFeeProps) => {
       }
       case AleoTransferMethod.PRIVATE:
       case AleoTransferMethod.PRIVATE_TO_PUBLIC: {
-        if (!transferRecord?.parsedContent?.microcredits) {
+        if (!recordAmount) {
           return false;
         }
-        return BigInt(transferRecord.parsedContent.microcredits) >= amountNum;
+        return BigInt(recordAmount) >= amountNum;
       }
     }
   }, [
@@ -309,6 +317,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
     onConfirm({
       receiverAddress,
       amountNum,
+      token,
       transferMethod,
       transferRecord,
       feeType: currFeeType,
@@ -319,6 +328,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
   }, [
     receiverAddress,
     amountNum,
+    token,
     transferMethod,
     transferRecord,
     currFeeType,
@@ -372,8 +382,8 @@ export const GasFeeStep = (props: GasFeeProps) => {
           <Text color={"gray.500"}>{t("Send:amount")}</Text>
           <TokenNum
             amount={amountNum}
-            decimals={nativeCurrency.decimals}
-            symbol={nativeCurrency.symbol}
+            decimals={token.decimals}
+            symbol={token.symbol}
           />
         </Flex>
         <Divider h={"1px"} mt={3} mb={5} />

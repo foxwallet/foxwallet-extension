@@ -68,9 +68,7 @@ export const HomeTabList = () => {
         </Flex>
       </Flex>
       {/* <TabIndicator height="2px" bg="black" borderRadius="1px" /> */}
-      <TabPanels maxH={258} overflowY="auto">
-        <AssetList />
-      </TabPanels>
+      <AssetList />
     </Tabs>
   );
 };

@@ -18,6 +18,7 @@ import {
   IconUncheckCircleGray,
 } from "@/components/Custom/Icon";
 import { useTranslation } from "react-i18next";
+import { Token } from "core/coins/ALEO/types/Token";
 
 interface Props {
   isOpen: boolean;
@@ -25,18 +26,12 @@ interface Props {
   onCancel: () => void;
   selectedRecord?: RecordDetailWithSpent;
   recordList: RecordDetailWithSpent[];
-  nativeCurrency: NativeToken;
+  token: Token;
 }
 
 const SelectRecordDrawer = (props: Props) => {
-  const {
-    isOpen,
-    onConfirm,
-    onCancel,
-    recordList,
-    nativeCurrency,
-    selectedRecord,
-  } = props;
+  const { isOpen, onConfirm, onCancel, recordList, token, selectedRecord } =
+    props;
   const { t } = useTranslation();
 
   return (
@@ -84,8 +79,8 @@ const SelectRecordDrawer = (props: Props) => {
 
                 <TokenNum
                   amount={record.parsedContent?.microcredits || 0n}
-                  decimals={nativeCurrency.decimals}
-                  symbol={nativeCurrency.symbol}
+                  decimals={token.decimals}
+                  symbol={token.symbol}
                 />
               </Flex>
             ))}

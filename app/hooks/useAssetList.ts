@@ -41,8 +41,8 @@ export const useAssetList = (uniqueId: ChainUniqueId, address: string) => {
     }
   }, [inited, getInteractiveTokens]);
 
-  const assets = useMemo(() => {
-    const nativeToken: Token = {
+  const nativeToken: Token = useMemo(() => {
+    return {
       ...nativeCurrency,
       name: nativeCurrency.name || nativeCurrency.symbol,
       tokenId: "",
@@ -50,8 +50,11 @@ export const useAssetList = (uniqueId: ChainUniqueId, address: string) => {
       official: true,
       programId: NATIVE_TOKEN_PROGRAM_ID,
     };
-    return [nativeToken, ...userTokens];
-  }, [nativeCurrency, userTokens]);
+  }, [nativeCurrency]);
 
-  return { assets };
+  const assets = useMemo(() => {
+    return [nativeToken, ...userTokens];
+  }, [nativeToken, userTokens]);
+
+  return { assets, nativeToken };
 };

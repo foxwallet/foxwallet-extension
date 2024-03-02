@@ -20,6 +20,7 @@ import { useDataRef } from "@/hooks/useDataRef";
 import { showErrorToast } from "@/components/Custom/ErrorToast";
 import { useTranslation } from "react-i18next";
 import { AleoTxType } from "core/coins/ALEO/types/History";
+import { Token } from "core/coins/ALEO/types/Token";
 
 function SendScreen() {
   const navigate = useNavigate();
@@ -38,6 +39,7 @@ function SendScreen() {
   const [transferRecord, setTransferRecord] = useState<
     RecordDetailWithSpent | undefined
   >();
+  const [transferToken, setTransferToken] = useState<Token | null>(null);
 
   const onStep1Submit = useCallback(
     ({
@@ -45,16 +47,19 @@ function SendScreen() {
       amountNum: submitAmountNum,
       transferMethod: submitTransferMethod,
       transferRecord: finalTransferRecord,
+      token,
     }: {
       receiverAddress: string;
       amountNum: bigint;
       transferMethod: AleoTransferMethod;
       transferRecord?: RecordDetailWithSpent;
+      token: Token;
     }) => {
       setReceiverAddress(submitReceiverAddress);
       setTransferAmount(submitAmountNum);
       setTransferMethod(submitTransferMethod);
       setTransferRecord(finalTransferRecord);
+      setTransferToken(token);
       setStep(2);
     },
     [],
@@ -67,6 +72,7 @@ function SendScreen() {
     async ({
       receiverAddress: to,
       amountNum: amount,
+      token,
       transferMethod: finalTransferMethod,
       transferRecord: finalTransferRecord,
       feeRecord,
@@ -74,6 +80,7 @@ function SendScreen() {
     }: {
       receiverAddress: string;
       amountNum: bigint;
+      token: Token;
       transferMethod: AleoTransferMethod;
       transferRecord?: RecordDetailWithSpent;
       feeType: AleoFeeMethod;
@@ -81,6 +88,9 @@ function SendScreen() {
       gasFee: AleoGasFee;
     }) => {
       if (submittingRef.current) {
+        return;
+      }
+      if (!transferToken) {
         return;
       }
       setSubmitting(true);
@@ -93,12 +103,16 @@ function SendScreen() {
             if (!finalTransferRecord || !finalTransferRecord.plaintext) {
               throw new Error(ERROR_CODE.INVALID_ARGUMENT);
             }
-            inputs = [finalTransferRecord.plaintext, to, `${amount}u64`];
+            inputs = token.tokenId
+              ? [finalTransferRecord.plaintext, to, `${amount}u128`]
+              : [finalTransferRecord.plaintext, to, `${amount}u64`];
             break;
           }
           case AleoTransferMethod.PUBLIC:
           case AleoTransferMethod.PUBLIC_TO_PRIVATE: {
-            inputs = [to, `${amount}u64`];
+            inputs = token.tokenId
+              ? [token.tokenId, to, `${amount}u128`]
+              : [to, `${amount}u64`];
             break;
           }
         }
@@ -107,7 +121,7 @@ function SendScreen() {
         const pendingTx: AleoLocalTxInfo = {
           localId,
           address: address,
-          programId: nativeCurrency.address,
+          programId: token.programId,
           functionName: finalTransferMethod,
           inputs,
           baseFee: gasFee.baseFee.toString(),
@@ -129,7 +143,7 @@ function SendScreen() {
             address: address,
             localId,
             chainId: chainConfig.chainId,
-            programId: nativeCurrency.address,
+            programId: token.programId,
             functionName: finalTransferMethod,
             inputs,
             feeRecord: feeRecord?.plaintext || null,
@@ -150,7 +164,14 @@ function SendScreen() {
         setSubmitting(false);
       }
     },
-    [selectedAccount, nativeCurrency, chainConfig, coinService, navigate],
+    [
+      selectedAccount,
+      nativeCurrency,
+      chainConfig,
+      coinService,
+      navigate,
+      transferToken,
+    ],
   );
 
   const content = useMemo(() => {
@@ -181,6 +202,7 @@ function SendScreen() {
             amountNum={transferAmount!}
             transferMethod={transferMethod}
             transferRecord={transferRecord}
+            token={transferToken!}
             onConfirm={onStep2Submit}
           />
         );
@@ -198,6 +220,7 @@ function SendScreen() {
     setTransferMethod,
     transferRecord,
     setTransferRecord,
+    transferToken,
     onStep1Submit,
     onStep2Submit,
   ]);

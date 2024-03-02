@@ -24,37 +24,63 @@ import { useCoinService } from "@/hooks/useCoinService";
 import { IconCheckLine } from "@/components/Custom/Icon";
 import { useRecords } from "@/hooks/useRecord";
 import { useTranslation } from "react-i18next";
+import { Token } from "core/coins/ALEO/types/Token";
+import { RecordFilter } from "@/scripts/background/servers/IWalletServer";
 
 interface Props {
   isOpen: boolean;
   selectedMethod: AleoTransferMethod;
   uniqueId: ChainUniqueId;
   address: string;
+  token: Token;
   onConfirm: (data: AleoTransferMethod) => void;
   onCancel: () => void;
 }
 
 const SelectTransferMethodDrawer = (props: Props) => {
-  const { isOpen, onConfirm, onCancel, uniqueId, address, selectedMethod } =
-    props;
+  const {
+    isOpen,
+    onConfirm,
+    onCancel,
+    uniqueId,
+    address,
+    selectedMethod,
+    token,
+  } = props;
   const { nativeCurrency } = useCoinService(uniqueId);
   const { balance, loadingBalance } = useBalance({
     uniqueId,
     address,
+    tokenId: token.tokenId,
     refreshInterval: 10000,
   });
-  const { records, loading: loadingRecords } = useRecords(uniqueId, address);
+  const { records, loading: loadingRecords } = useRecords(
+    uniqueId,
+    address,
+    RecordFilter.UNSPENT,
+    token.programId,
+  );
+
+  const tokenRecords = useMemo(() => {
+    if (!token.tokenId) {
+      return records;
+    }
+    return records.filter((record) => {
+      return record.parsedContent?.token === token.tokenId;
+    });
+  }, [records, token]);
+
   const { t } = useTranslation();
 
   const recordStr = useMemo(() => {
-    if (!records) {
+    if (!tokenRecords) {
       return "";
     }
-    if (records.length === 0) {
+    if (tokenRecords.length === 0) {
       return t("Send:noRecordExist");
     }
-    return t("Send:recordStatistics", { COUNT: records.length });
-  }, [records]);
+    return t("Send:recordStatistics", { COUNT: tokenRecords.length });
+  }, [tokenRecords]);
 
   const transferMethods = useMemo(() => {
     return Object.values(AleoTransferMethod);
@@ -103,8 +129,8 @@ const SelectTransferMethodDrawer = (props: Props) => {
               ) : (
                 <TokenNum
                   amount={balance?.publicBalance || 0n}
-                  decimals={nativeCurrency.decimals}
-                  symbol={nativeCurrency.symbol}
+                  decimals={token.decimals}
+                  symbol={token.symbol}
                 />
               )}
             </Flex>
@@ -116,17 +142,21 @@ const SelectTransferMethodDrawer = (props: Props) => {
                 ) : (
                   <TokenNum
                     amount={balance?.privateBalance || 0n}
-                    decimals={nativeCurrency.decimals}
-                    symbol={nativeCurrency.symbol}
+                    decimals={token.decimals}
+                    symbol={token.symbol}
                   />
                 )}
-                {!!recordStr && !!records[0] && (
+                {!!recordStr && !!tokenRecords[0] && (
                   <Flex>
                     (<Text>{recordStr}</Text>&nbsp;
                     <TokenNum
-                      amount={records[0].parsedContent?.microcredits || 0n}
-                      decimals={nativeCurrency.decimals}
-                      symbol={nativeCurrency.symbol}
+                      amount={
+                        token.tokenId
+                          ? BigInt(tokenRecords[0].parsedContent?.amount) || 0n
+                          : tokenRecords[0].parsedContent?.microcredits || 0n
+                      }
+                      decimals={token.decimals}
+                      symbol={token.symbol}
                     />
                     )
                   </Flex>

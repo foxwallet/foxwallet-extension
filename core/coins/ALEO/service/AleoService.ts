@@ -1410,7 +1410,9 @@ export class AleoService {
   }
 
   async getTokenInfo(tokenId: string): Promise<Token | undefined> {
-    const allTokens = await this.getAllTokens();
+    const allTokens = await this.tokenService
+      .currInstance()
+      .searchTokens(tokenId.slice(0, -5));
     const token = allTokens.find((item) => item.tokenId === tokenId);
     return token;
   }
