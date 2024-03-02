@@ -2,7 +2,6 @@ import { Execution } from "./AleoExecution";
 import { Fee } from "./AleoFee";
 import { AleoDeploymentInTx } from "./Deployment";
 import { AleoTxType } from "./History";
-import { Token } from "./Token";
 
 export interface AleoSendTxParams {
   privateKey: string;

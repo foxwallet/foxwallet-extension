@@ -8,6 +8,7 @@ import { useCoinService } from "@/hooks/useCoinService";
 import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { Content } from "@/layouts/Content";
 import { Button, Flex, Text } from "@chakra-ui/react";
+import { NATIVE_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
 import { AleoFeeMethod } from "core/coins/ALEO/types/FeeMethod";
 import { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 import {
@@ -51,7 +52,10 @@ export const JoinStep = (props: JoinStepProps) => {
     async (method: AleoRecordMethod) => {
       setLoadingGasFee(true);
       try {
-        const { baseFee, priorityFee } = await coinService.getGasFee(method);
+        const { baseFee, priorityFee } = await coinService.getGasFee(
+          NATIVE_TOKEN_PROGRAM_ID,
+          method,
+        );
         setFeeInfo({ baseFee, priorityFee });
       } catch (err) {
         setFeeInfo(null);

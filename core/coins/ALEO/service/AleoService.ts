@@ -55,6 +55,7 @@ import { FaucetMessage, FaucetResp } from "../types/Faucet";
 import { ExplorerLanguages } from "core/types/ExplorerLanguages";
 import { TokenService } from "./instances/token";
 import { Token, TokenWithBalance } from "../types/Token";
+import { InnerProgramId } from "../types/ProgramId";
 
 const CREDITS_MAPPING_NAME = "account";
 
@@ -368,8 +369,11 @@ export class AleoService {
     };
   }
 
-  async getBaseFee(method: AleoCreditMethod): Promise<bigint> {
-    const fee = ALEO_METHOD_BASE_FEE_MAP[method];
+  async getBaseFee(
+    programId: InnerProgramId,
+    method: AleoCreditMethod,
+  ): Promise<bigint> {
+    const fee = ALEO_METHOD_BASE_FEE_MAP[programId]?.[method];
     if (fee) {
       return fee;
     }
@@ -422,9 +426,12 @@ export class AleoService {
     }
   }
 
-  async getGasFee(method: AleoCreditMethod): Promise<AleoGasFee> {
+  async getGasFee(
+    programId: InnerProgramId,
+    method: AleoCreditMethod,
+  ): Promise<AleoGasFee> {
     const [baseFee, priorityFee] = await Promise.all([
-      this.getBaseFee(method),
+      this.getBaseFee(programId, method),
       this.getPriorityFee(),
     ]);
 

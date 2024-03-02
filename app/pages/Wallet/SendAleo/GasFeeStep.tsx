@@ -59,6 +59,14 @@ export const GasFeeStep = (props: GasFeeProps) => {
     refreshInterval: 10000,
   });
 
+  const { balance: tokenBalance, loadingBalance: loadingTokenBalance } =
+    useBalance({
+      uniqueId,
+      address: selectedAccount.address,
+      refreshInterval: 10000,
+      tokenId: token.tokenId,
+    });
+
   const { records, loading: loadingRecords } = useRecords(
     uniqueId,
     selectedAccount.address,
@@ -78,7 +86,10 @@ export const GasFeeStep = (props: GasFeeProps) => {
     async (method: AleoTransferMethod) => {
       setLoadingGasFee(true);
       try {
-        const { baseFee, priorityFee } = await coinService.getGasFee(method);
+        const { baseFee, priorityFee } = await coinService.getGasFee(
+          token.programId,
+          method,
+        );
         setFeeInfo({ baseFee, priorityFee });
       } catch (err) {
         setFeeInfo(null);
@@ -87,7 +98,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
         setLoadingGasFee(false);
       }
     },
-    [coinService],
+    [coinService, token],
   );
   useEffect(() => {
     getGasFee(transferMethod);
@@ -240,16 +251,23 @@ export const GasFeeStep = (props: GasFeeProps) => {
     if (loadingBalance || !balance) {
       return true;
     }
+    if (loadingTokenBalance || !tokenBalance) {
+      return true;
+    }
     if (!gasFeeEstimated) {
       return true;
     }
     switch (transferMethod) {
       case AleoTransferMethod.PUBLIC:
       case AleoTransferMethod.PUBLIC_TO_PRIVATE: {
-        if (currFeeType === AleoFeeMethod.FEE_PUBLIC) {
-          return amountNum + gasFee <= balance.publicBalance;
+        if (token.tokenId) {
+          return amountNum <= tokenBalance.publicBalance;
         } else {
-          return amountNum <= balance.publicBalance;
+          if (currFeeType === AleoFeeMethod.FEE_PUBLIC) {
+            return amountNum + gasFee <= balance.publicBalance;
+          } else {
+            return amountNum <= balance.publicBalance;
+          }
         }
       }
       case AleoTransferMethod.PRIVATE:
@@ -270,6 +288,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
     gasFee,
     gasFeeEstimated,
     currFeeType,
+    token,
   ]);
 
   const canSubmit = useMemo(() => {

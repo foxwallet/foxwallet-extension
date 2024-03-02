@@ -1,4 +1,5 @@
 import { Balance } from "./Balance";
+import { InnerProgramId } from "./ProgramId";
 
 export interface Token {
   tokenId: string;
@@ -7,7 +8,7 @@ export interface Token {
   decimals: number;
   logo: string;
   official: boolean;
-  programId: string;
+  programId: InnerProgramId;
 }
 
 export type TokenWithBalance = Token & {
