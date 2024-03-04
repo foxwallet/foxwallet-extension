@@ -87,12 +87,12 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
     }
   }, [token, nativeToken]);
 
-  const { records, loading: loadingRecords } = useRecords(
+  const { records, loading: loadingRecords } = useRecords({
     uniqueId,
-    selectedAccount.address,
-    RecordFilter.UNSPENT,
-    tokenInfo.programId,
-  );
+    address: selectedAccount.address,
+    recordFilter: RecordFilter.UNSPENT,
+    programId: tokenInfo.programId,
+  });
 
   const tokenRecords = useMemo(() => {
     if (!tokenInfo.tokenId) {

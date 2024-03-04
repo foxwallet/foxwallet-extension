@@ -3,6 +3,8 @@ import { useCoinService } from "./useCoinService";
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { useDebounce } from "use-debounce";
+import { NATIVE_TOKEN_TOKEN_ID } from "core/coins/ALEO/constants";
+import { ALEO_NATIVE_TOKEN } from "core/coins/ALEO/config/chains";
 
 export const useTokens = (uniqueId: ChainUniqueId, keyword?: string) => {
   const { coinService } = useCoinService(uniqueId);
@@ -85,8 +87,8 @@ export const useTokenInfo = (
 
   const key = `/token_info/${uniqueId}/${tokenId}`;
   const fetchTokens = useCallback(async () => {
-    if (!tokenId) {
-      return undefined;
+    if (!tokenId || tokenId === NATIVE_TOKEN_TOKEN_ID) {
+      return ALEO_NATIVE_TOKEN;
     }
     return await coinService.getTokenInfo(tokenId);
   }, [coinService, tokenId]);

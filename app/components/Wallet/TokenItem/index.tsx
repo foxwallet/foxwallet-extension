@@ -7,6 +7,7 @@ import { usePopupSelector } from "@/hooks/useStore";
 import Hover from "@/components/Custom/Hover";
 import { Token } from "core/coins/ALEO/types/Token";
 import { ChainUniqueId } from "core/types/ChainUniqueId";
+import { NATIVE_TOKEN_TOKEN_ID } from "core/coins/ALEO/constants";
 
 export const TokenItemWithBalance = ({
   uniqueId,
@@ -53,9 +54,11 @@ export const TokenItemWithBalance = ({
           <Text fontSize={13} fontWeight={600}>
             {token.symbol}
           </Text>
-          <Text maxW={"120"} noOfLines={1} fontSize={10} color={"gray.400"}>
-            {token.tokenId}
-          </Text>
+          {token.tokenId !== NATIVE_TOKEN_TOKEN_ID && (
+            <Text maxW={"120"} noOfLines={1} fontSize={10} color={"gray.400"}>
+              {token.tokenId}
+            </Text>
+          )}
         </Flex>
       </Flex>
       {showBalance ? (

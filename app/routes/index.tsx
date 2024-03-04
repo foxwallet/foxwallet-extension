@@ -150,7 +150,7 @@ export const routesConfig: RouteObject[] = [
         element: <Language />,
       },
       {
-        path: "token_detail/:uniqueId",
+        path: "token_detail/:uniqueId/:address",
         element: <TokenDetail />,
       },
       {

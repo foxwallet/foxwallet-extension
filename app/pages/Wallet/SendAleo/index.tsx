@@ -131,6 +131,7 @@ function SendScreen() {
           timestamp,
           amount: amount.toString(),
           txType: AleoTxType.EXECUTION,
+          tokenId: token.tokenId,
           notification: false,
         };
         await coinService.setAddressLocalTx(address, pendingTx);
@@ -151,6 +152,7 @@ function SendScreen() {
             priorityFee: gasFee.priorityFee.toString(),
             timestamp,
             amount: amount.toString(),
+            tokenId: token.tokenId,
           })
           .catch(async (err) => {
             pendingTx.error = (err as Error).message;

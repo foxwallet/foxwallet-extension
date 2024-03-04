@@ -29,6 +29,7 @@ import {
   FAILED_TX_REMOVE_TIME,
   LOCAL_TX_EXPIRE_TIME,
   NATIVE_TOKEN_PROGRAM_ID,
+  NATIVE_TOKEN_TOKEN_ID,
 } from "../constants";
 import {
   AleoHistoryItem,
@@ -626,10 +627,13 @@ export class AleoService {
     }
   }
 
-  async getPublicTxHistory(
-    address: string,
-    pagination: Pagination,
-  ): Promise<AleoOnChainHistoryItem[]> {
+  async getPublicTxHistory({
+    address,
+    pagination,
+  }: {
+    address: string;
+    pagination: Pagination;
+  }): Promise<AleoOnChainHistoryItem[]> {
     const { cursor } = pagination;
     const publicHistory = await this.walletService
       .currInstance()
@@ -661,12 +665,16 @@ export class AleoService {
     address: string,
     txInfo?: AleoLocalTxInfo | null,
     program?: string,
+    tokenId?: string,
   ) {
     let result: AleoLocalHistoryItem | null = null;
     if (!txInfo) {
       return null;
     }
     if (program && txInfo.programId !== program) {
+      return null;
+    }
+    if (tokenId && txInfo.tokenId !== tokenId) {
       return null;
     }
     switch (txInfo.status) {
@@ -686,6 +694,7 @@ export class AleoService {
           amount: txInfo.amount,
           txType: txInfo.txType || AleoTxType.EXECUTION,
           notification: txInfo.notification,
+          tokenId: txInfo.tokenId,
         };
         break;
       }
@@ -706,6 +715,7 @@ export class AleoService {
               amount: txInfo.amount,
               txType: txInfo.txType || AleoTxType.EXECUTION,
               notification: txInfo.notification,
+              tokenId: txInfo.tokenId,
             };
             break;
           }
@@ -724,6 +734,7 @@ export class AleoService {
               txType: txInfo.txType || AleoTxType.EXECUTION,
               txId,
               notification: txInfo.notification,
+              tokenId: txInfo.tokenId,
             };
           } else {
             result = {
@@ -739,6 +750,7 @@ export class AleoService {
               txType: txInfo.txType || AleoTxType.EXECUTION,
               txId,
               notification: txInfo.notification,
+              tokenId: txInfo.tokenId,
             };
             const newTxInfo = {
               ...txInfo,
@@ -775,6 +787,7 @@ export class AleoService {
               txType: txInfo.txType || AleoTxType.EXECUTION,
               txId,
               notification: txInfo.notification,
+              tokenId: txInfo.tokenId,
             };
           } else {
             result = {
@@ -790,6 +803,7 @@ export class AleoService {
               txType: txInfo.txType || AleoTxType.EXECUTION,
               txId,
               notification: txInfo.notification,
+              tokenId: txInfo.tokenId,
             };
           }
         }
@@ -812,6 +826,7 @@ export class AleoService {
           txId: txInfo.transaction?.id,
           txType: txInfo.txType || AleoTxType.EXECUTION,
           notification: txInfo.notification,
+          tokenId: txInfo.tokenId,
         };
         break;
       }
@@ -829,6 +844,7 @@ export class AleoService {
           amount: txInfo.amount,
           txType: txInfo.txType || AleoTxType.EXECUTION,
           notification: txInfo.notification,
+          tokenId: txInfo.tokenId,
         };
         break;
       }
@@ -847,11 +863,33 @@ export class AleoService {
 
     const txs = await Promise.all(
       localTxs.map(async (item) => {
-        return await this.processLocalTxInfo(address, item, program);
+        return await this.processLocalTxInfo(
+          address,
+          item,
+          program,
+          NATIVE_TOKEN_TOKEN_ID,
+        );
       }),
     );
     return txs.filter((item) => !!item) as AleoLocalHistoryItem[];
   }
+
+  // async getTokenLocalTxHistory(
+  //   address: string,
+  //   programId: string,
+  //   token: Token,
+  // ) {
+  //   const localTxs = await this.aleoStorage.getAddressLocalTxs(
+  //     this.chainId,
+  //     address,
+  //   );
+  //   const txs = await Promise.all(
+  //     localTxs.map(async (item) => {
+  //       return await this.processLocalTxInfo(address, item, programId);
+  //     }),
+  //   );
+  //   return txs.filter((item) => !!item) as AleoLocalHistoryItem[];
+  // }
 
   async getLocalTxInfo(
     address: string,
@@ -870,11 +908,15 @@ export class AleoService {
     await this.aleoStorage.setLocalTxNotification(this.chainId, localId);
   }
 
-  private async getConfirmedTransactionInfo(
-    txId: string,
-    viewKey: ViewKey,
-    address: string,
-  ) {
+  private async getConfirmedTransactionInfo({
+    txId,
+    viewKey,
+    address,
+  }: {
+    txId: string;
+    viewKey: ViewKey;
+    address: string;
+  }) {
     const cachedTx = await this.aleoStorage.getCachedTransaction(
       this.chainId,
       txId,
@@ -961,12 +1003,15 @@ export class AleoService {
     return history;
   }
 
-  async getOnChainHistory(
-    address: string,
-    pagination: Pagination,
-  ): Promise<AleoOnChainHistoryItem[]> {
+  async getOnChainHistory({
+    address,
+    pagination,
+  }: {
+    address: string;
+    pagination: Pagination;
+  }): Promise<AleoOnChainHistoryItem[]> {
     const [publicHistory] = await Promise.all([
-      this.getPublicTxHistory(address, pagination),
+      this.getPublicTxHistory({ address, pagination }),
     ]);
     const lastHeight = pagination.cursor
       ? parseInt(pagination.cursor)
@@ -1011,11 +1056,11 @@ export class AleoService {
       });
       const privateTxs = await Promise.all(
         [...recordTxIds].map(async (item) => {
-          const tx = await this.getConfirmedTransactionInfo(
-            item,
-            viewKeyObj,
+          const tx = await this.getConfirmedTransactionInfo({
+            txId: item,
+            viewKey: viewKeyObj,
             address,
-          );
+          });
           return tx;
         }),
       );
@@ -1046,7 +1091,7 @@ export class AleoService {
     program?: string,
   ): Promise<AleoHistoryItem[]> {
     const [publicHistory, localTxList] = await Promise.all([
-      this.getPublicTxHistory(address, pagination),
+      this.getPublicTxHistory({ address, pagination }),
       this.getLocalTxHistory(address, program),
     ]);
     const lastHeight = pagination.cursor
@@ -1098,11 +1143,11 @@ export class AleoService {
       });
       const privateTxs = await Promise.all(
         [...recordTxIds].map(async (item) => {
-          const tx = await this.getConfirmedTransactionInfo(
-            item,
-            viewKeyObj,
+          const tx = await this.getConfirmedTransactionInfo({
+            txId: item,
+            viewKey: viewKeyObj,
             address,
-          );
+          });
           return tx;
         }),
       );

@@ -1,3 +1,4 @@
+import { Token } from "./Token";
 import { AleoTxStatus } from "./Transaction";
 
 export enum AleoHistoryType {
@@ -40,6 +41,7 @@ export interface AleoLocalHistoryItem {
   timestamp: number;
   addressType: AleoTxAddressType.SEND;
   amount?: string;
+  tokenId: string;
   status: AleoTxStatus;
   notification: boolean;
 }

@@ -26,6 +26,7 @@ import { useRecords } from "@/hooks/useRecord";
 import { useTranslation } from "react-i18next";
 import { Token } from "core/coins/ALEO/types/Token";
 import { RecordFilter } from "@/scripts/background/servers/IWalletServer";
+import { NATIVE_TOKEN_TOKEN_ID } from "core/coins/ALEO/constants";
 
 interface Props {
   isOpen: boolean;
@@ -54,15 +55,15 @@ const SelectTransferMethodDrawer = (props: Props) => {
     tokenId: token.tokenId,
     refreshInterval: 10000,
   });
-  const { records, loading: loadingRecords } = useRecords(
+  const { records, loading: loadingRecords } = useRecords({
     uniqueId,
     address,
-    RecordFilter.UNSPENT,
-    token.programId,
-  );
+    recordFilter: RecordFilter.UNSPENT,
+    programId: token.programId,
+  });
 
   const tokenRecords = useMemo(() => {
-    if (!token.tokenId) {
+    if (token.tokenId === NATIVE_TOKEN_TOKEN_ID) {
       return records;
     }
     return records.filter((record) => {

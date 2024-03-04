@@ -67,10 +67,10 @@ export const GasFeeStep = (props: GasFeeProps) => {
       tokenId: token.tokenId,
     });
 
-  const { records, loading: loadingRecords } = useRecords(
+  const { records, loading: loadingRecords } = useRecords({
     uniqueId,
-    selectedAccount.address,
-  );
+    address: selectedAccount.address,
+  });
   const { t } = useTranslation();
 
   const [feeInfo, setFeeInfo] = useState<AleoGasFee | null>(null);

@@ -67,7 +67,6 @@ export const HomeTabList = () => {
           />
         </Flex>
       </Flex>
-      {/* <TabIndicator height="2px" bg="black" borderRadius="1px" /> */}
       <AssetList />
     </Tabs>
   );

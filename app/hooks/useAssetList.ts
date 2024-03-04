@@ -4,8 +4,7 @@ import { useCallback, useEffect, useMemo } from "react";
 import { usePopupDispatch, usePopupSelector } from "./useStore";
 import { useInteractiveTokens } from "./useToken";
 import { isEqual } from "lodash";
-import { Token } from "core/coins/ALEO/types/Token";
-import { NATIVE_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
+import { ALEO_NATIVE_TOKEN } from "core/coins/ALEO/config/chains";
 
 export const useAssetList = (uniqueId: ChainUniqueId, address: string) => {
   const inited = usePopupSelector(
@@ -15,7 +14,6 @@ export const useAssetList = (uniqueId: ChainUniqueId, address: string) => {
   const userTokens = usePopupSelector((state) => {
     return state.tokens.userTokens[uniqueId]?.[address] ?? [];
   }, isEqual);
-  const { nativeCurrency, chainConfig } = useCoinService(uniqueId);
   const dispatch = usePopupDispatch();
   const { loadingInteractiveTokens, getInteractiveTokens } =
     useInteractiveTokens(uniqueId, address, false);
@@ -41,20 +39,9 @@ export const useAssetList = (uniqueId: ChainUniqueId, address: string) => {
     }
   }, [inited, getInteractiveTokens]);
 
-  const nativeToken: Token = useMemo(() => {
-    return {
-      ...nativeCurrency,
-      name: nativeCurrency.name || nativeCurrency.symbol,
-      tokenId: "",
-      logo: nativeCurrency.logo!,
-      official: true,
-      programId: NATIVE_TOKEN_PROGRAM_ID,
-    };
-  }, [nativeCurrency]);
-
   const assets = useMemo(() => {
-    return [nativeToken, ...userTokens];
-  }, [nativeToken, userTokens]);
+    return [ALEO_NATIVE_TOKEN, ...userTokens];
+  }, [userTokens]);
 
-  return { assets, nativeToken };
+  return { assets, nativeToken: ALEO_NATIVE_TOKEN };
 };

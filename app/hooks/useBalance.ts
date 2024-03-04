@@ -3,6 +3,7 @@ import useSWR from "swr";
 import { useClient } from "./useClient";
 import { useCallback, useMemo } from "react";
 import { useCoinService } from "./useCoinService";
+import { NATIVE_TOKEN_TOKEN_ID } from "core/coins/ALEO/constants";
 
 export interface Balance {
   privateBalance: bigint;
@@ -32,7 +33,7 @@ export const useBalance = ({
 
   const key = `/balance/${uniqueId}/${address}/${tokenId}`;
   const fetchBalance = useCallback(async () => {
-    if (tokenId) {
+    if (tokenId && tokenId !== NATIVE_TOKEN_TOKEN_ID) {
       return await coinService.getTokenBalance(address, tokenId);
     }
     return await coinService.getBalance(address);
