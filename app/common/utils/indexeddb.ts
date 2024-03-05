@@ -41,7 +41,7 @@ swrStorageInstance
     logger.log("swrStorageInstance iterate error ", err.message);
   });
 
-export const swrCache: Cache = {
+export const swrCache = (): Cache => ({
   keys: function* () {
     const keys = Object.keys(memoryCache);
     for (const key of keys) {
@@ -53,14 +53,14 @@ export const swrCache: Cache = {
   },
   set: (key, value) => {
     memoryCache.set(key, value);
-    localForage.setItem(key, value).catch((err) => {
+    swrStorageInstance.setItem(key, value).catch((err) => {
       logger.error("swrCache set error ", err.message);
     });
   },
   delete: (key) => {
     memoryCache.delete(key);
-    localForage.removeItem(key).catch((err) => {
+    swrStorageInstance.removeItem(key).catch((err) => {
       logger.error("swrCache delete error ", err.message);
     });
   },
-};
+});

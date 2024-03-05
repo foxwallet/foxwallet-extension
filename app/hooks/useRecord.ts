@@ -1,21 +1,23 @@
 import type { ChainUniqueId } from "core/types/ChainUniqueId";
-import useSWR from "swr";
-import { useClient } from "./useClient";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useCoinService } from "./useCoinService";
 import { RecordFilter } from "@/scripts/background/servers/IWalletServer";
 import { chainUniqueIdToCoinType } from "core/helper/CoinType";
 import { CoinType } from "core/types";
-import { set } from "lodash";
 import { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 import { NATIVE_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
 
-export const useRecords = (
-  uniqueId: ChainUniqueId,
-  address: string,
-  recordFilter: RecordFilter = RecordFilter.UNSPENT,
-  programId: string = NATIVE_TOKEN_PROGRAM_ID,
-) => {
+export const useRecords = ({
+  uniqueId,
+  address,
+  recordFilter = RecordFilter.UNSPENT,
+  programId = NATIVE_TOKEN_PROGRAM_ID,
+}: {
+  uniqueId: ChainUniqueId;
+  address: string;
+  recordFilter?: RecordFilter;
+  programId?: string;
+}) => {
   const { coinService } = useCoinService(uniqueId);
   const coinType = useMemo(() => {
     return chainUniqueIdToCoinType(uniqueId);

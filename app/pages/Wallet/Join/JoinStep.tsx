@@ -8,6 +8,7 @@ import { useCoinService } from "@/hooks/useCoinService";
 import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { Content } from "@/layouts/Content";
 import { Button, Flex, Text } from "@chakra-ui/react";
+import { NATIVE_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
 import { AleoFeeMethod } from "core/coins/ALEO/types/FeeMethod";
 import { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 import {
@@ -33,10 +34,10 @@ export const JoinStep = (props: JoinStepProps) => {
   const { selectedAccount, uniqueId } = useCurrAccount();
   const { nativeCurrency, coinService } = useCoinService(uniqueId);
   const { t } = useTranslation();
-  const { balance, loadingBalance } = useBalance(
+  const { balance, loadingBalance } = useBalance({
     uniqueId,
-    selectedAccount.address,
-  );
+    address: selectedAccount.address,
+  });
 
   const [feeInfo, setFeeInfo] = useState<AleoGasFee | null>(null);
   const gasFee = useMemo(() => {
@@ -51,7 +52,10 @@ export const JoinStep = (props: JoinStepProps) => {
     async (method: AleoRecordMethod) => {
       setLoadingGasFee(true);
       try {
-        const { baseFee, priorityFee } = await coinService.getGasFee(method);
+        const { baseFee, priorityFee } = await coinService.getGasFee(
+          NATIVE_TOKEN_PROGRAM_ID,
+          method,
+        );
         setFeeInfo({ baseFee, priorityFee });
       } catch (err) {
         setFeeInfo(null);

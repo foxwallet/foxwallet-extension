@@ -44,3 +44,6 @@ pub use verifying_key::*;
 
 pub mod field;
 pub use field::*;
+
+pub mod plaintext;
+pub use plaintext::*;

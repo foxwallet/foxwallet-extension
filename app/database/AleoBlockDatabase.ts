@@ -4,6 +4,7 @@ import { AddressRecords } from "./types/records";
 import { AleoLocalTx } from "./types/tx";
 import { AleoProgram } from "./types/program";
 import { AleoOnChainHistoryItem } from "core/coins/ALEO/types/History";
+import { NATIVE_TOKEN_TOKEN_ID } from "core/coins/ALEO/constants";
 
 export class AleoBlockDatabase extends Dexie {
   infos: Dexie.Table<AleoAddressInfo, string>;
@@ -36,6 +37,19 @@ export class AleoBlockDatabase extends Dexie {
           .toCollection()
           .modify((tx) => {
             tx.notification = true;
+          });
+      });
+
+    this.version(4)
+      .stores({
+        txs: "localId, [address+programId], notification, tokenId",
+      })
+      .upgrade((transaction) => {
+        return transaction
+          .table("txs")
+          .toCollection()
+          .modify((tx) => {
+            tx.tokenId = NATIVE_TOKEN_TOKEN_ID;
           });
       });
 

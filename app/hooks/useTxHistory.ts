@@ -11,6 +11,8 @@ import {
 import { isEqual, uniqBy } from "lodash";
 import { AleoTxStatus } from "core/coins/ALEO/types/Transaction";
 import { useTransactionSettledToast } from "@/components/Wallet/TransactionSettledToast/useTransactionSettledToast";
+import { Token } from "core/coins/ALEO/types/Token";
+import { ALPHA_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
 
 const NotificationExpiredTime = 1000 * 60 * 60 * 5;
 
@@ -83,18 +85,28 @@ export const useTxsNotification = (
   }, [newSettledTxs, showToast, coinService]);
 };
 
-export const useTxHistory = (
-  uniqueId: ChainUniqueId,
-  address: string,
-  refreshInterval?: number,
-) => {
+export const useTxHistory = ({
+  uniqueId,
+  address,
+  token,
+  refreshInterval,
+}: {
+  uniqueId: ChainUniqueId;
+  address: string;
+  token: Token;
+  refreshInterval?: number;
+}) => {
   const { coinService } = useCoinService(uniqueId);
 
-  const localTxKey = `/localTxs/${uniqueId}/${address}`;
+  const localTxKey = `/localTxs/${uniqueId}/${address}/${token.tokenId}`;
   const getLocalTxs = useCallback(async () => {
-    const res = await coinService.getLocalTxHistory(address);
+    const res = await coinService.getLocalTxHistory(
+      address,
+      token.programId,
+      token.tokenId,
+    );
     return res;
-  }, [coinService, address]);
+  }, [coinService, address, token]);
   const {
     data: localTxs,
     error: localTxsError,
@@ -104,7 +116,17 @@ export const useTxHistory = (
   const [pagination, setPagination] = useState<Pagination>({});
   const key = `/onchain_history/${uniqueId}/${address}?page=${pagination.cursor}&limit=${pagination.limit}`;
   const fetchOnChainHistory = useCallback(async () => {
-    const res = await coinService.getOnChainHistory(address, pagination);
+    if (token.programId === ALPHA_TOKEN_PROGRAM_ID) {
+      return await coinService.getTokenOnChainHistory({
+        address,
+        pagination,
+        token,
+      });
+    }
+    const res = await coinService.getOnChainHistory({
+      address,
+      pagination,
+    });
     return res;
   }, [coinService, address, pagination]);
   const [onChainHistory, setOnChainHistory] = useState<

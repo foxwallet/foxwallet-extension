@@ -73,7 +73,8 @@
     "total": "全部",
     "remind": "提醒",
     "account": "帐户",
-    "ok": "好的"
+    "ok": "好的",
+    "wrongPassword": "密码错误"
   },
   "Password": {
     "title": "密码",
@@ -240,7 +241,11 @@
     "sign": "签名"
   },
   "Tx": {
-    "success_toast": "交易成功！",
-    "fail_toast": "交易失败。"
+    "successToast": "交易成功！",
+    "failToast": "交易失败。"
+  },
+  "ManageToken": {
+    "title": "管理代币",
+    "searchHint": "搜索（ID、名称、符号）"
   }
 }

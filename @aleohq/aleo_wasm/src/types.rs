@@ -35,9 +35,10 @@ pub use snarkvm_console::{
         Argument,
         StructType,
         RecordType,
+        Value,
     },
     types::Field,
-    prelude::{Itertools},
+    prelude::{Itertools, Parser},
 };
 pub use snarkvm_ledger_block::{Execution, Transaction};
 pub use snarkvm_ledger_query::Query;
@@ -55,6 +56,7 @@ pub use snarkvm_wasm::{
     fields::PrimeField,
     utilities::{FromBytes, ToBytes, Uniform},
 };
+pub use snarkvm_utilities::bits::ToBits;
 
 // Account types
 pub type AddressNative = Address<CurrentNetwork>;
@@ -96,5 +98,6 @@ pub type EntryTypeNative = EntryType<CurrentNetwork>;
 pub type PlaintextTypeNative = PlaintextType<CurrentNetwork>;
 pub type StructTypeNative = StructType<CurrentNetwork>;
 pub type RecordTypeNative = RecordType<CurrentNetwork>;
+pub type ValueNative = Value<CurrentNetwork>;
 
 pub use indexmap::{IndexMap, IndexSet};

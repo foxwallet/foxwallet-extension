@@ -168,8 +168,8 @@
     "jump_explorer": "Explorer"
   },
   "Tx": {
-    "success_toast": "Transaction Successful!",
-    "fail_toast": "Transaction Failed."
+    "successToast": "Transaction Successful!",
+    "failToast": "Transaction Failed."
   },
   "Setting": {
     "title": "Setting",
@@ -223,6 +223,10 @@
     "remind": "All of your history for this account will be reset and network will be resynced. Please confrim to proceed.",
     "account": "Reset account"
   },
+  "ManageToken": {
+    "title": "Manage Token",
+    "searchHint": "Search token(ID, Name, Symbol)"
+  },
   "Common": {
     "confirm": "Confirm",
     "cancel": "Cancel",
@@ -238,7 +242,8 @@
     "total": "Total",
     "remind": "Remind",
     "account": "Account",
-    "ok": "OK"
+    "ok": "OK",
+    "wrongPassword": "Incorrect password"
   },
   "Error": {
     "invalidPassword": "Invalid password"

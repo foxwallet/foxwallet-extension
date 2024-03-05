@@ -98,7 +98,8 @@
     "total": "Total",
     "remind": "Recordar",
     "account": "Cuenta",
-    "ok": "DE ACUERDO"
+    "ok": "DE ACUERDO",
+    "wrongPassword": "Contraseña incorrecta"
   },
   "Send": {
     "title": "Enviar",
@@ -240,7 +241,11 @@
     "sign": "Firmar"
   },
   "Tx": {
-    "success_toast": "¡Transacción exitosa!",
-    "fail_toast": "Transacción fallida."
+    "successToast": "¡Transacción exitosa!",
+    "failToast": "Transacción fallida."
+  },
+  "ManageToken": {
+    "title": "Administrar token",
+    "searchHint": "Token de búsqueda (ID, nombre, símbolo)"
   }
 }

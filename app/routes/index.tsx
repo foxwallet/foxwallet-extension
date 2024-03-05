@@ -20,6 +20,10 @@ const TransactionDetail = lazy(
 );
 const Join = lazy(async () => await import("../pages/Wallet/Join"));
 const Split = lazy(async () => await import("../pages/Wallet/Split"));
+const AddToken = lazy(async () => await import("../pages/Wallet/AddToken"));
+const SelectToken = lazy(
+  async () => await import("../pages/Wallet/SelectToken"),
+);
 
 // SettingTab
 const ManageWallet = lazy(async () => await import("../pages/Me/ManageWallet"));
@@ -146,7 +150,7 @@ export const routesConfig: RouteObject[] = [
         element: <Language />,
       },
       {
-        path: "token_detail/:uniqueId",
+        path: "token_detail/:uniqueId/:address",
         element: <TokenDetail />,
       },
       {
@@ -184,6 +188,14 @@ export const routesConfig: RouteObject[] = [
       {
         path: "change_password",
         element: <ChangePassword />,
+      },
+      {
+        path: "add_token",
+        element: <AddToken />,
+      },
+      {
+        path: "select_token/:uniqueId/:address",
+        element: <SelectToken />,
       },
     ],
   },

@@ -18,7 +18,10 @@ import { useNavigate } from "react-router-dom";
 import { showErrorToast } from "@/components/Custom/ErrorToast";
 import { SelectRecordsStep } from "@/components/Send/SelectRecordsStep";
 import { formatUnits, parseUnits } from "ethers/lib/utils";
-import { SPLIT_RECORD_FEE } from "core/coins/ALEO/constants";
+import {
+  NATIVE_TOKEN_TOKEN_ID,
+  SPLIT_RECORD_FEE,
+} from "core/coins/ALEO/constants";
 import { AleoTxType } from "core/coins/ALEO/types/History";
 
 function SplitScreen() {
@@ -27,7 +30,10 @@ function SplitScreen() {
   const { nativeCurrency, coinService, chainConfig } = useCoinService(uniqueId);
   const { popupServerClient } = useClient();
   const navigate = useNavigate();
-  const { records } = useRecords(uniqueId, selectedAccount.address);
+  const { records } = useRecords({
+    uniqueId,
+    address: selectedAccount.address,
+  });
   const [step, setStep] = useState(0);
   const selectedRecordsRef = useRef<RecordDetailWithSpent[]>([]);
 
@@ -67,6 +73,7 @@ function SplitScreen() {
             selectedRecordsRef.current[0]?.parsedContent?.microcredits?.toString(),
           txType: AleoTxType.EXECUTION,
           notification: false,
+          tokenId: NATIVE_TOKEN_TOKEN_ID,
         };
         await coinService.setAddressLocalTx(address, pendingTx);
         popupServerClient
@@ -87,6 +94,7 @@ function SplitScreen() {
             timestamp,
             amount:
               selectedRecordsRef.current[0]?.parsedContent?.microcredits?.toString(),
+            tokenId: NATIVE_TOKEN_TOKEN_ID,
           })
           .catch(async (err) => {
             pendingTx.error = (err as Error).message;

@@ -1,4 +1,5 @@
 import { H6 } from "@/common/theme/components/text";
+import { serializeToken } from "@/common/utils/string";
 import {
   IconAleo,
   IconChevronRight,
@@ -8,12 +9,17 @@ import { BaseInputGroup } from "@/components/Custom/Input";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import { showSelectRecordDialog } from "@/components/Send/SelectRecord";
 import { showSelectTransferMethodDialog } from "@/components/Send/SelectTransferMethod";
+import { TokenItem } from "@/components/Wallet/TokenItem";
 import { TokenNum } from "@/components/Wallet/TokenNum";
+import { useAssetList } from "@/hooks/useAssetList";
 import { useBalance } from "@/hooks/useBalance";
 import { useCoinBasic, useCoinService } from "@/hooks/useCoinService";
 import { useCurrAccount } from "@/hooks/useCurrAccount";
+import { useLocationParams } from "@/hooks/useLocationParams";
 import { useRecords } from "@/hooks/useRecord";
+import { useTokenInfo } from "@/hooks/useToken";
 import { Content } from "@/layouts/Content";
+import { RecordFilter } from "@/scripts/background/servers/IWalletServer";
 import {
   Box,
   Button,
@@ -23,10 +29,12 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
+import { Token } from "core/coins/ALEO/types/Token";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
 import { parseUnits } from "ethers/lib/utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useDebounce } from "use-debounce";
 
 interface TransferInfoStepProps {
@@ -43,6 +51,7 @@ interface TransferInfoStepProps {
     amountNum: bigint;
     transferMethod: AleoTransferMethod;
     transferRecord?: RecordDetailWithSpent;
+    token: Token;
   }) => void;
 }
 
@@ -61,18 +70,46 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
 
   const { selectedAccount, uniqueId } = useCurrAccount();
   const coinBasic = useCoinBasic(uniqueId);
-  const { nativeCurrency } = useCoinService(uniqueId);
-  const { balance, loadingBalance } = useBalance(
-    uniqueId,
-    selectedAccount.address,
-    10000,
-  );
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
-  const { records, loading: loadingRecords } = useRecords(
+  const token = useLocationParams("token");
+
+  const { nativeToken } = useAssetList(uniqueId, selectedAccount.address);
+
+  const tokenInfo = useMemo(() => {
+    try {
+      if (!token) {
+        return nativeToken;
+      }
+      return JSON.parse(token) as Token;
+    } catch (err) {
+      return nativeToken;
+    }
+  }, [token, nativeToken]);
+
+  const { records, loading: loadingRecords } = useRecords({
     uniqueId,
-    selectedAccount.address,
-  );
+    address: selectedAccount.address,
+    recordFilter: RecordFilter.UNSPENT,
+    programId: tokenInfo.programId,
+  });
+
+  const tokenRecords = useMemo(() => {
+    if (!tokenInfo.tokenId) {
+      return records;
+    }
+    return records.filter((record) => {
+      return record.parsedContent?.token === tokenInfo.tokenId;
+    });
+  }, [records, tokenInfo]);
+
+  const { balance, loadingBalance } = useBalance({
+    uniqueId,
+    address: selectedAccount.address,
+    tokenId: tokenInfo.tokenId,
+    refreshInterval: 10000,
+  });
 
   // Receiver
   const [debounceReceiverAddress] = useDebounce(receiverAddress, 500);
@@ -101,6 +138,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
       uniqueId,
       address: selectedAccount.address,
       selectedMethod: transferMethod,
+      token: tokenInfo,
     });
     if (data) {
       setTransferMethod(data);
@@ -124,15 +162,12 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
       if (!amountStr) {
         return [null, false];
       }
-      const amountNum = parseUnits(
-        amountStr,
-        nativeCurrency.decimals,
-      ).toBigInt();
+      const amountNum = parseUnits(amountStr, tokenInfo.decimals).toBigInt();
       return [amountNum, true];
     } catch (err) {
       return [null, false];
     }
-  }, [amountStr, nativeCurrency.decimals]);
+  }, [amountStr, tokenInfo.decimals]);
 
   const onAmountChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -143,17 +178,22 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
 
   // transfer record
   const currTransferRecord: RecordDetailWithSpent | undefined =
-    selectedTransferRecord || records[0];
+    selectedTransferRecord || tokenRecords[0];
+
+  const recordAmount = tokenInfo.tokenId
+    ? currTransferRecord?.parsedContent?.amount
+    : currTransferRecord?.parsedContent?.microcredits;
+
   const onSelectTransferRecord = useCallback(async () => {
     const { data } = await showSelectRecordDialog({
-      recordList: records,
-      nativeCurrency,
+      recordList: tokenRecords,
+      token: tokenInfo,
       selectedRecord: currTransferRecord,
     });
     if (data) {
       setSelectedTransferRecord(data);
     }
-  }, [records, nativeCurrency, currTransferRecord]);
+  }, [tokenRecords, tokenInfo, currTransferRecord]);
 
   // amount valid
   const amountValid = useMemo(() => {
@@ -178,12 +218,10 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
       }
       case AleoTransferMethod.PRIVATE:
       case AleoTransferMethod.PRIVATE_TO_PUBLIC: {
-        if (!currTransferRecord?.parsedContent?.microcredits) {
+        if (!recordAmount) {
           return false;
         }
-        return (
-          BigInt(currTransferRecord.parsedContent.microcredits) >= amountNum
-        );
+        return BigInt(recordAmount) >= amountNum;
       }
     }
   }, [
@@ -193,7 +231,8 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
     balance,
     transferMethod,
     currTransferRecord,
-    records,
+    tokenRecords,
+    recordAmount,
   ]);
 
   const canSubmit = useMemo(() => {
@@ -245,6 +284,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
     onConfirm({
       receiverAddress,
       amountNum,
+      token: tokenInfo,
       transferMethod,
       transferRecord: currTransferRecord,
     });
@@ -255,6 +295,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
     transferMethod,
     amountNum,
     currTransferRecord,
+    tokenInfo,
   ]);
 
   const transferMethodMap = useMemo(() => {
@@ -288,10 +329,22 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
         <Flex justify={"space-between"} mt={2} align={"center"}>
           <Text>{t("Send:transferToken")}</Text>
           <Flex align={"center"}>
-            <IconAleo />
-            <Text ml={1} fontSize={"small"}>
-              {nativeCurrency.symbol}
-            </Text>
+            <TokenItem
+              token={tokenInfo}
+              onClick={() =>
+                navigate(
+                  `/select_token/${uniqueId}/${
+                    selectedAccount.address
+                  }?page=send_aleo&currToken=${serializeToken(tokenInfo)}`,
+                  {
+                    replace: true,
+                  },
+                )
+              }
+              hideId
+              style={{ pr: 1 }}
+            />
+            <IconChevronRight w={4} h={4} />
           </Flex>
         </Flex>
       </Flex>
@@ -320,8 +373,8 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
                   ? balance?.privateBalance
                   : balance?.publicBalance) || 0n
               }
-              decimals={nativeCurrency.decimals}
-              symbol={nativeCurrency.symbol}
+              decimals={tokenInfo.decimals}
+              symbol={tokenInfo.symbol}
             />
           </Flex>
         </Flex>
@@ -358,11 +411,11 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
             <TokenNum
               amount={
                 (isPrivateMethod
-                  ? currTransferRecord?.parsedContent?.microcredits
+                  ? BigInt(recordAmount || 0n)
                   : balance?.publicBalance) || 0n
               }
-              decimals={nativeCurrency.decimals}
-              symbol={nativeCurrency.symbol}
+              decimals={tokenInfo.decimals}
+              symbol={tokenInfo.symbol}
             />
           </Flex>
         }
@@ -374,7 +427,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
             height="100%"
             pr={4}
           >
-            <H6>{nativeCurrency.symbol}</H6>
+            <H6>{tokenInfo.symbol}</H6>
           </InputRightElement>
         }
       />
@@ -419,11 +472,9 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
                 <Flex fontSize={"smaller"} color={"gray.500"}>
                   {t("Send:payPrivateRecord")}&nbsp; (
                   <TokenNum
-                    amount={
-                      currTransferRecord?.parsedContent?.microcredits || 0n
-                    }
-                    decimals={nativeCurrency.decimals}
-                    symbol={nativeCurrency.symbol}
+                    amount={BigInt(recordAmount || 0n)}
+                    decimals={tokenInfo.decimals}
+                    symbol={tokenInfo.symbol}
                   />
                   )
                 </Flex>

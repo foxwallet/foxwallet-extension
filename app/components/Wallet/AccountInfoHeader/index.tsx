@@ -64,11 +64,11 @@ export const AccountInfoHeader = () => {
   const navigate = useNavigate();
   const { selectedAccount, uniqueId } = useCurrAccount();
   const { nativeCurrency, chainConfig, coinService } = useCoinService(uniqueId);
-  const { balance, loadingBalance } = useBalance(
+  const { balance, loadingBalance } = useBalance({
     uniqueId,
-    selectedAccount.address,
-    4000,
-  );
+    address: selectedAccount.address,
+    refreshInterval: 4000,
+  });
   const { selectedWallet } = useCurrWallet();
   const { popupServerClient } = useClient();
   const { t } = useTranslation();

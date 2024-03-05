@@ -2,6 +2,7 @@ import { Execution } from "./AleoExecution";
 import { Fee } from "./AleoFee";
 import { AleoDeploymentInTx } from "./Deployment";
 import { AleoTxType } from "./History";
+import { Token } from "./Token";
 
 export interface AleoSendTxParams {
   privateKey: string;
@@ -16,6 +17,7 @@ export interface AleoSendTxParams {
   feeRecord: string | null;
   timestamp: number;
   amount?: string;
+  tokenId: string;
 }
 
 export type AleoTransaction = {

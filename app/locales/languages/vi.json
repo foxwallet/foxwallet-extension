@@ -98,7 +98,8 @@
     "total": "Tổng cộng",
     "remind": "Nhắc lại",
     "account": "Tài khoản",
-    "ok": "ĐƯỢC RỒI"
+    "ok": "ĐƯỢC RỒI",
+    "wrongPassword": "mật khẩu không đúng"
   },
   "Send": {
     "title": "Gửi",
@@ -240,7 +241,11 @@
     "sign": "Dấu hiệu"
   },
   "Tx": {
-    "success_toast": "Giao dịch thành công!",
-    "fail_toast": "Giao dịch không thành công."
+    "successToast": "Giao dịch thành công!",
+    "failToast": "Giao dịch không thành công."
+  },
+  "ManageToken": {
+    "title": "Quản lý mã thông báo",
+    "searchHint": "Mã thông báo tìm kiếm (ID, Tên, Ký hiệu)"
   }
 }

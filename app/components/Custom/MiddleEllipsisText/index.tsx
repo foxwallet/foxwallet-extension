@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  CSSProperties,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { chakra } from "@chakra-ui/react";
 
 function useCanvas(): CanvasRenderingContext2D {
@@ -29,6 +36,8 @@ export interface TruncateProps {
     @default ...
   */
   ellipsis?: string;
+
+  style?: CSSProperties;
 }
 
 /**
@@ -38,7 +47,7 @@ export interface TruncateProps {
     and the ellipsis to be used.
  */
 function MiddleEllipsisText(props: TruncateProps) {
-  const { text, width = 0, offset = 8, ellipsis = "..." } = props;
+  const { text, width = 0, offset = 8, ellipsis = "...", style } = props;
 
   const [targetWidth, setTargetWidth] = useState<number>(0);
   const [shouldTruncate, setShouldTruncate] = useState<boolean>(false);
@@ -118,7 +127,7 @@ function MiddleEllipsisText(props: TruncateProps) {
   return (
     <div
       ref={containerRef}
-      style={{ width: width || "100%", whiteSpace: "nowrap" }}
+      style={{ width: width || "100%", whiteSpace: "nowrap", ...style }}
     >
       {truncated ? calculatedText : calculatedText}
     </div>

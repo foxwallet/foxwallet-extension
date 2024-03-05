@@ -1,53 +1,43 @@
-import { IconAleo } from "@/components/Custom/Icon";
-import { Flex, TabPanel, Text } from "@chakra-ui/react";
-import { TokenNum } from "../TokenNum";
+import { Flex, Image, TabPanel, Text } from "@chakra-ui/react";
 import { useCurrAccount } from "@/hooks/useCurrAccount";
-import { useCoinService } from "@/hooks/useCoinService";
-import { useBalance } from "@/hooks/useBalance";
 import { useNavigate } from "react-router-dom";
 import { useCallback } from "react";
-import { usePopupSelector } from "@/hooks/useStore";
-import Hover from "@/components/Custom/Hover";
+import { useAssetList } from "@/hooks/useAssetList";
+import { Token } from "core/coins/ALEO/types/Token";
+import { TokenItemWithBalance } from "../TokenItem";
+import { serializeToken } from "@/common/utils/string";
 
 export const AssetList = () => {
   const navigate = useNavigate();
   const { selectedAccount, uniqueId } = useCurrAccount();
-  const { nativeCurrency } = useCoinService(uniqueId);
-  const { balance } = useBalance(uniqueId, selectedAccount.address, 4000);
-  const showBalance = usePopupSelector((state) => state.account.showBalance);
+  const { assets } = useAssetList(uniqueId, selectedAccount.address);
 
-  const onTokenDetail = useCallback(() => {
-    // need to be modified when adapt for multi-chain
-    navigate(`/token_detail/${uniqueId}`);
-  }, [navigate, uniqueId]);
+  const onTokenDetail = useCallback(
+    (token: Token) => {
+      // need to be modified when adapt for multi-chain
+      navigate(
+        `/token_detail/${uniqueId}/${
+          selectedAccount.address
+        }?token=${serializeToken(token)}`,
+      );
+    },
+    [navigate, uniqueId, selectedAccount],
+  );
 
   return (
     <TabPanel>
-      <Hover variant="cell" onClick={onTokenDetail}>
-        <Flex
-          w={"100%"}
-          py={3}
-          px={5}
-          align={"center"}
-          justify={"space-between"}
-        >
-          <Flex align={"center"}>
-            <IconAleo />
-            <Text ml={2.5} fontSize={13} fontWeight={600}>
-              {nativeCurrency.symbol}
-            </Text>
-          </Flex>
-          {showBalance ? (
-            <TokenNum
-              amount={balance?.total}
-              decimals={nativeCurrency.decimals}
-              symbol={""}
-            />
-          ) : (
-            <Text>*****</Text>
-          )}
-        </Flex>
-      </Hover>
+      <Flex direction={"column"} maxH={"238px"} overflowY={"auto"} mt={2}>
+        {assets.map((token) => (
+          <TokenItemWithBalance
+            key={token.tokenId}
+            uniqueId={uniqueId}
+            address={selectedAccount.address}
+            token={token}
+            onClick={onTokenDetail}
+            hover
+          />
+        ))}
+      </Flex>
     </TabPanel>
   );
 };

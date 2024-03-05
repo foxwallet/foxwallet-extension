@@ -6,8 +6,8 @@ import {
   OffscreenMethod,
   OffscreenMessage,
 } from "../../../offscreen_transaction/src/types";
-import type { AleoSendTxParams } from "../../../offscreen_transaction/src/types";
 import * as browser from "webextension-polyfill";
+import { AleoSendTxParams } from "core/coins/ALEO/types/Transaction";
 
 const OFFSCREEN_TX_DOCUMENT_PATH = "/offscreen_tx.html";
 const OFFSCREEN_DOCUMENT_PATH = "/offscreen.html";

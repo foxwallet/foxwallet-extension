@@ -3,6 +3,7 @@ import useSWR from "swr";
 import { useClient } from "./useClient";
 import { useCallback, useMemo } from "react";
 import { useCoinService } from "./useCoinService";
+import { NATIVE_TOKEN_TOKEN_ID } from "core/coins/ALEO/constants";
 
 export interface Balance {
   privateBalance: bigint;
@@ -17,17 +18,26 @@ export interface Balance {
  * @param refreshInterval the refresh interval, should be greater than SYNS_BLOCK_INTERVAL
  * @returns {Balance} balance
  */
-export const useBalance = (
-  uniqueId: ChainUniqueId,
-  address: string,
-  refreshInterval?: number,
-) => {
+export const useBalance = ({
+  uniqueId,
+  address,
+  tokenId,
+  refreshInterval,
+}: {
+  uniqueId: ChainUniqueId;
+  address: string;
+  tokenId?: string;
+  refreshInterval?: number;
+}) => {
   const { coinService } = useCoinService(uniqueId);
 
-  const key = `/balance/${uniqueId}/${address}`;
+  const key = `/balance/${uniqueId}/${address}/${tokenId}`;
   const fetchBalance = useCallback(async () => {
-    return coinService.getBalance(address);
-  }, [coinService, uniqueId, address]);
+    if (tokenId && tokenId !== NATIVE_TOKEN_TOKEN_ID) {
+      return await coinService.getTokenBalance(address, tokenId);
+    }
+    return await coinService.getBalance(address);
+  }, [coinService, uniqueId, address, tokenId]);
 
   const {
     data: balance,

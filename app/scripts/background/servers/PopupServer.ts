@@ -55,6 +55,10 @@ import { ChainUniqueId, InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { TaskPriority } from "core/coins/ALEO/types/SyncTask";
 import { AleoConnectHistory, DappRequest } from "@/database/types/dapp";
 import { AleoTxType } from "core/coins/ALEO/types/History";
+import {
+  NATIVE_TOKEN_PROGRAM_ID,
+  NATIVE_TOKEN_TOKEN_ID,
+} from "core/coins/ALEO/constants";
 
 export type OnRequestFinishCallback = (
   error: null | Error,
@@ -348,6 +352,7 @@ export class PopupWalletServer implements IPopupServer {
               status: AleoTxStatus.QUEUED,
               txType: AleoTxType.DEPLOYMENT,
               notification: false,
+              tokenId: NATIVE_TOKEN_TOKEN_ID,
             };
             await this.coinService
               .getInstance(params.uniqueId)
@@ -368,6 +373,7 @@ export class PopupWalletServer implements IPopupServer {
                   txType: AleoTxType.DEPLOYMENT,
                   notification: false,
                   error: "sendDeployment failed",
+                  tokenId: NATIVE_TOKEN_PROGRAM_ID,
                 };
                 await this.coinService
                   .getInstance(params.uniqueId)

@@ -6,7 +6,7 @@ import { type NativeToken } from "./Token";
 export interface CoinConfig {
   coinType: CoinType;
   uniqueId: ChainUniqueId;
-  logo?: TexImageSource;
+  logo?: string;
   chainName: string;
   nativeCurrency: NativeToken;
   rpcList: string[];

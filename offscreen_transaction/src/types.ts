@@ -4,6 +4,26 @@ export enum TaskPriority {
   LOW = 2,
 }
 
+export const NATIVE_TOKEN_PROGRAM_ID = "credits.aleo";
+
+export const ALPHA_TOKEN_PROGRAM_ID = "alphaswap_v1.aleo";
+
+export const NATIVE_TOKEN_TOKEN_ID = "__NATIVE_TOKEN__";
+
+export type InnerProgramId =
+  | typeof NATIVE_TOKEN_PROGRAM_ID
+  | typeof ALPHA_TOKEN_PROGRAM_ID;
+
+export interface Token {
+  tokenId: string;
+  name: string;
+  symbol: string;
+  decimals: number;
+  logo: string;
+  official: boolean;
+  programId: InnerProgramId;
+}
+
 export interface AleoSyncAccount {
   walletId: string;
   accountId: string;
@@ -156,6 +176,7 @@ export interface AleoSendTxParams {
   feeRecord: string | null;
   timestamp: number;
   amount?: string;
+  tokenId: string;
 }
 
 export type Input = {

@@ -98,7 +98,8 @@
     "total": "Total",
     "remind": "Mengingatkan",
     "account": "Akun",
-    "ok": "OKE"
+    "ok": "OKE",
+    "wrongPassword": "kata kunci Salah"
   },
   "Send": {
     "title": "Mengirim",
@@ -240,7 +241,11 @@
     "sign": "Tanda"
   },
   "Tx": {
-    "success_toast": "Transaksi Berhasil!",
-    "fail_toast": "Transaksi gagal."
+    "successToast": "Transaksi Berhasil!",
+    "failToast": "Transaksi gagal."
+  },
+  "ManageToken": {
+    "title": "Kelola Token",
+    "searchHint": "Token pencarian (ID, Nama, Simbol)"
   }
 }

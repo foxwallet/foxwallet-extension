@@ -17,12 +17,13 @@ import {
   type AleoTransaction,
   type AleoLocalTxInfo,
   AleoRequestDeploymentParams,
+  NATIVE_TOKEN_PROGRAM_ID,
+  NATIVE_TOKEN_TOKEN_ID,
 } from "./types";
 import { AleoRpcService } from "./instances/rpc";
 import { utils } from "ethers";
 import { parseU64 } from "./utils/num";
 
-const NATIVE_TOKEN_PROGRAM_ID = "credits.aleo";
 const NATIVE_TOKEN_DECIMALS = 6;
 
 export class AleoTxWorker {
@@ -233,6 +234,7 @@ export class AleoTxWorker {
     feeRecord: feeRecordStr,
     timestamp,
     amount,
+    tokenId,
   }: AleoSendTxParams): Promise<null | AleoTransaction> {
     const pendingTxInfo: AleoLocalTxInfo = {
       localId,
@@ -247,6 +249,7 @@ export class AleoTxWorker {
       timestamp,
       amount,
       notification: false,
+      tokenId,
     };
     try {
       const startTime = performance.now();
@@ -389,6 +392,7 @@ export class AleoTxWorker {
       status: AleoTxStatus.QUEUED,
       timestamp,
       notification: false,
+      tokenId: NATIVE_TOKEN_TOKEN_ID,
     };
     try {
       const startTime = performance.now();

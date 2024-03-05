@@ -7,13 +7,22 @@ import {
 } from "@/components/Custom/Icon";
 import { BaseInputGroup } from "@/components/Custom/Input";
 import { useAuth } from "@/hooks/useAuth";
-import { Button, Flex, Image, InputRightElement, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Flex,
+  Image,
+  InputRightElement,
+  Text,
+  useToast,
+} from "@chakra-ui/react";
 import { useCallback, useState, KeyboardEvent } from "react";
 import { useNavigate } from "react-router-dom";
 // @ts-ignore
 import WALLET_LOGO from "@/common/assets/image/logo.png";
 import { IconFoxWallet } from "@/components/Custom/Icon";
 import { useTranslation } from "react-i18next";
+import { useWrongPasswordToast } from "@/components/Custom/WrongPasswordToast";
 
 // TODO: add reset
 // TODO: add biometric auth
@@ -24,6 +33,7 @@ function Lock() {
   const [viewPass, setViewPass] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { showToast } = useWrongPasswordToast();
 
   const onPasswordChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,6 +49,9 @@ function Lock() {
     }
     try {
       const res = await login(password);
+      if (!res) {
+        showToast();
+      }
       setIsPasswordValid(res);
     } catch (err) {
       console.log("===> Lock login: ", err);
@@ -57,6 +70,10 @@ function Lock() {
     },
     [onConfirm],
   );
+
+  const onCleanInput = useCallback(() => {
+    setPassword("");
+  }, []);
 
   return (
     <Flex
@@ -77,6 +94,7 @@ function Lock() {
           isInvalid: passwordInvalid,
           placeholder: t("Password:enter"),
           type: viewPass ? "text" : "password",
+          value: password,
           onChange: onPasswordChange,
           onKeyDown: handleKeyDown,
         }}
@@ -85,22 +103,26 @@ function Lock() {
             display={"flex"}
             justifyContent={"center"}
             alignItems={"center"}
-            w={passwordInvalid ? "12" : "5"}
             h="full"
             mr={"2"}
-            cursor={"pointer"}
-            onClick={() => {
-              setViewPass((curr) => !curr);
-            }}
           >
-            {passwordInvalid && (
-              <IconCloseLine w={"5"} h="full" fill="red.400" mr={2} />
+            {!!password && (
+              <Box onClick={onCleanInput} cursor={"pointer"}>
+                <IconCloseLine w={"5"} h="full" mr={2} />
+              </Box>
             )}
-            {!viewPass ? (
-              <IconEyeClose w={"5"} h="full" />
-            ) : (
-              <IconEyeOn w={"5"} h="full" />
-            )}
+            <Box
+              onClick={() => {
+                setViewPass((curr) => !curr);
+              }}
+              cursor={"pointer"}
+            >
+              {!viewPass ? (
+                <IconEyeClose w={"5"} h="full" />
+              ) : (
+                <IconEyeOn w={"5"} h="full" />
+              )}
+            </Box>
           </InputRightElement>
         }
       />

@@ -98,7 +98,8 @@
     "total": "Toplam",
     "remind": "Hatırlatmak",
     "account": "Hesap",
-    "ok": "TAMAM"
+    "ok": "TAMAM",
+    "wrongPassword": "yanlış parola"
   },
   "Send": {
     "title": "Göndermek",
@@ -240,7 +241,11 @@
     "sign": "İmza"
   },
   "Tx": {
-    "success_toast": "İşlem Başarılı!",
-    "fail_toast": "İşlem başarısız."
+    "successToast": "İşlem Başarılı!",
+    "failToast": "İşlem başarısız."
+  },
+  "ManageToken": {
+    "title": "Tokenı Yönet",
+    "searchHint": "Arama jetonu(Kimlik, Ad, Sembol)"
   }
 }

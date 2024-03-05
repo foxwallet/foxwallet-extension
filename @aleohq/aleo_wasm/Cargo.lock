@@ -116,6 +116,7 @@ dependencies = [
  "snarkvm-ledger-store",
  "snarkvm-parameters",
  "snarkvm-synthesizer",
+ "snarkvm-utilities",
  "snarkvm-wasm",
  "walkdir",
  "wasm-bindgen",

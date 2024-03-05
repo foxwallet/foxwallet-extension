@@ -45,7 +45,7 @@ export const useTransactionSettledToast = () => {
             )}
           </Flex>
           <Text color={textColor} fontWeight={500}>
-            {status === "success" ? t("Tx:success_toast") : t("Tx:fail_toast")}
+            {status === "success" ? t("Tx:successToast") : t("Tx:failToast")}
           </Text>
         </Box>
       </VStack>
