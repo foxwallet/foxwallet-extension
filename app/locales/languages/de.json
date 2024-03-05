@@ -98,7 +98,8 @@
     "total": "Gesamt",
     "remind": "Erinnern",
     "account": "Konto",
-    "ok": "OK"
+    "ok": "OK",
+    "wrongPassword": "Falsches Passwort"
   },
   "Send": {
     "title": "Schicken",
@@ -242,5 +243,9 @@
   "Tx": {
     "successToast": "Transaktion Erfolgreich!",
     "failToast": "Transaktion fehlgeschlagen."
+  },
+  "ManageToken": {
+    "title": "Token verwalten",
+    "searchHint": "Suchtoken (ID, Name, Symbol)"
   }
 }

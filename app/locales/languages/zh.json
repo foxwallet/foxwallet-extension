@@ -243,5 +243,9 @@
   "Tx": {
     "successToast": "交易成功！",
     "failToast": "交易失败。"
+  },
+  "ManageToken": {
+    "title": "管理代币",
+    "searchHint": "搜索（ID、名称、符号）"
   }
 }

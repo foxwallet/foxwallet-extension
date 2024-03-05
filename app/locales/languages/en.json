@@ -223,6 +223,10 @@
     "remind": "All of your history for this account will be reset and network will be resynced. Please confrim to proceed.",
     "account": "Reset account"
   },
+  "ManageToken": {
+    "title": "Manage Token",
+    "searchHint": "Search token(ID, Name, Symbol)"
+  },
   "Common": {
     "confirm": "Confirm",
     "cancel": "Cancel",

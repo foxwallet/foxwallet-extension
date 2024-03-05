@@ -104,8 +104,6 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
     });
   }, [records, tokenInfo]);
 
-  console.log("===> tokenReocrds: ", tokenRecords, records);
-
   const { balance, loadingBalance } = useBalance({
     uniqueId,
     address: selectedAccount.address,

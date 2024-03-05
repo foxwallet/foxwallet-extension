@@ -79,7 +79,7 @@ function AddToken() {
   );
 
   return (
-    <PageWithHeader title="Manage Token">
+    <PageWithHeader title={t("ManageToken:title")}>
       <InputGroup flexDir={"column"} px={5} position={"relative"}>
         <InputLeftElement position={"absolute"} top={"calc(50% - 13px)"} ml={8}>
           <IconSearch w={"26px"} h={"26px"} />
@@ -89,7 +89,7 @@ function AddToken() {
           bg={"gray.50"}
           value={keyword}
           onChange={onKeywordChange}
-          placeholder="Search token(ID, Name, Symbol)"
+          placeholder={t("ManageToken:searchHint")}
           pl={10}
           py={2}
         />
