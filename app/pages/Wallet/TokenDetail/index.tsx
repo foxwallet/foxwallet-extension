@@ -44,6 +44,7 @@ import {
   ALPHA_TOKEN_PROGRAM_ID,
   NATIVE_TOKEN_TOKEN_ID,
 } from "core/coins/ALEO/constants";
+import { serializeToken } from "@/common/utils/string";
 
 interface TokenTxHistoryItemProps {
   item: AleoHistoryItem;
@@ -209,7 +210,7 @@ const TokenDetailScreen = () => {
   }, [navigate]);
 
   const onSend = useCallback(() => {
-    navigate(`/send_aleo`);
+    navigate(`/send_aleo?token=${serializeToken(tokenInfo)}`);
   }, [navigate]);
 
   const renderTxHistoryItem = useCallback(
