@@ -28,6 +28,7 @@ import {
   InputRightElement,
   Text,
 } from "@chakra-ui/react";
+import { NATIVE_TOKEN_TOKEN_ID } from "core/coins/ALEO/constants";
 import { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 import { Token } from "core/coins/ALEO/types/Token";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
@@ -96,7 +97,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
   });
 
   const tokenRecords = useMemo(() => {
-    if (!tokenInfo.tokenId) {
+    if (tokenInfo.tokenId === NATIVE_TOKEN_TOKEN_ID) {
       return records;
     }
     return records.filter((record) => {
@@ -180,9 +181,10 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
   const currTransferRecord: RecordDetailWithSpent | undefined =
     selectedTransferRecord || tokenRecords[0];
 
-  const recordAmount = tokenInfo.tokenId
-    ? currTransferRecord?.parsedContent?.amount
-    : currTransferRecord?.parsedContent?.microcredits;
+  const recordAmount =
+    tokenInfo.tokenId === NATIVE_TOKEN_TOKEN_ID
+      ? currTransferRecord?.parsedContent?.microcredits
+      : currTransferRecord?.parsedContent?.amount;
 
   const onSelectTransferRecord = useCallback(async () => {
     const { data } = await showSelectRecordDialog({

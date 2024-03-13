@@ -21,6 +21,8 @@ import { showErrorToast } from "@/components/Custom/ErrorToast";
 import { useTranslation } from "react-i18next";
 import { AleoTxType } from "core/coins/ALEO/types/History";
 import { Token } from "core/coins/ALEO/types/Token";
+import { NATIVE_TOKEN_TOKEN_ID } from "core/coins/ALEO/constants";
+import { useLocationParams } from "@/hooks/useLocationParams";
 
 function SendScreen() {
   const navigate = useNavigate();
@@ -39,7 +41,9 @@ function SendScreen() {
   const [transferRecord, setTransferRecord] = useState<
     RecordDetailWithSpent | undefined
   >();
-  const [transferToken, setTransferToken] = useState<Token | null>(null);
+  const tokenStr = useLocationParams("token");
+  const token: Token | undefined = tokenStr ? JSON.parse(tokenStr) : undefined;
+  const [transferToken, setTransferToken] = useState<Token | undefined>(token);
 
   const onStep1Submit = useCallback(
     ({
@@ -103,16 +107,18 @@ function SendScreen() {
             if (!finalTransferRecord || !finalTransferRecord.plaintext) {
               throw new Error(ERROR_CODE.INVALID_ARGUMENT);
             }
-            inputs = token.tokenId
-              ? [finalTransferRecord.plaintext, to, `${amount}u128`]
-              : [finalTransferRecord.plaintext, to, `${amount}u64`];
+            inputs =
+              token.tokenId === NATIVE_TOKEN_TOKEN_ID
+                ? [finalTransferRecord.plaintext, to, `${amount}u64`]
+                : [finalTransferRecord.plaintext, to, `${amount}u128`];
             break;
           }
           case AleoTransferMethod.PUBLIC:
           case AleoTransferMethod.PUBLIC_TO_PRIVATE: {
-            inputs = token.tokenId
-              ? [token.tokenId, to, `${amount}u128`]
-              : [to, `${amount}u64`];
+            inputs =
+              token.tokenId === NATIVE_TOKEN_TOKEN_ID
+                ? [to, `${amount}u64`]
+                : [token.tokenId, to, `${amount}u128`];
             break;
           }
         }
