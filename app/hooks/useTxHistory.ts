@@ -12,7 +12,10 @@ import { isEqual, uniqBy } from "lodash";
 import { AleoTxStatus } from "core/coins/ALEO/types/Transaction";
 import { useTransactionSettledToast } from "@/components/Wallet/TransactionSettledToast/useTransactionSettledToast";
 import { Token } from "core/coins/ALEO/types/Token";
-import { ALPHA_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
+import {
+  ALPHA_TOKEN_PROGRAM_ID,
+  NATIVE_TOKEN_TOKEN_ID,
+} from "core/coins/ALEO/constants";
 
 const NotificationExpiredTime = 1000 * 60 * 60 * 5;
 
@@ -102,7 +105,7 @@ export const useTxHistory = ({
   const getLocalTxs = useCallback(async () => {
     const res = await coinService.getLocalTxHistory(
       address,
-      token.programId,
+      token.tokenId !== NATIVE_TOKEN_TOKEN_ID ? token.programId : undefined,
       token.tokenId,
     );
     return res;

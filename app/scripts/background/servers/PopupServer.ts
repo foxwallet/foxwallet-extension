@@ -253,6 +253,7 @@ export class PopupWalletServer implements IPopupServer {
               reject(new Error("Get private key failed"));
               return;
             }
+            params.tokenId = NATIVE_TOKEN_TOKEN_ID;
             const txInfo: AleoLocalTxInfo = {
               ...params,
               txType: AleoTxType.EXECUTION,
