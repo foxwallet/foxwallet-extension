@@ -585,6 +585,13 @@ export class Program {
    */
   id(): string;
   /**
+   * Get a unique address of the program
+   *
+   * @returns {Address} The address of the program
+   * @returns {Address}
+   */
+  address(): Address;
+  /**
    * Determine equality with another program
    *
    * @param {Program} other The other program to compare
@@ -644,8 +651,7 @@ export class ProgramManager {
    * @returns {Transaction | Error}
    * @param {PrivateKey} private_key
    * @param {string} program
-   * @param {bigint} base_fee
-   * @param {bigint} priority_fee
+   * @param {number} fee_credits
    * @param {RecordPlaintext | undefined} fee_record
    * @param {string | undefined} url
    * @param {object | undefined} imports
@@ -657,8 +663,7 @@ export class ProgramManager {
   static buildDeploymentTransaction(
     private_key: PrivateKey,
     program: string,
-    base_fee: bigint,
-    priority_fee: bigint,
+    fee_credits: number,
     fee_record?: RecordPlaintext,
     url?: string,
     imports?: object,
@@ -768,8 +773,7 @@ export class ProgramManager {
    * @param {string} program
    * @param {string} _function
    * @param {Array<any>} inputs
-   * @param {bigint} base_fee
-   * @param {bigint} priority_fee
+   * @param {number} fee_credits
    * @param {RecordPlaintext | undefined} fee_record
    * @param {string | undefined} url
    * @param {object | undefined} imports
@@ -785,8 +789,7 @@ export class ProgramManager {
     program: string,
     _function: string,
     inputs: Array<any>,
-    base_fee: bigint,
-    priority_fee: bigint,
+    fee_credits: number,
     fee_record?: RecordPlaintext,
     url?: string,
     imports?: object,
@@ -836,21 +839,6 @@ export class ProgramManager {
     verifying_key?: VerifyingKey,
     offline_query?: OfflineQuery,
   ): Promise<bigint>;
-  /**
-   * Estimate the finalize fee component for executing a function. This fee is additional to the
-   * size of the execution of the program in bytes. If the function does not have a finalize
-   * step, then the finalize fee is 0.
-   *
-   * Disclaimer: Fee estimation is experimental and may not represent a correct estimate on any current or future network
-   *
-   * @param program The program containing the function to estimate the finalize fee for
-   * @param function The function to estimate the finalize fee for
-   * @returns {u64 | Error} Fee in microcredits
-   * @param {string} program
-   * @param {string} _function
-   * @returns {bigint}
-   */
-  static estimateFinalizeFee(program: string, _function: string): bigint;
   /**
    * Join two records together to create a new record with an amount of credits equal to the sum
    * of the credits of the two original records
@@ -994,160 +982,6 @@ export class ProgramManager {
  */
 export class ProvingKey {
   free(): void;
-  /**
-   * Verify if the proving key is for the bond_public function
-   *
-   * @example
-   * const provingKey = ProvingKey.fromBytes("bond_public_proving_key.bin");
-   * provingKey.isBondPublicProver() ? console.log("Key verified") : throw new Error("Invalid key");
-   *
-   * @returns {boolean} returns true if the proving key is for the bond_public function, false if otherwise
-   * @returns {boolean}
-   */
-  isBondPublicProver(): boolean;
-  /**
-   * Verify if the proving key is for the claim_unbond function
-   *
-   * @example
-   * const provingKey = ProvingKey.fromBytes("claim_unbond_proving_key.bin");
-   * provingKey.isClaimUnbondProver() ? console.log("Key verified") : throw new Error("Invalid key");
-   *
-   * @returns {boolean} returns true if the proving key is for the claim_unbond function, false if otherwise
-   * @returns {boolean}
-   */
-  isClaimUnbondPublicProver(): boolean;
-  /**
-   * Verify if the proving key is for the fee_private function
-   *
-   * @example
-   * const provingKey = ProvingKey.fromBytes("fee_private_proving_key.bin");
-   * provingKey.isFeePrivateProver() ? console.log("Key verified") : throw new Error("Invalid key");
-   *
-   * @returns {boolean} returns true if the proving key is for the fee_private function, false if otherwise
-   * @returns {boolean}
-   */
-  isFeePrivateProver(): boolean;
-  /**
-   * Verify if the proving key is for the fee_public function
-   *
-   * @example
-   * const provingKey = ProvingKey.fromBytes("fee_public_proving_key.bin");
-   * provingKey.isFeePublicProver() ? console.log("Key verified") : throw new Error("Invalid key");
-   *
-   * @returns {boolean} returns true if the proving key is for the fee_public function, false if otherwise
-   * @returns {boolean}
-   */
-  isFeePublicProver(): boolean;
-  /**
-   * Verify if the proving key is for the inclusion function
-   *
-   * @example
-   * const provingKey = ProvingKey.fromBytes("inclusion_proving_key.bin");
-   * provingKey.isInclusionProver() ? console.log("Key verified") : throw new Error("Invalid key");
-   *
-   * @returns {boolean} returns true if the proving key is for the inclusion function, false if otherwise
-   * @returns {boolean}
-   */
-  isInclusionProver(): boolean;
-  /**
-   * Verify if the proving key is for the join function
-   *
-   * @example
-   * const provingKey = ProvingKey.fromBytes("join_proving_key.bin");
-   * provingKey.isJoinProver() ? console.log("Key verified") : throw new Error("Invalid key");
-   *
-   * @returns {boolean} returns true if the proving key is for the join function, false if otherwise
-   * @returns {boolean}
-   */
-  isJoinProver(): boolean;
-  /**
-   * Verify if the proving key is for the set_validator_state function
-   *
-   * @example
-   * const provingKey = ProvingKey.fromBytes("set_validator_set_proving_key.bin");
-   * provingKey.isSetValidatorStateProver() ? console.log("Key verified") : throw new Error("Invalid key");
-   *
-   * @returns {boolean} returns true if the proving key is for the set_validator_state function, false if otherwise
-   * @returns {boolean}
-   */
-  isSetValidatorStateProver(): boolean;
-  /**
-   * Verify if the proving key is for the split function
-   *
-   * @example
-   * const provingKey = ProvingKey.fromBytes("split_proving_key.bin");
-   * provingKey.isSplitProver() ? console.log("Key verified") : throw new Error("Invalid key");
-   *
-   * @returns {boolean} returns true if the proving key is for the split function, false if otherwise
-   * @returns {boolean}
-   */
-  isSplitProver(): boolean;
-  /**
-   * Verify if the proving key is for the transfer_private function
-   *
-   * @example
-   * const provingKey = ProvingKey.fromBytes("transfer_private_proving_key.bin");
-   * provingKey.isTransferPrivateProver() ? console.log("Key verified") : throw new Error("Invalid key");
-   *
-   * @returns {boolean} returns true if the proving key is for the transfer_private function, false if otherwise
-   * @returns {boolean}
-   */
-  isTransferPrivateProver(): boolean;
-  /**
-   * Verify if the proving key is for the transfer_private_to_public function
-   *
-   * @example
-   * const provingKey = ProvingKey.fromBytes("transfer_private_to_public_proving_key.bin");
-   * provingKey.isTransferPrivateToPublicProver() ? console.log("Key verified") : throw new Error("Invalid key");
-   *
-   * @returns {boolean} returns true if the proving key is for the transfer_private_to_public function, false if otherwise
-   * @returns {boolean}
-   */
-  isTransferPrivateToPublicProver(): boolean;
-  /**
-   * Verify if the proving key is for the transfer_public function
-   *
-   * @example
-   * const provingKey = ProvingKey.fromBytes("transfer_public_proving_key.bin");
-   * provingKey.isTransferPublicProver() ? console.log("Key verified") : throw new Error("Invalid key");
-   *
-   * @returns {boolean} returns true if the proving key is for the transfer_public function, false if otherwise
-   * @returns {boolean}
-   */
-  isTransferPublicProver(): boolean;
-  /**
-   * Verify if the proving key is for the transfer_public_to_private function
-   *
-   * @example
-   * const provingKey = ProvingKey.fromBytes("transfer_public_to_private_proving_key.bin");
-   * provingKey.isTransferPublicToPrivateProver() ? console.log("Key verified") : throw new Error("Invalid key");
-   *
-   * @returns {boolean} returns true if the proving key is for the transfer_public_to_private function, false if otherwise
-   * @returns {boolean}
-   */
-  isTransferPublicToPrivateProver(): boolean;
-  /**
-   * Verify if the proving key is for the unbond_delegator_as_validator function
-   *
-   * @example
-   * const provingKey = ProvingKey.fromBytes("unbond_delegator_as_validator_proving_key.bin");
-   * provingKey.isUnbondDelegatorAsValidatorProver() ? console.log("Key verified") : throw new Error("Invalid key");
-   *
-   * @returns {boolean} returns true if the proving key is for the unbond_delegator_as_validator function, false if otherwise
-   * @returns {boolean}
-   */
-  isUnbondDelegatorAsValidatorProver(): boolean;
-  /**
-   * Verify if the proving key is for the unbond_delegator_as_delegator function
-   *
-   * @example
-   * const provingKey = ProvingKey.fromBytes("unbond_delegator_as_delegator_proving_key.bin");
-   * provingKey.isUnbondDelegatorAsDelegatorProver() ? console.log("Key verified") : throw new Error("Invalid key");
-   *
-   * @returns {boolean} returns true if the proving key is for the unbond_delegator_as_delegator function, false if otherwise
-   * @returns {boolean}
-   */
-  isUnbondPublicProver(): boolean;
   /**
    * Return the checksum of the proving key
    *
@@ -1387,202 +1221,6 @@ export class Transaction {
  */
 export class VerifyingKey {
   free(): void;
-  /**
-   * Returns the verifying key for the bond_public function
-   *
-   * @returns {VerifyingKey} Verifying key for the bond_public function
-   * @returns {VerifyingKey}
-   */
-  static bondPublicVerifier(): VerifyingKey;
-  /**
-   * Returns the verifying key for the claim_delegator function
-   *
-   * @returns {VerifyingKey} Verifying key for the claim_unbond_public function
-   * @returns {VerifyingKey}
-   */
-  static claimUnbondPublicVerifier(): VerifyingKey;
-  /**
-   * Returns the verifying key for the fee_private function
-   *
-   * @returns {VerifyingKey} Verifying key for the fee_private function
-   * @returns {VerifyingKey}
-   */
-  static feePrivateVerifier(): VerifyingKey;
-  /**
-   * Returns the verifying key for the fee_public function
-   *
-   * @returns {VerifyingKey} Verifying key for the fee_public function
-   * @returns {VerifyingKey}
-   */
-  static feePublicVerifier(): VerifyingKey;
-  /**
-   * Returns the verifying key for the inclusion function
-   *
-   * @returns {VerifyingKey} Verifying key for the inclusion function
-   * @returns {VerifyingKey}
-   */
-  static inclusionVerifier(): VerifyingKey;
-  /**
-   * Returns the verifying key for the join function
-   *
-   * @returns {VerifyingKey} Verifying key for the join function
-   * @returns {VerifyingKey}
-   */
-  static joinVerifier(): VerifyingKey;
-  /**
-   * Returns the verifying key for the set_validator_state function
-   *
-   * @returns {VerifyingKey} Verifying key for the set_validator_state function
-   * @returns {VerifyingKey}
-   */
-  static setValidatorStateVerifier(): VerifyingKey;
-  /**
-   * Returns the verifying key for the split function
-   *
-   * @returns {VerifyingKey} Verifying key for the split function
-   * @returns {VerifyingKey}
-   */
-  static splitVerifier(): VerifyingKey;
-  /**
-   * Returns the verifying key for the transfer_private function
-   *
-   * @returns {VerifyingKey} Verifying key for the transfer_private function
-   * @returns {VerifyingKey}
-   */
-  static transferPrivateVerifier(): VerifyingKey;
-  /**
-   * Returns the verifying key for the transfer_private_to_public function
-   *
-   * @returns {VerifyingKey} Verifying key for the transfer_private_to_public function
-   * @returns {VerifyingKey}
-   */
-  static transferPrivateToPublicVerifier(): VerifyingKey;
-  /**
-   * Returns the verifying key for the transfer_public function
-   *
-   * @returns {VerifyingKey} Verifying key for the transfer_public function
-   * @returns {VerifyingKey}
-   */
-  static transferPublicVerifier(): VerifyingKey;
-  /**
-   * Returns the verifying key for the transfer_public_to_private function
-   *
-   * @returns {VerifyingKey} Verifying key for the transfer_public_to_private function
-   * @returns {VerifyingKey}
-   */
-  static transferPublicToPrivateVerifier(): VerifyingKey;
-  /**
-   * Returns the verifying key for the unbond_delegator_as_delegator function
-   *
-   * @returns {VerifyingKey} Verifying key for the unbond_delegator_as_delegator function
-   * @returns {VerifyingKey}
-   */
-  static unbondDelegatorAsValidatorVerifier(): VerifyingKey;
-  /**
-   * Returns the verifying key for the unbond_delegator_as_delegator function
-   *
-   * @returns {VerifyingKey} Verifying key for the unbond_delegator_as_delegator function
-   * @returns {VerifyingKey}
-   */
-  static unbondPublicVerifier(): VerifyingKey;
-  /**
-   * Returns the verifying key for the bond_public function
-   *
-   * @returns {VerifyingKey} Verifying key for the bond_public function
-   * @returns {boolean}
-   */
-  isBondPublicVerifier(): boolean;
-  /**
-   * Verifies the verifying key is for the claim_delegator function
-   *
-   * @returns {bool}
-   * @returns {boolean}
-   */
-  isClaimUnbondPublicVerifier(): boolean;
-  /**
-   * Verifies the verifying key is for the fee_private function
-   *
-   * @returns {bool}
-   * @returns {boolean}
-   */
-  isFeePrivateVerifier(): boolean;
-  /**
-   * Verifies the verifying key is for the fee_public function
-   *
-   * @returns {bool}
-   * @returns {boolean}
-   */
-  isFeePublicVerifier(): boolean;
-  /**
-   * Verifies the verifying key is for the inclusion function
-   *
-   * @returns {bool}
-   * @returns {boolean}
-   */
-  isInclusionVerifier(): boolean;
-  /**
-   * Verifies the verifying key is for the join function
-   *
-   * @returns {bool}
-   * @returns {boolean}
-   */
-  isJoinVerifier(): boolean;
-  /**
-   * Verifies the verifying key is for the set_validator_state function
-   *
-   * @returns {bool}
-   * @returns {boolean}
-   */
-  isSetValidatorStateVerifier(): boolean;
-  /**
-   * Verifies the verifying key is for the split function
-   *
-   * @returns {bool}
-   * @returns {boolean}
-   */
-  isSplitVerifier(): boolean;
-  /**
-   * Verifies the verifying key is for the transfer_private function
-   *
-   * @returns {bool}
-   * @returns {boolean}
-   */
-  isTransferPrivateVerifier(): boolean;
-  /**
-   * Verifies the verifying key is for the transfer_private_to_public function
-   *
-   * @returns {bool}
-   * @returns {boolean}
-   */
-  isTransferPrivateToPublicVerifier(): boolean;
-  /**
-   * Verifies the verifying key is for the transfer_public function
-   *
-   * @returns {bool}
-   * @returns {boolean}
-   */
-  isTransferPublicVerifier(): boolean;
-  /**
-   * Verifies the verifying key is for the transfer_public_to_private function
-   *
-   * @returns {bool}
-   * @returns {boolean}
-   */
-  isTransferPublicToPrivateVerifier(): boolean;
-  /**
-   * Verifies the verifying key is for the unbond_delegator_as_delegator function
-   *
-   * @returns {bool}
-   * @returns {boolean}
-   */
-  isUnbondDelegatorAsValidatorVerifier(): boolean;
-  /**
-   * Verifies the verifying key is for the unbond_public function
-   *
-   * @returns {bool}
-   * @returns {boolean}
-   */
-  isUnbondPublicVerifier(): boolean;
   /**
    * Get the checksum of the verifying key
    *

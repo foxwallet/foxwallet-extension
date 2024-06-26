@@ -7,13 +7,17 @@ function spawnWorker(url, module, memory, address) {
     worker.addEventListener(
       "message",
       (event) => {
-        // When running in Node, this allows the process to exit
-        // even though the Worker is still running.
-        if (worker.unref) {
-          worker.unref();
-        }
+        // This is needed in Node to wait one extra tick, so that way
+        // the Worker can fully initialize before we return.
+        setTimeout(() => {
+          resolve(worker);
 
-        resolve(worker);
+          // When running in Node, this allows the process to exit
+          // even though the Worker is still running.
+          if (worker.unref) {
+            worker.unref();
+          }
+        }, 0);
       },
       {
         capture: true,
@@ -255,7 +259,7 @@ function makeMutClosure(arg0, arg1, dtor, f) {
   return real;
 }
 function __wbg_adapter_34(arg0, arg1, arg2) {
-  wasm.wasm_bindgen__convert__closures__invoke1_mut__h3a846df363c7d2d4(
+  wasm.wasm_bindgen__convert__closures__invoke1_mut__h1a70fba700662d93(
     arg0,
     arg1,
     addHeapObject(arg2),
@@ -368,7 +372,7 @@ function handleError(f, args) {
     wasm.__wbindgen_exn_store(addHeapObject(e));
   }
 }
-function __wbg_adapter_251(arg0, arg1, arg2, arg3) {
+function __wbg_adapter_209(arg0, arg1, arg2, arg3) {
   wasm.wasm_bindgen__convert__closures__invoke2_mut__hccc8c18a7a349b62(
     arg0,
     arg1,
@@ -1704,6 +1708,27 @@ let Program$1 = class Program {
     }
   }
   /**
+   * Get a unique address of the program
+   *
+   * @returns {Address} The address of the program
+   * @returns {Address}
+   */
+  address() {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.program_address(retptr, this.__wbg_ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      if (r2) {
+        throw takeObject(r1);
+      }
+      return Address$1.__wrap(r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
    * Determine equality with another program
    *
    * @param {Program} other The other program to compare
@@ -1780,8 +1805,7 @@ let ProgramManager$1 = class ProgramManager {
    * @returns {Transaction | Error}
    * @param {PrivateKey} private_key
    * @param {string} program
-   * @param {bigint} base_fee
-   * @param {bigint} priority_fee
+   * @param {number} fee_credits
    * @param {RecordPlaintext | undefined} fee_record
    * @param {string | undefined} url
    * @param {object | undefined} imports
@@ -1793,8 +1817,7 @@ let ProgramManager$1 = class ProgramManager {
   static buildDeploymentTransaction(
     private_key,
     program,
-    base_fee,
-    priority_fee,
+    fee_credits,
     fee_record,
     url,
     imports,
@@ -1837,8 +1860,7 @@ let ProgramManager$1 = class ProgramManager {
       private_key.__wbg_ptr,
       ptr0,
       len0,
-      base_fee,
-      priority_fee,
+      fee_credits,
       ptr1,
       ptr2,
       len2,
@@ -2031,8 +2053,7 @@ let ProgramManager$1 = class ProgramManager {
    * @param {string} program
    * @param {string} _function
    * @param {Array<any>} inputs
-   * @param {bigint} base_fee
-   * @param {bigint} priority_fee
+   * @param {number} fee_credits
    * @param {RecordPlaintext | undefined} fee_record
    * @param {string | undefined} url
    * @param {object | undefined} imports
@@ -2048,8 +2069,7 @@ let ProgramManager$1 = class ProgramManager {
     program,
     _function,
     inputs,
-    base_fee,
-    priority_fee,
+    fee_credits,
     fee_record,
     url,
     imports,
@@ -2113,8 +2133,7 @@ let ProgramManager$1 = class ProgramManager {
       ptr1,
       len1,
       addHeapObject(inputs),
-      base_fee,
-      priority_fee,
+      fee_credits,
       ptr2,
       ptr3,
       len3,
@@ -2214,47 +2233,6 @@ let ProgramManager$1 = class ProgramManager {
       ptr5,
     );
     return takeObject(ret);
-  }
-  /**
-   * Estimate the finalize fee component for executing a function. This fee is additional to the
-   * size of the execution of the program in bytes. If the function does not have a finalize
-   * step, then the finalize fee is 0.
-   *
-   * Disclaimer: Fee estimation is experimental and may not represent a correct estimate on any current or future network
-   *
-   * @param program The program containing the function to estimate the finalize fee for
-   * @param function The function to estimate the finalize fee for
-   * @returns {u64 | Error} Fee in microcredits
-   * @param {string} program
-   * @param {string} _function
-   * @returns {bigint}
-   */
-  static estimateFinalizeFee(program, _function) {
-    try {
-      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-      const ptr0 = passStringToWasm0(
-        program,
-        wasm.__wbindgen_malloc,
-        wasm.__wbindgen_realloc,
-      );
-      const len0 = WASM_VECTOR_LEN;
-      const ptr1 = passStringToWasm0(
-        _function,
-        wasm.__wbindgen_malloc,
-        wasm.__wbindgen_realloc,
-      );
-      const len1 = WASM_VECTOR_LEN;
-      wasm.programmanager_estimateFinalizeFee(retptr, ptr0, len0, ptr1, len1);
-      var r0 = getBigInt64Memory0()[retptr / 8 + 0];
-      var r2 = getInt32Memory0()[retptr / 4 + 2];
-      var r3 = getInt32Memory0()[retptr / 4 + 3];
-      if (r3) {
-        throw takeObject(r2);
-      }
-      return BigInt.asUintN(64, r0);
-    } finally {
-      wasm.__wbindgen_add_to_stack_pointer(16);
-    }
   }
   /**
    * Join two records together to create a new record with an amount of credits equal to the sum
@@ -2595,204 +2573,6 @@ let ProvingKey$1 = class ProvingKey {
   free() {
     const ptr = this.__destroy_into_raw();
     wasm.__wbg_provingkey_free(ptr);
-  }
-  /**
-   * Verify if the proving key is for the bond_public function
-   *
-   * @example
-   * const provingKey = ProvingKey.fromBytes("bond_public_proving_key.bin");
-   * provingKey.isBondPublicProver() ? console.log("Key verified") : throw new Error("Invalid key");
-   *
-   * @returns {boolean} returns true if the proving key is for the bond_public function, false if otherwise
-   * @returns {boolean}
-   */
-  isBondPublicProver() {
-    const ret = wasm.provingkey_isBondPublicProver(this.__wbg_ptr);
-    return ret !== 0;
-  }
-  /**
-   * Verify if the proving key is for the claim_unbond function
-   *
-   * @example
-   * const provingKey = ProvingKey.fromBytes("claim_unbond_proving_key.bin");
-   * provingKey.isClaimUnbondProver() ? console.log("Key verified") : throw new Error("Invalid key");
-   *
-   * @returns {boolean} returns true if the proving key is for the claim_unbond function, false if otherwise
-   * @returns {boolean}
-   */
-  isClaimUnbondPublicProver() {
-    const ret = wasm.provingkey_isClaimUnbondPublicProver(this.__wbg_ptr);
-    return ret !== 0;
-  }
-  /**
-   * Verify if the proving key is for the fee_private function
-   *
-   * @example
-   * const provingKey = ProvingKey.fromBytes("fee_private_proving_key.bin");
-   * provingKey.isFeePrivateProver() ? console.log("Key verified") : throw new Error("Invalid key");
-   *
-   * @returns {boolean} returns true if the proving key is for the fee_private function, false if otherwise
-   * @returns {boolean}
-   */
-  isFeePrivateProver() {
-    const ret = wasm.provingkey_isFeePrivateProver(this.__wbg_ptr);
-    return ret !== 0;
-  }
-  /**
-   * Verify if the proving key is for the fee_public function
-   *
-   * @example
-   * const provingKey = ProvingKey.fromBytes("fee_public_proving_key.bin");
-   * provingKey.isFeePublicProver() ? console.log("Key verified") : throw new Error("Invalid key");
-   *
-   * @returns {boolean} returns true if the proving key is for the fee_public function, false if otherwise
-   * @returns {boolean}
-   */
-  isFeePublicProver() {
-    const ret = wasm.provingkey_isFeePublicProver(this.__wbg_ptr);
-    return ret !== 0;
-  }
-  /**
-   * Verify if the proving key is for the inclusion function
-   *
-   * @example
-   * const provingKey = ProvingKey.fromBytes("inclusion_proving_key.bin");
-   * provingKey.isInclusionProver() ? console.log("Key verified") : throw new Error("Invalid key");
-   *
-   * @returns {boolean} returns true if the proving key is for the inclusion function, false if otherwise
-   * @returns {boolean}
-   */
-  isInclusionProver() {
-    const ret = wasm.provingkey_isInclusionProver(this.__wbg_ptr);
-    return ret !== 0;
-  }
-  /**
-   * Verify if the proving key is for the join function
-   *
-   * @example
-   * const provingKey = ProvingKey.fromBytes("join_proving_key.bin");
-   * provingKey.isJoinProver() ? console.log("Key verified") : throw new Error("Invalid key");
-   *
-   * @returns {boolean} returns true if the proving key is for the join function, false if otherwise
-   * @returns {boolean}
-   */
-  isJoinProver() {
-    const ret = wasm.provingkey_isJoinProver(this.__wbg_ptr);
-    return ret !== 0;
-  }
-  /**
-   * Verify if the proving key is for the set_validator_state function
-   *
-   * @example
-   * const provingKey = ProvingKey.fromBytes("set_validator_set_proving_key.bin");
-   * provingKey.isSetValidatorStateProver() ? console.log("Key verified") : throw new Error("Invalid key");
-   *
-   * @returns {boolean} returns true if the proving key is for the set_validator_state function, false if otherwise
-   * @returns {boolean}
-   */
-  isSetValidatorStateProver() {
-    const ret = wasm.provingkey_isSetValidatorStateProver(this.__wbg_ptr);
-    return ret !== 0;
-  }
-  /**
-   * Verify if the proving key is for the split function
-   *
-   * @example
-   * const provingKey = ProvingKey.fromBytes("split_proving_key.bin");
-   * provingKey.isSplitProver() ? console.log("Key verified") : throw new Error("Invalid key");
-   *
-   * @returns {boolean} returns true if the proving key is for the split function, false if otherwise
-   * @returns {boolean}
-   */
-  isSplitProver() {
-    const ret = wasm.provingkey_isSplitProver(this.__wbg_ptr);
-    return ret !== 0;
-  }
-  /**
-   * Verify if the proving key is for the transfer_private function
-   *
-   * @example
-   * const provingKey = ProvingKey.fromBytes("transfer_private_proving_key.bin");
-   * provingKey.isTransferPrivateProver() ? console.log("Key verified") : throw new Error("Invalid key");
-   *
-   * @returns {boolean} returns true if the proving key is for the transfer_private function, false if otherwise
-   * @returns {boolean}
-   */
-  isTransferPrivateProver() {
-    const ret = wasm.provingkey_isTransferPrivateProver(this.__wbg_ptr);
-    return ret !== 0;
-  }
-  /**
-   * Verify if the proving key is for the transfer_private_to_public function
-   *
-   * @example
-   * const provingKey = ProvingKey.fromBytes("transfer_private_to_public_proving_key.bin");
-   * provingKey.isTransferPrivateToPublicProver() ? console.log("Key verified") : throw new Error("Invalid key");
-   *
-   * @returns {boolean} returns true if the proving key is for the transfer_private_to_public function, false if otherwise
-   * @returns {boolean}
-   */
-  isTransferPrivateToPublicProver() {
-    const ret = wasm.provingkey_isTransferPrivateToPublicProver(this.__wbg_ptr);
-    return ret !== 0;
-  }
-  /**
-   * Verify if the proving key is for the transfer_public function
-   *
-   * @example
-   * const provingKey = ProvingKey.fromBytes("transfer_public_proving_key.bin");
-   * provingKey.isTransferPublicProver() ? console.log("Key verified") : throw new Error("Invalid key");
-   *
-   * @returns {boolean} returns true if the proving key is for the transfer_public function, false if otherwise
-   * @returns {boolean}
-   */
-  isTransferPublicProver() {
-    const ret = wasm.provingkey_isTransferPublicProver(this.__wbg_ptr);
-    return ret !== 0;
-  }
-  /**
-   * Verify if the proving key is for the transfer_public_to_private function
-   *
-   * @example
-   * const provingKey = ProvingKey.fromBytes("transfer_public_to_private_proving_key.bin");
-   * provingKey.isTransferPublicToPrivateProver() ? console.log("Key verified") : throw new Error("Invalid key");
-   *
-   * @returns {boolean} returns true if the proving key is for the transfer_public_to_private function, false if otherwise
-   * @returns {boolean}
-   */
-  isTransferPublicToPrivateProver() {
-    const ret = wasm.provingkey_isTransferPublicToPrivateProver(this.__wbg_ptr);
-    return ret !== 0;
-  }
-  /**
-   * Verify if the proving key is for the unbond_delegator_as_validator function
-   *
-   * @example
-   * const provingKey = ProvingKey.fromBytes("unbond_delegator_as_validator_proving_key.bin");
-   * provingKey.isUnbondDelegatorAsValidatorProver() ? console.log("Key verified") : throw new Error("Invalid key");
-   *
-   * @returns {boolean} returns true if the proving key is for the unbond_delegator_as_validator function, false if otherwise
-   * @returns {boolean}
-   */
-  isUnbondDelegatorAsValidatorProver() {
-    const ret = wasm.provingkey_isUnbondDelegatorAsValidatorProver(
-      this.__wbg_ptr,
-    );
-    return ret !== 0;
-  }
-  /**
-   * Verify if the proving key is for the unbond_delegator_as_delegator function
-   *
-   * @example
-   * const provingKey = ProvingKey.fromBytes("unbond_delegator_as_delegator_proving_key.bin");
-   * provingKey.isUnbondDelegatorAsDelegatorProver() ? console.log("Key verified") : throw new Error("Invalid key");
-   *
-   * @returns {boolean} returns true if the proving key is for the unbond_delegator_as_delegator function, false if otherwise
-   * @returns {boolean}
-   */
-  isUnbondPublicProver() {
-    const ret = wasm.provingkey_isUnbondPublicProver(this.__wbg_ptr);
-    return ret !== 0;
   }
   /**
    * Return the checksum of the proving key
@@ -3500,292 +3280,6 @@ let VerifyingKey$1 = class VerifyingKey {
     wasm.__wbg_verifyingkey_free(ptr);
   }
   /**
-   * Returns the verifying key for the bond_public function
-   *
-   * @returns {VerifyingKey} Verifying key for the bond_public function
-   * @returns {VerifyingKey}
-   */
-  static bondPublicVerifier() {
-    const ret = wasm.verifyingkey_bondPublicVerifier();
-    return VerifyingKey.__wrap(ret);
-  }
-  /**
-   * Returns the verifying key for the claim_delegator function
-   *
-   * @returns {VerifyingKey} Verifying key for the claim_unbond_public function
-   * @returns {VerifyingKey}
-   */
-  static claimUnbondPublicVerifier() {
-    const ret = wasm.verifyingkey_claimUnbondPublicVerifier();
-    return VerifyingKey.__wrap(ret);
-  }
-  /**
-   * Returns the verifying key for the fee_private function
-   *
-   * @returns {VerifyingKey} Verifying key for the fee_private function
-   * @returns {VerifyingKey}
-   */
-  static feePrivateVerifier() {
-    const ret = wasm.verifyingkey_feePrivateVerifier();
-    return VerifyingKey.__wrap(ret);
-  }
-  /**
-   * Returns the verifying key for the fee_public function
-   *
-   * @returns {VerifyingKey} Verifying key for the fee_public function
-   * @returns {VerifyingKey}
-   */
-  static feePublicVerifier() {
-    const ret = wasm.verifyingkey_feePublicVerifier();
-    return VerifyingKey.__wrap(ret);
-  }
-  /**
-   * Returns the verifying key for the inclusion function
-   *
-   * @returns {VerifyingKey} Verifying key for the inclusion function
-   * @returns {VerifyingKey}
-   */
-  static inclusionVerifier() {
-    const ret = wasm.verifyingkey_inclusionVerifier();
-    return VerifyingKey.__wrap(ret);
-  }
-  /**
-   * Returns the verifying key for the join function
-   *
-   * @returns {VerifyingKey} Verifying key for the join function
-   * @returns {VerifyingKey}
-   */
-  static joinVerifier() {
-    const ret = wasm.verifyingkey_joinVerifier();
-    return VerifyingKey.__wrap(ret);
-  }
-  /**
-   * Returns the verifying key for the set_validator_state function
-   *
-   * @returns {VerifyingKey} Verifying key for the set_validator_state function
-   * @returns {VerifyingKey}
-   */
-  static setValidatorStateVerifier() {
-    const ret = wasm.verifyingkey_setValidatorStateVerifier();
-    return VerifyingKey.__wrap(ret);
-  }
-  /**
-   * Returns the verifying key for the split function
-   *
-   * @returns {VerifyingKey} Verifying key for the split function
-   * @returns {VerifyingKey}
-   */
-  static splitVerifier() {
-    const ret = wasm.verifyingkey_splitVerifier();
-    return VerifyingKey.__wrap(ret);
-  }
-  /**
-   * Returns the verifying key for the transfer_private function
-   *
-   * @returns {VerifyingKey} Verifying key for the transfer_private function
-   * @returns {VerifyingKey}
-   */
-  static transferPrivateVerifier() {
-    const ret = wasm.verifyingkey_transferPrivateVerifier();
-    return VerifyingKey.__wrap(ret);
-  }
-  /**
-   * Returns the verifying key for the transfer_private_to_public function
-   *
-   * @returns {VerifyingKey} Verifying key for the transfer_private_to_public function
-   * @returns {VerifyingKey}
-   */
-  static transferPrivateToPublicVerifier() {
-    const ret = wasm.verifyingkey_transferPrivateToPublicVerifier();
-    return VerifyingKey.__wrap(ret);
-  }
-  /**
-   * Returns the verifying key for the transfer_public function
-   *
-   * @returns {VerifyingKey} Verifying key for the transfer_public function
-   * @returns {VerifyingKey}
-   */
-  static transferPublicVerifier() {
-    const ret = wasm.verifyingkey_transferPublicVerifier();
-    return VerifyingKey.__wrap(ret);
-  }
-  /**
-   * Returns the verifying key for the transfer_public_to_private function
-   *
-   * @returns {VerifyingKey} Verifying key for the transfer_public_to_private function
-   * @returns {VerifyingKey}
-   */
-  static transferPublicToPrivateVerifier() {
-    const ret = wasm.verifyingkey_transferPublicToPrivateVerifier();
-    return VerifyingKey.__wrap(ret);
-  }
-  /**
-   * Returns the verifying key for the unbond_delegator_as_delegator function
-   *
-   * @returns {VerifyingKey} Verifying key for the unbond_delegator_as_delegator function
-   * @returns {VerifyingKey}
-   */
-  static unbondDelegatorAsValidatorVerifier() {
-    const ret = wasm.verifyingkey_unbondDelegatorAsValidatorVerifier();
-    return VerifyingKey.__wrap(ret);
-  }
-  /**
-   * Returns the verifying key for the unbond_delegator_as_delegator function
-   *
-   * @returns {VerifyingKey} Verifying key for the unbond_delegator_as_delegator function
-   * @returns {VerifyingKey}
-   */
-  static unbondPublicVerifier() {
-    const ret = wasm.verifyingkey_unbondPublicVerifier();
-    return VerifyingKey.__wrap(ret);
-  }
-  /**
-   * Returns the verifying key for the bond_public function
-   *
-   * @returns {VerifyingKey} Verifying key for the bond_public function
-   * @returns {boolean}
-   */
-  isBondPublicVerifier() {
-    const ret = wasm.verifyingkey_isBondPublicVerifier(this.__wbg_ptr);
-    return ret !== 0;
-  }
-  /**
-   * Verifies the verifying key is for the claim_delegator function
-   *
-   * @returns {bool}
-   * @returns {boolean}
-   */
-  isClaimUnbondPublicVerifier() {
-    const ret = wasm.verifyingkey_isClaimUnbondPublicVerifier(this.__wbg_ptr);
-    return ret !== 0;
-  }
-  /**
-   * Verifies the verifying key is for the fee_private function
-   *
-   * @returns {bool}
-   * @returns {boolean}
-   */
-  isFeePrivateVerifier() {
-    const ret = wasm.verifyingkey_isFeePrivateVerifier(this.__wbg_ptr);
-    return ret !== 0;
-  }
-  /**
-   * Verifies the verifying key is for the fee_public function
-   *
-   * @returns {bool}
-   * @returns {boolean}
-   */
-  isFeePublicVerifier() {
-    const ret = wasm.verifyingkey_isFeePublicVerifier(this.__wbg_ptr);
-    return ret !== 0;
-  }
-  /**
-   * Verifies the verifying key is for the inclusion function
-   *
-   * @returns {bool}
-   * @returns {boolean}
-   */
-  isInclusionVerifier() {
-    const ret = wasm.verifyingkey_isInclusionVerifier(this.__wbg_ptr);
-    return ret !== 0;
-  }
-  /**
-   * Verifies the verifying key is for the join function
-   *
-   * @returns {bool}
-   * @returns {boolean}
-   */
-  isJoinVerifier() {
-    const ret = wasm.verifyingkey_isJoinVerifier(this.__wbg_ptr);
-    return ret !== 0;
-  }
-  /**
-   * Verifies the verifying key is for the set_validator_state function
-   *
-   * @returns {bool}
-   * @returns {boolean}
-   */
-  isSetValidatorStateVerifier() {
-    const ret = wasm.verifyingkey_isSetValidatorStateVerifier(this.__wbg_ptr);
-    return ret !== 0;
-  }
-  /**
-   * Verifies the verifying key is for the split function
-   *
-   * @returns {bool}
-   * @returns {boolean}
-   */
-  isSplitVerifier() {
-    const ret = wasm.verifyingkey_isSplitVerifier(this.__wbg_ptr);
-    return ret !== 0;
-  }
-  /**
-   * Verifies the verifying key is for the transfer_private function
-   *
-   * @returns {bool}
-   * @returns {boolean}
-   */
-  isTransferPrivateVerifier() {
-    const ret = wasm.verifyingkey_isTransferPrivateVerifier(this.__wbg_ptr);
-    return ret !== 0;
-  }
-  /**
-   * Verifies the verifying key is for the transfer_private_to_public function
-   *
-   * @returns {bool}
-   * @returns {boolean}
-   */
-  isTransferPrivateToPublicVerifier() {
-    const ret = wasm.verifyingkey_isTransferPrivateToPublicVerifier(
-      this.__wbg_ptr,
-    );
-    return ret !== 0;
-  }
-  /**
-   * Verifies the verifying key is for the transfer_public function
-   *
-   * @returns {bool}
-   * @returns {boolean}
-   */
-  isTransferPublicVerifier() {
-    const ret = wasm.verifyingkey_isTransferPublicVerifier(this.__wbg_ptr);
-    return ret !== 0;
-  }
-  /**
-   * Verifies the verifying key is for the transfer_public_to_private function
-   *
-   * @returns {bool}
-   * @returns {boolean}
-   */
-  isTransferPublicToPrivateVerifier() {
-    const ret = wasm.verifyingkey_isTransferPublicToPrivateVerifier(
-      this.__wbg_ptr,
-    );
-    return ret !== 0;
-  }
-  /**
-   * Verifies the verifying key is for the unbond_delegator_as_delegator function
-   *
-   * @returns {bool}
-   * @returns {boolean}
-   */
-  isUnbondDelegatorAsValidatorVerifier() {
-    const ret = wasm.verifyingkey_isUnbondDelegatorAsValidatorVerifier(
-      this.__wbg_ptr,
-    );
-    return ret !== 0;
-  }
-  /**
-   * Verifies the verifying key is for the unbond_public function
-   *
-   * @returns {bool}
-   * @returns {boolean}
-   */
-  isUnbondPublicVerifier() {
-    const ret = wasm.verifyingkey_isUnbondPublicVerifier(this.__wbg_ptr);
-    return ret !== 0;
-  }
-  /**
    * Get the checksum of the verifying key
    *
    * @returns {string} Checksum of the verifying key
@@ -3814,7 +3308,7 @@ let VerifyingKey$1 = class VerifyingKey {
    * @returns {VerifyingKey}
    */
   copy() {
-    const ret = wasm.provingkey_copy(this.__wbg_ptr);
+    const ret = wasm.verifyingkey_copy(this.__wbg_ptr);
     return VerifyingKey.__wrap(ret);
   }
   /**
@@ -4248,22 +3742,22 @@ function __wbg_get_imports() {
     getInt32Memory0()[arg0 / 4 + 1] = len1;
     getInt32Memory0()[arg0 / 4 + 0] = ptr1;
   };
+  imports.wbg.__wbg_keypair_new = function (arg0) {
+    const ret = KeyPair.__wrap(arg0);
+    return addHeapObject(ret);
+  };
   imports.wbg.__wbg_call_01734de55d61e11d = function () {
     return handleError(function (arg0, arg1, arg2) {
       const ret = getObject(arg0).call(getObject(arg1), getObject(arg2));
       return addHeapObject(ret);
     }, arguments);
   };
-  imports.wbg.__wbg_transaction_new = function (arg0) {
-    const ret = Transaction$1.__wrap(arg0);
-    return addHeapObject(ret);
-  };
-  imports.wbg.__wbg_executionresponse_new = function (arg0) {
-    const ret = ExecutionResponse$1.__wrap(arg0);
-    return addHeapObject(ret);
-  };
   imports.wbg.__wbg_log_0159ca40cddf5b15 = function (arg0, arg1) {
     console.log(getStringFromWasm0(arg0, arg1));
+  };
+  imports.wbg.__wbindgen_bigint_from_u64 = function (arg0) {
+    const ret = BigInt.asUintN(64, arg0);
+    return addHeapObject(ret);
   };
   imports.wbg.__wbg_newwithlength_3ec098a360da1909 = function (arg0) {
     const ret = new Array(arg0 >>> 0);
@@ -4272,12 +3766,12 @@ function __wbg_get_imports() {
   imports.wbg.__wbg_set_502d29070ea18557 = function (arg0, arg1, arg2) {
     getObject(arg0)[arg1 >>> 0] = takeObject(arg2);
   };
-  imports.wbg.__wbg_keypair_new = function (arg0) {
-    const ret = KeyPair.__wrap(arg0);
+  imports.wbg.__wbg_transaction_new = function (arg0) {
+    const ret = Transaction$1.__wrap(arg0);
     return addHeapObject(ret);
   };
-  imports.wbg.__wbindgen_bigint_from_u64 = function (arg0) {
-    const ret = BigInt.asUintN(64, arg0);
+  imports.wbg.__wbg_executionresponse_new = function (arg0) {
+    const ret = ExecutionResponse$1.__wrap(arg0);
     return addHeapObject(ret);
   };
   imports.wbg.__wbindgen_module = function () {
@@ -4332,7 +3826,7 @@ function __wbg_get_imports() {
         const a = state0.a;
         state0.a = 0;
         try {
-          return __wbg_adapter_251(a, state0.b, arg0, arg1);
+          return __wbg_adapter_209(a, state0.b, arg0, arg1);
         } finally {
           state0.a = a;
         }
@@ -4615,12 +4109,12 @@ function __wbg_get_imports() {
       getInt32Memory0()[arg0 / 4 + 0] = ptr1;
     }, arguments);
   };
-  imports.wbg.__wbindgen_closure_wrapper5655 = function (arg0, arg1, arg2) {
-    const ret = makeMutClosure(arg0, arg1, 543, __wbg_adapter_34);
+  imports.wbg.__wbindgen_closure_wrapper5489 = function (arg0, arg1, arg2) {
+    const ret = makeMutClosure(arg0, arg1, 529, __wbg_adapter_34);
     return addHeapObject(ret);
   };
-  imports.wbg.__wbindgen_closure_wrapper5678 = function (arg0, arg1, arg2) {
-    const ret = makeMutClosure(arg0, arg1, 543, __wbg_adapter_34);
+  imports.wbg.__wbindgen_closure_wrapper5512 = function (arg0, arg1, arg2) {
+    const ret = makeMutClosure(arg0, arg1, 529, __wbg_adapter_34);
     return addHeapObject(ret);
   };
 
@@ -4630,7 +4124,7 @@ function __wbg_get_imports() {
 function __wbg_init_memory(imports, maybe_memory) {
   imports.wbg.memory =
     maybe_memory ||
-    new WebAssembly.Memory({ initial: 169, maximum: 65536, shared: true });
+    new WebAssembly.Memory({ initial: 25, maximum: 65536, shared: true });
 }
 
 function __wbg_finalize_init(instance, module) {

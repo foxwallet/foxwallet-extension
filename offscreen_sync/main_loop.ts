@@ -34,7 +34,7 @@ export const SYNC_TASK_QUENE_LIMIT = 100;
 
 const ENABLE_MEASURE = true;
 
-const CHAIN_ID = ALEO_CHAIN_CONFIGS.TESTNET3.chainId;
+const CHAIN_ID = ALEO_CHAIN_CONFIGS.TESTNET.chainId;
 
 const WORKER_NUMBER = Math.min(
   Math.max((navigator.hardwareConcurrency ?? 4) - 1, 4),

@@ -22,32 +22,51 @@ crate-type = [ "cdylib", "rlib" ]
 doctest = false
 
 [dependencies.snarkvm-circuit-network]
-version = "0.16.2"
+git = "https://github.com/AleoNet/snarkVM"
+package = "snarkvm-circuit-network"
+rev = "6d64025f3f775fa164d70d9a8177ec93c97cd36e"
 
 [dependencies.snarkvm-console]
-version = "0.16.2"
+git = "https://github.com/AleoNet/snarkVM"
+package = "snarkvm-console"
+rev = "6d64025f3f775fa164d70d9a8177ec93c97cd36e"
 features = [ "wasm" ]
 
 [dependencies.snarkvm-ledger-block]
-version = "0.16.2"
+git = "https://github.com/AleoNet/snarkVM"
+package = "snarkvm-ledger-block"
+rev = "6d64025f3f775fa164d70d9a8177ec93c97cd36e"
 
 [dependencies.snarkvm-ledger-query]
-version = "0.16.2"
+git = "https://github.com/AleoNet/snarkVM"
+package = "snarkvm-ledger-query"
+rev = "6d64025f3f775fa164d70d9a8177ec93c97cd36e"
 features = [ "async" ]
 
 [dependencies.snarkvm-ledger-store]
+git = "https://github.com/AleoNet/snarkVM"
+package = "snarkvm-ledger-store"
+rev = "6d64025f3f775fa164d70d9a8177ec93c97cd36e"
 version = "0.16.2"
 
 [dependencies.snarkvm-synthesizer]
-version = "0.16.2"
+git = "https://github.com/AleoNet/snarkVM"
+package = "snarkvm-synthesizer"
+rev = "6d64025f3f775fa164d70d9a8177ec93c97cd36e"
 features = [ "async" ]
 
 [dependencies.snarkvm-wasm]
-version = "0.16.2"
+# version = "0.16.2"
+git = "https://github.com/AleoNet/snarkVM"
+package = "snarkvm-wasm"
+rev = "6d64025f3f775fa164d70d9a8177ec93c97cd36e"
 features = [ "console", "fields", "utilities" ]
 
 [dependencies.snarkvm-utilities]
-version = "0.16.2"
+# version = "0.16.2"
+git = "https://github.com/AleoNet/snarkVM"
+package = "snarkvm-utilities"
+rev = "6d64025f3f775fa164d70d9a8177ec93c97cd36e"
 features = ["wasm"]
 
 [dependencies.anyhow]
@@ -106,7 +125,10 @@ version = "0.1.7"
 version = "1.0.183"
 
 [dev-dependencies.snarkvm-parameters]
-version = "0.16.2"
+# version = "0.16.2"
+git = "https://github.com/AleoNet/snarkVM"
+package = "snarkvm-parameters"
+rev = "6d64025f3f775fa164d70d9a8177ec93c97cd36e"
 features = [ "wasm" ]
 
 [dev-dependencies.wasm-bindgen-test]
