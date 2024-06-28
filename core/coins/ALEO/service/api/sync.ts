@@ -1,5 +1,5 @@
 import { get, post } from "@/common/utils/request";
-import { RecordRawInfo, SyncResp } from "./sync.di";
+import { RecordFileInfo, RecordRawInfo, SyncResp } from "./sync.di";
 
 export class AleoSyncApi {
   host: string;
@@ -49,31 +49,62 @@ export class AleoSyncApi {
    *
    * @param {number} start
    */
+  async getRecordFile(
+    index: number,
+    start: number,
+    end: number,
+  ): Promise<RecordFileInfo | undefined> {
+    const info = await this.fetchData<SyncResp<RecordFileInfo[]>>(
+      `/file/records??index=${index}&start=${start}&end=${end}`,
+    );
+    if (info.status === 404) {
+      return undefined;
+    }
+    if (info.status !== 0) {
+      throw new Error(info.msg);
+    }
+    return info.data[0];
+  }
+
+  /**
+   * Returns the next 5000 record after the specified index
+   *
+   * @param {number} start
+   */
   async getRecords(
     index: number,
     start: number,
     end: number,
   ): Promise<RecordRawInfo[]> {
-    const info = await this.fetchData<SyncResp<RecordRawInfo[]>>(
-      `/sync/records?index=${index}&start=${start}&end=${end}`,
-    );
-    if (info.status !== 0) {
-      throw new Error(info.msg);
+    const recordFileInfo = await this.getRecordFile(index, start, end);
+    if (recordFileInfo?.file_path) {
+      const resp = await fetch(recordFileInfo.file_path);
+      if (resp.ok) {
+        return await resp.json();
+      }
+    } else {
+      const info = await this.fetchData<SyncResp<RecordRawInfo[]>>(
+        `/db/records?index=${index}&start=${start}&end=${end}`,
+      );
+      if (info.status !== 0) {
+        throw new Error(info.msg);
+      }
+      return info.data;
     }
-    return info.data;
+    return [];
   }
 
-  /**
-   * Returns latest record index
-   *
-   */
-  async getLatestRecordIndex(): Promise<number> {
-    const info = await this.fetchData<SyncResp<number>>("/sync/latest/record");
-    if (info.status !== 0) {
-      throw new Error(info.msg);
-    }
-    return info.data;
-  }
+  // /**
+  //  * Returns latest record index
+  //  *
+  //  */
+  // async getLatestRecordIndex(): Promise<number> {
+  //   const info = await this.fetchData<SyncResp<number>>("/sync/latest/record");
+  //   if (info.status !== 0) {
+  //     throw new Error(info.msg);
+  //   }
+  //   return info.data;
+  // }
 
   /**
    * Returns the unspent record tags from the specified list of tags
@@ -82,8 +113,11 @@ export class AleoSyncApi {
    * const latestHeight = networkClient.getLatestBlock();
    */
   async getSpentTags(tags: string[]): Promise<string[]> {
+    if (tags.length === 0) {
+      return [];
+    }
     const resp = await this.postData<SyncResp<{ spent: string[] }>>(
-      `/sync/tags`,
+      `/check/tags`,
       {
         tags,
       },

@@ -2,10 +2,7 @@ import { AutoSwitch, AutoSwitchServiceType } from "core/utils/retry";
 import { sleep } from "core/utils/sleep";
 import { type WorkerAPI } from "./worker";
 import { proxy, wrap } from "comlink";
-import {
-  ALEO_SYNC_RECORD_SIZE,
-  ALEO_WORKER_TASK_SIZE,
-} from "@/common/constants";
+import { ALEO_SYNC_HEIGHT_SIZE } from "@/common/constants";
 import {
   type BackgroundMessage,
   MessageOrigin,
@@ -111,9 +108,10 @@ export class MainLoop {
   }
 
   @AutoSwitch({ serviceType: AutoSwitchServiceType.API })
-  async getLatestRecordIndex(chainId: string) {
+  async getLatestHeight(chainId: string) {
     this.apiService.currInstance().setChainId(chainId);
-    return await this.apiService.currInstance().getLatestRecordIndex();
+    const nodeStatus = await this.apiService.currInstance().getNodeStatus();
+    return nodeStatus?.syncHeight;
   }
 
   async getAccountExistRange(
@@ -135,12 +133,12 @@ export class MainLoop {
   async initAccountsSyncTask(
     chainId: string,
     accounts: AleoSyncAccount[],
-    lastRecordIndex: number,
+    lastHeight: number,
   ): Promise<{ [key in string]: number }> {
     const accountRangeMap = new Map<string, string[]>();
     const batchMap: { [key in string]: number } = {};
     for (
-      let i = Math.floor(lastRecordIndex / ALEO_SYNC_RECORD_SIZE);
+      let i = Math.floor(lastHeight / ALEO_SYNC_HEIGHT_SIZE);
       i >= 0;
       i -= 1
     ) {
@@ -150,8 +148,8 @@ export class MainLoop {
       for (const account of accounts) {
         const { address, viewKey, priority } = account;
 
-        start = i * ALEO_SYNC_RECORD_SIZE;
-        stop = Math.min((i + 1) * ALEO_SYNC_RECORD_SIZE - 1, lastRecordIndex);
+        start = i * ALEO_SYNC_HEIGHT_SIZE;
+        stop = Math.min((i + 1) * ALEO_SYNC_HEIGHT_SIZE - 1, lastHeight);
         const partRange = `${start}-`;
         const totalRange = `${partRange}${stop}`;
 
@@ -247,7 +245,7 @@ export class MainLoop {
           SYNC_TASK_QUENE_LIMIT,
           start,
           stop,
-          lastRecordIndex,
+          lastHeight,
         );
         break;
       }
@@ -613,9 +611,8 @@ export class MainLoop {
       const selectedUnqueId =
         await this.accountSettingStorage.getSelectedUniqueId(CoinType.ALEO);
       const chainId = uniqueIdToAleoChainId(selectedUnqueId);
-      const lastRecordIndex = await this.getLatestRecordIndex(chainId);
-      console.log("===> lastRecordIndex: ", lastRecordIndex);
-      if (!lastRecordIndex) {
+      const lastHeight = await this.getLatestHeight(chainId);
+      if (!lastHeight) {
         // fetch height failed, sleep & retry
         await sleep(10000);
         return this.loop();
@@ -624,7 +621,7 @@ export class MainLoop {
       const batchMap = await this.initAccountsSyncTask(
         chainId,
         [accountToSync],
-        lastRecordIndex,
+        lastHeight,
       );
       console.log(
         "===> syncTaskQuene: ",

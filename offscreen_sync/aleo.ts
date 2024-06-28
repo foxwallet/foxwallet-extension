@@ -9,7 +9,7 @@ import {
 } from "aleo_wasm";
 import { AutoSwitch, AutoSwitchServiceType } from "core/utils/retry";
 import { Measure, MeasureAsync } from "@/common/utils/measure";
-import { ALEO_SYNC_RECORD_SIZE } from "@/common/constants";
+import { ALEO_SYNC_HEIGHT_SIZE } from "@/common/constants";
 import { shuffle } from "@/common/utils/array";
 import {
   type RecordDetail,
@@ -29,7 +29,7 @@ export class AleoWorker {
     [process in string]?: { time: number; count: number; max: number };
   } = {};
   apiService: AleoApiService;
-  private currIndex: number | undefined;
+  // private currIndex: number | undefined;
 
   static setLogger(logger: LogFunc) {
     AleoWorker.logger = logger;
@@ -127,7 +127,7 @@ export class AleoWorker {
   async getRecordsInRange(chainId: string, start: number, end: number) {
     this.apiService.currInstance().setChainId(chainId);
     const index =
-      Math.floor(start / ALEO_SYNC_RECORD_SIZE) * ALEO_SYNC_RECORD_SIZE;
+      Math.floor(start / ALEO_SYNC_HEIGHT_SIZE) * ALEO_SYNC_HEIGHT_SIZE;
     const recordsInRange = await this.apiService
       .currInstance()
       .getRecords(index, start, end);
@@ -157,13 +157,10 @@ export class AleoWorker {
         id,
         ciphertext,
         commitment,
-        program_id: programId,
-        function_name: functionName,
+        transition_function: programId,
+        transition_program: functionName,
         transaction_id: transactionId,
         transition_id: transitionId,
-        transaction_index: transactionIndex,
-        transition_index: transitionIndex,
-        output_index: outputIndex,
         block_height: height,
         block_time: timestamp,
       } = recordRawInfo;
@@ -186,9 +183,6 @@ export class AleoWorker {
           functionName,
           transactionId,
           transitionId,
-          transactionIndex,
-          transitionIndex,
-          outputIndex,
           height,
           timestamp,
           plaintext: plaintext.toString(),
@@ -215,14 +209,14 @@ export class AleoWorker {
     if (begin < 0) {
       throw new Error("start must be greater than 0");
     }
-    if (end - begin >= ALEO_SYNC_RECORD_SIZE) {
+    if (end - begin >= ALEO_SYNC_HEIGHT_SIZE) {
       throw new Error(
-        `range must be less than ${ALEO_SYNC_RECORD_SIZE} begin: ${begin} end: ${end}`,
+        `range must be less than ${ALEO_SYNC_HEIGHT_SIZE} begin: ${begin} end: ${end}`,
       );
     }
     if (
-      Math.floor(begin / ALEO_SYNC_RECORD_SIZE) !==
-      Math.floor(end / ALEO_SYNC_RECORD_SIZE)
+      Math.floor(begin / ALEO_SYNC_HEIGHT_SIZE) !==
+      Math.floor(end / ALEO_SYNC_HEIGHT_SIZE)
     ) {
       throw new Error(
         `range must be in the same group begin: ${begin} end: ${end}`,
@@ -274,7 +268,7 @@ export class AleoWorker {
             const resultMap = addressResultMap[address] ?? {
               recordsMap: {},
               ...syncParam,
-              range: [i === 0 ? begin : recordRawInfo.id, end],
+              range: [begin, end],
             };
 
             if (decryptedRecord) {
@@ -285,10 +279,10 @@ export class AleoWorker {
               };
             }
 
-            resultMap.range[0] = i === 0 ? begin : recordRawInfo.id;
+            // resultMap.range[0] = i === 0 ? begin : recordRawInfo.id;
             addressResultMap[address] = resultMap;
 
-            this.currIndex = recordRawInfo.id;
+            // this.currIndex = recordRawInfo.id;
           });
         }
       }
@@ -297,7 +291,8 @@ export class AleoWorker {
       const totalTime = performance.now() - startTime;
       return {
         chainId,
-        addressResultMap,
+        // 现在 record 不好保证顺序，不搞断点继续 sync 了，出错就返回空
+        addressResultMap: {},
         measureMap: {
           ...this.measureMap,
           totalTime: {
@@ -328,7 +323,7 @@ export class AleoWorker {
   ): Promise<AddressSyncRecordResp | undefined> => {
     this.taskInfo = { ...params };
     this.isProcessing = true;
-    this.currIndex = undefined;
+    // this.currIndex = undefined;
     this.measureMap = {};
     let resp;
     try {
@@ -336,7 +331,7 @@ export class AleoWorker {
     } catch (err) {
       this.error("===> syncRecords error: ", err);
     }
-    this.currIndex = undefined;
+    // this.currIndex = undefined;
     this.isProcessing = false;
     this.taskInfo = undefined;
     this.measureMap = {};

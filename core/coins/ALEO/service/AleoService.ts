@@ -134,17 +134,12 @@ export class AleoService {
   }
 
   public async getSyncProgress(address: string): Promise<number> {
-    const [recordRanges, latestRecordIndex, nodeStatus] = await Promise.all([
+    const [recordRanges, nodeStatus] = await Promise.all([
       this.aleoStorage.getAleoRecordRanges(this.chainId, address),
-      this.apiService.currInstance().getLatestRecordIndex(),
       this.apiService.currInstance().getNodeStatus(),
     ]);
-
-    if (recordRanges.length === 0) {
-      return latestRecordIndex > 0 ? 0 : 100;
-    }
     const { syncHeight, referenceHeight } = nodeStatus;
-    const finishRecordCount = recordRanges
+    const finishHeight = recordRanges
       .map((item) => {
         const [start, end] = item.split("-");
         return [parseInt(start), parseInt(end)];
@@ -152,14 +147,7 @@ export class AleoService {
       .reduce((prev, curr) => {
         return prev + curr[1] - curr[0] + 1;
       }, 0);
-    return Math.min(
-      Math.floor(
-        (((finishRecordCount / (latestRecordIndex + 1)) * syncHeight) /
-          referenceHeight) *
-          100,
-      ),
-      100,
-    );
+    return Math.min(Math.floor((finishHeight / referenceHeight) * 100), 100);
   }
 
   private syncRecords = async (

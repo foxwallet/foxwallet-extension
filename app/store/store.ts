@@ -13,6 +13,7 @@ import selectPlugin from "@rematch/select";
 import { appStorageInstance } from "../common/utils/indexeddb";
 // import { isDev } from "../common/utils/env";
 import { logger } from "../common/utils/logger";
+import { migrations, version } from "./migrations";
 
 type FullModel = ExtraModelsFromLoading<RootModel>;
 
@@ -20,7 +21,7 @@ const persistConfig: PersistConfig<RootState> = {
   key: "root",
   storage: appStorageInstance,
   stateReconciler: autoMergeLevel2,
-  version: 1,
+  version,
   debug: false,
   // IndexedDB can store object directly
   serialize: false,
@@ -29,7 +30,8 @@ const persistConfig: PersistConfig<RootState> = {
   writeFailHandler: (err) => {
     logger.error("redux persist write fail", err.message);
   },
-  // migrate: createMigrate(migrations, { debug: __DEV__ }),
+  // @ts-ignore
+  migrate: createMigrate(migrations, { debug: true }),
 };
 
 export const store = init<RootModel, FullModel>({

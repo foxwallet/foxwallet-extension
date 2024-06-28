@@ -179,15 +179,15 @@ export const AccountInfoHeader = () => {
         },
       },
     ];
-    if (chainConfig.testnet && chainConfig.faucetApi) {
-      return initOptions.concat({
-        title: t("Faucet:title"),
-        icon: <IconFaucet w={9} h={9} />,
-        onPress: onPressFaucet,
-        isLoading:
-          requestingFaucet || faucetStatus?.status === FaucetStatus.PENDING,
-      });
-    }
+    // if (chainConfig.testnet && chainConfig.faucetApi) {
+    //   return initOptions.concat({
+    //     title: t("Faucet:title"),
+    //     icon: <IconFaucet w={9} h={9} />,
+    //     onPress: onPressFaucet,
+    //     isLoading:
+    //       requestingFaucet || faucetStatus?.status === FaucetStatus.PENDING,
+    //   });
+    // }
     return initOptions;
   }, [
     navigate,

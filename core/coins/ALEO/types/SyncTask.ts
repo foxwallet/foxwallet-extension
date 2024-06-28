@@ -27,9 +27,6 @@ export interface RecordDetail {
   tag: string;
   transactionId: string;
   transitionId: string;
-  transactionIndex: number;
-  transitionIndex: number;
-  outputIndex: number;
   height: number;
   timestamp: number;
   recordName?: string;

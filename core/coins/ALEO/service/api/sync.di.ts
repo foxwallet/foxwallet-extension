@@ -1,16 +1,23 @@
 export interface RecordRawInfo {
-  id: number;
+  block_height: number;
+  // in seconds
+  block_time: number;
   commitment: string;
   ciphertext: string;
-  program_id: string;
-  function_name: string;
-  transaction_id: string;
   transition_id: string;
-  transaction_index: number;
-  transition_index: number;
-  output_index: number;
-  block_height: number;
-  block_time: number;
+  transition_program: string;
+  transition_function: string;
+}
+
+export interface RecordFileInfo {
+  id: number;
+  record_type: "output" | "input";
+  start_block: number;
+  end_block: number;
+  file_path: string;
+  file_size: string;
+  // in second
+  create_time: number;
 }
 
 export interface SyncResp<T> {
