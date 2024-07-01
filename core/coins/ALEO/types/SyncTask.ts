@@ -16,7 +16,6 @@ export interface SyncRecordParams {
 }
 
 export interface RecordDetail {
-  id: number;
   commitment: string;
   programId: string;
   functionName: string;

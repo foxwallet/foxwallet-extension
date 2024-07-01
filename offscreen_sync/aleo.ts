@@ -154,7 +154,6 @@ export class AleoWorker {
   ): RecordDetail | undefined {
     try {
       const {
-        id,
         ciphertext,
         commitment,
         transition_function: programId,
@@ -176,7 +175,6 @@ export class AleoWorker {
         const nonce = plaintext.nonce();
         const tag = this.computeTag(newSkTag, commitment);
         return {
-          id,
           commitment,
           ciphertext,
           programId,

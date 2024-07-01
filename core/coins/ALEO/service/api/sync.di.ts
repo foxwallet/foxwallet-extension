@@ -7,6 +7,7 @@ export interface RecordRawInfo {
   transition_id: string;
   transition_program: string;
   transition_function: string;
+  transaction_id: string;
 }
 
 export interface RecordFileInfo {
