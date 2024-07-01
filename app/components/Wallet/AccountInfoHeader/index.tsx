@@ -79,76 +79,76 @@ export const AccountInfoHeader = () => {
   const { sendingAleoTx } = useIsSendingAleoTx(uniqueId);
   const { lock } = useAuth();
   const [requestingFaucet, setRequestingFaucet] = useState(false);
-  const { faucetStatus, getFaucetStatus } = useFaucetStatus(
-    uniqueId,
-    selectedAccount,
-  );
+  // const { faucetStatus, getFaucetStatus } = useFaucetStatus(
+  //   uniqueId,
+  //   selectedAccount,
+  // );
   useTxsNotification(uniqueId, selectedAccount.address, 5000);
-  const onPressFaucet = useCallback(async () => {
-    if (requestingFaucet) return;
-    setRequestingFaucet(true);
-    try {
-      if (chainConfig.innerFaucet) {
-        const status = await getFaucetStatus();
-        if (status?.status === FaucetStatus.DONE) {
-          const { confirmed } = await showFaucetClaimedDialog({
-            content: status.txId ? t("Faucet:claimed") : t("Faucet:wait"),
-            onChain: !!status.txId,
-          });
-          if (confirmed && status.txId) {
-            const lang =
-              getCurrLanguage() === SupportLanguages.ZH
-                ? ExplorerLanguages.ZH
-                : ExplorerLanguages.EN;
-            const url = coinService.getTxDetailUrl(status.txId, lang);
-            if (url) {
-              Browser.tabs.create({ url });
-            }
-          }
-          return;
-        }
-        const address = selectedAccount.address;
-        const coinType = chainUniqueIdToCoinType(uniqueId);
-        const { rawMessage, displayMessage } =
-          await coinService.faucetMessage(address);
-        const { confirmed } = await showSignMessageDialog({
-          address: address,
-          message: displayMessage,
-        });
-        if (confirmed) {
-          const signature = await popupServerClient.signMessage({
-            walletId: selectedAccount.walletId,
-            accountId: selectedAccount.accountId,
-            coinType,
-            message: stringToHex(rawMessage),
-          });
-          const res = await coinService.requestFaucet({
-            address,
-            message: rawMessage,
-            signature,
-          });
-          if (!res) {
-            throw new Error("Request faucet failed");
-          }
-          await getFaucetStatus();
-        }
-      } else {
-        Browser.tabs.create({ url: chainConfig.faucetApi });
-      }
-    } catch (err) {
-      showErrorToast({ message: (err as Error).message });
-    } finally {
-      setRequestingFaucet(false);
-    }
-  }, [
-    chainConfig,
-    getFaucetStatus,
-    coinService,
-    popupServerClient,
-    selectedAccount,
-    requestingFaucet,
-    t,
-  ]);
+  // const onPressFaucet = useCallback(async () => {
+  //   if (requestingFaucet) return;
+  //   setRequestingFaucet(true);
+  //   try {
+  //     if (chainConfig.innerFaucet) {
+  //       const status = await getFaucetStatus();
+  //       if (status?.status === FaucetStatus.DONE) {
+  //         const { confirmed } = await showFaucetClaimedDialog({
+  //           content: status.txId ? t("Faucet:claimed") : t("Faucet:wait"),
+  //           onChain: !!status.txId,
+  //         });
+  //         if (confirmed && status.txId) {
+  //           const lang =
+  //             getCurrLanguage() === SupportLanguages.ZH
+  //               ? ExplorerLanguages.ZH
+  //               : ExplorerLanguages.EN;
+  //           const url = coinService.getTxDetailUrl(status.txId, lang);
+  //           if (url) {
+  //             Browser.tabs.create({ url });
+  //           }
+  //         }
+  //         return;
+  //       }
+  //       const address = selectedAccount.address;
+  //       const coinType = chainUniqueIdToCoinType(uniqueId);
+  //       const { rawMessage, displayMessage } =
+  //         await coinService.faucetMessage(address);
+  //       const { confirmed } = await showSignMessageDialog({
+  //         address: address,
+  //         message: displayMessage,
+  //       });
+  //       if (confirmed) {
+  //         const signature = await popupServerClient.signMessage({
+  //           walletId: selectedAccount.walletId,
+  //           accountId: selectedAccount.accountId,
+  //           coinType,
+  //           message: stringToHex(rawMessage),
+  //         });
+  //         const res = await coinService.requestFaucet({
+  //           address,
+  //           message: rawMessage,
+  //           signature,
+  //         });
+  //         if (!res) {
+  //           throw new Error("Request faucet failed");
+  //         }
+  //         await getFaucetStatus();
+  //       }
+  //     } else {
+  //       Browser.tabs.create({ url: chainConfig.faucetApi });
+  //     }
+  //   } catch (err) {
+  //     showErrorToast({ message: (err as Error).message });
+  //   } finally {
+  //     setRequestingFaucet(false);
+  //   }
+  // }, [
+  //   chainConfig,
+  //   getFaucetStatus,
+  //   coinService,
+  //   popupServerClient,
+  //   selectedAccount,
+  //   requestingFaucet,
+  //   t,
+  // ]);
 
   const options: ActionButtonProps[] = useMemo(() => {
     const initOptions: ActionButtonProps[] = [
@@ -196,7 +196,7 @@ export const AccountInfoHeader = () => {
     balance,
     chainConfig,
     requestingFaucet,
-    faucetStatus,
+    // faucetStatus,
   ]);
 
   const onChangeWallet = useCallback(() => {

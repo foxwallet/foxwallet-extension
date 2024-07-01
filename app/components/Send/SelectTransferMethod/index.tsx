@@ -152,7 +152,7 @@ const SelectTransferMethodDrawer = (props: Props) => {
                     (<Text>{recordStr}</Text>&nbsp;
                     <TokenNum
                       amount={
-                        token.tokenId
+                        token.tokenId !== NATIVE_TOKEN_TOKEN_ID
                           ? BigInt(tokenRecords[0].parsedContent?.amount) || 0n
                           : tokenRecords[0].parsedContent?.microcredits || 0n
                       }

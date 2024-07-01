@@ -49,13 +49,9 @@ export class AleoSyncApi {
    *
    * @param {number} start
    */
-  async getRecordFile(
-    index: number,
-    start: number,
-    end: number,
-  ): Promise<RecordFileInfo | undefined> {
-    const info = await this.fetchData<SyncResp<RecordFileInfo[]>>(
-      `/file/records??index=${index}&start=${start}&end=${end}`,
+  async getRecordFile(index: number): Promise<RecordFileInfo | undefined> {
+    const info = await this.fetchData<SyncResp<RecordFileInfo>>(
+      `/file/records?index=${index}`,
     );
     if (info.status === 404) {
       return undefined;
@@ -63,7 +59,7 @@ export class AleoSyncApi {
     if (info.status !== 0) {
       throw new Error(info.msg);
     }
-    return info.data[0];
+    return info.data;
   }
 
   /**
@@ -71,12 +67,8 @@ export class AleoSyncApi {
    *
    * @param {number} start
    */
-  async getRecords(
-    index: number,
-    start: number,
-    end: number,
-  ): Promise<RecordRawInfo[]> {
-    const recordFileInfo = await this.getRecordFile(index, start, end);
+  async getRecords(index: number): Promise<RecordRawInfo[]> {
+    const recordFileInfo = await this.getRecordFile(index);
     if (recordFileInfo?.file_path) {
       const resp = await fetch(recordFileInfo.file_path);
       if (resp.ok) {
@@ -84,7 +76,7 @@ export class AleoSyncApi {
       }
     } else {
       const info = await this.fetchData<SyncResp<RecordRawInfo[]>>(
-        `/db/records?index=${index}&start=${start}&end=${end}`,
+        `/db/records?start=${index}`,
       );
       if (info.status !== 0) {
         throw new Error(info.msg);

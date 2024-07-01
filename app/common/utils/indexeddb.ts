@@ -2,6 +2,7 @@ import localForage from "localforage";
 import { type Cache } from "swr";
 import { logger } from "./logger";
 import { CoinType } from "core/types";
+import { measureMemory } from "vm";
 
 // both background service and popup run in the same extension context, so the indexedDB is the same
 export const appStorageInstance = localForage.createInstance({
@@ -31,14 +32,21 @@ const swrStorageInstance = localForage.createInstance({
   storeName: "cache",
 });
 
-const memoryCache = new Map();
+let memoryCache: { [key in string]?: any } = {};
+const storeCache: { [key in string]?: any } = {};
 
 swrStorageInstance
   .iterate((value, key) => {
-    memoryCache.set(key, value);
+    storeCache[key] = value;
   })
   .catch((err) => {
     logger.log("swrStorageInstance iterate error ", err.message);
+  })
+  .finally(() => {
+    memoryCache = {
+      ...storeCache,
+      ...memoryCache,
+    };
   });
 
 export const swrCache = (): Cache => ({
@@ -49,16 +57,16 @@ export const swrCache = (): Cache => ({
     }
   },
   get: (key) => {
-    return memoryCache.get(key);
+    return memoryCache[key];
   },
   set: (key, value) => {
-    memoryCache.set(key, value);
+    memoryCache[key] = value;
     swrStorageInstance.setItem(key, value).catch((err) => {
       logger.error("swrCache set error ", err.message);
     });
   },
   delete: (key) => {
-    memoryCache.delete(key);
+    delete memoryCache[key];
     swrStorageInstance.removeItem(key).catch((err) => {
       logger.error("swrCache delete error ", err.message);
     });

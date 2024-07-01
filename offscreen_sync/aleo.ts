@@ -130,7 +130,7 @@ export class AleoWorker {
       Math.floor(start / ALEO_SYNC_HEIGHT_SIZE) * ALEO_SYNC_HEIGHT_SIZE;
     const recordsInRange = await this.apiService
       .currInstance()
-      .getRecords(index, start, end);
+      .getRecords(index);
     return recordsInRange;
   }
 
@@ -156,8 +156,8 @@ export class AleoWorker {
       const {
         ciphertext,
         commitment,
-        transition_function: programId,
-        transition_program: functionName,
+        transition_program: programId,
+        transition_function: functionName,
         transaction_id: transactionId,
         transition_id: transitionId,
         block_height: height,

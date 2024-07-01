@@ -339,7 +339,6 @@ export class AleoService {
         CREDITS_MAPPING_NAME,
         address,
       );
-    console.log("===> public balance: ", balance);
     if (!balance || balance === "null") {
       return 0n;
     }
@@ -351,6 +350,7 @@ export class AleoService {
       this.getPrivateBalance(address),
       this.getPublicBalance(address),
     ]);
+
     return {
       privateBalance: privateBalance,
       publicBalance: publicBalance,
