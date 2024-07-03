@@ -26,7 +26,7 @@ export class AleoRpc {
 
   constructor(host: string) {
     this.host = host;
-    this.chainId = "testnet3";
+    this.chainId = "testnet";
   }
 
   /**

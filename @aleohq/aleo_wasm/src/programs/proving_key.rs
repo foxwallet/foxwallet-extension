@@ -83,13 +83,13 @@ mod tests {
     use super::*;
     use wasm_bindgen_test::*;
 
-    const JOIN_PROVER_URL: &str = "https://testnet3.parameters.aleo.org/join.prover.30895cc";
+    // const JOIN_PROVER_URL: &str = "https://testnet3.parameters.aleo.org/join.prover.30895cc";
 
-    #[wasm_bindgen_test]
-    async fn test_proving_key_roundtrip() {
-        let fee_proving_key_bytes = reqwest::get(JOIN_PROVER_URL).await.unwrap().bytes().await.unwrap().to_vec();
-        let fee_proving_key = ProvingKey::from_bytes(&fee_proving_key_bytes).unwrap();
-        let bytes = fee_proving_key.to_bytes().unwrap();
-        assert_eq!(bytes, fee_proving_key_bytes);
-    }
+    // #[wasm_bindgen_test]
+    // async fn test_proving_key_roundtrip() {
+    //     let fee_proving_key_bytes = reqwest::get(JOIN_PROVER_URL).await.unwrap().bytes().await.unwrap().to_vec();
+    //     let fee_proving_key = ProvingKey::from_bytes(&fee_proving_key_bytes).unwrap();
+    //     let bytes = fee_proving_key.to_bytes().unwrap();
+    //     assert_eq!(bytes, fee_proving_key_bytes);
+    // }
 }

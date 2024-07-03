@@ -4,7 +4,7 @@ import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 
 // If support user config, get chain config map from store
 const ChainConfigMap = {
-  [InnerChainUniqueId.ALEO_TESTNET3]: ALEO_CHAIN_CONFIGS.TESTNET3,
+  [InnerChainUniqueId.ALEO_TESTNET]: ALEO_CHAIN_CONFIGS.TESTNET,
 };
 
 export const coinServiceEntry = new CoinServiceEntry(ChainConfigMap);

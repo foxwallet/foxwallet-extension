@@ -2,8 +2,8 @@ import { ChainUniqueId, InnerChainUniqueId } from "core/types/ChainUniqueId";
 
 export const uniqueIdToAleoChainId = (uniqueId: ChainUniqueId) => {
   switch (uniqueId) {
-    case InnerChainUniqueId.ALEO_TESTNET3: {
-      return "testnet3";
+    case InnerChainUniqueId.ALEO_TESTNET: {
+      return "testnet";
     }
     default: {
       throw new Error(`Unknown uniqueId: ${uniqueId}`);

@@ -1,5 +1,5 @@
 export enum InnerChainUniqueId {
-  ALEO_TESTNET3 = "ALEO_TESTNET3",
+  ALEO_TESTNET = "ALEO_TESTNET",
 }
 
 export type ChainUniqueId = InnerChainUniqueId;

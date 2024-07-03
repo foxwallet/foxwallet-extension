@@ -23,17 +23,17 @@ export const ALEO_NATIVE_TOKEN: Token = {
 };
 
 export const ALEO_CHAIN_CONFIGS: { [key in string]: AleoConfig } = {
-  TESTNET3: {
+  TESTNET: {
     coinType: CoinType.ALEO,
-    uniqueId: InnerChainUniqueId.ALEO_TESTNET3,
+    uniqueId: InnerChainUniqueId.ALEO_TESTNET,
     logo: AleoLogo,
-    chainId: "testnet3",
-    chainName: "Aleo Testnet3",
-    rpcList: ReserveChainConfigs[InnerChainUniqueId.ALEO_TESTNET3].rpcList,
+    chainId: "testnet",
+    chainName: "Aleo",
+    rpcList: ReserveChainConfigs[InnerChainUniqueId.ALEO_TESTNET].rpcList,
     syncApiList:
-      ReserveChainConfigs[InnerChainUniqueId.ALEO_TESTNET3].syncApiList,
+      ReserveChainConfigs[InnerChainUniqueId.ALEO_TESTNET].syncApiList,
     walletApiList:
-      ReserveChainConfigs[InnerChainUniqueId.ALEO_TESTNET3].walletApiList,
+      ReserveChainConfigs[InnerChainUniqueId.ALEO_TESTNET].walletApiList,
     nativeCurrency: ALEO_NATIVE_CURRENCY,
     explorerUrls: {
       [ExplorerLanguages.EN]: "https://aleo.info/en/",
@@ -43,9 +43,9 @@ export const ALEO_CHAIN_CONFIGS: { [key in string]: AleoConfig } = {
       tx: "/transaction/{txid}",
       address: "",
     },
-    faucetApi: `${WalletAPI}/api/v1/aleo/testnet3/faucet`,
     alphaSwapApi: "https://app.alphaswap.pro/api",
-    innerFaucet: true,
+    // faucetApi: `${WalletAPI}/api/v1/aleo/testnet3/faucet`,
+    // innerFaucet: true,
     testnet: true,
   },
 };

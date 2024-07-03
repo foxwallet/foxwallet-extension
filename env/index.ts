@@ -1,7 +1,7 @@
 import { shuffle } from "@/common/utils/array";
 
 export const ReserveChainConfigs = {
-  ALEO_TESTNET3: {
+  ALEO_TESTNET: {
     rpcList: shuffle(
       JSON.parse(import.meta.env.VITE_ALEO_RPC_LIST) as string[],
     ),

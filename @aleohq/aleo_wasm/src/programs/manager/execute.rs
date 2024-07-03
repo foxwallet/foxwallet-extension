@@ -267,27 +267,29 @@ impl ProgramManager {
         log("Estimating cost");
         let storage_cost = execution.size_in_bytes().map_err(|e| e.to_string())?;
 
-        // Compute the finalize cost in microcredits.
-        let mut finalize_cost = 0u64;
-        // Iterate over the transitions to accumulate the finalize cost.
-        for transition in execution.transitions() {
-            // Retrieve the function name, program id, and program.
-            let function_name = transition.function_name();
-            let program_id = transition.program_id();
-            let program = process.get_program(program_id).map_err(|e| e.to_string())?;
+        // TODO: support finalize_cost
+        // // Compute the finalize cost in microcredits.
+        // let mut finalize_cost = 0u64;
+        // // Iterate over the transitions to accumulate the finalize cost.
+        // for transition in execution.transitions() {
+        //     // Retrieve the function name, program id, and program.
+        //     let function_name = transition.function_name();
+        //     let program_id = transition.program_id();
+        //     let program = process.get_program(program_id).map_err(|e| e.to_string())?;
 
-            // Calculate the finalize cost for the function identified in the transition
-            let cost = match &program.get_function(function_name).map_err(|e| e.to_string())?.finalize_logic() {
-                Some(finalize) => cost_in_microcredits(finalize).map_err(|e| e.to_string())?,
-                None => continue,
-            };
+        //     // Calculate the finalize cost for the function identified in the transition
+        //     let cost = match &program.get_function(function_name).map_err(|e| e.to_string())?.finalize_logic() {
+        //         Some(finalize) => cost_in_microcredits(finalize).map_err(|e| e.to_string())?,
+        //         None => continue,
+        //     };
 
-            // Accumulate the finalize cost.
-            finalize_cost = finalize_cost
-                .checked_add(cost)
-                .ok_or("The finalize cost computation overflowed for an execution".to_string())?;
-        }
-        Ok(storage_cost + finalize_cost)
+        //     // Accumulate the finalize cost.
+        //     finalize_cost = finalize_cost
+        //         .checked_add(cost)
+        //         .ok_or("The finalize cost computation overflowed for an execution".to_string())?;
+        // }
+        // Ok(storage_cost + finalize_cost)
+        Ok(storage_cost)
     }
 
     /// Estimate the finalize fee component for executing a function. This fee is additional to the
@@ -304,11 +306,13 @@ impl ProgramManager {
         log(
             "Disclaimer: Fee estimation is experimental and may not represent a correct estimate on any current or future network",
         );
-        let program = ProgramNative::from_str(program).map_err(|err| err.to_string())?;
-        let function_id = IdentifierNative::from_str(function).map_err(|err| err.to_string())?;
-        match program.get_function(&function_id).map_err(|err| err.to_string())?.finalize_logic() {
-            Some(finalize) => cost_in_microcredits(finalize).map_err(|e| e.to_string()),
-            None => Ok(0u64),
-        }
+        // TODO: support estimate_finalize_fee
+        // let program = ProgramNative::from_str(program).map_err(|err| err.to_string())?;
+        // let function_id = IdentifierNative::from_str(function).map_err(|err| err.to_string())?;
+        // match program.get_function(&function_id).map_err(|err| err.to_string())?.finalize_logic() {
+        //     Some(finalize) => cost_in_microcredits(finalize).map_err(|e| e.to_string()),
+        //     None => Ok(0u64),
+        // }
+        Ok(0u64)
     }
 }

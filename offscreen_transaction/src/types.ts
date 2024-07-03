@@ -352,7 +352,7 @@ export interface BackgroundMessage<T = any> {
 }
 
 export enum InnerChainUniqueId {
-  ALEO_TESTNET3 = "ALEO_TESTNET3",
+  ALEO_TESTNET = "ALEO_TESTNET",
 }
 
 export interface AleoRequestDeploymentParams {
