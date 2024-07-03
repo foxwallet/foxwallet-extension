@@ -88,6 +88,7 @@ export class ContentWalletServer implements IContentServer {
       const connectHistorys = await this.dappStorage.getConnectHistory(
         CoinType.ALEO,
         selectedAccount.address,
+        params.network,
       );
       const connectHistory = connectHistorys.find(
         (item) =>
@@ -159,6 +160,7 @@ export class ContentWalletServer implements IContentServer {
     const connectHistorys = await this.dappStorage.getConnectHistory(
       CoinType.ALEO,
       address,
+      chainId,
     );
     const connectHistory = connectHistorys.find(
       (item) =>

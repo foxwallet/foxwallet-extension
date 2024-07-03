@@ -25,14 +25,26 @@ export class AleoProvider extends BaseProvider {
     return this.#network;
   }
 
+  convertNetworkToChainId(network: string) {
+    switch (network) {
+      case "testnetbeta": {
+        return "testnet";
+      }
+      default: {
+        throw new Error("Unsupport network " + network);
+      }
+    }
+  }
+
   async connect(
     decryptPermission: DecryptPermission,
     network: string,
     programs?: string[],
   ) {
+    const chainId = this.convertNetworkToChainId(network);
     const address = await this.send<string>("connect", {
       decryptPermission,
-      network,
+      network: chainId,
       programs,
     });
     this.#publicKey = address ? address : null;
@@ -118,7 +130,7 @@ export class AleoProvider extends BaseProvider {
   send<T>(method: ContentServerMethod, payload: any) {
     return super.send<T>(method, payload, {
       address: this.#publicKey,
-      network: this.#network,
+      network: this.#network ? this.convertNetworkToChainId(this.#network) : "",
     });
   }
 }

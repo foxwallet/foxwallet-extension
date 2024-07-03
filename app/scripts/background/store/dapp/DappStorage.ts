@@ -12,14 +12,17 @@ export class DappStorage {
     return dappDB;
   }
 
-  getConnectHistory = async (coinType: CoinType, address: string) => {
+  getConnectHistory = async (
+    coinType: CoinType,
+    address: string,
+    chainId: string,
+  ) => {
     const instance = await this.getStorageInstance();
     switch (coinType) {
       case CoinType.ALEO: {
         const historyList = await instance.aleo_history
-          .where({
-            address,
-          })
+          .where("[address+network]")
+          .equals([address, chainId])
           .toArray();
         return historyList;
       }
