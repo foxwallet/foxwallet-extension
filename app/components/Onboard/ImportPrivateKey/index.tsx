@@ -39,6 +39,7 @@ export const ImportPrivateKeyStep = ({ onConfirm }: Props) => {
     <Content>
       <H6 mb="2">{t("PrivateKey:title")}</H6>
       <Textarea
+        autoComplete="off"
         value={privateKey}
         onChange={onInputChange}
         placeholder={t("PrivateKey:enterPlaceholder")}
@@ -56,7 +57,11 @@ export const ImportPrivateKeyStep = ({ onConfirm }: Props) => {
         bottom={10}
         left={"4"}
         right={"4"}
-        onClick={() => onConfirm(privateKey.trim())}
+        onClick={() => {
+          const data = privateKey.trim();
+          setPrivateKey("");
+          onConfirm(data);
+        }}
       >
         {t("Common:confirm")}
       </Button>

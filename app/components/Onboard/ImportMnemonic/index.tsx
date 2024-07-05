@@ -127,6 +127,7 @@ export const ImportMnemonicStep = ({ onConfirm }: Props) => {
     <Content>
       <H6 mb="2">{t("Mnemonic:title")}</H6>
       <Textarea
+        autoComplete="off"
         value={mnemonic}
         onChange={onInputChange}
         onKeyDown={handleKeyDown}
@@ -166,7 +167,11 @@ export const ImportMnemonicStep = ({ onConfirm }: Props) => {
         bottom={10}
         left={"4"}
         right={"4"}
-        onClick={() => onConfirm(mnemonic.trim())}
+        onClick={() => {
+          const data = mnemonic.trim();
+          setMnemonic("");
+          onConfirm(data);
+        }}
       >
         {t("Common:confirm")}
       </Button>
