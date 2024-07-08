@@ -15,7 +15,6 @@ export default defineManifest((env) => {
       "storage",
       "clipboardWrite",
       "unlimitedStorage",
-      "activeTab",
       "tabs",
       "offscreen",
     ],
