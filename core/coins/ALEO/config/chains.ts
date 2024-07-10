@@ -4,7 +4,7 @@ import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { ExplorerLanguages } from "core/types/ExplorerLanguages";
 import AleoLogo from "../../../assets/images/chains/aleo.webp";
 import { NATIVE_TOKEN_PROGRAM_ID, NATIVE_TOKEN_TOKEN_ID } from "../constants";
-import { ReserveChainConfigs, WalletAPI } from "../../../../env";
+import { ReserveChainConfigs } from "../../../../env";
 import { Token } from "../types/Token";
 
 export const ALEO_NATIVE_CURRENCY = {

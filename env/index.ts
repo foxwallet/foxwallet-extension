@@ -13,5 +13,3 @@ export const ReserveChainConfigs = {
     ),
   },
 };
-
-export const WalletAPI = import.meta.env.VITE_WALLET_API;
