@@ -76,7 +76,11 @@ const AboutScreen = () => {
           fontSize={14}
           fontWeight={500}
           textDecoration={"underline"}
-          onClick={() => browser.tabs.create({ url: EXTENSION_STORE_URL })}
+          onClick={() =>
+            browser.tabs.create({
+              url: `${EXTENSION_STORE_URL}${browser.runtime.id}`,
+            })
+          }
         >
           {t("About:update")}
         </Text>
