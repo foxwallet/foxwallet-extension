@@ -28,7 +28,7 @@ function MainScreen() {
     navigate(`?tab=${index}`);
   }, []);
 
-  const { borderColor } = useThemeStyle();
+  const { borderColor, backgroundColor } = useThemeStyle();
 
   return (
     <Flex flexDirection={"column"} flex={1} alignItems={"stretch"}>
@@ -50,6 +50,7 @@ function MainScreen() {
           height={59}
           borderTopWidth={1}
           borderColor={borderColor}
+          backgroundColor={backgroundColor}
         >
           <CustomTab
             key={"wallet"}

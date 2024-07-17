@@ -10,11 +10,13 @@ import { DecryptPermission } from "@/database/types/dapp";
 export class AleoProvider extends BaseProvider {
   #publicKey: string | null;
   #network: string | null;
+  _readyState: string;
 
   constructor() {
     super();
     this.#publicKey = null;
     this.#network = null;
+    this._readyState = "Installed";
   }
 
   get publicKey() {
@@ -23,6 +25,10 @@ export class AleoProvider extends BaseProvider {
 
   get network() {
     return this.#network;
+  }
+
+  get readyState() {
+    return this._readyState;
   }
 
   convertNetworkToChainId(network: string) {
