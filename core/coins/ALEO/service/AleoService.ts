@@ -14,10 +14,7 @@ import {
 } from "@/scripts/background/servers/IWalletServer";
 import { uniqBy } from "lodash";
 import { AleoRpcService } from "./instances/rpc";
-import {
-  ALEO_METHOD_BASE_FEE_MAP,
-  AleoCreditMethod,
-} from "../types/TransferMethod";
+import { AleoCreditMethod } from "../types/TransferMethod";
 import {
   AleoLocalTxInfo,
   AleoTransaction,
@@ -362,13 +359,9 @@ export class AleoService {
     programId: InnerProgramId,
     method: AleoCreditMethod,
   ): Promise<bigint> {
-    const fee = ALEO_METHOD_BASE_FEE_MAP[programId]?.[method];
-    if (fee) {
-      return fee;
-    }
     const baseFee = await this.walletService
       .currInstance()
-      .getBaseFee({ txType: method });
+      .getBaseFee({ txType: method, programId });
     return baseFee;
   }
 
@@ -853,26 +846,29 @@ export class AleoService {
     address: string;
     pagination: Pagination;
   }): Promise<AleoOnChainHistoryItem[]> {
-    const { cursor } = pagination;
-    const publicHistory = await this.walletService
-      .currInstance()
-      .getPublicHistory(address, cursor);
-    return publicHistory.map((item) => {
-      return {
-        type: AleoHistoryType.ON_CHAIN,
-        txId: item.transactionId,
-        programId: item.executionProgram,
-        functionName: item.executionFunction,
-        height: item.blockHeight,
-        timestamp: item.blockTime,
-        addressType: AleoTxAddressType.SEND,
-        amount: !!item.executionValue
-          ? parseU64(item.executionValue).toString()
-          : undefined,
-        txType: AleoTxType.EXECUTION, // TODO: split EXECUTION and DEPLOYMENT
-        status: AleoTxStatus.FINALIZD,
-      };
-    });
+    // TODO: wait for public history api ready
+    return [];
+
+    // const { cursor } = pagination;
+    // const publicHistory = await this.walletService
+    //   .currInstance()
+    //   .getPublicHistory(address, cursor);
+    // return publicHistory.map((item) => {
+    //   return {
+    //     type: AleoHistoryType.ON_CHAIN,
+    //     txId: item.transactionId,
+    //     programId: item.executionProgram,
+    //     functionName: item.executionFunction,
+    //     height: item.blockHeight,
+    //     timestamp: item.blockTime,
+    //     addressType: AleoTxAddressType.SEND,
+    //     amount: !!item.executionValue
+    //       ? parseU64(item.executionValue).toString()
+    //       : undefined,
+    //     txType: AleoTxType.EXECUTION, // TODO: split EXECUTION and DEPLOYMENT
+    //     status: AleoTxStatus.FINALIZD,
+    //   };
+    // });
   }
 
   @AutoSwitch({ serviceType: AutoSwitchServiceType.RPC })

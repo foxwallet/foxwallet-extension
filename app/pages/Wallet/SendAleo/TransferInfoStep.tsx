@@ -100,9 +100,14 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
     if (tokenInfo.tokenId === NATIVE_TOKEN_TOKEN_ID) {
       return records;
     }
-    return records.filter((record) => {
-      return record.parsedContent?.token === tokenInfo.tokenId;
-    });
+    return records
+      .filter((record) => {
+        return record.parsedContent?.token === tokenInfo.tokenId;
+      })
+      .sort(
+        (record1, record2) =>
+          record2.parsedContent?.amount - record1.parsedContent?.amount,
+      );
   }, [records, tokenInfo]);
 
   const { balance, loadingBalance } = useBalance({

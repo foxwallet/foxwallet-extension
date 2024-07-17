@@ -190,20 +190,34 @@ const TokenDetailScreen = () => {
     programId: tokenInfo.programId,
   });
 
+  const tokenRecords = useMemo(() => {
+    if (tokenInfo.tokenId === NATIVE_TOKEN_TOKEN_ID) {
+      return records;
+    }
+    return records
+      .filter((record) => {
+        return record.parsedContent?.token === tokenInfo.tokenId;
+      })
+      .sort(
+        (record1, record2) =>
+          record2.parsedContent?.amount - record1.parsedContent?.amount,
+      );
+  }, [records, token]);
+
   const recordStr = useMemo(() => {
-    if (!records) {
+    if (!tokenRecords) {
       return "";
     }
-    if (records.length === 0) {
+    if (tokenRecords.length === 0) {
       return t("Send:noRecordExist");
     }
-    return t("Send:recordStatistics", { COUNT: records.length });
-  }, [records]);
+    return t("Send:recordStatistics", { COUNT: tokenRecords.length });
+  }, [tokenRecords]);
 
   const recordAmount =
     tokenInfo.programId === ALPHA_TOKEN_PROGRAM_ID
-      ? records[0]?.parsedContent?.amount
-      : records[0]?.parsedContent?.microcredits;
+      ? tokenRecords[0]?.parsedContent?.amount
+      : tokenRecords[0]?.parsedContent?.microcredits;
 
   const onReceive = useCallback(() => {
     navigate(`/receive`);
@@ -278,7 +292,7 @@ const TokenDetailScreen = () => {
                       symbol={tokenInfo.symbol}
                     />
                   )}
-                  {!!recordStr && !!records[0] && (
+                  {!!recordStr && !!tokenRecords[0] && (
                     <Flex>
                       (<Text>{recordStr}</Text>&nbsp;
                       <TokenNum

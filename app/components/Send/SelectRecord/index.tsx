@@ -78,7 +78,11 @@ const SelectRecordDrawer = (props: Props) => {
                 </Flex>
 
                 <TokenNum
-                  amount={record.parsedContent?.microcredits || 0n}
+                  amount={
+                    record.parsedContent?.amount ||
+                    record.parsedContent?.microcredits ||
+                    0n
+                  }
                   decimals={token.decimals}
                   symbol={token.symbol}
                 />

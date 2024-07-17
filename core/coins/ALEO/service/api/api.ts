@@ -101,6 +101,14 @@ export class AleoWalletApi {
           execution_function: string;
           execution_future_value: string;
           execution_value: string;
+          // transaction_id: string;
+          // transaction_status: "accepted" | "rejected";
+          // transition_program: string;
+          // transition_function: string;
+          // from_address: string;
+          // to_address: string;
+          // amount: string;
+          // token: string;
         }[]
       >
     >(`/public/tx_history?addr=${address}${cursorStr}`);
@@ -202,10 +210,10 @@ export class AleoWalletApi {
     };
   }
 
-  async getBaseFee(params: { txType: AleoCreditMethod }) {
+  async getBaseFee(params: { txType: AleoCreditMethod; programId: string }) {
     const { txType } = params;
     const res: AleoBaseFeeResp = await this.fetchData(
-      `/gas?function=${txType}`,
+      `/gas?function=${txType}&program=${params.programId}`,
     );
     if (res.status !== 0 || !res.data) {
       throw new Error(res.msg);
