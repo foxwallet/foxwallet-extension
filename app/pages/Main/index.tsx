@@ -38,7 +38,7 @@ function MainScreen() {
         defaultIndex={tabIndex}
         onChange={handleTabsChange}
       >
-        <TabPanels h={"100%"}>
+        <TabPanels h={"100vh"}>
           <WalletTab />
           <MeTab />
         </TabPanels>
@@ -47,7 +47,7 @@ function MainScreen() {
           bottom={0}
           left={0}
           right={0}
-          height={59}
+          height={"60px"}
           borderTopWidth={1}
           borderColor={borderColor}
           backgroundColor={backgroundColor}

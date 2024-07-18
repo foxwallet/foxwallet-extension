@@ -12,7 +12,7 @@ export const WalletTab = () => {
   }, [dispatch.account]);
 
   return (
-    <TabPanel>
+    <TabPanel h={"100vh"} display={"flex"} flexDir={"column"}>
       <AccountInfoHeader />
       <BackupReminderView />
       <HomeTabList />

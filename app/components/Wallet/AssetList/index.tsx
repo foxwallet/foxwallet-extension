@@ -25,19 +25,22 @@ export const AssetList = () => {
   );
 
   return (
-    <TabPanel>
-      <Flex direction={"column"} maxH={"238px"} overflowY={"auto"} mt={2}>
-        {assets.map((token) => (
-          <TokenItemWithBalance
-            key={token.tokenId}
-            uniqueId={uniqueId}
-            address={selectedAccount.address}
-            token={token}
-            onClick={onTokenDetail}
-            hover
-          />
-        ))}
-      </Flex>
+    <TabPanel
+      flex={1}
+      flexDir={"column"}
+      overflowY={"auto"}
+      marginBottom={"60px"}
+    >
+      {assets.map((token) => (
+        <TokenItemWithBalance
+          key={token.tokenId}
+          uniqueId={uniqueId}
+          address={selectedAccount.address}
+          token={token}
+          onClick={onTokenDetail}
+          hover
+        />
+      ))}
     </TabPanel>
   );
 };

@@ -48,9 +48,12 @@ export const HomeTabList = () => {
     <Tabs
       variant={"unstyled"}
       position="relative"
-      py={3}
       index={tabIndex}
       onChange={(index) => setTabIndex(index)}
+      display={"flex"}
+      flexDir={"column"}
+      flex={1}
+      overflowY={"hidden"}
     >
       <Flex px={5}>
         <TabList flex={1}>
