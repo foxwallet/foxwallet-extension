@@ -237,7 +237,7 @@ export class ContentWalletServer implements IContentServer {
         const { program, filter } = params;
         const records = await this.coinService
           .getInstance(InnerChainUniqueId.ALEO_TESTNET)
-          .getRecords(address, program, filter || RecordFilter.ALL);
+          .getRecords(address, program, filter || RecordFilter.ALL, true);
         const formatRecords = records.map((record) => {
           return {
             id: record.commitment,
@@ -267,7 +267,7 @@ export class ContentWalletServer implements IContentServer {
         const { program, filter } = params;
         const records = await this.coinService
           .getInstance(InnerChainUniqueId.ALEO_TESTNET)
-          .getRecords(address, program, filter || RecordFilter.ALL);
+          .getRecords(address, program, filter || RecordFilter.ALL, true);
         const formatRecords = records.map((record) => {
           return {
             id: record.commitment,
