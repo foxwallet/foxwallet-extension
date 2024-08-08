@@ -44,8 +44,8 @@ export const ALEO_CHAIN_CONFIGS: { [key in string]: AleoConfig } = {
       address: "",
     },
     alphaSwapApi: "https://app.alphaswap.pro/api",
-    // faucetApi: `${WalletAPI}/api/v1/aleo/testnet3/faucet`,
-    // innerFaucet: true,
+    innerFaucet: true,
+    faucetApi: "https://faucet.aleo.org/",
     testnet: true,
   },
 };

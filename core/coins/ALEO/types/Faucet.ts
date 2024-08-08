@@ -1,4 +1,5 @@
 export enum FaucetStatus {
+  UNREADY = "UNREADY",
   EMPTY = "EMPTY",
   PENDING = "PENDING",
   DONE = "DONE",
