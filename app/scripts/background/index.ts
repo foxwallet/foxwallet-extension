@@ -12,7 +12,13 @@ import { DappStorage } from "./store/dapp/DappStorage";
 import { AuthManager } from "./store/vault/managers/auth/AuthManager";
 import { KeyringManager } from "./store/vault/managers/keyring/KeyringManager";
 import { extensionInfoDB } from "@/database/ExtensionDatabase";
-import { getVersion } from "@/common/utils/version";
+import {
+  compareVersion,
+  getVersion,
+  parseVersion,
+} from "@/common/utils/version";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
+import { clearSwrCache, swrStorageInstance } from "@/common/utils/indexeddb";
 
 const keepAliveConnection = new Connection(
   keepAliveHandler,
@@ -60,18 +66,32 @@ const contentConnection = new Connection(
 );
 contentConnection.connect();
 
-offscreen();
-
 async function checkVersion() {
   const existVersion = await extensionInfoDB.getVersion();
   const currentVersion = getVersion();
-  if (existVersion === currentVersion) {
-    return;
-  }
   if (existVersion) {
-    // compare version and do the migration
+    // 之前的版本如果是0.12.3及之前的版本，需要重置测试网数据
+    const beforeTestnetReset = compareVersion(existVersion, "0.12.3") < 1;
+
+    console.log(
+      "===> checkVersion ",
+      existVersion,
+      currentVersion,
+      beforeTestnetReset,
+    );
+    if (beforeTestnetReset) {
+      await coinService
+        .getInstance(InnerChainUniqueId.ALEO_TESTNET)
+        .resetChainData();
+      await clearSwrCache();
+    }
   }
-  await extensionInfoDB.setVersion(currentVersion);
+  if (existVersion !== currentVersion) {
+    await extensionInfoDB.setVersion(currentVersion);
+  }
 }
 
-checkVersion();
+checkVersion().finally(() => {
+  console.log("===> checkVersion done start offscreen");
+  offscreen();
+});

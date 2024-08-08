@@ -66,6 +66,7 @@ export class AleoBlockDatabase extends Dexie {
       this.infos,
       this.records,
       this.txs,
+      this.cacheTxs,
       async () => {
         const infosToDelete = this.infos.where({ address: address });
         await infosToDelete.delete();
@@ -73,8 +74,32 @@ export class AleoBlockDatabase extends Dexie {
         await recordsToDelete.delete();
         const txsToDelete = this.txs.where({ address: address });
         await txsToDelete.delete();
+        const cacheTxsToDelete = this.cacheTxs.where({ address: address });
+        await cacheTxsToDelete.delete();
       },
     );
+  }
+
+  async resetData(): Promise<void> {
+    try {
+      await this.transaction(
+        "rw",
+        this.infos,
+        this.records,
+        this.txs,
+        this.cacheTxs,
+        this.programs,
+        async () => {
+          await this.infos.clear();
+          await this.records.clear();
+          await this.txs.clear();
+          await this.cacheTxs.clear();
+          await this.programs.clear();
+        },
+      );
+    } catch (e) {
+      console.error("Failed to clear aleo tables:", e);
+    }
   }
 
   async setRecords(address: string, recordsData: AddressRecords) {

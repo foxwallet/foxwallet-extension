@@ -26,14 +26,14 @@ export const createAccountSettingStorage = (coinType: CoinType) => {
   });
 };
 
-const swrStorageInstance = localForage.createInstance({
+export const swrStorageInstance = localForage.createInstance({
   driver: localForage.INDEXEDDB,
   name: "swr_cache",
   storeName: "cache",
 });
 
 let memoryCache: { [key in string]?: any } = {};
-const storeCache: { [key in string]?: any } = {};
+let storeCache: { [key in string]?: any } = {};
 
 swrStorageInstance
   .iterate((value, key) => {
@@ -48,6 +48,12 @@ swrStorageInstance
       ...memoryCache,
     };
   });
+
+export const clearSwrCache = async () => {
+  await swrStorageInstance.clear();
+  memoryCache = {};
+  storeCache = {};
+};
 
 export const swrCache = (): Cache => ({
   keys: function* () {

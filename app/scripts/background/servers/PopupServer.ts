@@ -688,6 +688,23 @@ export class PopupWalletServer implements IPopupServer {
     }
   }
 
+  async resetChain(): Promise<boolean> {
+    try {
+      await stopSending();
+      await stopSync();
+      const selectedUniqueId = await this.getSelectedUniqueId({
+        coinType: CoinType.ALEO,
+      });
+      await this.coinService.getInstance(selectedUniqueId).resetChainData();
+      return true;
+    } catch (err) {
+      console.error("===> resetChain error: ", err);
+      return false;
+    } finally {
+      syncBlocks();
+    }
+  }
+
   async sendAleoTransaction(params: AleoSendTxProps): Promise<void> {
     const { walletId, accountId, coinType, ...rest } = params;
     const pk = await this.keyringManager.getPrivateKey({

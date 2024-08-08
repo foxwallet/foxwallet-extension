@@ -65,6 +65,8 @@ export interface IAleoStorage {
 
   clearAddressLocalData(chainId: string, address: string): Promise<void>;
 
+  reset(chainId: string): Promise<void>;
+
   cacheTransaction(chainId: string, tx: AleoOnChainHistoryItem): Promise<void>;
 
   getCachedTransaction(

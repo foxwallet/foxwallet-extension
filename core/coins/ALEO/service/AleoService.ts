@@ -1176,6 +1176,10 @@ export class AleoService {
     await this.aleoStorage.clearAddressLocalData(this.chainId, adderss);
   }
 
+  async resetChainData() {
+    await this.aleoStorage.reset(this.chainId);
+  }
+
   async setAleoSyncAccount(account: AleoSyncAccount) {
     await this.aleoStorage.setAccountInfo(account);
   }

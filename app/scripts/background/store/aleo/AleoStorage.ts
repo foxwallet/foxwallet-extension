@@ -218,6 +218,11 @@ export class AleoStorage implements IAleoStorage {
     await instance.deleteAddressData(address);
   }
 
+  async reset(chainId: string): Promise<void> {
+    const instance = await this.getBlockDBInstance(chainId);
+    await instance.resetData();
+  }
+
   async getProgramContent(
     chainId: string,
     programId: string,
