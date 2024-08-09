@@ -1,4 +1,5 @@
 import { ERROR_CODE } from "@/common/types/error";
+import { hexToString } from "@/common/utils/hex";
 import { IconFoxWallet, IconLogo } from "@/components/Custom/Icon";
 import { ResponsiveFlex } from "@/components/Custom/ResponsiveFlex";
 import { AccountInfo } from "@/components/Dapp/AccountInfo";
@@ -40,7 +41,7 @@ function SignMessageScreen() {
       >
         <Text>{t("Dapp:message")}:</Text>
         <Text maxW={"full"} fontWeight={"bold"} mt={2}>
-          {message}
+          {hexToString(message)}
         </Text>
       </Flex>
     );
