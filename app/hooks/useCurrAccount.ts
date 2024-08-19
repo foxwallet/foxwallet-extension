@@ -1,9 +1,9 @@
-import { InnerChainUniqueId } from "core/types/ChainUniqueId";
-import { usePopupDispatch, usePopupSelector } from "./useStore";
+import { usePopupSelector } from "./useStore";
 import { isEqual } from "lodash";
-import { useEffect } from "react";
-import { CoinType } from "core/types";
 
+/**
+ * @deprecated
+ */
 export const useCurrAccount = () => {
   const { selectedAccount, selectedUniqueId } = usePopupSelector(
     (state) => ({
@@ -12,11 +12,6 @@ export const useCurrAccount = () => {
     }),
     isEqual,
   );
-  const dispatch = usePopupDispatch();
-
-  useEffect(() => {
-    dispatch.account.getSelectedAccount(CoinType.ALEO);
-  }, []);
 
   return { selectedAccount, uniqueId: selectedUniqueId };
 };

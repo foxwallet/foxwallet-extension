@@ -6,7 +6,7 @@ import { validateMnemonic } from "bip39";
 import { WarningArea } from "../../Custom/WarningArea";
 import { useTranslation } from "react-i18next";
 import { useCoinBasic } from "@/hooks/useCoinService";
-import { DEFAULT_UNIQUE_ID_MAP } from "core/constants";
+import { DEFAULT_CHAIN_UNIQUE_ID } from "core/constants/chain";
 import { CoinType } from "core/types";
 import { AleoImportPKType } from "core/coins/ALEO/types/AleoAccount";
 
@@ -16,7 +16,7 @@ type Props = {
 
 export const ImportPrivateKeyStep = ({ onConfirm }: Props) => {
   const { t } = useTranslation();
-  const coinBasic = useCoinBasic(DEFAULT_UNIQUE_ID_MAP[CoinType.ALEO]);
+  const coinBasic = useCoinBasic(DEFAULT_CHAIN_UNIQUE_ID[CoinType.ALEO]);
   const [privateKey, setPrivateKey] = useState("");
   const privateKeyValid = useMemo(() => {
     return coinBasic.isValidPrivateKey(privateKey, AleoImportPKType.ALEO_PK);

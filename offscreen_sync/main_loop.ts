@@ -1,4 +1,3 @@
-import { AutoSwitch, AutoSwitchServiceType } from "core/utils/retry";
 import { sleep } from "core/utils/sleep";
 import { type WorkerAPI } from "./worker";
 import { proxy, wrap } from "comlink";
@@ -20,10 +19,10 @@ import {
 } from "core/coins/ALEO/types/SyncTask";
 import { ALEO_CHAIN_CONFIGS } from "core/coins/ALEO/config/chains";
 import { AleoRpcService } from "core/coins/ALEO/service/instances/rpc";
-import { AccountSettingStorage } from "@/scripts/background/store/account/AccountStorage";
+import { AccountSettingStorageV1 } from "@/scripts/background/store/account/AccountStorageV1";
 import { CoinType } from "core/types";
 import { uniqueIdToAleoChainId } from "core/coins/ALEO/utils/chainId";
-import { AleoApiService } from "core/coins/ALEO/service/instances/sync";
+import { createAleoApiService } from "core/coins/ALEO/service/instances/sync";
 import { Mutex } from "async-mutex";
 
 // larger limit
@@ -43,12 +42,12 @@ const mutex = new Mutex();
 export class MainLoop {
   static instance: MainLoop;
   onLine: boolean;
-  apiService: AleoApiService;
+  apiService;
   syncTaskQuene: Array<TaskParamWithRange & { syncParams: SyncRecordParams[] }>;
   workerList: WorkerAPI[];
   taskInProcess: Array<Promise<void> | undefined>;
   aleoStorage: AleoStorage;
-  accountSettingStorage: AccountSettingStorage;
+  accountSettingStorage: AccountSettingStorageV1;
 
   static getInstace(apiList: string[]) {
     const cacheInstance = MainLoop.instance;
@@ -66,13 +65,13 @@ export class MainLoop {
     this.workerList = [];
     this.taskInProcess = new Array<Promise<void> | undefined>(WORKER_NUMBER);
     this.aleoStorage = AleoStorage.getInstance();
-    this.apiService = new AleoApiService({
-      configs: apiList.map((url) => ({
+    this.apiService = createAleoApiService(
+      apiList.map((url) => ({
         url,
         chainId: CHAIN_ID,
       })),
-    });
-    this.accountSettingStorage = AccountSettingStorage.getInstance();
+    );
+    this.accountSettingStorage = AccountSettingStorageV1.getInstance();
   }
 
   async sendMessage(message: OffscreenMessage) {
@@ -107,10 +106,9 @@ export class MainLoop {
     }
   }
 
-  @AutoSwitch({ serviceType: AutoSwitchServiceType.API })
   async getLatestHeight(chainId: string) {
-    this.apiService.currInstance().setChainId(chainId);
-    const nodeStatus = await this.apiService.currInstance().getNodeStatus();
+    this.apiService.setChainId(chainId);
+    const nodeStatus = await this.apiService.getNodeStatus();
     return nodeStatus?.syncHeight;
   }
 

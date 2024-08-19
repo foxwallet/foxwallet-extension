@@ -1,10 +1,10 @@
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
-import { DisplayAccount } from "@/scripts/background/store/vault/types/keyring";
+import { OneMatchAccount } from "@/scripts/background/store/vault/types/keyring";
 import { Flex, Text } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
 
 interface AccountInfoProps {
-  account: DisplayAccount;
+  account: OneMatchAccount;
 }
 
 export const AccountInfo = (props: AccountInfoProps) => {
@@ -24,11 +24,11 @@ export const AccountInfo = (props: AccountInfoProps) => {
     >
       <Text>{t("Dapp:account")}</Text>
       <Flex flexDir={"column"} align={"flex-end"} fontWeight={"bold"}>
-        <MiddleEllipsisText text={account?.address} width={250} />
+        <MiddleEllipsisText text={account?.account.address} width={250} />
         <Text
           color={"gray.500"}
           fontSize={"13"}
-        >{`(${account.accountName})`}</Text>
+        >{`(${account.group.groupName})`}</Text>
       </Flex>
     </Flex>
   );

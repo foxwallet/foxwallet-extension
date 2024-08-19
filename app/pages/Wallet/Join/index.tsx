@@ -1,4 +1,3 @@
-import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { PageWithHeader } from "@/layouts/Page";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -19,16 +18,29 @@ import { showErrorToast } from "@/components/Custom/ErrorToast";
 import { SelectRecordsStep } from "@/components/Send/SelectRecordsStep";
 import { AleoTxType } from "core/coins/ALEO/types/History";
 import { NATIVE_TOKEN_TOKEN_ID } from "core/coins/ALEO/constants";
+import { useGroupAccount } from "@/hooks/useGroupAccount";
+import {
+  ChainAssembleMode,
+  InnerChainUniqueId,
+} from "core/types/ChainUniqueId";
+import { useChainMode } from "@/hooks/useChainMode";
 
 function JoinScreen() {
   const { t } = useTranslation();
-  const { selectedAccount, uniqueId } = useCurrAccount();
+  const { getMatchAccountsWithUniqueId } = useGroupAccount();
+
+  // TODO: get uniqueId from chain mode or page params
+  const selectedAccount = useMemo(() => {
+    return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_TESTNET)[0];
+  }, [getMatchAccountsWithUniqueId]);
+  const uniqueId = InnerChainUniqueId.ALEO_TESTNET;
+
   const { nativeCurrency, coinService, chainConfig } = useCoinService(uniqueId);
   const { popupServerClient } = useClient();
   const navigate = useNavigate();
   const { records } = useRecords({
     uniqueId,
-    address: selectedAccount.address,
+    address: selectedAccount.account.address,
   });
   const [step, setStep] = useState(0);
   const selectedRecordsRef = useRef<RecordDetailWithSpent[]>([]);
@@ -49,7 +61,7 @@ function JoinScreen() {
       }
       setSubmitting(true);
       try {
-        const address = selectedAccount.address;
+        const address = selectedAccount.account.address;
         const inputs = [
           selectedRecordsRef.current[0].plaintext,
           selectedRecordsRef.current[1].plaintext,
@@ -79,8 +91,8 @@ function JoinScreen() {
         popupServerClient
           .sendAleoTransaction({
             uniqueId: chainConfig.uniqueId,
-            walletId: selectedAccount.walletId,
-            accountId: selectedAccount.accountId,
+            walletId: selectedAccount.wallet.walletId,
+            accountId: selectedAccount.account.accountId,
             coinType: chainConfig.coinType,
             address: address,
             localId,

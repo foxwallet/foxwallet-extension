@@ -1,10 +1,10 @@
 import { CoinType } from "core/types";
 import { type ServerPayload } from "../../../common/types/message";
 import {
-  DisplayAccount,
+  DisplayComposedAccount,
   DisplayKeyring,
   DisplayWallet,
-  SelectedAccount,
+  OneMatchGroupAccount,
 } from "../store/vault/types/keyring";
 import { logger } from "../../../common/utils/logger";
 import { ChainUniqueId } from "core/types/ChainUniqueId";
@@ -15,7 +15,7 @@ import {
   AleoRequestDeploymentParams,
 } from "core/coins/ALEO/types/Deployment";
 import { SiteInfo } from "@/scripts/content/host";
-import { ImportPrivateKeyTypeMap } from "core/types/CoinBasic";
+import { AccountOption, ImportPrivateKeyTypeMap } from "core/types/CoinBasic";
 import { DecryptPermission } from "@/database/types/dapp";
 
 export type PopupServerMethod = keyof IPopupServer;
@@ -36,7 +36,6 @@ export type ImportHDWalletProps = {
 
 export interface AddAccountProps {
   walletId: string;
-  coinType: CoinType;
   accountId: string;
 }
 
@@ -46,14 +45,13 @@ export interface ImportPrivateKeyProps<T extends CoinType> {
   coinType: T;
   privateKey: string;
   privateKeyType: ImportPrivateKeyTypeMap[T];
+  option: AccountOption[T];
 }
 
-export interface GetSelectedAccountProps {
-  coinType: CoinType;
-}
+export interface GetSelectedAccountProps {}
 
 export interface SetSelectedAccountProps {
-  selectAccount: SelectedAccount;
+  groupAccount: OneMatchGroupAccount;
 }
 
 export interface GetBalanceProps {
@@ -71,7 +69,7 @@ export interface SetSelectedUniqueIdProps {
 
 export interface ResyncAleoProps {
   uniqueId: ChainUniqueId;
-  account: DisplayAccount;
+  account: DisplayComposedAccount;
 }
 
 // export enum SerializeType {
@@ -137,7 +135,6 @@ export type GetPrivateKeyProps = {
 export type ChangeAccountStateProps = {
   walletId: string;
   accountId: string;
-  hide: boolean;
 };
 
 export interface IPopupServer {
@@ -163,16 +160,6 @@ export interface IPopupServer {
     params: ImportPrivateKeyProps<T>,
   ): Promise<DisplayWallet>;
 
-  getSelectedAccount(
-    params: GetSelectedAccountProps,
-  ): Promise<SelectedAccount | null>;
-
-  setSelectedAccount(params: SetSelectedAccountProps): Promise<SelectedAccount>;
-
-  getSelectedUniqueId(params: GetSelectedUniqueIdProps): Promise<ChainUniqueId>;
-
-  setSelectedUniqueId(params: SetSelectedUniqueIdProps): Promise<ChainUniqueId>;
-
   getHDWallet(walletId: string): Promise<DisplayWallet>;
 
   getSimpleWallet(walletId: string): Promise<DisplayWallet>;
@@ -197,7 +184,13 @@ export interface IPopupServer {
 
   checkPassword(password: string): Promise<boolean>;
 
-  changeAccountHideState(params: ChangeAccountStateProps): Promise<void>;
+  getSelectedGroupAccount(
+    params?: GetSelectedAccountProps,
+  ): Promise<OneMatchGroupAccount | null>;
+
+  setSelectedGroupAccount({
+    groupAccount,
+  }: SetSelectedAccountProps): Promise<OneMatchGroupAccount>;
 }
 
 export interface ConnectProps {

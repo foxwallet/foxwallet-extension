@@ -7,7 +7,6 @@ import { HashRouter } from "react-router-dom";
 import App from "./App";
 import { Provider } from "react-redux";
 import { store } from "./store/store";
-import { ClientContext, clients } from "./hooks/useClient";
 import { LoadingScreen } from "./components/Custom/Loading";
 import { ChakraBaseProvider } from "@chakra-ui/react";
 import { theme } from "./common/theme";
@@ -25,15 +24,13 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     <HashRouter>
       <ChakraBaseProvider theme={theme}>
         <SWRConfig value={{ provider: swrCache }}>
-          <ClientContext.Provider value={clients}>
-            <Provider store={store}>
-              <PersistGate loading={<LoadingScreen />} persistor={persistor}>
-                <Suspense fallback={<LoadingScreen />}>
-                  <App />
-                </Suspense>
-              </PersistGate>
-            </Provider>
-          </ClientContext.Provider>
+          <Provider store={store}>
+            <PersistGate loading={<LoadingScreen />} persistor={persistor}>
+              <Suspense fallback={<LoadingScreen />}>
+                <App />
+              </Suspense>
+            </PersistGate>
+          </Provider>
         </SWRConfig>
       </ChakraBaseProvider>
     </HashRouter>

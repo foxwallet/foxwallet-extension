@@ -1,4 +1,3 @@
-import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { PageWithHeader } from "@/layouts/Page";
 import {
   Flex,
@@ -14,17 +13,26 @@ import WALLET_LOGO from "@/common/assets/image/logo.png";
 import { Content } from "@/layouts/Content";
 import { HeaderLeftIconType } from "@/components/Custom/Header";
 import { IconAleo, IconCopyBlack, IconWarning } from "@/components/Custom/Icon";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
 import { useTranslation } from "react-i18next";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
+import { useGroupAccount } from "@/hooks/useGroupAccount";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 
 const QRCode = chakra(QRCodeSVG);
 
 function ReceiveScreen() {
   const { t } = useTranslation();
-  const { selectedAccount } = useCurrAccount();
-  const { onCopy } = useClipboard(selectedAccount.address);
+
+  const { getMatchAccountsWithUniqueId } = useGroupAccount();
+  // TODO: get uniqueId from chain mode or page params
+  const selectedAccount = useMemo(() => {
+    return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_TESTNET)[0];
+  }, [getMatchAccountsWithUniqueId]);
+  const uniqueId = InnerChainUniqueId.ALEO_TESTNET;
+
+  const { onCopy } = useClipboard(selectedAccount.account.address);
   const { showToast } = useCopyToast();
 
   const handleCopy = useCallback(() => {
@@ -57,7 +65,7 @@ function ReceiveScreen() {
           </Flex>
         </VStack>
         <QRCode
-          value={selectedAccount.address}
+          value={selectedAccount.account.address}
           mt={4}
           h={200}
           w={200}
@@ -81,7 +89,7 @@ function ReceiveScreen() {
           p={2.5}
         >
           <Text noOfLines={3} maxW={274} fontSize={12} fontWeight={500}>
-            {selectedAccount.address}
+            {selectedAccount.account.address}
           </Text>
           <Flex
             h={6}

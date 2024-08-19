@@ -1,23 +1,30 @@
 import { Flex, Image, TabPanel, Text } from "@chakra-ui/react";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { useNavigate } from "react-router-dom";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useAssetList } from "@/hooks/useAssetList";
 import { Token } from "core/coins/ALEO/types/Token";
 import { TokenItemWithBalance } from "../TokenItem";
 import { serializeToken } from "@/common/utils/string";
+import { useGroupAccount } from "@/hooks/useGroupAccount";
+import { useChainMode } from "@/hooks/useChainMode";
 
 export const AssetList = () => {
   const navigate = useNavigate();
-  const { selectedAccount, uniqueId } = useCurrAccount();
-  const { assets } = useAssetList(uniqueId, selectedAccount.address);
+  const { groupAccount, getMatchAccountsWithUniqueId } = useGroupAccount();
+  const { availableChainUniqueIds } = useChainMode();
+  const uniqueId = availableChainUniqueIds[0];
+  const selectedAccount = useMemo(() => {
+    return getMatchAccountsWithUniqueId(uniqueId)[0];
+  }, [uniqueId, getMatchAccountsWithUniqueId]);
+
+  const { assets } = useAssetList(uniqueId, selectedAccount.account.address);
 
   const onTokenDetail = useCallback(
     (token: Token) => {
       // need to be modified when adapt for multi-chain
       navigate(
         `/token_detail/${uniqueId}/${
-          selectedAccount.address
+          selectedAccount.account.address
         }?token=${serializeToken(token)}`,
       );
     },
@@ -35,7 +42,7 @@ export const AssetList = () => {
         <TokenItemWithBalance
           key={token.tokenId}
           uniqueId={uniqueId}
-          address={selectedAccount.address}
+          address={selectedAccount.account.address}
           token={token}
           onClick={onTokenDetail}
           hover

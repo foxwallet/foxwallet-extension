@@ -32,10 +32,10 @@ const CreateMnemonicScreen = () => {
       walletId,
       revealMnemonic: true,
     });
-    await dispatch.account.resyncAllWalletsToStore();
+    await dispatch.accountV2.resyncAllWalletsToStore();
 
     setMnemonic(wallet.mnemonic ?? "");
-  }, []);
+  }, [dispatch.accountV2]);
 
   // const regenerateWallet = useCallback(async () => {
   //   const walletId = walletIdRef.current;
@@ -44,9 +44,9 @@ const CreateMnemonicScreen = () => {
   //     walletId,
   //     revealMnemonic: true,
   //   });
-  //   await dispatch.account.resyncAllWalletsToStore();
+  //   await dispatch.accountV2.resyncAllWalletsToStore();
   //   setMnemonic(wallet.mnemonic ?? "");
-  // }, []);
+  // }, [dispatch.accountV2]);
 
   const stepContent = useMemo(() => {
     switch (step) {
@@ -75,7 +75,7 @@ const CreateMnemonicScreen = () => {
           <ConfirmMnemonicStep
             mnemonic={mnemonic}
             onConfirm={() => {
-              dispatch.account.changeWalletBackupedMnemonic({
+              dispatch.accountV2.changeWalletBackupedMnemonic({
                 walletId: walletIdRef.current,
                 backupedMnemonic: true,
               });
@@ -84,7 +84,7 @@ const CreateMnemonicScreen = () => {
           />
         );
     }
-  }, [step, mnemonic, createWallet]);
+  }, [step, mnemonic, createWallet, dispatch.accountV2]);
 
   return (
     <PageWithHeader

@@ -46,7 +46,7 @@ const BackupMnemonicScreen = () => {
           <ConfirmMnemonicStep
             mnemonic={mnemonic}
             onConfirm={() => {
-              dispatch.account.changeWalletBackupedMnemonic({
+              dispatch.accountV2.changeWalletBackupedMnemonic({
                 walletId: walletIdRef.current,
                 backupedMnemonic: true,
               });
@@ -55,7 +55,7 @@ const BackupMnemonicScreen = () => {
           />
         );
     }
-  }, [dispatch.account, step, mnemonic, navigate]);
+  }, [dispatch.accountV2, step, mnemonic, navigate]);
 
   const title = useMemo(() => {
     if (step === 1) return t("Menmonic:backup");

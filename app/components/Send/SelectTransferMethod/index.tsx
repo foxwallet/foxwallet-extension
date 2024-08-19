@@ -19,7 +19,6 @@ import { useMemo } from "react";
 import { useBalance } from "@/hooks/useBalance";
 import { ChainUniqueId } from "core/types/ChainUniqueId";
 import { TokenNum } from "@/components/Wallet/TokenNum";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { useCoinService } from "@/hooks/useCoinService";
 import { IconCheckLine } from "@/components/Custom/Icon";
 import { useRecords } from "@/hooks/useRecord";

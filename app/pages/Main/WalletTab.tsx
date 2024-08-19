@@ -8,8 +8,8 @@ import { usePopupDispatch } from "@/hooks/useStore";
 export const WalletTab = () => {
   const dispatch = usePopupDispatch();
   useEffect(() => {
-    dispatch.account.resyncAllWalletsToStore();
-  }, [dispatch.account]);
+    dispatch.accountV2.resyncAllWalletsToStore();
+  }, [dispatch.accountV2]);
 
   return (
     <TabPanel h={"100vh"} display={"flex"} flexDir={"column"}>

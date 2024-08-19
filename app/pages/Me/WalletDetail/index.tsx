@@ -17,13 +17,12 @@ import {
   WalletOperateOption,
   showWalletOptionDrawer,
 } from "@/components/Wallet/WalletOptionDrawer";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
 import { useWallets } from "@/hooks/useWallets";
 import { PageWithHeader } from "@/layouts/Page";
 import {
-  SelectedAccount,
+  OneMatchGroupAccount,
   WalletType,
 } from "@/scripts/background/store/vault/types/keyring";
 import {
@@ -41,28 +40,26 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 
 interface AccountListItemProps {
-  account: SelectedAccount;
+  account: OneMatchGroupAccount;
 }
 const AccountListItem: React.FC<AccountListItemProps> = ({ account }) => {
-  const { onCopy } = useClipboard(account.address);
+  // const { onCopy } = useClipboard(account.address);
   const { showToast } = useCopyToast();
   const navigate = useNavigate();
   const dispatch = usePopupDispatch();
 
-  const { selectedAccount } = useCurrAccount();
-
   const allWalletInfo = usePopupSelector(
-    (state) => state.account.allWalletInfo,
+    (state) => state.accountV2.allWalletInfo,
   );
 
   const operatingWallet = useMemo(
-    () => allWalletInfo[account.walletId],
-    [allWalletInfo, account.walletId],
+    () => allWalletInfo[account.wallet.walletId],
+    [allWalletInfo, account.wallet.walletId],
   );
 
   const accountListInWallet = useMemo(
-    () => operatingWallet?.accountsMap?.[CoinType.ALEO] || [],
-    [operatingWallet.accountsMap],
+    () => operatingWallet?.groupAccounts || [],
+    [operatingWallet.groupAccounts],
   );
 
   const handleEditName = useCallback(() => {
@@ -71,73 +68,35 @@ const AccountListItem: React.FC<AccountListItemProps> = ({ account }) => {
     });
   }, [account]);
 
-  const handleCopyAddress = useCallback(() => {
-    showToast();
-    onCopy();
-  }, [onCopy, showToast]);
+  // const handleCopyAddress = useCallback(() => {
+  //   showToast();
+  //   onCopy();
+  // }, [onCopy, showToast]);
 
-  const onExportPrivateKey = useCallback(async () => {
-    const { confirmed } = await showPasswordVerifyDrawer();
-    if (confirmed) {
-      navigate(
-        `/export_private_key/${account.walletId}/${account.accountId}/${CoinType.ALEO}`,
-      );
-    }
-  }, [navigate, account]);
+  // const onExportPrivateKey = useCallback(async () => {
+  //   const { confirmed } = await showPasswordVerifyDrawer();
+  //   if (confirmed) {
+  //     navigate(
+  //       `/export_private_key/${account.walletId}/${account.accountId}/${CoinType.ALEO}`,
+  //     );
+  //   }
+  // }, [navigate, account]);
 
-  const onChangeVisibility = useCallback(() => {
-    let newSelectedAccount: SelectedAccount | undefined;
-
-    if (selectedAccount.accountId === account.accountId && !account.hide) {
-      const nextAccount = accountListInWallet.find(
-        (a) => a.accountId !== account.accountId && !a.hide,
-      );
-      if (nextAccount) {
-        newSelectedAccount = {
-          ...nextAccount,
-          walletId: operatingWallet.walletId,
-          coinType: CoinType.ALEO,
-        };
-      }
-    }
-
-    dispatch.account.changeAccountHideState({
-      walletId: operatingWallet.walletId,
-      accountId: account.accountId,
-      hide: !account.hide,
-    });
-
-    if (newSelectedAccount) {
-      dispatch.account.setSelectedAccount({
-        selectedAccount: newSelectedAccount,
-      });
-    }
-  }, [
-    dispatch.account,
-    account,
-    selectedAccount.accountId,
-    accountListInWallet,
-    operatingWallet.walletId,
-  ]);
-
-  const handleShowMore = useCallback(() => {
-    showAccountOptionDrawer({
-      wallet: operatingWallet,
-      account,
-      onClickOption: (option) => {
-        switch (option) {
-          case AccountOperateOptions.ExportPrivateKey:
-            onExportPrivateKey();
-            break;
-          case AccountOperateOptions.ChangeVisibility:
-            onChangeVisibility();
-            break;
-          default:
-            break;
-        }
-      },
-    });
-  }, [account, onExportPrivateKey, onChangeVisibility]);
+  // const handleShowMore = useCallback(() => {
+  //   showAccountOptionDrawer({
+  //     wallet: operatingWallet,
+  //     account,
+  //     onClickOption: (option) => {
+  //       switch (option) {
+  //         case AccountOperateOptions.ExportPrivateKey:
+  //           onExportPrivateKey();
+  //           break;
+  //         default:
+  //           break;
+  //       }
+  //     },
+  //   });
+  // }, [account, onExportPrivateKey]);
 
   const titleColor = useColorModeValue("black", "white");
   const { borderColor } = useThemeStyle();
@@ -159,16 +118,16 @@ const AccountListItem: React.FC<AccountListItemProps> = ({ account }) => {
             mr={1}
             fontSize={13}
             fontWeight={"bold"}
-            color={!!account.hide ? "#777E90" : titleColor}
+            color={titleColor}
             align={"start"}
           >
-            {account.accountName}
+            {account.group.groupName}
           </Text>
           <Hover p={1} onClick={handleEditName}>
             <IconEdit />
           </Hover>
         </Flex>
-        <Flex align={"center"}>
+        {/* <Flex align={"center"}>
           <Box
             maxW={240}
             noOfLines={1}
@@ -181,11 +140,11 @@ const AccountListItem: React.FC<AccountListItemProps> = ({ account }) => {
           <Hover onClick={handleCopyAddress} p={1}>
             <IconCopy h={4} w={4} />
           </Hover>
-        </Flex>
+        </Flex> */}
       </Flex>
-      <Hover onClick={handleShowMore} p={1}>
+      {/* <Hover onClick={handleShowMore} p={1}>
         <IconMore />
-      </Hover>
+      </Hover> */}
     </Flex>
   );
 };
@@ -197,7 +156,7 @@ const WalletDetailScreen = () => {
   const { addAccount, deleteWallet } = useWallets();
 
   const allWalletInfo = usePopupSelector(
-    (state) => state.account.allWalletInfo,
+    (state) => state.accountV2.allWalletInfo,
   );
 
   const walletInfo = useMemo(
@@ -205,19 +164,17 @@ const WalletDetailScreen = () => {
     [walletId, allWalletInfo],
   );
 
-  const accountList: SelectedAccount[] = useMemo(() => {
+  const accountList: OneMatchGroupAccount[] = useMemo(() => {
     if (!walletInfo) return [];
-
-    const list = walletInfo?.accountsMap[CoinType.ALEO] || [];
-    return list.map((a) => ({
-      ...a,
-      walletId: walletId || "",
-      coinType: CoinType.ALEO,
+    const { groupAccounts, ...restWallet } = walletInfo;
+    return groupAccounts.map((a) => ({
+      wallet: restWallet,
+      group: a,
     }));
-  }, [walletInfo?.accountsMap, walletId]);
+  }, [walletInfo?.groupAccounts, walletId]);
 
   const onAddAccount = useCallback(() => {
-    addAccount(walletId || "", CoinType.ALEO, nanoid());
+    addAccount(walletId || "", nanoid());
   }, [addAccount, walletId]);
 
   const onBackupMnemonic = useCallback(async () => {
@@ -272,10 +229,10 @@ const WalletDetailScreen = () => {
   ]);
 
   const renderAccountItem = useCallback(
-    (account: SelectedAccount, index: number) => {
+    (account: OneMatchGroupAccount, index: number) => {
       return (
         <AccountListItem
-          key={`${account.accountId}${index}`}
+          key={`${account.group.groupId}${index}`}
           account={account}
         />
       );

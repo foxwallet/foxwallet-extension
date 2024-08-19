@@ -1,7 +1,7 @@
-import { CoinConfig } from "core/types/CoinConfig";
+import { ChainBaseConfig } from "core/types/ChainBaseConfig";
 import { NativeToken, NativeTokenWithAddress } from "core/types/Token";
 
-export type AleoConfig = CoinConfig & {
+export type AleoConfig = ChainBaseConfig & {
   chainId: string;
   syncApiList: string[];
   walletApiList: string[];

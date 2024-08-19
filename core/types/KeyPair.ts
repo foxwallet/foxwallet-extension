@@ -22,6 +22,8 @@ export interface EncryptedKeyPair {
   index: number;
   privateKey: EncryptedField;
   address: string;
+  coinType: CoinType;
+  option: AccountOption[CoinType];
 }
 
 export type EncryptedKeyPairWithPublicKey = EncryptedKeyPair & {

@@ -1,7 +1,6 @@
 import { ERROR_CODE } from "@/common/types/error";
 import { IconFoxWallet, IconLogo } from "@/components/Custom/Icon";
 import { useClient } from "@/hooks/useClient";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { useDappRequest } from "@/hooks/useDappRequest";
 import { Content } from "@/layouts/Content";
 import { Button, Flex, Text, keyframes } from "@chakra-ui/react";
@@ -14,6 +13,8 @@ import { ResponsiveFlex } from "@/components/Custom/ResponsiveFlex";
 import { AccountInfo } from "@/components/Dapp/AccountInfo";
 import { useTranslation } from "react-i18next";
 import { DecryptPermission } from "@/database/types/dapp";
+import { useGroupAccount } from "@/hooks/useGroupAccount";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 
 const shakeAnimation = keyframes`
   10%, 90% {
@@ -35,7 +36,11 @@ const shakeAnimation = keyframes`
 
 function ConnectAleoDappScreen() {
   const navigate = useNavigate();
-  const { selectedAccount } = useCurrAccount();
+  const { getMatchAccountsWithUniqueId } = useGroupAccount();
+  const selectedAccount = useMemo(() => {
+    return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_TESTNET)[0];
+  }, []);
+
   const { requestId } = useParams();
   const { popupServerClient } = useClient();
   const { dappRequest, loading } = useDappRequest(requestId);
@@ -97,7 +102,7 @@ function ConnectAleoDappScreen() {
         </Flex>
       </Flex>
     );
-  }, [dappRequest, selectedAccount, t]);
+  }, [dappRequest, t]);
 
   const onConnect = useCallback(() => {
     if (needCheck && !checked) {
@@ -107,16 +112,16 @@ function ConnectAleoDappScreen() {
       }, 820);
       return;
     }
-    if (requestId && selectedAccount?.address) {
+    if (requestId && selectedAccount?.account.address) {
       popupServerClient.onRequestFinish({
         requestId,
-        data: selectedAccount.address,
+        data: selectedAccount.account.address,
       });
     }
   }, [
     popupServerClient,
     requestId,
-    selectedAccount?.address,
+    selectedAccount?.account.address,
     needCheck,
     checked,
   ]);

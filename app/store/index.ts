@@ -1,19 +1,28 @@
 import { type Models } from "@rematch/core";
 import { user } from "./user";
 import { account } from "./account";
+import { accountV2 } from "./accountV2";
 import { setting } from "./setting";
 import { tokens } from "./token";
+import { wallet } from "./wallet";
+import { multiChain } from "./multiChain";
 
 export interface RootModel extends Models<RootModel> {
   user: typeof user;
   account: typeof account;
+  accountV2: typeof accountV2;
   setting: typeof setting;
   tokens: typeof tokens;
+  wallet: typeof wallet;
+  multiChain: typeof multiChain;
 }
 
 export const models: RootModel = {
   user,
   account,
+  accountV2,
   setting,
   tokens,
+  wallet,
+  multiChain,
 };

@@ -7,7 +7,7 @@ import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
 import { IconCheckLineBlack } from "@/components/Custom/Icon";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { CURRENCY, SupportCurrency } from "core/constants";
+import { CURRENCY, SupportCurrency } from "core/constants/currency";
 
 function CurrencyScreen() {
   const { t } = useTranslation();

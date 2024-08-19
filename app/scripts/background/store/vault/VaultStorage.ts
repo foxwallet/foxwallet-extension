@@ -2,9 +2,12 @@ import { CoinType } from "core/types";
 import { walletStorageInstance } from "../../../../common/utils/localstorage";
 import {
   AccountMethod,
+  AccountWithViewKey,
   Cipher,
+  ComposedAccount,
   HDWallet,
   KeyringObj,
+  OneMatchGroupAccount,
   SimpleWallet,
   Vault,
   VaultKeys,
@@ -13,10 +16,19 @@ import {
 import browser from "webextension-polyfill";
 import { TaskPriority } from "core/coins/ALEO/types/SyncTask";
 import { AleoStorage } from "../aleo/AleoStorage";
-import { ALEO_CHAIN_CONFIGS } from "core/coins/ALEO/config/chains";
 import { AleoSyncAccount } from "core/coins/ALEO/types/AleoSyncAccount";
-import { ChangeAccountStateProps } from "../../servers/IWalletServer";
+import { vaultVersion } from "./types/version";
+import { VaultV1 } from "./types/keyringV1";
+import { Mutex } from "async-mutex";
+import { nanoid } from "nanoid";
+import {
+  AccountSettingStorage,
+  accountSettingStorage,
+} from "../account/AccountStorage";
+import { AccountSettingStorageV1 } from "../account/AccountStorageV1";
+import { DEFAULT_ALEO_ACCOUNT_OPTION } from "core/coins/ALEO/config/derivation";
 
+const mutex = new Mutex();
 export class VaultStorage {
   #storage: browser.Storage.LocalStorageArea;
   #aleoStorage: AleoStorage;
@@ -37,7 +49,9 @@ export class VaultStorage {
   async initCipher(cipher: Cipher) {
     const store: Vault = {
       cipher,
-      keyring: {},
+      keyring: {
+        version: 2,
+      },
     };
     return await this.setVault(store);
   }
@@ -123,7 +137,10 @@ export class VaultStorage {
     });
     switch (method) {
       case AccountMethod.CREATE: {
-        const aleoAccount = newHdWallet.accountsMap[CoinType.ALEO][0];
+        const groupAccount = newHdWallet.groupAccounts[0];
+        const aleoAccount = groupAccount?.accounts.find(
+          (account) => account.coinType === CoinType.ALEO,
+        );
         if (aleoAccount) {
           const otherAccounts = await this.#aleoStorage.getAccountsAddress();
           for (const otherAccount of otherAccounts) {
@@ -147,7 +164,10 @@ export class VaultStorage {
         break;
       }
       case AccountMethod.IMPORT: {
-        const aleoAccount = newHdWallet.accountsMap[CoinType.ALEO][0];
+        const groupAccount = newHdWallet.groupAccounts[0];
+        const aleoAccount = groupAccount?.accounts.find(
+          (account) => account.coinType === CoinType.ALEO,
+        );
         if (aleoAccount) {
           // const otherAccounts = await this.#aleoStorage.keys();
           const otherAccounts = await this.#aleoStorage.getAccountsAddress();
@@ -190,11 +210,17 @@ export class VaultStorage {
       });
       switch (method) {
         case AccountMethod.REGENERATE: {
-          const oldAccount = oldWallet.accountsMap[CoinType.ALEO][0];
-          if (oldAccount) {
-            await this.#aleoStorage.removeAccount(oldAccount.address);
+          const oldGroupAccount = oldWallet.groupAccounts[0];
+          const oldAleoAccount = oldGroupAccount?.accounts.find(
+            (account) => account.coinType === CoinType.ALEO,
+          );
+          if (oldAleoAccount) {
+            await this.#aleoStorage.removeAccount(oldAleoAccount.address);
           }
-          const aleoAccount = hdWallet.accountsMap[CoinType.ALEO][0];
+          const groupAccount = hdWallet.groupAccounts[0];
+          const aleoAccount = groupAccount?.accounts.find(
+            (account) => account.coinType === CoinType.ALEO,
+          );
           if (aleoAccount) {
             const otherAccounts = await this.#aleoStorage.getAccountsAddress();
             for (const otherAccount of otherAccounts) {
@@ -218,8 +244,11 @@ export class VaultStorage {
           break;
         }
         case AccountMethod.ADD: {
-          const length = hdWallet.accountsMap[CoinType.ALEO].length;
-          const aleoAccount = hdWallet.accountsMap[CoinType.ALEO][length - 1];
+          const groupAccount =
+            hdWallet.groupAccounts[hdWallet.groupAccounts.length - 1];
+          const aleoAccount = groupAccount?.accounts.find(
+            (account) => account.coinType === CoinType.ALEO,
+          );
           if (aleoAccount) {
             const otherAccounts = await this.#aleoStorage.getAccountsAddress();
             for (const otherAccount of otherAccounts) {
@@ -260,7 +289,9 @@ export class VaultStorage {
       ...keyring,
       [WalletType.SIMPLE]: newSimpleWallets,
     });
-    const aleoAccount = newSimpleWallet.accountsMap[CoinType.ALEO][0];
+    const aleoAccount = newSimpleWallet.groupAccounts[0]?.accounts.find(
+      (account) => account.coinType === CoinType.ALEO,
+    );
     if (aleoAccount) {
       const otherAccounts = await this.#aleoStorage.getAccountsAddress();
       for (const otherAccount of otherAccounts) {
@@ -311,9 +342,16 @@ export class VaultStorage {
     const index = newHDWallets.findIndex((w) => w.walletId === walletId);
     if (index > -1) {
       const wallet = newHDWallets[index];
-      const aleoAccount = wallet.accountsMap[CoinType.ALEO];
+      const groupAccounts = wallet.groupAccounts;
+      const aleoAccounts = groupAccounts.reduce((accounts, groupAccount) => {
+        return accounts.concat(
+          groupAccount.accounts.filter(
+            (account) => account.coinType === CoinType.ALEO,
+          ),
+        );
+      }, [] as ComposedAccount[]);
       try {
-        for (let account of aleoAccount) {
+        for (let account of aleoAccounts) {
           await this.#aleoStorage.removeAccount(account.address);
         }
       } catch (e) {
@@ -325,9 +363,16 @@ export class VaultStorage {
       const index = newSimpleWallets.findIndex((w) => w.walletId === walletId);
       if (index > -1) {
         const wallet = newSimpleWallets[index];
-        const aleoAccount = wallet.accountsMap[CoinType.ALEO];
+        const groupAccounts = wallet.groupAccounts;
+        const aleoAccounts = groupAccounts.reduce((accounts, groupAccount) => {
+          return accounts.concat(
+            groupAccount.accounts.filter(
+              (account) => account.coinType === CoinType.ALEO,
+            ),
+          );
+        }, [] as ComposedAccount[]);
         try {
-          for (let account of aleoAccount) {
+          for (let account of aleoAccounts) {
             await this.#aleoStorage.removeAccount(account.address);
           }
         } catch (e) {
@@ -345,66 +390,200 @@ export class VaultStorage {
     });
   }
 
-  async changeAccountHideState(params: ChangeAccountStateProps) {
-    const { walletId, accountId, hide } = params;
-    const keyring = (await this.getKeyring()) || {};
-    const hdWallets = keyring[WalletType.HD] || [];
-    const simpleWallets = keyring[WalletType.SIMPLE] || [];
-    const newHDWallets = [...hdWallets];
-    const newSimpleWallets = [...simpleWallets];
-    const index = newHDWallets.findIndex((w) => w.walletId === walletId);
-
-    if (index > -1) {
-      const wallet = newHDWallets[index];
-      const aleoAccount = wallet.accountsMap[CoinType.ALEO];
-      const accountIndex = aleoAccount.findIndex(
-        (a) => a.accountId === accountId,
-      );
-      if (accountIndex > -1) {
-        aleoAccount[accountIndex] = {
-          ...aleoAccount[accountIndex],
-          hide,
-        };
-        wallet.accountsMap = {
-          ...wallet.accountsMap,
-          [CoinType.ALEO]: [...aleoAccount],
-        };
-        newHDWallets[index] = { ...wallet };
-      }
-    } else {
-      const index = newSimpleWallets.findIndex((w) => w.walletId === walletId);
-      if (index > -1) {
-        const wallet = newSimpleWallets[index];
-        const aleoAccount = wallet.accountsMap[CoinType.ALEO];
-        const accountIndex = aleoAccount.findIndex(
-          (a) => a.accountId === accountId,
-        );
-        if (accountIndex > -1) {
-          aleoAccount[accountIndex] = {
-            ...aleoAccount[accountIndex],
-            hide,
-          };
-          wallet.accountsMap = {
-            ...wallet.accountsMap,
-            [CoinType.ALEO]: [...aleoAccount],
-          };
-          newSimpleWallets[index] = { ...wallet };
-        }
-      }
-    }
-    return await this.setKeyring({
-      ...keyring,
-      [WalletType.SIMPLE]: newSimpleWallets,
-      [WalletType.HD]: newHDWallets,
-    });
-  }
-
   async getVault() {
     return (await this.#storage.get(null)) as Vault;
   }
 
   async setVault(vault: Vault) {
     return await this.#storage.set(vault);
+  }
+
+  async migrate() {
+    const release = await mutex.acquire();
+    try {
+      const vault = await this.getVault();
+      if (
+        vault[VaultKeys.keyring] &&
+        vault[VaultKeys.keyring].version !== vaultVersion
+      ) {
+        const currentVersion = vault[VaultKeys.keyring].version;
+        switch (currentVersion) {
+          case 2: {
+            break;
+          }
+          case 1:
+          case undefined: {
+            const vaultV1 = vault as VaultV1;
+            const keyringV1 = vaultV1[VaultKeys.keyring] ?? {};
+            const hdWalletsV1 = keyringV1[WalletType.HD] || [];
+            const hdWallets: HDWallet[] = [];
+            hdWalletsV1.map((hdWalletV1) => {
+              const { accountsMap, ...restWallet } = hdWalletV1;
+              const groupAccounts: Array<ComposedAccount[]> = [];
+              Object.keys(accountsMap).forEach((coinType) => {
+                const accounts = accountsMap[coinType as CoinType];
+                accounts.forEach((account) => {
+                  const index = account.index;
+                  if (!groupAccounts[index]) {
+                    groupAccounts[index] = [];
+                  }
+                  const newAccount: AccountWithViewKey = {
+                    ...account,
+                    //  v1 only have ALEO account
+                    coinType: CoinType.ALEO,
+                    option: DEFAULT_ALEO_ACCOUNT_OPTION,
+                  };
+                  groupAccounts[index].push(newAccount);
+                });
+              });
+              const newHdWallet: HDWallet = {
+                ...restWallet,
+                groupAccounts: groupAccounts.map((accounts, index) => {
+                  const groupName = `Account ${index + 1}`;
+                  return {
+                    groupId: nanoid(),
+                    groupName,
+                    index,
+                    accounts,
+                  };
+                }),
+              };
+              hdWallets.push(newHdWallet);
+            });
+
+            const simpleWalletsV1 = keyringV1[WalletType.SIMPLE] || [];
+            const simpleWallets: SimpleWallet[] = [];
+            simpleWalletsV1.map((simpleWalletV1) => {
+              const { accountsMap, ...restWallet } = simpleWalletV1;
+              const groupAccounts: Array<AccountWithViewKey[]> = [];
+              Object.keys(accountsMap).forEach((coinType) => {
+                const accounts = accountsMap[coinType as CoinType];
+                accounts.forEach((account) => {
+                  const index = account.index;
+                  if (!groupAccounts[index]) {
+                    groupAccounts[index] = [];
+                  }
+                  const newAccount: AccountWithViewKey = {
+                    ...account,
+                    coinType: CoinType.ALEO,
+                    option: DEFAULT_ALEO_ACCOUNT_OPTION,
+                  };
+                  groupAccounts[index].push(newAccount);
+                });
+              });
+              const newSimpleWallet: SimpleWallet = {
+                ...restWallet,
+                groupAccounts: groupAccounts.map((accounts, index) => {
+                  const groupName = `Account ${index + 1}`;
+                  return {
+                    groupId: nanoid(),
+                    groupName,
+                    index,
+                    accounts,
+                  };
+                }),
+              };
+              simpleWallets.push(newSimpleWallet);
+            });
+
+            const newVault: Vault = {
+              [VaultKeys.cipher]: vaultV1[VaultKeys.cipher],
+              [VaultKeys.keyring]: {
+                [WalletType.HD]: hdWallets,
+                [WalletType.SIMPLE]: simpleWallets,
+                version: vaultVersion,
+              },
+            };
+            await this.setVault(newVault);
+
+            const oldSelectedAccount =
+              await AccountSettingStorageV1.getInstance().getSelectedAccount(
+                CoinType.ALEO,
+              );
+            let selectedGroupAccount: OneMatchGroupAccount | null = null;
+            if (oldSelectedAccount) {
+              for (let hdWallet of hdWallets) {
+                if (hdWallet.walletId === oldSelectedAccount.walletId) {
+                  const { groupAccounts, ...restWallet } = hdWallet;
+                  for (let groupAccount of groupAccounts) {
+                    const { accounts } = groupAccount;
+                    for (let account of accounts) {
+                      if (account.address === oldSelectedAccount.address) {
+                        selectedGroupAccount = {
+                          wallet: restWallet,
+                          group: groupAccount,
+                        };
+                        break;
+                      }
+                    }
+                    if (selectedGroupAccount) {
+                      break;
+                    }
+                  }
+                  break;
+                }
+              }
+
+              for (let simpleWallet of simpleWallets) {
+                if (simpleWallet.walletId === oldSelectedAccount.walletId) {
+                  const { groupAccounts, ...restWallet } = simpleWallet;
+                  for (let groupAccount of groupAccounts) {
+                    const { accounts } = groupAccount;
+                    for (let account of accounts) {
+                      if (account.address === oldSelectedAccount.address) {
+                        selectedGroupAccount = {
+                          wallet: restWallet,
+                          group: groupAccount,
+                        };
+                        break;
+                      }
+                    }
+                    if (selectedGroupAccount) {
+                      break;
+                    }
+                  }
+                  break;
+                }
+              }
+            }
+            if (!selectedGroupAccount && hdWallets[0]) {
+              const { groupAccounts, ...restWallet } = hdWallets[0];
+              if (groupAccounts[0]) {
+                selectedGroupAccount = {
+                  wallet: restWallet,
+                  group: groupAccounts[0],
+                };
+              }
+            }
+
+            if (!selectedGroupAccount && simpleWallets[0]) {
+              const { groupAccounts, ...restWallet } = simpleWallets[0];
+              if (groupAccounts[0]) {
+                selectedGroupAccount = {
+                  wallet: restWallet,
+                  group: groupAccounts[0],
+                };
+              }
+            }
+
+            if (selectedGroupAccount) {
+              await accountSettingStorage.setSelectedGroupAccount(
+                selectedGroupAccount,
+              );
+            } else {
+              throw new Error(
+                "Vault migrate error, selected account is null " +
+                  JSON.stringify(hdWallets) +
+                  JSON.stringify(simpleWallets),
+              );
+            }
+            break;
+          }
+        }
+      }
+    } finally {
+      release();
+    }
   }
 }
 

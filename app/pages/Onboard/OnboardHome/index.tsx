@@ -24,7 +24,6 @@ import {
   IconLogo,
   OnboardLogo,
 } from "../../../components/Custom/Icon";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { LanguageLabels, SupportLanguages } from "@/locales/i18";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
 import { useTranslation } from "react-i18next";

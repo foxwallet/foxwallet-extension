@@ -3,13 +3,12 @@ import { AleoConfig } from "./ALEO/types/AleoConfig";
 import { AleoService } from "./ALEO/service/AleoService";
 import { CoinType } from "core/types";
 import { AleoStorage } from "@/scripts/background/store/aleo/AleoStorage";
-
-export type CoinConfig = AleoConfig;
+import { ChainBaseConfig } from "core/types/ChainBaseConfig";
 
 export type CoinService = AleoService;
 
 export type ChainConfigMap = {
-  [uniqueId in ChainUniqueId]: CoinConfig;
+  [uniqueId in ChainUniqueId]: ChainBaseConfig;
 };
 
 export class CoinServiceEntry {
@@ -45,7 +44,7 @@ export class CoinServiceEntry {
     this.serviceMap[uniqueId] = undefined;
   }
 
-  getChainConfig(uniqueId: ChainUniqueId): CoinConfig {
+  getChainConfig(uniqueId: ChainUniqueId): ChainBaseConfig {
     return this.chainConfig[uniqueId];
   }
 

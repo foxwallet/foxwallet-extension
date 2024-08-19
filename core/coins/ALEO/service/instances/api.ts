@@ -1,4 +1,4 @@
-import { AutoSwitchService } from "../../../../utils/retry";
+import { AutoSwitchProxy, createAutoSwitchApi } from "../../../../utils/retry";
 import { AleoWalletApi } from "../api/api";
 
 interface ApiConfig {
@@ -6,13 +6,11 @@ interface ApiConfig {
   chainId: string;
 }
 
-export class AleoWalletService extends AutoSwitchService<
-  ApiConfig,
-  AleoWalletApi
-> {
-  getInstanceList(config: ApiConfig[]): AleoWalletApi[] {
-    return config.map(({ url, chainId }) => {
-      return new AleoWalletApi({ host: url, chainId });
-    });
-  }
-}
+export type AleoWalletService = AutoSwitchProxy<ApiConfig, AleoWalletApi>;
+
+export const createAleoWalletService = (config: ApiConfig[]) => {
+  return createAutoSwitchApi(
+    config,
+    ({ url, chainId }) => new AleoWalletApi({ host: url, chainId }),
+  );
+};

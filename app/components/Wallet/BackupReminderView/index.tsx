@@ -19,19 +19,21 @@ export const BackupReminderView = () => {
   const [visible, setVisible] = useState(true);
 
   const { backupedMnemonic, selectedAccount } = usePopupSelector((state) => {
-    const currAccount = state.account.selectedAccount;
+    const currAccount = state.accountV2.selectedGroupAccount;
     const backupedMnemonic =
-      state.account.walletBackupMnemonicMap[currAccount.walletId] ?? false;
+      state.accountV2.walletBackupMnemonicMap[currAccount.wallet.walletId] ??
+      false;
     return {
       backupedMnemonic,
-      selectedAccount: state.account.selectedAccount,
+      selectedAccount: currAccount,
     };
   }, isEqual);
 
   const onBackup = useCallback(async () => {
     const { confirmed } = await showPasswordVerifyDrawer();
-    confirmed && navigate(`/backup_mnemonic/${selectedAccount.walletId}`);
-  }, [navigate, selectedAccount.walletId, showPasswordVerifyDrawer]);
+    confirmed &&
+      navigate(`/backup_mnemonic/${selectedAccount.wallet.walletId}`);
+  }, [navigate, selectedAccount.wallet.walletId, showPasswordVerifyDrawer]);
 
   const { borderColor } = useThemeStyle();
   if (backupedMnemonic || !visible) return null;

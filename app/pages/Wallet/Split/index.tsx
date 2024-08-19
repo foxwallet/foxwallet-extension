@@ -1,4 +1,3 @@
-import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { PageWithHeader } from "@/layouts/Page";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -23,16 +22,24 @@ import {
   SPLIT_RECORD_FEE,
 } from "core/coins/ALEO/constants";
 import { AleoTxType } from "core/coins/ALEO/types/History";
+import { useGroupAccount } from "@/hooks/useGroupAccount";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 
 function SplitScreen() {
   const { t } = useTranslation();
-  const { selectedAccount, uniqueId } = useCurrAccount();
+  const { getMatchAccountsWithUniqueId } = useGroupAccount();
+  // TODO: get uniqueId from chain mode or page params
+  const selectedAccount = useMemo(() => {
+    return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_TESTNET)[0];
+  }, [getMatchAccountsWithUniqueId]);
+  const uniqueId = InnerChainUniqueId.ALEO_TESTNET;
+
   const { nativeCurrency, coinService, chainConfig } = useCoinService(uniqueId);
   const { popupServerClient } = useClient();
   const navigate = useNavigate();
   const { records } = useRecords({
     uniqueId,
-    address: selectedAccount.address,
+    address: selectedAccount.account.address,
   });
   const [step, setStep] = useState(0);
   const selectedRecordsRef = useRef<RecordDetailWithSpent[]>([]);
@@ -47,7 +54,7 @@ function SplitScreen() {
       }
       setSubmitting(true);
       try {
-        const address = selectedAccount.address;
+        const address = selectedAccount.account.address;
         const inputs = [
           selectedRecordsRef.current[0].plaintext,
           `${amount}u64`,
@@ -79,8 +86,8 @@ function SplitScreen() {
         popupServerClient
           .sendAleoTransaction({
             uniqueId: chainConfig.uniqueId,
-            walletId: selectedAccount.walletId,
-            accountId: selectedAccount.accountId,
+            walletId: selectedAccount.wallet.walletId,
+            accountId: selectedAccount.account.accountId,
             coinType: chainConfig.coinType,
             address: address,
             localId,
