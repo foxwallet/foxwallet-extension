@@ -9,21 +9,20 @@ import {
   AccountMethod,
   AccountWithViewKey,
   BaseWallet,
-  DisplayAccount,
+  ComposedAccount,
+  DisplayGroupAccount,
   DisplayKeyring,
   DisplayWallet,
+  GroupAccount,
   HDWallet,
-  KeyringObj,
   SimpleWallet,
   WalletType,
 } from "../../types/keyring";
 import { nanoid } from "nanoid";
 import { AuthManager } from "../auth/AuthManager";
 import { decryptStr, encryptStr } from "core/utils/encrypt";
-import { logger } from "../../../../../../common/utils/logger";
 import {
   AddAccountProps,
-  ChangeAccountStateProps,
   ImportPrivateKeyProps,
 } from "../../../../servers/IWalletServer";
 import initAleoWasm from "aleo_wasm";
@@ -56,19 +55,20 @@ export class KeyringManager {
     return token;
   }
 
-  #formatDisplayAccountsMap(accountsMap: {
-    [coinType in CoinType]: AccountWithViewKey[];
-  }): { [coinType in CoinType]: DisplayAccount[] } {
-    let map: { [coinType in CoinType]: DisplayAccount[] } = {
-      [CoinType.ALEO]: [],
-    };
-    for (let coinType of Object.values(CoinType)) {
-      map[coinType] = accountsMap[coinType].map((item) => {
-        const { privateKey, viewKey, ...rest } = item;
+  #formatDisplayGroupAccounts(
+    groupAccounts: Array<GroupAccount>,
+  ): Array<DisplayGroupAccount> {
+    return groupAccounts.map((groupAccount) => {
+      const { accounts, ...rest } = groupAccount;
+      const displayAccounts = accounts.map((account) => {
+        const { privateKey, viewKey, ...rest } = account;
         return rest;
       });
-    }
-    return map;
+      return {
+        ...rest,
+        accounts: displayAccounts,
+      };
+    });
   }
 
   #formatDisplayWallet(wallet: BaseWallet): DisplayWallet {
@@ -76,7 +76,7 @@ export class KeyringManager {
       walletType: wallet.walletType,
       walletId: wallet.walletId,
       walletName: wallet.walletName,
-      accountsMap: this.#formatDisplayAccountsMap(wallet.accountsMap),
+      groupAccounts: this.#formatDisplayGroupAccounts(wallet.groupAccounts),
     };
   }
 
@@ -131,28 +131,35 @@ export class KeyringManager {
     if (!newMnemonic) {
       throw new Error("createNewWallet failed");
     }
-    const newAccount = (await newKeyring.derive(
-      nanoid(),
-      0,
-      CoinType.ALEO,
-      token,
-    )) as EncryptedKeyPairWithViewKey;
-    const accountName = "Account 1";
+    const accounts: ComposedAccount[] = [];
+    for (let coinType of Object.values(CoinType)) {
+      const newAccount = (await newKeyring.derive(
+        nanoid(),
+        0,
+        coinType,
+        token,
+      )) as EncryptedKeyPairWithViewKey;
+      const accountName = "Account 1";
+      accounts.push({
+        ...newAccount,
+        accountName,
+      });
+    }
+
     const newWallet: HDWallet = {
       walletType: WalletType.HD,
       walletId,
       walletName,
       origin: "create",
       mnemonic: newMnemonic,
-      accountsMap: {
-        [CoinType.ALEO]: [
-          {
-            ...newAccount,
-            accountName,
-            hide: false,
-          },
-        ],
-      },
+      groupAccounts: [
+        {
+          groupId: nanoid(),
+          groupName: "Account 1",
+          index: 0,
+          accounts,
+        },
+      ],
     };
 
     await this.#storage.addHDWallet(newWallet, AccountMethod.CREATE);
@@ -189,29 +196,36 @@ export class KeyringManager {
     if (!newMnemonic) {
       throw new Error("regenerateWallet failed");
     }
-    const newAccount = (await keyring.derive(
-      nanoid(),
-      0,
-      CoinType.ALEO,
-      token,
-    )) as EncryptedKeyPairWithViewKey;
 
-    const accountName = "Account 1";
+    const accounts: ComposedAccount[] = [];
+    for (let coinType of Object.values(CoinType)) {
+      const newAccount = (await keyring.derive(
+        nanoid(),
+        0,
+        coinType,
+        token,
+      )) as EncryptedKeyPairWithViewKey;
+      const accountName = "Account 1";
+      accounts.push({
+        ...newAccount,
+        accountName,
+      });
+    }
+
     const newWallet: HDWallet = {
       walletType: WalletType.HD,
       walletId,
       walletName,
       origin: "create",
       mnemonic: newMnemonic,
-      accountsMap: {
-        [CoinType.ALEO]: [
-          {
-            ...newAccount,
-            accountName,
-            hide: false,
-          },
-        ],
-      },
+      groupAccounts: [
+        {
+          groupId: nanoid(),
+          groupName: "Account 1",
+          index: 0,
+          accounts,
+        },
+      ],
     };
 
     await this.#storage.setHDWallet(newWallet, AccountMethod.REGENERATE);
@@ -263,29 +277,34 @@ export class KeyringManager {
     if (!newMnemonic) {
       throw new Error("createNewWallet failed");
     }
-    const newAccount = (await newKeyring.derive(
-      nanoid(),
-      0,
-      CoinType.ALEO,
-      token,
-    )) as EncryptedKeyPairWithViewKey;
-
-    const accountName = "Account 1";
+    const accounts: AccountWithViewKey[] = [];
+    for (let coinType of Object.values(CoinType)) {
+      const newAccount = (await newKeyring.derive(
+        nanoid(),
+        0,
+        coinType,
+        token,
+      )) as EncryptedKeyPairWithViewKey;
+      const accountName = "Account 1";
+      accounts.push({
+        ...newAccount,
+        accountName,
+      });
+    }
     const newWallet: HDWallet = {
       walletType: WalletType.HD,
       walletId,
       walletName,
       origin: "import",
       mnemonic: newMnemonic,
-      accountsMap: {
-        [CoinType.ALEO]: [
-          {
-            ...newAccount,
-            accountName,
-            hide: false,
-          },
-        ],
-      },
+      groupAccounts: [
+        {
+          groupId: nanoid(),
+          groupName: "Account 1",
+          index: 0,
+          accounts,
+        },
+      ],
     };
     await this.#storage.addHDWallet(newWallet, AccountMethod.IMPORT);
 
@@ -294,14 +313,14 @@ export class KeyringManager {
 
   async addNewAccount({
     walletId,
-    coinType,
     accountId,
   }: AddAccountProps): Promise<DisplayWallet> {
     const token = this.#getToken();
     const hdWallet = await this.#storage.getHDWallet(walletId);
-    const index = hdWallet.accountsMap[coinType].length;
-    const existAccount = hdWallet.accountsMap[coinType].some(
-      (item) => item.accountId === accountId,
+    const groupAccounts = hdWallet.groupAccounts;
+    const index = groupAccounts.length;
+    const existAccount = groupAccounts.some((groupAccount) =>
+      groupAccount.accounts.some((account) => account.accountId === accountId),
     );
     if (existAccount) {
       throw new Error("AccountId have existed");
@@ -311,27 +330,32 @@ export class KeyringManager {
       token,
       mnemonic: hdWallet.mnemonic,
     });
-    const newEncryptedKeyPair = (await keyring.derive(
-      accountId,
-      index,
-      coinType,
-      token,
-    )) as EncryptedKeyPairWithViewKey;
-    // TODO: use i18n
-    const accountName = `Account ${index + 1}`;
+    const newAccounts: AccountWithViewKey[] = [];
+    for (let coinType of Object.values(CoinType)) {
+      const newAccount = (await keyring.derive(
+        nanoid(),
+        index,
+        coinType,
+        token,
+      )) as EncryptedKeyPairWithViewKey;
+      const accountName = `Account ${index + 1}`;
+      newAccounts.push({
+        ...newAccount,
+        accountName,
+      });
+    }
+    const newGroupAccounts = [
+      ...groupAccounts,
+      {
+        groupId: nanoid(),
+        groupName: `Account ${index + 1}`,
+        index,
+        accounts: newAccounts,
+      },
+    ];
     const newHdWallet: HDWallet = {
       ...hdWallet,
-      accountsMap: {
-        ...hdWallet.accountsMap,
-        [coinType]: [
-          ...hdWallet.accountsMap[coinType],
-          {
-            ...newEncryptedKeyPair,
-            accountName,
-            hide: false,
-          },
-        ],
-      },
+      groupAccounts: newGroupAccounts,
     };
     await this.#storage.setHDWallet(newHdWallet, AccountMethod.ADD);
 
@@ -344,17 +368,22 @@ export class KeyringManager {
     coinType,
     privateKey,
     privateKeyType,
+    option,
   }: ImportPrivateKeyProps<T>) {
     const token = this.#getToken();
     const simpleWallets = await this.#storage.getAllSimpleWallets();
     for (const wallet of simpleWallets) {
-      const account = wallet.accountsMap[coinType]?.[0];
-      if (!account) {
-        continue;
-      }
-      const existPrivateKey = await decryptStr(token, account.privateKey);
-      if (existPrivateKey === privateKey) {
-        throw new Error("PrivateKey exist!");
+      for (let groupAccount of wallet.groupAccounts) {
+        const account = groupAccount.accounts.find(
+          (account) => account.coinType === coinType,
+        );
+        if (!account) {
+          continue;
+        }
+        const existPrivateKey = await decryptStr(token, account.privateKey);
+        if (existPrivateKey === privateKey) {
+          throw new Error("PrivateKey exist!");
+        }
       }
     }
     const account = await coinBasicFactory(coinType).deriveAccount(
@@ -369,18 +398,24 @@ export class KeyringManager {
       walletType: WalletType.SIMPLE,
       walletId,
       walletName,
-      accountsMap: {
-        [CoinType.ALEO]: [
-          {
-            ...account,
-            index: 0,
-            accountId: nanoid(),
-            accountName: "Account 1",
-            privateKey: privateKeyObj,
-            hide: false,
-          },
-        ],
-      },
+      groupAccounts: [
+        {
+          groupId: nanoid(),
+          groupName: "Account 1",
+          index: 0,
+          accounts: [
+            {
+              ...account,
+              index: 0,
+              accountId: nanoid(),
+              accountName: "Account 1",
+              privateKey: privateKeyObj,
+              coinType,
+              option: {},
+            },
+          ],
+        },
+      ],
     };
     await this.#storage.addSimpleWallet(newSimpleWallet);
 
@@ -401,15 +436,16 @@ export class KeyringManager {
       throw new Error(ERROR_CODE.NOT_AUTH);
     }
     const wallet = await this.#storage.getWallet(walletId);
-    const account = wallet.accountsMap[coinType].find(
-      (item) => item.accountId === accountId,
-    );
-    if (!account) {
-      throw new Error("Account not found " + accountId);
+    for (let groupAccount of wallet.groupAccounts) {
+      for (let account of groupAccount.accounts) {
+        if (account.accountId === accountId && account.coinType === coinType) {
+          const encryptedPrivateKey = account.privateKey;
+          const privateKey = decryptStr(token, encryptedPrivateKey);
+          return privateKey;
+        }
+      }
     }
-    const encryptedPrivateKey = account.privateKey;
-    const privateKey = decryptStr(token, encryptedPrivateKey);
-    return privateKey;
+    throw new Error("Account pk not found " + accountId);
   }
 
   async getPrivateKeyByAddress({
@@ -430,28 +466,28 @@ export class KeyringManager {
     const { HD: hdWallets, SIMPLE: simpleWallets } = keyring;
     if (hdWallets) {
       for (const wallet of hdWallets) {
-        const account = wallet.accountsMap[coinType].find(
-          (item) => item.address === address,
-        );
-        if (!account) {
-          continue;
+        for (let groupAccount of wallet.groupAccounts) {
+          for (let account of groupAccount.accounts) {
+            if (account.address === address && account.coinType === coinType) {
+              const encryptedPrivateKey = account.privateKey;
+              const privateKey = decryptStr(token, encryptedPrivateKey);
+              return privateKey;
+            }
+          }
         }
-        const encryptedPrivateKey = account.privateKey;
-        const privateKey = decryptStr(token, encryptedPrivateKey);
-        return privateKey;
       }
     }
     if (simpleWallets) {
       for (const wallet of simpleWallets) {
-        const account = wallet.accountsMap[coinType].find(
-          (item) => item.address === address,
-        );
-        if (!account) {
-          continue;
+        for (let groupAccount of wallet.groupAccounts) {
+          for (let account of groupAccount.accounts) {
+            if (account.address === address && account.coinType === coinType) {
+              const encryptedPrivateKey = account.privateKey;
+              const privateKey = decryptStr(token, encryptedPrivateKey);
+              return privateKey;
+            }
+          }
         }
-        const encryptedPrivateKey = account.privateKey;
-        const privateKey = decryptStr(token, encryptedPrivateKey);
-        return privateKey;
       }
     }
     throw new Error("Account not found " + address);
@@ -475,24 +511,24 @@ export class KeyringManager {
     const { HD: hdWallets, SIMPLE: simpleWallets } = keyring;
     if (hdWallets) {
       for (const wallet of hdWallets) {
-        const account = wallet.accountsMap[coinType].find(
-          (item) => item.address === address,
-        );
-        if (!account) {
-          continue;
+        for (let groupAccount of wallet.groupAccounts) {
+          for (let account of groupAccount.accounts) {
+            if (account.address === address && account.coinType === coinType) {
+              return account.viewKey;
+            }
+          }
         }
-        return account.viewKey;
       }
     }
     if (simpleWallets) {
       for (const wallet of simpleWallets) {
-        const account = wallet.accountsMap[coinType].find(
-          (item) => item.address === address,
-        );
-        if (!account) {
-          continue;
+        for (let groupAccount of wallet.groupAccounts) {
+          for (let account of groupAccount.accounts) {
+            if (account.address === address && account.coinType === coinType) {
+              return account.viewKey;
+            }
+          }
         }
-        return account.viewKey;
       }
     }
     throw new Error("Account not found " + address);
@@ -540,17 +576,5 @@ export class KeyringManager {
       throw new Error("Empty keyring");
     }
     return await this.#storage.deleteWallet(walletId);
-  }
-
-  async changeAccountHideState(params: ChangeAccountStateProps) {
-    const token = this.#getToken();
-    if (!token) {
-      throw new Error(ERROR_CODE.NOT_AUTH);
-    }
-    const keyring = await this.#storage.getKeyring();
-    if (!keyring) {
-      throw new Error("Empty keyring");
-    }
-    return await this.#storage.changeAccountHideState(params);
   }
 }

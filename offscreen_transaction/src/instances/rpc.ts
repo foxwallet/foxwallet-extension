@@ -1,10 +1,8 @@
-import { AutoSwitchService } from "../utils/retry";
+import { createAutoSwitchApi, AutoSwitchProxy } from "../utils/retry";
 import { AleoRpc } from "../api/rpc";
 
-export class AleoRpcService extends AutoSwitchService<string, AleoRpc> {
-  getInstanceList(requestUrls: string[]): AleoRpc[] {
-    return requestUrls.map((rpcUrl) => {
-      return new AleoRpc(rpcUrl);
-    });
-  }
-}
+export type AleoRpcService = AutoSwitchProxy<string, AleoRpc>;
+
+export const createAleoRpcService = (config: string[]) => {
+  return createAutoSwitchApi(config, (url) => new AleoRpc(url));
+};

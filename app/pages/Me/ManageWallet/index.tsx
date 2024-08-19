@@ -4,7 +4,7 @@ import { SyntheticEvent, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCurrWallet, useWallets } from "@/hooks/useWallets";
 import {
-  DisplayAccount,
+  DisplayGroupAccount,
   DisplayWallet,
 } from "@/scripts/background/store/vault/types/keyring";
 import { useTranslation } from "react-i18next";
@@ -104,23 +104,22 @@ function ManageWalletScreen() {
   const onSelectWallet = useCallback(
     (wallet: DisplayWallet) => {
       if (wallet.walletId !== selectedWallet?.walletId) {
-        const account: DisplayAccount | undefined = (
-          wallet.accountsMap[CoinType.ALEO] || []
-        ).find((a) => !a.hide);
+        const { groupAccounts, ...restWallet } = wallet;
+        const account: DisplayGroupAccount | undefined =
+          wallet.groupAccounts[0];
 
         if (account) {
-          dispatch.account.setSelectedAccount({
-            selectedAccount: {
-              ...account,
-              walletId: wallet.walletId,
-              coinType: CoinType.ALEO,
+          dispatch.accountV2.setSelectedGroupAccount({
+            selectedGroupAccount: {
+              wallet: restWallet,
+              group: account,
             },
           });
         }
       }
       navigate(-1);
     },
-    [dispatch.account, navigate],
+    [dispatch.accountV2, navigate],
   );
 
   const onDeleteWallet = useCallback(

@@ -1,8 +1,13 @@
 import { IconLoading, IconRescan } from "@/components/Custom/Icon";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
+import { useChainMode } from "@/hooks/useChainMode";
+import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { useSyncProgress } from "@/hooks/useSyncProgress";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
 import { Flex, Text, keyframes } from "@chakra-ui/react";
+import {
+  ChainAssembleMode,
+  InnerChainUniqueId,
+} from "core/types/ChainUniqueId";
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -17,17 +22,30 @@ interface RescanButtonProps {
 
 const RescanButton = (props: RescanButtonProps) => {
   const { paused } = props;
-  const { selectedAccount, uniqueId } = useCurrAccount();
+
+  const { chainMode, availableChainUniqueIds } = useChainMode();
+
+  const { groupAccount, getMatchAccountsWithUniqueId } = useGroupAccount();
+
+  const uniqueId = availableChainUniqueIds[0];
+  const selectedAccount = useMemo(() => {
+    return getMatchAccountsWithUniqueId(uniqueId)[0];
+  }, [getMatchAccountsWithUniqueId, uniqueId]);
+
   const { t } = useTranslation();
   const { progress, error, getProgress } = useSyncProgress(
     uniqueId,
-    selectedAccount.address,
+    selectedAccount.account.address,
   );
   const { selectedBorderColor } = useThemeStyle();
 
   const onRescan = useCallback(() => {
     getProgress();
   }, [getProgress]);
+
+  if (chainMode.mode !== ChainAssembleMode.SINGLE) return null;
+
+  if (chainMode.uniqueId !== InnerChainUniqueId.ALEO_MAINNET) return null;
 
   if (!error && progress && progress >= 100) return null;
 

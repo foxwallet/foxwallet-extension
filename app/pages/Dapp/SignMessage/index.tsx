@@ -5,16 +5,20 @@ import { ResponsiveFlex } from "@/components/Custom/ResponsiveFlex";
 import { AccountInfo } from "@/components/Dapp/AccountInfo";
 import { DappInfo } from "@/components/Dapp/DappInfo";
 import { useClient } from "@/hooks/useClient";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { useDappRequest } from "@/hooks/useDappRequest";
+import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { Content } from "@/layouts/Content";
 import { Button, Flex, Text } from "@chakra-ui/react";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 
 function SignMessageScreen() {
-  const { selectedAccount } = useCurrAccount();
+  const { getMatchAccountsWithUniqueId } = useGroupAccount();
+  const selectedAccount = useMemo(() => {
+    return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_MAINNET)[0];
+  }, [getMatchAccountsWithUniqueId]);
   const { requestId } = useParams();
   const { popupServerClient } = useClient();
   const { dappRequest, loading } = useDappRequest(requestId);
@@ -48,12 +52,12 @@ function SignMessageScreen() {
   }, [dappRequest, t]);
 
   const onConfirm = useCallback(() => {
-    if (requestId && selectedAccount?.address) {
+    if (requestId && selectedAccount?.account.address) {
       popupServerClient.onRequestFinish({
         requestId,
       });
     }
-  }, [popupServerClient, requestId, selectedAccount?.address]);
+  }, [popupServerClient, requestId, selectedAccount?.account.address]);
 
   const onCancel = useCallback(() => {
     if (requestId) {

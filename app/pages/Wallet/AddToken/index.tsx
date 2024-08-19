@@ -4,7 +4,8 @@ import {
   IconSearch,
 } from "@/components/Custom/Icon";
 import { TokenItem, TokenItemWithBalance } from "@/components/Wallet/TokenItem";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
+import { useChainMode } from "@/hooks/useChainMode";
+import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
 import { useTokens } from "@/hooks/useToken";
 import { PageWithHeader } from "@/layouts/Page";
@@ -24,11 +25,19 @@ import { useTranslation } from "react-i18next";
 
 function AddToken() {
   const { t } = useTranslation();
-  const { selectedAccount, uniqueId } = useCurrAccount();
+  // TODO: get uniqueId from nav param
+  const { getMatchAccountsWithUniqueId } = useGroupAccount();
+  const { availableChainUniqueIds } = useChainMode();
+  const uniqueId = availableChainUniqueIds[0];
+  const selectedAccount = useMemo(() => {
+    return getMatchAccountsWithUniqueId(uniqueId)[0];
+  }, [getMatchAccountsWithUniqueId, uniqueId]);
+
   const [keyword, setKeyword] = useState("");
   const { tokens, loadingTokens, getTokens } = useTokens(uniqueId, keyword);
   const userTokens = usePopupSelector(
-    (state) => state.tokens.userTokens?.[uniqueId]?.[selectedAccount.address],
+    (state) =>
+      state.tokens.userTokens?.[uniqueId]?.[selectedAccount?.account.address],
     isEqual,
   );
   const dispatch = usePopupDispatch();
@@ -61,7 +70,7 @@ function AddToken() {
     (token: Token) => {
       dispatch.tokens.selectToken({
         uniqueId,
-        address: selectedAccount.address,
+        address: selectedAccount.account.address,
         token,
       });
     },
@@ -72,7 +81,7 @@ function AddToken() {
     (token: Token) => {
       dispatch.tokens.unselectToken({
         uniqueId,
-        address: selectedAccount.address,
+        address: selectedAccount.account.address,
         token,
       });
     },
@@ -111,7 +120,7 @@ function AddToken() {
                 >
                   <TokenItemWithBalance
                     uniqueId={uniqueId}
-                    address={selectedAccount.address}
+                    address={selectedAccount.account.address}
                     token={token}
                     onClick={() => unselectToken(token)}
                   />

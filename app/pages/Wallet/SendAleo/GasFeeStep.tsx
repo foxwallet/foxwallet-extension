@@ -6,7 +6,7 @@ import { showSelectFeeTypeDialog } from "@/components/Send/SelectFeeType";
 import { TokenNum } from "@/components/Wallet/TokenNum";
 import { useBalance } from "@/hooks/useBalance";
 import { useCoinService } from "@/hooks/useCoinService";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
+import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { useRecords } from "@/hooks/useRecord";
 import { Content } from "@/layouts/Content";
 import { Button, Divider, Flex, Text } from "@chakra-ui/react";
@@ -18,6 +18,7 @@ import { AleoFeeMethod } from "core/coins/ALEO/types/FeeMethod";
 import { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 import { Token } from "core/coins/ALEO/types/Token";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { AleoGasFee } from "core/types/GasFee";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -55,20 +56,26 @@ export const GasFeeStep = (props: GasFeeProps) => {
       ? transferRecord?.parsedContent?.microcredits
       : transferRecord?.parsedContent?.amount;
 
-  const { selectedAccount, uniqueId } = useCurrAccount();
+  const { getMatchAccountsWithUniqueId } = useGroupAccount();
+  // TODO: get uniqueId from chain mode or page params
+  const selectedAccount = useMemo(() => {
+    return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_MAINNET)[0];
+  }, [getMatchAccountsWithUniqueId]);
+  const uniqueId = InnerChainUniqueId.ALEO_MAINNET;
+
   const { coinService, nativeCurrency } = useCoinService(uniqueId);
 
   const { balance, loadingBalance } = useBalance({
     uniqueId,
-    address: selectedAccount.address,
     programId: NATIVE_TOKEN_PROGRAM_ID,
+    address: selectedAccount.account.address,
     refreshInterval: 10000,
   });
 
   const { balance: tokenBalance, loadingBalance: loadingTokenBalance } =
     useBalance({
       uniqueId,
-      address: selectedAccount.address,
+      address: selectedAccount.account.address,
       refreshInterval: 10000,
       tokenId: token.tokenId,
       programId: token.programId,
@@ -76,7 +83,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
 
   const { records, loading: loadingRecords } = useRecords({
     uniqueId,
-    address: selectedAccount.address,
+    address: selectedAccount.account.address,
   });
   const { t } = useTranslation();
 
@@ -379,7 +386,10 @@ export const GasFeeStep = (props: GasFeeProps) => {
           align={"center"}
         >
           <Text color={"gray.500"}>{t("Send:from")}</Text>
-          <MiddleEllipsisText text={selectedAccount.address} width={200} />
+          <MiddleEllipsisText
+            text={selectedAccount.account.address}
+            width={200}
+          />
         </Flex>
         <Flex
           direction={"row"}
