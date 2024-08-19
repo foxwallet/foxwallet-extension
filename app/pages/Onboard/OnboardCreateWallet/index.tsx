@@ -32,9 +32,9 @@ function OnboardCreateWalletScreen() {
       walletId,
       revealMnemonic: true,
     });
-    await dispatch.account.resyncAllWalletsToStore();
+    await dispatch.accountV2.resyncAllWalletsToStore();
     setMnemonic(wallet.mnemonic ?? "");
-  }, []);
+  }, [dispatch.accountV2]);
 
   // const regenerateWallet = useCallback(async () => {
   //   const walletId = walletIdRef.current;
@@ -75,7 +75,7 @@ function OnboardCreateWalletScreen() {
           <ConfirmMnemonicStep
             mnemonic={mnemonic}
             onConfirm={() => {
-              dispatch.account.changeWalletBackupedMnemonic({
+              dispatch.accountV2.changeWalletBackupedMnemonic({
                 walletId: walletIdRef.current,
                 backupedMnemonic: true,
               });
@@ -84,7 +84,7 @@ function OnboardCreateWalletScreen() {
           />
         );
     }
-  }, [step, mnemonic, createWallet]);
+  }, [step, mnemonic, createWallet, dispatch.accountV2]);
 
   const { t } = useTranslation();
   const CreateWalletSteps = useMemo(

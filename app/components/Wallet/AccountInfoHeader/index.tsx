@@ -11,7 +11,6 @@ import {
   IconReceive,
   IconSend,
 } from "@/components/Custom/Icon";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
 import {
   Box,
   Flex,
@@ -25,7 +24,7 @@ import {
 import { TokenNum } from "../TokenNum";
 import { useCoinService } from "@/hooks/useCoinService";
 import { useBalance } from "@/hooks/useBalance";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
@@ -55,6 +54,8 @@ import { showErrorToast } from "@/components/Custom/ErrorToast";
 import { stringToHex } from "@/common/utils/hex";
 import { useTxsNotification } from "@/hooks/useTxHistory";
 import { NATIVE_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
+import { useGroupAccount } from "@/hooks/useGroupAccount";
+import { useChainMode } from "@/hooks/useChainMode";
 
 const rotateAnimation = keyframes`
   from { transform: rotate(0deg) }
@@ -63,21 +64,28 @@ const rotateAnimation = keyframes`
 
 export const AccountInfoHeader = () => {
   const navigate = useNavigate();
-  const { selectedAccount, uniqueId } = useCurrAccount();
+  const { groupAccount, getMatchAccountsWithUniqueId } = useGroupAccount();
+  const { chainMode, availableChainUniqueIds } = useChainMode();
+
+  // TODO: 根据 chainMode 获取  asset
+  const selectedAccount = useMemo(() => {
+    return getMatchAccountsWithUniqueId(availableChainUniqueIds[0])[0];
+  }, []);
+  const uniqueId = availableChainUniqueIds[0];
   const { nativeCurrency, chainConfig, coinService } = useCoinService(uniqueId);
   const { balance, loadingBalance } = useBalance({
     uniqueId,
     programId: NATIVE_TOKEN_PROGRAM_ID,
-    address: selectedAccount.address,
+    address: selectedAccount.account.address,
     refreshInterval: 4000,
   });
   const { selectedWallet } = useCurrWallet();
   const { popupServerClient } = useClient();
   const { t } = useTranslation();
-  const showBalance = usePopupSelector((state) => state.account.showBalance);
+  const showBalance = usePopupSelector((state) => state.accountV2.showBalance);
   const dispatch = usePopupDispatch();
   const { showToast } = useCopyToast();
-  const { onCopy } = useClipboard(selectedAccount.address);
+  const { onCopy } = useClipboard(selectedAccount.account.address);
   const { sendingAleoTx } = useIsSendingAleoTx(uniqueId);
   const { lock } = useAuth();
   const [requestingFaucet, setRequestingFaucet] = useState(false);
@@ -85,7 +93,7 @@ export const AccountInfoHeader = () => {
     uniqueId,
     selectedAccount,
   );
-  useTxsNotification(uniqueId, selectedAccount.address, 5000);
+  useTxsNotification(uniqueId, selectedAccount.account.address, 5000);
   const onPressFaucet = useCallback(async () => {
     if (requestingFaucet) return;
     setRequestingFaucet(true);
@@ -100,7 +108,7 @@ export const AccountInfoHeader = () => {
             break;
           }
           case FaucetStatus.EMPTY: {
-            const address = selectedAccount.address;
+            const address = selectedAccount.account.address;
             const coinType = chainUniqueIdToCoinType(uniqueId);
             const { rawMessage, displayMessage } =
               await coinService.faucetMessage(address);
@@ -110,8 +118,8 @@ export const AccountInfoHeader = () => {
             });
             if (confirmed) {
               const signature = await popupServerClient.signMessage({
-                walletId: selectedAccount.walletId,
-                accountId: selectedAccount.accountId,
+                walletId: selectedAccount.wallet.walletId,
+                accountId: selectedAccount.account.accountId,
                 coinType,
                 message: stringToHex(rawMessage),
               });
@@ -306,7 +314,7 @@ export const AccountInfoHeader = () => {
                 {selectedWallet?.walletName}
               </Text>
               <Text fontSize={10} color={"#777E90"} fontWeight={500}>
-                {selectedAccount.accountName}
+                {selectedAccount.account.accountName}
               </Text>
             </Flex>
             <IconArrowRight w={18} h={18} />
@@ -323,7 +331,10 @@ export const AccountInfoHeader = () => {
         </Flex>
         <Flex mt={6} direction={"row"} align={"center"}>
           <Box maxW={128} noOfLines={1} fontSize={11} color={"#777E90"}>
-            <MiddleEllipsisText text={selectedAccount.address} width={128} />
+            <MiddleEllipsisText
+              text={selectedAccount.account.address}
+              width={128}
+            />
           </Box>
           <Hover onClick={onCopyAddress}>
             <IconCopy w={3} h={3} />
@@ -350,7 +361,7 @@ export const AccountInfoHeader = () => {
             <Box
               cursor={"pointer"}
               ml={1}
-              onClick={() => dispatch.account.changeBalanceState()}
+              onClick={() => dispatch.accountV2.changeBalanceState()}
             >
               {showBalance ? (
                 <IconEyeOn w={4} h={4} />

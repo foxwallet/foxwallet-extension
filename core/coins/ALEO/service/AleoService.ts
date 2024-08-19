@@ -7,13 +7,12 @@ import {
 } from "../types/SyncTask";
 import { parseU128, parseU64 } from "../utils/num";
 import { logger } from "@/common/utils/logger";
-import { AutoSwitch, AutoSwitchServiceType } from "core/utils/retry";
 import {
   InputItem,
   RecordFilter,
 } from "@/scripts/background/servers/IWalletServer";
 import { groupBy, uniqBy } from "lodash";
-import { AleoRpcService } from "./instances/rpc";
+import { AleoRpcService, createAleoRpcService } from "./instances/rpc";
 import { AleoCreditMethod } from "../types/TransferMethod";
 import {
   AleoLocalTxInfo,
@@ -46,13 +45,16 @@ import {
   hashBHP256,
   Plaintext,
 } from "aleo_wasm";
-import { AleoApiService } from "./instances/sync";
+import { AleoApiService, createAleoApiService } from "./instances/sync";
 import { AleoSyncAccount } from "../types/AleoSyncAccount";
-import { AleoWalletService } from "./instances/api";
+import { AleoWalletService, createAleoWalletService } from "./instances/api";
 import { Pagination } from "../types/Pagination";
 import { FaucetMessage, FaucetResp } from "../types/Faucet";
 import { ExplorerLanguages } from "core/types/ExplorerLanguages";
-import { TokenService } from "./instances/token";
+import {
+  AlphaSwapTokenService,
+  createAlphaSwapTokenService,
+} from "./instances/token";
 import { Token, TokenWithBalance } from "../types/Token";
 import { type InnerProgramId } from "../types/ProgramId";
 import { BETA_STAKING_ALEO_TOKEN } from "../config/chains";
@@ -76,7 +78,7 @@ export class AleoService {
   private rpcService: AleoRpcService;
   private apiService: AleoApiService;
   private walletService: AleoWalletService;
-  private tokenService: TokenService;
+  private tokenService: AlphaSwapTokenService;
   private cachedSyncBlock: AleoAddressInfo | null = null;
   private lastSyncBlockTime: number = 0;
 
@@ -84,39 +86,36 @@ export class AleoService {
     this.config = config;
     this.chainId = config.chainId;
     this.aleoStorage = storage;
-    this.rpcService = new AleoRpcService({
-      configs: config.rpcList.map((item) => ({
+    this.rpcService = createAleoRpcService(
+      config.rpcList.map((item) => ({
         url: item,
         chainId: config.chainId,
       })),
-    });
-    this.apiService = new AleoApiService({
-      configs: config.syncApiList.map((item) => ({
+    );
+    this.apiService = createAleoApiService(
+      config.syncApiList.map((item) => ({
         url: item,
         chainId: config.chainId,
       })),
-    });
-    this.walletService = new AleoWalletService({
-      configs: config.walletApiList.map((item) => ({
+    );
+    this.walletService = createAleoWalletService(
+      config.walletApiList.map((item) => ({
         url: item,
         chainId: config.chainId,
       })),
-    });
+    );
     if (this.config.alphaSwapApi) {
-      this.tokenService = new TokenService({
-        configs: [
-          {
-            url: this.config.alphaSwapApi,
-            chainId: this.config.chainId,
-          },
-        ],
-      });
+      this.tokenService = createAlphaSwapTokenService([
+        {
+          url: this.config.alphaSwapApi,
+          chainId: this.config.chainId,
+        },
+      ]);
     }
   }
 
-  @AutoSwitch({ serviceType: AutoSwitchServiceType.API })
   private async getSpentTagsInRange(tags: string[]) {
-    return await this.apiService.currInstance().getSpentTags(tags);
+    return await this.apiService.getSpentTags(tags);
   }
 
   private async getSpentTags(tags: string[]) {
@@ -136,7 +135,7 @@ export class AleoService {
   public async getSyncProgress(address: string): Promise<number> {
     const [recordRanges, nodeStatus] = await Promise.all([
       this.aleoStorage.getAleoRecordRanges(this.chainId, address),
-      this.apiService.currInstance().getNodeStatus(),
+      this.apiService.getNodeStatus(),
     ]);
     const { syncHeight, referenceHeight } = nodeStatus;
     const finishHeight = recordRanges
@@ -348,15 +347,12 @@ export class AleoService {
     return privateBalance;
   }
 
-  @AutoSwitch({ serviceType: AutoSwitchServiceType.RPC })
   async getPublicBalance(address: string): Promise<bigint> {
-    const balance = await this.rpcService
-      .currInstance()
-      .getProgramMappingValue(
-        this.config.nativeCurrency.address,
-        CREDITS_MAPPING_NAME,
-        address,
-      );
+    const balance = await this.rpcService.getProgramMappingValue(
+      this.config.nativeCurrency.address,
+      CREDITS_MAPPING_NAME,
+      address,
+    );
     if (!balance || balance === "null") {
       return 0n;
     }
@@ -380,9 +376,10 @@ export class AleoService {
     programId: InnerProgramId,
     method: AleoCreditMethod,
   ): Promise<bigint> {
-    const baseFee = await this.walletService
-      .currInstance()
-      .getBaseFee({ txType: method, programId });
+    const baseFee = await this.walletService.getBaseFee({
+      txType: method,
+      programId,
+    });
     return baseFee;
   }
 
@@ -402,14 +399,12 @@ export class AleoService {
 
   async getPriorityFee(): Promise<bigint> {
     try {
-      const priorityFee = await this.walletService
-        .currInstance()
-        .getPriorityFee();
+      const priorityFee = await this.walletService.getPriorityFee();
       if (priorityFee) {
         return BigInt(priorityFee);
       }
       const [latestBlock] = await Promise.all([
-        this.rpcService.currInstance().getLatestBlock(),
+        this.rpcService.getLatestBlock(),
       ]);
       const feeList: bigint[] = [];
       latestBlock.transactions?.forEach((tx) => {
@@ -500,14 +495,13 @@ export class AleoService {
     return false;
   }
 
-  @AutoSwitch({ serviceType: AutoSwitchServiceType.RPC })
   async getProgramContent(chainId: string, programId: string) {
     const cache = await this.aleoStorage.getProgramContent(chainId, programId);
     console.log("===> getProgramContent cache: ", cache?.length);
     if (cache) {
       return cache;
     }
-    const program = await this.rpcService.currInstance().getProgram(programId);
+    const program = await this.rpcService.getProgram(programId);
     console.log("===> getProgramContent: ", program.length);
     if (program) {
       await this.aleoStorage.setProgramContent(chainId, programId, program);
@@ -872,7 +866,7 @@ export class AleoService {
 
     // const { cursor } = pagination;
     // const publicHistory = await this.walletService
-    //   .currInstance()
+    //
     //   .getPublicHistory(address, cursor);
     // return publicHistory.map((item) => {
     //   return {
@@ -892,9 +886,8 @@ export class AleoService {
     // });
   }
 
-  @AutoSwitch({ serviceType: AutoSwitchServiceType.RPC })
   private async getTxInfoOnChain(txId: string): Promise<AleoTransaction> {
-    return await this.rpcService.currInstance().getTransaction(txId);
+    return await this.rpcService.getTransaction(txId);
   }
 
   private async getConfirmedTransactionInfo({
@@ -913,7 +906,7 @@ export class AleoService {
     if (cachedTx) {
       return cachedTx;
     }
-    const item = await this.walletService.currInstance().getTransaction(txId);
+    const item = await this.walletService.getTransaction(txId);
     let txType = AleoTxType.EXECUTION;
     if (item.origin_data.deployment) {
       txType = AleoTxType.DEPLOYMENT;
@@ -1082,6 +1075,7 @@ export class AleoService {
     const result = await this.debounceSyncBlocks(address);
     if (!result) return [];
     const { recordsMap } = result;
+    if (!recordsMap) {return []}
     let records: RecordDetailWithSpent[] = [];
     if (program) {
       if (program === ALPHA_TOKEN_PROGRAM_ID) {
@@ -1271,9 +1265,7 @@ export class AleoService {
   }
 
   async faucetMessage(address: string): Promise<FaucetMessage> {
-    const content = await this.walletService
-      .currInstance()
-      .getFaucetContent({ address });
+    const content = await this.walletService.getFaucetContent({ address });
     const message = {
       ...content,
       address,
@@ -1293,9 +1285,7 @@ export class AleoService {
   }
 
   async faucetStatus(address: string): Promise<FaucetResp> {
-    const status = await this.walletService
-      .currInstance()
-      .getFaucetStatus({ address });
+    const status = await this.walletService.getFaucetStatus({ address });
     return status;
   }
 
@@ -1308,7 +1298,7 @@ export class AleoService {
     message: string;
     signature: string;
   }): Promise<boolean> {
-    const res = await this.walletService.currInstance().requestFaucet({
+    const res = await this.walletService.requestFaucet({
       address,
       message,
       signature,
@@ -1412,19 +1402,16 @@ export class AleoService {
     return !!this.config.alphaSwapApi;
   }
 
-  @AutoSwitch({ serviceType: AutoSwitchServiceType.RPC })
   async getTokenPublicBalance(
-    address: string,
-    programId: InnerProgramId,
-    tokenId: string,
+      address: string,
+      programId: InnerProgramId,
+      tokenId: string,
   ) {
     switch (programId) {
       case ALPHA_TOKEN_PROGRAM_ID: {
         const id = hashBHP256(`{ token: ${tokenId}, user: ${address} }`);
         console.log("===> public balance id: ", tokenId, address, id);
-        const balance = await this.rpcService
-          .currInstance()
-          .getProgramMappingValue(programId, CREDITS_MAPPING_NAME, id);
+        const balance = await this.rpcService.getProgramMappingValue(programId, CREDITS_MAPPING_NAME, id);
         console.log("===> token public balance: ", balance, id);
         if (!balance || balance === "null") {
           return 0n;
@@ -1432,9 +1419,7 @@ export class AleoService {
         return parseU128(balance);
       }
       case BETA_STAKING_PROGRAM_ID: {
-        const balance = await this.rpcService
-          .currInstance()
-          .getProgramMappingValue(programId, CREDITS_MAPPING_NAME, address);
+        const balance = await this.rpcService.getProgramMappingValue(programId, CREDITS_MAPPING_NAME, address);
         console.log("===> token public balance: ", balance, address);
         if (!balance || balance === "null") {
           return 0n;
@@ -1517,13 +1502,13 @@ export class AleoService {
   }
 
   async getAllTokens() {
-    const tokens = await this.tokenService.currInstance().getTokens();
+    const tokens = await this.tokenService.getTokens();
     return [BETA_STAKING_ALEO_TOKEN, ...tokens];
   }
 
   async searchTokens(keyword: string) {
     const searchStAleo = keyword.includes("st") || keyword.includes("ale");
-    const tokens = await this.tokenService.currInstance().searchTokens(keyword);
+    const tokens = await this.tokenService.searchTokens(keyword);
     return searchStAleo ? [BETA_STAKING_ALEO_TOKEN, ...tokens] : tokens;
   }
 
@@ -1579,17 +1564,14 @@ export class AleoService {
     return [stAleoToken, ...non0Tokens];
   }
 
-  @AutoSwitch({ serviceType: AutoSwitchServiceType.RPC })
   async getTokenInfoOnChain(
     tokenId: string,
   ): Promise<Omit<Token, "logo" | "official">> {
-    const tokenRawInfo = await this.rpcService
-      .currInstance()
-      .getProgramMappingValue(
-        ALPHA_TOKEN_PROGRAM_ID,
-        ALPHA_SWAP_TOKEN_MAPPING_NAME,
-        tokenId,
-      );
+    const tokenRawInfo = await this.rpcService.getProgramMappingValue(
+      ALPHA_TOKEN_PROGRAM_ID,
+      ALPHA_SWAP_TOKEN_MAPPING_NAME,
+      tokenId,
+    );
     if (!tokenRawInfo) {
       throw new Error("Token not found");
     }
@@ -1600,14 +1582,12 @@ export class AleoService {
   }
 
   async getTokenInfo(
-    programId: InnerProgramId,
-    tokenId: string,
+      programId: InnerProgramId,
+      tokenId: string,
   ): Promise<Token | undefined> {
     switch (programId) {
       case ALPHA_TOKEN_PROGRAM_ID: {
-        const allTokens = await this.tokenService
-          .currInstance()
-          .searchTokens(tokenId.slice(0, -5));
+        const allTokens = await this.tokenService.searchTokens(tokenId.slice(0, -5));
         const token = allTokens.find((item) => item.tokenId === tokenId);
         return token;
       }
@@ -1634,7 +1614,7 @@ export class AleoService {
     if (cachedTx) {
       return cachedTx;
     }
-    const item = await this.walletService.currInstance().getTransaction(txId);
+    const item = await this.walletService.getTransaction(txId);
     let txType = AleoTxType.EXECUTION;
     if (item.origin_data.deployment) {
       txType = AleoTxType.DEPLOYMENT;

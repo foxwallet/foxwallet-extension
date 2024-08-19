@@ -1,7 +1,4 @@
 import {
-  IconChevronDown,
-  IconCurrency,
-  IconEdit,
   IconInfo,
   IconLanguage,
   IconReset,
@@ -9,18 +6,14 @@ import {
 import { showConfirmResyncDialog } from "@/components/Setting/ConfirmResyncDialog";
 import SettingItem from "@/components/Setting/SettingItem";
 import { useClient } from "@/hooks/useClient";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { usePopupSelector } from "@/hooks/useStore";
 import { Content } from "@/layouts/Content";
 import { PageWithHeader } from "@/layouts/Page";
 import { LanguageLabels } from "@/locales/i18";
-import { CURRENCY } from "core/constants";
-import { CoinType } from "core/types";
 import { isEqual } from "lodash";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import TestTheme from "../TestTheme";
 import { Button } from "@chakra-ui/react";
 
 const SettingsScreen = () => {
@@ -33,7 +26,6 @@ const SettingsScreen = () => {
     }),
     isEqual,
   );
-  const { selectedAccount } = useCurrAccount();
   const { popupServerClient } = useClient();
 
   const onModifyPassword = useCallback(() => {
@@ -83,14 +75,12 @@ const SettingsScreen = () => {
           icon={<IconCurrency w={4} h={4} />}
           onPress={onCurrency}
         /> */}
-        {selectedAccount.coinType === CoinType.ALEO && (
-          <SettingItem
-            title={t("Reset:account")}
-            icon={<IconReset w={"16px"} h={"16px"} />}
-            noNext
-            onPress={onResetAleoStatus}
-          />
-        )}
+        <SettingItem
+          title={t("Reset:account")}
+          icon={<IconReset w={"16px"} h={"16px"} />}
+          noNext
+          onPress={onResetAleoStatus}
+        />
         <SettingItem
           title={t("About:title")}
           icon={<IconInfo w={4} h={4} />}

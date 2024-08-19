@@ -7,7 +7,7 @@ import { showSelectFeeTypeDialog } from "@/components/Send/SelectFeeType";
 import { TokenNum } from "@/components/Wallet/TokenNum";
 import { useBalance } from "@/hooks/useBalance";
 import { useCoinService } from "@/hooks/useCoinService";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
+import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
 import { Content } from "@/layouts/Content";
 import {
@@ -27,7 +27,7 @@ import {
   AleoRecordMethod,
   AleoTransferMethod,
 } from "core/coins/ALEO/types/TransferMethod";
-import { ChainUniqueId } from "core/types/ChainUniqueId";
+import { ChainUniqueId, InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { AleoGasFee } from "core/types/GasFee";
 import { parseUnits } from "ethers/lib/utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -41,13 +41,19 @@ export interface SplitStepProps {
 export const SplitStep = (props: SplitStepProps) => {
   const { selectedRecords, onConfirm } = props;
   const splitRecord = selectedRecords[0];
-  const { selectedAccount, uniqueId } = useCurrAccount();
+  const { getMatchAccountsWithUniqueId } = useGroupAccount();
+  // TODO: get uniqueId from chain mode or page params
+  const selectedAccount = useMemo(() => {
+    return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_TESTNET)[0];
+  }, [getMatchAccountsWithUniqueId]);
+  const uniqueId = InnerChainUniqueId.ALEO_TESTNET;
+
   const { nativeCurrency, coinService } = useCoinService(uniqueId);
   const { t } = useTranslation();
   const { balance, loadingBalance } = useBalance({
     uniqueId,
-    address: selectedAccount.address,
     programId: NATIVE_TOKEN_PROGRAM_ID,
+    address: selectedAccount.account.address,
   });
 
   const [amountStr, setAmountStr] = useState<string>("");

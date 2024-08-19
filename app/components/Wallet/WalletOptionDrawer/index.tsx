@@ -30,7 +30,7 @@ const WalletOptionDrawer = (props: Props) => {
   const { t } = useTranslation();
 
   const walletBackupMnemonicMap = usePopupSelector(
-    (state) => state.account.walletBackupMnemonicMap,
+    (state) => state.accountV2.walletBackupMnemonicMap,
     isEqual,
   );
   const isBackuped = useMemo(

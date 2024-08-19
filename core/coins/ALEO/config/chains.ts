@@ -92,3 +92,6 @@ export const ALEO_CHAIN_CONFIGS: { [key in string]: AleoConfig } = {
 export const ALEO_CHAIN_IDS = Object.values(ALEO_CHAIN_CONFIGS).map(
   (c) => c.chainId,
 );
+
+export const INNER_ALEO_CONFIG: AleoConfig[] =
+  Object.values(ALEO_CHAIN_CONFIGS);

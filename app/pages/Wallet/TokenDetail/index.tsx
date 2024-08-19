@@ -8,7 +8,6 @@ import {
 import { TokenNum } from "@/components/Wallet/TokenNum";
 import { useBalance } from "@/hooks/useBalance";
 import { useCoinService } from "@/hooks/useCoinService";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { PageWithHeader } from "@/layouts/Page";
 import {
   Box,
@@ -48,6 +47,7 @@ import {
   NATIVE_TOKEN_TOKEN_ID,
 } from "core/coins/ALEO/constants";
 import { serializeToken } from "@/common/utils/string";
+import { useGroupAccount } from "@/hooks/useGroupAccount";
 
 interface TokenTxHistoryItemProps {
   item: AleoHistoryItem;
@@ -139,11 +139,15 @@ const TokenDetailScreen = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const { selectedAccount } = useCurrAccount();
+  const { getMatchAccountsWithUniqueId } = useGroupAccount();
+  // TODO: get uniqueId from chain mode or page params
+  const selectedAccount = useMemo(() => {
+    return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_TESTNET)[0];
+  }, [getMatchAccountsWithUniqueId]);
 
   const {
     uniqueId = InnerChainUniqueId.ALEO_MAINNET,
-    address = selectedAccount.address,
+    address = selectedAccount.account.address,
   } = useParams<{
     uniqueId: InnerChainUniqueId;
     address: string;
@@ -166,15 +170,15 @@ const TokenDetailScreen = () => {
 
   const { balance, loadingBalance } = useBalance({
     uniqueId,
-    address: selectedAccount.address,
     programId: tokenInfo.programId,
+    address: selectedAccount.account.address,
     tokenId: tokenInfo.tokenId,
   });
 
   const { history, getMore, loading, loadingLocalTxs, loadingOnChainHistory } =
     useTxHistory({
       uniqueId,
-      address: selectedAccount.address,
+      address: selectedAccount.account.address,
       token: tokenInfo,
       refreshInterval: 4000,
     });
@@ -189,7 +193,7 @@ const TokenDetailScreen = () => {
   const { sendingAleoTx } = useIsSendingAleoTx(uniqueId);
   const { records, loading: loadingRecords } = useRecords({
     uniqueId,
-    address: selectedAccount.address,
+    address: selectedAccount.account.address,
     recordFilter: RecordFilter.UNSPENT,
     programId: tokenInfo.programId,
   });
