@@ -14,7 +14,7 @@ import { TokenNum } from "@/components/Wallet/TokenNum";
 import { useAssetList } from "@/hooks/useAssetList";
 import { useBalance } from "@/hooks/useBalance";
 import { useCoinBasic, useCoinService } from "@/hooks/useCoinService";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
+import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { useLocationParams } from "@/hooks/useLocationParams";
 import { useRecords } from "@/hooks/useRecord";
 import { useTokenInfo } from "@/hooks/useToken";
@@ -32,6 +32,7 @@ import { NATIVE_TOKEN_TOKEN_ID } from "core/coins/ALEO/constants";
 import { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 import { Token } from "core/coins/ALEO/types/Token";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { parseUnits } from "ethers/lib/utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -69,14 +70,23 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
     onConfirm,
   } = props;
 
-  const { selectedAccount, uniqueId } = useCurrAccount();
+  const { getMatchAccountsWithUniqueId } = useGroupAccount();
+  // TODO: get uniqueId from chain mode or page params
+  const selectedAccount = useMemo(() => {
+    return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_TESTNET)[0];
+  }, [getMatchAccountsWithUniqueId]);
+  const uniqueId = InnerChainUniqueId.ALEO_TESTNET;
+
   const coinBasic = useCoinBasic(uniqueId);
   const { t } = useTranslation();
   const navigate = useNavigate();
 
   const token = useLocationParams("token");
 
-  const { nativeToken } = useAssetList(uniqueId, selectedAccount.address);
+  const { nativeToken } = useAssetList(
+    uniqueId,
+    selectedAccount.account.address,
+  );
 
   const tokenInfo = useMemo(() => {
     try {
@@ -91,7 +101,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
 
   const { records, loading: loadingRecords } = useRecords({
     uniqueId,
-    address: selectedAccount.address,
+    address: selectedAccount.account.address,
     recordFilter: RecordFilter.UNSPENT,
     programId: tokenInfo.programId,
   });
@@ -112,7 +122,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
 
   const { balance, loadingBalance } = useBalance({
     uniqueId,
-    address: selectedAccount.address,
+    address: selectedAccount.account.address,
     tokenId: tokenInfo.tokenId,
     refreshInterval: 10000,
   });
@@ -142,7 +152,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
   const onSelectTransferMethod = useCallback(async () => {
     const { data } = await showSelectTransferMethodDialog({
       uniqueId,
-      address: selectedAccount.address,
+      address: selectedAccount.account.address,
       selectedMethod: transferMethod,
       token: tokenInfo,
     });
@@ -330,7 +340,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
         <Flex justifyContent={"space-between"} align={"center"}>
           <Text>{t("Send:from")}</Text>
           <Box width={200}>
-            <MiddleEllipsisText text={selectedAccount.address} />
+            <MiddleEllipsisText text={selectedAccount.account.address} />
           </Box>
         </Flex>
         <Flex justify={"space-between"} mt={2} align={"center"}>
@@ -341,7 +351,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
               onClick={() =>
                 navigate(
                   `/select_token/${uniqueId}/${
-                    selectedAccount.address
+                    selectedAccount.account.address
                   }?page=send_aleo&currToken=${serializeToken(tokenInfo)}`,
                   {
                     replace: true,

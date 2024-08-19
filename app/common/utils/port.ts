@@ -29,10 +29,10 @@ export class Port implements IPort {
       name: this.portName,
     });
     this.connected = true;
-    logger.log(this.portName, " connected");
-    newPort.onDisconnect.addListener(() => {
+    logger.log(this.portName, " client connected");
+    newPort.onDisconnect.addListener((...args) => {
       this.connected = false;
-      logger.log(this.portName, " disconnected");
+      logger.log(this.portName, " client disconnected");
     });
     this.onConnect(newPort)?.catch((err) => {
       logger.error("Handle port error ", err.message);

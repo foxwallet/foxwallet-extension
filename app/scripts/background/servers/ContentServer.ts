@@ -43,6 +43,7 @@ import {
   NATIVE_TOKEN_TOKEN_ID,
 } from "core/coins/ALEO/constants";
 import { DecryptPermission } from "@/database/types/dapp";
+import { matchAccountsWithUnqiueId } from "@/store/accountV2";
 
 export class ContentWalletServer implements IContentServer {
   authManager: AuthManager;
@@ -81,27 +82,32 @@ export class ContentWalletServer implements IContentServer {
       throw new Error("get origin failed");
     }
     const { siteInfo } = siteMetadata;
-    const selectedAccount = await this.accountSettingStorage.getSelectedAccount(
-      CoinType.ALEO,
-    );
-    if (selectedAccount) {
-      const connectHistorys = await this.dappStorage.getConnectHistory(
-        CoinType.ALEO,
-        selectedAccount.address,
-        params.network,
-      );
-      const connectHistory = connectHistorys.find(
-        (item) =>
-          item.site?.origin === siteInfo.origin &&
-          item.network === params.network,
-      );
-      if (
-        connectHistory &&
-        !connectHistory.disconnected &&
-        Date.now() - connectHistory.lastConnectTime <=
-          DAPP_CONNECTION_EXPIRE_TIME
-      ) {
-        return selectedAccount.address;
+    const groupAccount =
+      await this.accountSettingStorage.getSelectedGroupAccount();
+    if (groupAccount) {
+      const selectedAccount = matchAccountsWithUnqiueId(
+        groupAccount,
+        InnerChainUniqueId.ALEO_TESTNET,
+      )[0];
+      if (selectedAccount) {
+        const connectHistorys = await this.dappStorage.getConnectHistory(
+          CoinType.ALEO,
+          selectedAccount.address,
+          params.network,
+        );
+        const connectHistory = connectHistorys.find(
+          (item) =>
+            item.site?.origin === siteInfo.origin &&
+            item.network === params.network,
+        );
+        if (
+          connectHistory &&
+          !connectHistory.disconnected &&
+          Date.now() - connectHistory.lastConnectTime <=
+            DAPP_CONNECTION_EXPIRE_TIME
+        ) {
+          return selectedAccount.address;
+        }
       }
     }
 

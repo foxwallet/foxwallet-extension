@@ -47,8 +47,8 @@ const ImportMnemonicScreen = () => {
                     walletName,
                     mnemonic,
                   });
-                  await dispatch.account.resyncAllWalletsToStore();
-                  dispatch.account.changeWalletBackupedMnemonic({
+                  await dispatch.accountV2.resyncAllWalletsToStore();
+                  dispatch.accountV2.changeWalletBackupedMnemonic({
                     walletId: wallet.walletId,
                     backupedMnemonic: true,
                   });
@@ -67,7 +67,7 @@ const ImportMnemonicScreen = () => {
           />
         );
     }
-  }, [step, popupServerClient]);
+  }, [step, popupServerClient, dispatch.accountV2]);
 
   return (
     <PageWithHeader

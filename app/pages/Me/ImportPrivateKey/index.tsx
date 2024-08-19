@@ -50,16 +50,17 @@ const ImportPrivateKeyScreen = () => {
                     privateKey,
                     coinType,
                     privateKeyType: AleoImportPKType.ALEO_PK,
+                    option: {},
                   });
-                  const account = wallet.accountsMap[coinType][0];
-                  await dispatch.account.setSelectedAccount({
-                    selectedAccount: {
-                      walletId: wallet.walletId,
-                      coinType,
-                      ...account,
+                  const { groupAccounts, ...restWallet } = wallet;
+                  const groupAccount = wallet.groupAccounts[0];
+                  await dispatch.accountV2.setSelectedGroupAccount({
+                    selectedGroupAccount: {
+                      wallet: restWallet,
+                      group: groupAccount,
                     },
                   });
-                  dispatch.account.changeWalletBackupedMnemonic({
+                  dispatch.accountV2.changeWalletBackupedMnemonic({
                     walletId: wallet.walletId,
                     backupedMnemonic: true,
                   });

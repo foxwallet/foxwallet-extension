@@ -7,7 +7,6 @@ import { keepAliveHandler } from "./handlers/KeepaliveHandler";
 import { PopupServerHandler } from "./handlers/PopupServerHandler";
 import { ContentWalletServer } from "./servers/ContentServer";
 import { PopupWalletServer } from "./servers/PopupServer";
-import { AccountSettingStorage } from "./store/account/AccountStorage";
 import { DappStorage } from "./store/dapp/DappStorage";
 import { AuthManager } from "./store/vault/managers/auth/AuthManager";
 import { KeyringManager } from "./store/vault/managers/keyring/KeyringManager";
@@ -19,6 +18,7 @@ import {
 } from "@/common/utils/version";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { clearSwrCache, swrStorageInstance } from "@/common/utils/indexeddb";
+import { accountSettingStorage } from "./store/account/AccountStorage";
 
 const keepAliveConnection = new Connection(
   keepAliveHandler,
@@ -26,7 +26,6 @@ const keepAliveConnection = new Connection(
 );
 keepAliveConnection.connect();
 
-const accountSettingStorage = AccountSettingStorage.getInstance();
 const authManager = new AuthManager();
 const keyringManager = new KeyringManager(authManager);
 keyringManager.init();
@@ -93,5 +92,6 @@ async function checkVersion() {
 
 checkVersion().finally(() => {
   console.log("===> checkVersion done start offscreen");
-  offscreen();
+  // TODO: disable offscreen sync for now
+  // offscreen();
 });

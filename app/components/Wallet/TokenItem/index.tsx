@@ -24,7 +24,7 @@ export const TokenItemWithBalance = ({
   leftElement?: React.ReactNode;
   hover?: boolean;
 }) => {
-  const showBalance = usePopupSelector((state) => state.account.showBalance);
+  const showBalance = usePopupSelector((state) => state.accountV2.showBalance);
   const { balance } = useBalance({
     uniqueId,
     address,

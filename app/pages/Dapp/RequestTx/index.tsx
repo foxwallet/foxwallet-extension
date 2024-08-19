@@ -6,21 +6,25 @@ import { DappInfo } from "@/components/Dapp/DappInfo";
 import { TokenNum } from "@/components/Wallet/TokenNum";
 import { useClient } from "@/hooks/useClient";
 import { useCoinService } from "@/hooks/useCoinService";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { useDappRequest } from "@/hooks/useDappRequest";
+import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { Content } from "@/layouts/Content";
 import { Button, Flex, Text } from "@chakra-ui/react";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 
 function RequestTxScreen() {
-  const { selectedAccount, uniqueId } = useCurrAccount();
+  const { getMatchAccountsWithUniqueId } = useGroupAccount();
+  const selectedAccount = useMemo(() => {
+    return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_TESTNET)[0];
+  }, [getMatchAccountsWithUniqueId]);
   const { requestId } = useParams();
   const { popupServerClient } = useClient();
   const { dappRequest, loading } = useDappRequest(requestId);
   const { t } = useTranslation();
-  const { nativeCurrency } = useCoinService(uniqueId);
+  const { nativeCurrency } = useCoinService(InnerChainUniqueId.ALEO_TESTNET);
 
   const dappRequestInfo = useMemo(() => {
     if (!dappRequest) {
@@ -69,13 +73,13 @@ function RequestTxScreen() {
   }, [dappRequest, t, nativeCurrency]);
 
   const onConnect = useCallback(() => {
-    if (requestId && selectedAccount?.address) {
+    if (requestId && selectedAccount?.account.address) {
       popupServerClient.onRequestFinish({
         requestId,
-        data: selectedAccount.address,
+        data: selectedAccount.account.address,
       });
     }
-  }, [popupServerClient, requestId, selectedAccount?.address]);
+  }, [popupServerClient, requestId, selectedAccount?.account.address]);
 
   const onCancel = useCallback(() => {
     if (requestId) {

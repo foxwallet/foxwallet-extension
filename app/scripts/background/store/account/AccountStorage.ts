@@ -1,66 +1,27 @@
-import { createAccountSettingStorage } from "@/common/utils/indexeddb";
-import { ChainUniqueId, InnerChainUniqueId } from "core/types/ChainUniqueId";
-import { CoinType } from "core/types";
-import { DisplayAccount, SelectedAccount } from "../vault/types/keyring";
-import { chainUniqueIdToCoinType } from "core/helper/CoinType";
-import { DEFAULT_UNIQUE_ID_MAP } from "core/constants";
-
-const SELECTED_ACCOUNT_KEY = "selectedAccount";
-const SELECTED_UNIQUE_ID_KEY = "selectedUniqueId";
+import { AccountDatabase, accountDB } from "@/database/AccountDatabase";
+import { OneMatchGroupAccount } from "../vault/types/keyring";
 
 export class AccountSettingStorage {
-  static instance: AccountSettingStorage;
-  #accountSettingMap: Map<CoinType, LocalForage>;
+  instance: AccountDatabase;
 
-  static getInstance() {
-    if (!AccountSettingStorage.instance) {
-      AccountSettingStorage.instance = new AccountSettingStorage();
-    }
-    return AccountSettingStorage.instance;
+  constructor() {
+    this.instance = accountDB;
   }
 
-  private constructor() {
-    this.#accountSettingMap = new Map();
-  }
-
-  getAccountSettingInstance = (coinType: CoinType) => {
-    const existInstance = this.#accountSettingMap.get(coinType);
-    if (existInstance) {
-      return existInstance;
-    }
-    const newInstance = createAccountSettingStorage(coinType);
-    this.#accountSettingMap.set(coinType, newInstance);
-    return newInstance;
+  setSelectedGroupAccount = async (account: OneMatchGroupAccount) => {
+    return await this.instance.setSelectedGroupAccount(account);
   };
 
-  setSelectedAccount = async (account: SelectedAccount) => {
-    const instance = this.getAccountSettingInstance(account.coinType);
-    return await instance.setItem(SELECTED_ACCOUNT_KEY, account);
+  removeSelectedAccount = async () => {
+    return await this.instance.reset();
   };
 
-  removeSelectedAccount = async (coinType: CoinType) => {
-    const instance = this.getAccountSettingInstance(coinType);
-    return await instance.removeItem(SELECTED_ACCOUNT_KEY);
-  };
-
-  getSelectedAccount = async (coinType: CoinType) => {
-    const instance = this.getAccountSettingInstance(coinType);
-    const selectedAccount: SelectedAccount | null =
-      await instance.getItem(SELECTED_ACCOUNT_KEY);
-    return selectedAccount;
-  };
-
-  getSelectedUniqueId = async (coinType: CoinType) => {
-    const instance = this.getAccountSettingInstance(coinType);
-    const selectedUniqueId: ChainUniqueId | null = await instance.getItem(
-      SELECTED_UNIQUE_ID_KEY,
-    );
-    return selectedUniqueId ?? DEFAULT_UNIQUE_ID_MAP[coinType];
-  };
-
-  setSelectedUniqueId = async (uniqueId: InnerChainUniqueId) => {
-    const coinType = chainUniqueIdToCoinType(uniqueId);
-    const instance = this.getAccountSettingInstance(coinType);
-    return await instance.setItem(SELECTED_UNIQUE_ID_KEY, uniqueId);
+  getSelectedGroupAccount = async (): Promise<OneMatchGroupAccount | null> => {
+    const selectedGroupAccount: OneMatchGroupAccount | null = (
+      await this.instance.selectedGroupAccount.limit(1).toArray()
+    )[0];
+    return selectedGroupAccount;
   };
 }
+
+export const accountSettingStorage = new AccountSettingStorage();

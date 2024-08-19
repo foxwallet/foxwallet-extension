@@ -20,7 +20,7 @@ import {
 } from "core/coins/ALEO/types/SyncTask";
 import { ALEO_CHAIN_CONFIGS } from "core/coins/ALEO/config/chains";
 import { AleoRpcService } from "core/coins/ALEO/service/instances/rpc";
-import { AccountSettingStorage } from "@/scripts/background/store/account/AccountStorage";
+import { AccountSettingStorageV1 } from "@/scripts/background/store/account/AccountStorageV1";
 import { CoinType } from "core/types";
 import { uniqueIdToAleoChainId } from "core/coins/ALEO/utils/chainId";
 import { AleoApiService } from "core/coins/ALEO/service/instances/sync";
@@ -48,7 +48,7 @@ export class MainLoop {
   workerList: WorkerAPI[];
   taskInProcess: Array<Promise<void> | undefined>;
   aleoStorage: AleoStorage;
-  accountSettingStorage: AccountSettingStorage;
+  accountSettingStorage: AccountSettingStorageV1;
 
   static getInstace(apiList: string[]) {
     const cacheInstance = MainLoop.instance;
@@ -72,7 +72,7 @@ export class MainLoop {
         chainId: CHAIN_ID,
       })),
     });
-    this.accountSettingStorage = AccountSettingStorage.getInstance();
+    this.accountSettingStorage = AccountSettingStorageV1.getInstance();
   }
 
   async sendMessage(message: OffscreenMessage) {

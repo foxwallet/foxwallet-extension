@@ -2,7 +2,7 @@ import { useCallback, useContext, useMemo, useRef, useState } from "react";
 import { PageWithHeader } from "../../../layouts/Page";
 import { Body } from "../../../layouts/Body";
 import { OnboardProgress } from "../../../components/Onboard/OnboardProgress";
-import { ClientContext, useClient } from "../../../hooks/useClient";
+import { useClient } from "../../../hooks/useClient";
 import { logger } from "../../../common/utils/logger";
 import { showMnemonicWarningDialog } from "../../../components/Onboard/MnemonicWarningDialog";
 import { nanoid } from "nanoid";
@@ -51,8 +51,8 @@ export default function OnboardImportWallet() {
                     walletName,
                     mnemonic,
                   });
-                  await dispatch.account.resyncAllWalletsToStore();
-                  dispatch.account.changeWalletBackupedMnemonic({
+                  await dispatch.accountV2.resyncAllWalletsToStore();
+                  dispatch.accountV2.changeWalletBackupedMnemonic({
                     walletId: wallet.walletId,
                     backupedMnemonic: true,
                   });
@@ -70,7 +70,7 @@ export default function OnboardImportWallet() {
           />
         );
     }
-  }, [step, popupServerClient]);
+  }, [step, popupServerClient, dispatch.accountV2]);
 
   return (
     <PageWithHeader

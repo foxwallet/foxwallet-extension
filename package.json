@@ -11,7 +11,7 @@
     "build:prod": "npm run clean && yarn wasm && node ./scripts/prerelease.js && yarn build:dapp && vite build && cd offscreen_transaction && NODE_ENV=production npx rollup -c && cd .. && cp ./offscreen_tx.html ./dist/offscreen_tx.html && cp ./dist/assets/aleo_wasm_bg.wasm ./dist/aleo_wasm_bg.wasm",
     "build:dapp": "vite build --config vite-injector.config.ts",
     "clean": "rimraf dist/ && rimraf node_modules/aleo_wasm/",
-    "wasm": "cd @aleohq/aleo_wasm && RUSTFLAGS='-C link-arg=--max-memory=4294967296' wasm-pack build --release --target web",
+    "wasm": "cd @aleohq/aleo_wasm && RUSTFLAGS='' wasm-pack build --release --target web",
     "translate": "node ./scripts/translate.cjs",
     "lint": "eslint --ext .ts,.js --max-warnings=0 .",
     "format": "prettier --write .",
@@ -75,6 +75,7 @@
     "react-toastify": "^9.1.3",
     "redux": "^4.2.1",
     "redux-persist": "^6.0.0",
+    "reselect": "^5.1.1",
     "swr": "^2.2.2",
     "use-debounce": "^9.0.4",
     "webextension-polyfill": "^0.10.0"

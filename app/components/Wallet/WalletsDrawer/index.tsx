@@ -8,17 +8,15 @@ import {
   IconWallet,
 } from "@/components/Custom/Icon";
 import React, { useCallback } from "react";
-import { DisplayAccount } from "@/scripts/background/store/vault/types/keyring";
-import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { usePopupDispatch } from "@/hooks/useStore";
-import { CoinType } from "core/types";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
+import { useGroupAccount } from "@/hooks/useGroupAccount";
+import { OneMatchGroupAccount } from "@/scripts/background/store/vault/types/keyring";
 
 interface AccountListItemProps {
-  account: DisplayAccount;
+  account: OneMatchGroupAccount;
   isSelected: boolean;
-  onSelected: (account: DisplayAccount) => void;
+  onSelected: (account: OneMatchGroupAccount) => void;
 }
 const AccountListItem: React.FC<AccountListItemProps> = ({
   account,
@@ -44,11 +42,11 @@ const AccountListItem: React.FC<AccountListItemProps> = ({
     >
       <Flex direction={"column"}>
         <Text fontSize={13} fontWeight={500} align={"start"}>
-          {account.accountName}
+          {account.group.groupName}
         </Text>
-        <Box fontSize={9} color={"#777E90"} noOfLines={1}>
+        {/* <Box fontSize={9} color={"#777E90"} noOfLines={1}>
           <MiddleEllipsisText text={account.address} width={260} />
-        </Box>
+        </Box> */}
       </Flex>
       {isSelected && <IconCheckLineBlack height={18} width={18} />}
     </Flex>
@@ -65,8 +63,8 @@ interface Props {
 const WalletsDrawer = (props: Props) => {
   const { isOpen, onCancel, onConfirm, onManageWallet } = props;
 
-  const { selectedAccount } = useCurrAccount();
-  const { selectedWallet, accountsInWallet } = useCurrWallet();
+  const { groupAccount } = useGroupAccount();
+  const { selectedWallet, groupAccountsInWallet } = useCurrWallet();
   const dispatch = usePopupDispatch();
 
   const handleManageWallet = useCallback(() => {
@@ -75,35 +73,30 @@ const WalletsDrawer = (props: Props) => {
   }, [onManageWallet, onConfirm]);
 
   const onSelectAccount = useCallback(
-    (account: DisplayAccount) => {
+    (account: OneMatchGroupAccount) => {
       if (!selectedWallet?.walletId) return;
 
-      dispatch.account.setSelectedAccount({
-        selectedAccount: {
-          walletId: selectedWallet?.walletId,
-          coinType: CoinType.ALEO,
-          ...account,
-          accountName: account.accountName,
-        },
+      dispatch.accountV2.setSelectedGroupAccount({
+        selectedGroupAccount: account,
       });
       onConfirm?.();
     },
-    [dispatch.account, selectedWallet?.walletId, onConfirm],
+    [dispatch.accountV2, selectedWallet?.walletId, onConfirm],
   );
 
   const renderAccountItem = useCallback(
-    (account: DisplayAccount, index: number) => {
-      const isSelected = selectedAccount.accountId === account.accountId;
+    (account: OneMatchGroupAccount, index: number) => {
+      const isSelected = groupAccount.group.groupId === account.group.groupId;
       return (
         <AccountListItem
-          key={`${account.accountId}${index}`}
+          key={`${account.group.groupId}${index}`}
           account={account}
           isSelected={isSelected}
           onSelected={onSelectAccount}
         />
       );
     },
-    [selectedAccount.accountId, onSelectAccount],
+    [groupAccount.group.groupId, onSelectAccount],
   );
 
   return (
@@ -125,7 +118,7 @@ const WalletsDrawer = (props: Props) => {
             </Text>
           </Flex>
           <Flex direction={"column"} maxH={190} overflowY="auto">
-            {accountsInWallet.map(renderAccountItem)}
+            {groupAccountsInWallet.map(renderAccountItem)}
           </Flex>
         </Flex>
       }

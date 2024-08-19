@@ -7,6 +7,7 @@ FoxWallet supports Google chrome for now. Please make sure your [chrome's versio
 - Environment: Require Node version 18
 
 ```shell
+yarn wasm
 yarn
 yarn build:dev
 ```

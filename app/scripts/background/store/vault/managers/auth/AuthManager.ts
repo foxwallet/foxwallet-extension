@@ -76,6 +76,8 @@ export class AuthManager {
       this.#token = token.toString("hex");
       this.#loginTimestamp = Date.now();
     }
+    // migrate when login
+    await this.#storage.migrate();
     return valid;
   }
 

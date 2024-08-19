@@ -7,14 +7,18 @@ interface Client {
   popupServerClient: PopupServerClient;
 }
 
-export const clients = {
-  keepAliveClient: new KeepAliveClient(PortName.POPUP_TO_BACKGROUND),
-  popupServerClient: new PopupServerClient(),
+let clients: Client | null = null;
+
+export const getClients = () => {
+  if (clients) return clients;
+  clients = {
+    keepAliveClient: new KeepAliveClient(PortName.POPUP_TO_BACKGROUND),
+    popupServerClient: new PopupServerClient(),
+  };
+  return clients;
 };
 
-export const ClientContext = React.createContext<Client>(clients);
-
 export const useClient = () => {
-  const client = useContext(ClientContext);
-  return client;
+  const clients = getClients();
+  return clients;
 };

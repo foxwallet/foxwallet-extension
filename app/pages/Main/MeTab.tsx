@@ -10,7 +10,7 @@ import {
 } from "@/components/Custom/Icon";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import SettingItem from "@/components/Setting/SettingItem";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
+import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
 import { useCurrWallet } from "@/hooks/useWallets";
 import { Content } from "@/layouts/Content";
@@ -24,7 +24,7 @@ import browser from "webextension-polyfill";
 export const MeTab = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { selectedAccount } = useCurrAccount();
+  const { groupAccount } = useGroupAccount();
   const { selectedWallet } = useCurrWallet();
 
   const onSwitchWallet = useCallback(() => {
@@ -89,7 +89,10 @@ export const MeTab = () => {
               fontWeight={500}
               noOfLines={1}
             >
-              <MiddleEllipsisText text={selectedAccount.address} width={150} />
+              <MiddleEllipsisText
+                text={groupAccount?.group.groupName}
+                width={150}
+              />
             </Box>
           </Flex>
         </Flex>

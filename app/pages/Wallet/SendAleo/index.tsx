@@ -1,7 +1,6 @@
 import { ERROR_CODE } from "@/common/types/error";
 import { useClient } from "@/hooks/useClient";
 import { useCoinService } from "@/hooks/useCoinService";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { PageWithHeader } from "@/layouts/Page";
 import { AleoFeeMethod } from "core/coins/ALEO/types/FeeMethod";
 import { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
@@ -23,11 +22,18 @@ import { AleoTxType } from "core/coins/ALEO/types/History";
 import { Token } from "core/coins/ALEO/types/Token";
 import { NATIVE_TOKEN_TOKEN_ID } from "core/coins/ALEO/constants";
 import { useLocationParams } from "@/hooks/useLocationParams";
+import { useGroupAccount } from "@/hooks/useGroupAccount";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 
 function SendScreen() {
   const navigate = useNavigate();
   const { popupServerClient } = useClient();
-  const { selectedAccount, uniqueId } = useCurrAccount();
+  const { getMatchAccountsWithUniqueId } = useGroupAccount();
+  // TODO: get uniqueId from chain mode or page params
+  const selectedAccount = useMemo(() => {
+    return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_TESTNET)[0];
+  }, [getMatchAccountsWithUniqueId]);
+  const uniqueId = InnerChainUniqueId.ALEO_TESTNET;
   const { coinService, chainConfig, nativeCurrency } = useCoinService(uniqueId);
   const { t } = useTranslation();
 
@@ -99,7 +105,7 @@ function SendScreen() {
       }
       setSubmitting(true);
       try {
-        const address = selectedAccount.address;
+        const address = selectedAccount.account.address;
         let inputs: string[];
         switch (finalTransferMethod) {
           case AleoTransferMethod.PRIVATE:
@@ -144,8 +150,8 @@ function SendScreen() {
         popupServerClient
           .sendAleoTransaction({
             uniqueId: chainConfig.uniqueId,
-            walletId: selectedAccount.walletId,
-            accountId: selectedAccount.accountId,
+            walletId: selectedAccount.wallet.walletId,
+            accountId: selectedAccount.account.accountId,
             coinType: chainConfig.coinType,
             address: address,
             localId,

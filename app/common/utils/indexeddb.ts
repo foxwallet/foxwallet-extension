@@ -18,6 +18,9 @@ export const aleoAccountStorageInstance = localForage.createInstance({
 });
 
 // To remember the selected account
+/**
+ * @deprecated
+ */
 export const createAccountSettingStorage = (coinType: CoinType) => {
   return localForage.createInstance({
     driver: localForage.INDEXEDDB,

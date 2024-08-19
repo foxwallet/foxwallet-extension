@@ -5,7 +5,7 @@ import { showSelectFeeTypeDialog } from "@/components/Send/SelectFeeType";
 import { TokenNum } from "@/components/Wallet/TokenNum";
 import { useBalance } from "@/hooks/useBalance";
 import { useCoinService } from "@/hooks/useCoinService";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
+import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { Content } from "@/layouts/Content";
 import { Button, Flex, Text } from "@chakra-ui/react";
 import { NATIVE_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
@@ -15,7 +15,7 @@ import {
   AleoRecordMethod,
   AleoTransferMethod,
 } from "core/coins/ALEO/types/TransferMethod";
-import { ChainUniqueId } from "core/types/ChainUniqueId";
+import { ChainUniqueId, InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { AleoGasFee } from "core/types/GasFee";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -31,12 +31,19 @@ export interface JoinStepProps {
 
 export const JoinStep = (props: JoinStepProps) => {
   const { selectedRecords, onConfirm, records } = props;
-  const { selectedAccount, uniqueId } = useCurrAccount();
+
+  const { getMatchAccountsWithUniqueId } = useGroupAccount();
+  // TODO: get uniqueId from chain mode or page params
+  const selectedAccount = useMemo(() => {
+    return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_TESTNET)[0];
+  }, [getMatchAccountsWithUniqueId]);
+  const uniqueId = InnerChainUniqueId.ALEO_TESTNET;
+
   const { nativeCurrency, coinService } = useCoinService(uniqueId);
   const { t } = useTranslation();
   const { balance, loadingBalance } = useBalance({
     uniqueId,
-    address: selectedAccount.address,
+    address: selectedAccount.account.address,
   });
 
   const [feeInfo, setFeeInfo] = useState<AleoGasFee | null>(null);

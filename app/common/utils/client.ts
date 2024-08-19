@@ -21,7 +21,7 @@ import {
 import {
   type DisplayWallet,
   type DisplayKeyring,
-  SelectedAccount,
+  OneMatchGroupAccount,
 } from "../../scripts/background/store/vault/types/keyring";
 import { KEEP_ALIVE_INTERVAL } from "../constants";
 import {
@@ -93,8 +93,12 @@ export class PopupServerClient implements IClient, IPopupServer {
   _connect(): void {
     this.port = new Port({ name: PortName.POPUP_TO_BACKGROUND });
     this.port.onMessage.addListener(this.#onMessage.bind(this));
-    this.port.onDisconnect.addListener(() => {
-      logger.warn("PopupServerClient disconnected, try to reconnect");
+    this.port.onDisconnect.addListener((...args) => {
+      logger.warn(
+        "PopupServerClient disconnected, try to reconnect ",
+        " args: ",
+        args,
+      );
       Object.values(this.callbackMap).forEach((callback) => {
         callback(new Error("PopupServerClient disconncected"));
       });
@@ -161,28 +165,16 @@ export class PopupServerClient implements IClient, IPopupServer {
     return await this.#send("importPrivateKey", params);
   }
 
-  async getSelectedAccount(
-    params: GetSelectedAccountProps,
-  ): Promise<SelectedAccount | null> {
-    return await this.#send("getSelectedAccount", params);
+  async getSelectedGroupAccount(
+    params?: GetSelectedAccountProps | undefined,
+  ): Promise<OneMatchGroupAccount | null> {
+    return await this.#send("getSelectedGroupAccount", params);
   }
 
-  async setSelectedAccount(
-    params: SetSelectedAccountProps,
-  ): Promise<SelectedAccount> {
-    return await this.#send("setSelectedAccount", params);
-  }
-
-  async getSelectedUniqueId(
-    params: GetSelectedUniqueIdProps,
-  ): Promise<InnerChainUniqueId> {
-    return await this.#send("getSelectedUniqueId", params);
-  }
-
-  async setSelectedUniqueId(
-    params: SetSelectedUniqueIdProps,
-  ): Promise<InnerChainUniqueId> {
-    return await this.#send("setSelectedUniqueId", params);
+  async setSelectedGroupAccount({
+    groupAccount,
+  }: SetSelectedAccountProps): Promise<OneMatchGroupAccount> {
+    return await this.#send("setSelectedGroupAccount", { groupAccount });
   }
 
   async getHDWallet(walletId: string): Promise<DisplayWallet> {
@@ -231,10 +223,6 @@ export class PopupServerClient implements IClient, IPopupServer {
 
   async checkPassword(password: string): Promise<boolean> {
     return await this.#send("checkPassword", password);
-  }
-
-  async changeAccountHideState(params: ChangeAccountStateProps): Promise<void> {
-    return await this.#send("changeAccountHideState", params);
   }
 
   async #send<T, R>(method: PopupServerMethod, payload: T): Promise<R> {
