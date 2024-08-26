@@ -53,7 +53,7 @@ export class KeepAliveClient implements IClient {
     this.port = new Port({ name: PortName.KEEP_ALIVE });
     this.port.onDisconnect.addListener(() => {
       // reconnect
-      this._connect();
+      // this._connect();
     });
     this.#report();
   }
@@ -93,13 +93,17 @@ export class PopupServerClient implements IClient, IPopupServer {
   _connect(): void {
     this.port = new Port({ name: PortName.POPUP_TO_BACKGROUND });
     this.port.onMessage.addListener(this.#onMessage.bind(this));
-    this.port.onDisconnect.addListener(() => {
-      logger.warn("PopupServerClient disconnected, try to reconnect");
+    this.port.onDisconnect.addListener((...args) => {
+      logger.warn(
+        "PopupServerClient disconnected, try to reconnect ",
+        " args: ",
+        args,
+      );
       Object.values(this.callbackMap).forEach((callback) => {
         callback(new Error("PopupServerClient disconncected"));
       });
       this.callbackMap = new Map();
-      this._connect();
+      // this._connect();
     });
   }
 

@@ -45,7 +45,7 @@ export class ContentClient implements IClient {
         callback(new Error("PopupServerClient disconncected"));
       });
       this.callbackMap = new Map();
-      this._connect();
+      // this._connect();
     });
   }
 
