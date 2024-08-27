@@ -1,5 +1,4 @@
-import { AutoSwitchService } from "../../../../utils/retry";
-import { AleoRpc } from "../api/rpc";
+import { AutoSwitchProxy, createAutoSwitchApi } from "../../../../utils/retry";
 import { AleoSyncApi } from "../api/sync";
 
 interface SyncApiConfig {
@@ -7,13 +6,11 @@ interface SyncApiConfig {
   chainId: string;
 }
 
-export class AleoApiService extends AutoSwitchService<
-  SyncApiConfig,
-  AleoSyncApi
-> {
-  getInstanceList(config: SyncApiConfig[]): AleoSyncApi[] {
-    return config.map(({ url, chainId }) => {
-      return new AleoSyncApi({ host: url, chainId });
-    });
-  }
-}
+export type AleoApiService = AutoSwitchProxy<SyncApiConfig, AleoSyncApi>;
+
+export const createAleoApiService = (config: SyncApiConfig[]) => {
+  return createAutoSwitchApi(
+    config,
+    ({ url, chainId }) => new AleoSyncApi({ host: url, chainId }),
+  );
+};

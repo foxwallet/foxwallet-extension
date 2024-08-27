@@ -9,8 +9,6 @@ import {
   VerifyingKey,
 } from "@aleohq/wasm";
 import { AleoStorage } from "./AleoStorage";
-import { AutoSwitch } from "./utils/retry";
-import { AutoSwitchServiceType } from "./utils/retry";
 import {
   AleoTxStatus,
   type AleoSendTxParams,
@@ -20,7 +18,7 @@ import {
   NATIVE_TOKEN_PROGRAM_ID,
   NATIVE_TOKEN_TOKEN_ID,
 } from "./types";
-import { AleoRpcService } from "./instances/rpc";
+import { AleoRpcService, createAleoRpcService } from "./instances/rpc";
 import { utils } from "ethers";
 import { parseU64 } from "./utils/num";
 
@@ -39,7 +37,7 @@ export class AleoTxWorker {
     public enableMeasure: boolean,
   ) {
     // rpcList = shuffle(rpcList);
-    this.rpcService = new AleoRpcService({ configs: rpcList });
+    this.rpcService = createAleoRpcService(rpcList);
     this.storage = AleoStorage.getInstance();
   }
 
@@ -74,14 +72,13 @@ export class AleoTxWorker {
     }
   };
 
-  @AutoSwitch({ serviceType: AutoSwitchServiceType.RPC })
   async getProgramContent(chainId: string, programId: string) {
     const cache = await this.storage.getProgramContent(chainId, programId);
     console.log("===> getProgramContent cache: ", cache?.length);
     if (cache) {
       return cache;
     }
-    const program = await this.rpcService.currInstance().getProgram(programId);
+    const program = await this.rpcService.getProgram(programId);
     console.log("===> getProgramContent: ", program.length);
     if (program) {
       await this.storage.setProgramContent(chainId, programId, program);
@@ -100,7 +97,6 @@ export class AleoTxWorker {
     return null;
   }
 
-  @AutoSwitch({ serviceType: AutoSwitchServiceType.RPC })
   async getProgramImports(chainId: string, program: Program | string) {
     const imports: AleoProgramImportsMap = {};
     const programObj =
@@ -216,9 +212,8 @@ export class AleoTxWorker {
     return keyPair;
   }
 
-  @AutoSwitch({ serviceType: AutoSwitchServiceType.RPC })
   async submitTransaction(tx: Transaction) {
-    return await this.rpcService.currInstance().submitTransaction(tx);
+    return await this.rpcService.submitTransaction(tx);
   }
 
   async sendTransaction({
@@ -325,7 +320,7 @@ export class AleoTxWorker {
           BigInt(baseFee),
           BigInt(priorityFee),
           feeRecord,
-          this.rpcService.currConfig(),
+          this.rpcService.proxyCurrConfig(),
           imports,
           proverFile,
           verifierFile,
@@ -337,7 +332,7 @@ export class AleoTxWorker {
           privateKeyObj,
           Number(utils.formatUnits(parseU64(inputs[1]), NATIVE_TOKEN_DECIMALS)),
           RecordPlaintext.fromString(inputs[0]),
-          this.rpcService.currConfig(),
+          this.rpcService.proxyCurrConfig(),
           proverFile,
           verifierFile,
         );
@@ -438,7 +433,7 @@ export class AleoTxWorker {
         BigInt(baseFee),
         BigInt(priorityFee),
         feeRecord,
-        this.rpcService.currConfig(),
+        this.rpcService.proxyCurrConfig(),
         imports,
         feeProverFile,
         feeVerifierKey,
