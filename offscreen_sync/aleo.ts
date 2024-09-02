@@ -125,7 +125,6 @@ export class AleoWorker {
     }
   };
 
-  @AutoSwitch({ serviceType: AutoSwitchServiceType.API, waitTime: 2000 })
   @MeasureAsync()
   async getRecordsInRange(chainId: string, start: number, end: number) {
     this.apiService.setChainId(chainId);

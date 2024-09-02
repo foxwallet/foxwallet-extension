@@ -1,4 +1,3 @@
-import { AutoSwitch, AutoSwitchServiceType } from "core/utils/retry";
 import { sleep } from "core/utils/sleep";
 import { type WorkerAPI } from "./worker";
 import { proxy, wrap } from "comlink";
@@ -107,7 +106,6 @@ export class MainLoop {
     }
   }
 
-  @AutoSwitch({ serviceType: AutoSwitchServiceType.API })
   async getLatestHeight(chainId: string) {
     this.apiService.setChainId(chainId);
     const nodeStatus = await this.apiService.getNodeStatus();

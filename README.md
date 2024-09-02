@@ -6,6 +6,7 @@ FoxWallet supports Google chrome for now. Please make sure your [chrome's versio
 
 1. Rename .env.example to .env and Fill out the configs in .env.
 2. Run the following commands.
+
 - Environment: Require Node version 18
 
 ```shell
