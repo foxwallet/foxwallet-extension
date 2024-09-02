@@ -18,7 +18,10 @@ import {
   type AddressSyncRecordResp,
   type WorkerSyncTask,
 } from "core/coins/ALEO/types/SyncTask";
-import { AleoApiService } from "core/coins/ALEO/service/instances/sync";
+import {
+  type AleoApiService,
+  createAleoApiService,
+} from "core/coins/ALEO/service/instances/sync";
 import type { RecordRawInfo } from "core/coins/ALEO/service/api/sync.di";
 
 export class AleoWorker {
@@ -41,12 +44,12 @@ export class AleoWorker {
     public enableMeasure: boolean,
   ) {
     apiList = shuffle(apiList);
-    this.apiService = new AleoApiService({
-      configs: apiList.map((item) => ({
+    this.apiService = createAleoApiService(
+      apiList.map((item) => ({
         url: item,
         chainId: "testnet",
       })),
-    });
+    );
   }
 
   get getWorkerId() {
@@ -125,12 +128,10 @@ export class AleoWorker {
   @AutoSwitch({ serviceType: AutoSwitchServiceType.API, waitTime: 2000 })
   @MeasureAsync()
   async getRecordsInRange(chainId: string, start: number, end: number) {
-    this.apiService.currInstance().setChainId(chainId);
+    this.apiService.setChainId(chainId);
     const index =
       Math.floor(start / ALEO_SYNC_HEIGHT_SIZE) * ALEO_SYNC_HEIGHT_SIZE;
-    const recordsInRange = await this.apiService
-      .currInstance()
-      .getRecords(index);
+    const recordsInRange = await this.apiService.getRecords(index);
     return recordsInRange;
   }
 
