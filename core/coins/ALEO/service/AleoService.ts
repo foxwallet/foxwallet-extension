@@ -144,7 +144,11 @@ export class AleoService {
       .reduce((prev, curr) => {
         return prev + curr[1] - curr[0] + 1;
       }, 0);
-    return Math.min(Math.floor((finishHeight / referenceHeight) * 100), 100);
+    return Math.min(
+      // add some buffer to avoid always 99%
+      Math.floor(((finishHeight + 20) / referenceHeight) * 100),
+      100,
+    );
   }
 
   private syncRecords = async (
