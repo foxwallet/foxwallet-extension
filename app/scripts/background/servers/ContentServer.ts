@@ -233,10 +233,10 @@ export class ContentWalletServer implements IContentServer {
     const { address, network, siteInfo } = this.checkSiteMetadata(siteMetadata);
     await this.checkPermissionExist(address, network, siteInfo);
     switch (network) {
-      case "testnet": {
+      case "mainnet": {
         const { program, filter } = params;
         const records = await this.coinService
-          .getInstance(InnerChainUniqueId.ALEO_TESTNET)
+          .getInstance(InnerChainUniqueId.ALEO_MAINNET)
           .getRecords(address, program, filter || RecordFilter.ALL, true);
         const formatRecords = records.map((record) => {
           return {
@@ -263,10 +263,10 @@ export class ContentWalletServer implements IContentServer {
     const { address, network, siteInfo } = this.checkSiteMetadata(siteMetadata);
     await this.checkPermissionExist(address, network, siteInfo);
     switch (network) {
-      case "testnet": {
+      case "mainnet": {
         const { program, filter } = params;
         const records = await this.coinService
-          .getInstance(InnerChainUniqueId.ALEO_TESTNET)
+          .getInstance(InnerChainUniqueId.ALEO_MAINNET)
           .getRecords(address, program, filter || RecordFilter.ALL, true);
         const formatRecords = records.map((record) => {
           return {
@@ -294,7 +294,7 @@ export class ContentWalletServer implements IContentServer {
     const { address, network, siteInfo } = this.checkSiteMetadata(siteMetadata);
     await this.checkPermissionExist(address, network, siteInfo);
     switch (network) {
-      case "testnet": {
+      case "mainnet": {
         const { transaction } = params;
         const { transitions, fee, feePrivate } = transaction;
         if (transitions.length > 1) {
@@ -321,10 +321,10 @@ export class ContentWalletServer implements IContentServer {
         }
         const [{ formatInputs, feeRecord }, priorityFee] = await Promise.all([
           this.coinService
-            .getInstance(InnerChainUniqueId.ALEO_TESTNET)
+            .getInstance(InnerChainUniqueId.ALEO_MAINNET)
             .formatRequestTransactionInputsAndFee(address, inputs, BigInt(fee)),
           this.coinService
-            .getInstance(InnerChainUniqueId.ALEO_TESTNET)
+            .getInstance(InnerChainUniqueId.ALEO_MAINNET)
             .getPriorityFee(),
         ]);
         let feeStr: string | null = null;
@@ -346,7 +346,7 @@ export class ContentWalletServer implements IContentServer {
           priorityFee: priorityFee.toString(),
           feeRecord: feeStr,
           timestamp: Date.now(),
-          uniqueId: InnerChainUniqueId.ALEO_TESTNET,
+          uniqueId: InnerChainUniqueId.ALEO_MAINNET,
           coinType: CoinType.ALEO,
           tokenId: NATIVE_TOKEN_TOKEN_ID,
         };
@@ -356,7 +356,7 @@ export class ContentWalletServer implements IContentServer {
         );
         if (!transactionId) {
           await this.coinService
-            .getInstance(InnerChainUniqueId.ALEO_TESTNET)
+            .getInstance(InnerChainUniqueId.ALEO_MAINNET)
             .removeAddressLocalTx(address, localId);
           throw new Error("requestTransaction failed");
         }
@@ -405,7 +405,7 @@ export class ContentWalletServer implements IContentServer {
     const { address, network, siteInfo } = this.checkSiteMetadata(siteMetadata);
     await this.checkPermissionExist(address, network, siteInfo);
     switch (network) {
-      case "testnet": {
+      case "mainnet": {
         const { deployment } = params;
         const { program, address, fee, feePrivate } = deployment;
 
@@ -421,13 +421,13 @@ export class ContentWalletServer implements IContentServer {
         }
         const [priorityFee] = await Promise.all([
           this.coinService
-            .getInstance(InnerChainUniqueId.ALEO_TESTNET)
+            .getInstance(InnerChainUniqueId.ALEO_MAINNET)
             .getPriorityFee(),
         ]);
         let feeStr: string | null = null;
         if (feePrivate) {
           const records = await this.coinService
-            .getInstance(InnerChainUniqueId.ALEO_TESTNET)
+            .getInstance(InnerChainUniqueId.ALEO_MAINNET)
             .getRecords(address, NATIVE_TOKEN_PROGRAM_ID, RecordFilter.UNSPENT);
           const feeRecord = records[0];
           if (!feeRecord) {
@@ -446,7 +446,7 @@ export class ContentWalletServer implements IContentServer {
           priorityFee: priorityFee.toString(),
           feeRecord: feeStr,
           timestamp: Date.now(),
-          uniqueId: InnerChainUniqueId.ALEO_TESTNET,
+          uniqueId: InnerChainUniqueId.ALEO_MAINNET,
           coinType: CoinType.ALEO,
         };
         const transactionId = await this.popupServer.createRequestDeployPopup(
@@ -455,7 +455,7 @@ export class ContentWalletServer implements IContentServer {
         );
         if (!transactionId) {
           await this.coinService
-            .getInstance(InnerChainUniqueId.ALEO_TESTNET)
+            .getInstance(InnerChainUniqueId.ALEO_MAINNET)
             .removeAddressLocalTx(address, localId);
           throw new Error("requestTransaction failed");
         }
@@ -476,10 +476,10 @@ export class ContentWalletServer implements IContentServer {
     const { address, network, siteInfo } = this.checkSiteMetadata(siteMetadata);
     await this.checkPermissionExist(address, network, siteInfo);
     switch (network) {
-      case "testnet": {
+      case "mainnet": {
         const { transactionId } = params;
         const tx = await this.coinService
-          .getInstance(InnerChainUniqueId.ALEO_TESTNET)
+          .getInstance(InnerChainUniqueId.ALEO_MAINNET)
           .getLocalTxInfo(address, transactionId);
         if (!tx) {
           throw new Error("Can't found transaction");
@@ -508,10 +508,10 @@ export class ContentWalletServer implements IContentServer {
     const { address, network, siteInfo } = this.checkSiteMetadata(siteMetadata);
     await this.checkPermissionExist(address, network, siteInfo);
     switch (network) {
-      case "testnet": {
+      case "mainnet": {
         const { program } = params;
         const txs = await this.coinService
-          .getInstance(InnerChainUniqueId.ALEO_TESTNET)
+          .getInstance(InnerChainUniqueId.ALEO_MAINNET)
           .getTxHistory(address, {}, program);
         return {
           transactions: txs.map((item, i) => ({

@@ -85,6 +85,14 @@ async function checkVersion() {
         .resetChainData();
       await clearSwrCache();
     }
+
+    const beforeMainnet = compareVersion(existVersion, "0.12.4") < 1;
+    if (beforeMainnet) {
+      await coinService
+        .getInstance(InnerChainUniqueId.ALEO_MAINNET)
+        .resetChainData();
+      await clearSwrCache();
+    }
   }
   if (existVersion !== currentVersion) {
     await extensionInfoDB.setVersion(currentVersion);

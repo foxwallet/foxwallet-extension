@@ -148,6 +148,7 @@ function passStringToWasm0(arg, malloc, realloc) {
     const ret = encodeString(arg, view);
 
     offset += ret.written;
+    ptr = realloc(ptr, len, offset, 1) >>> 0;
   }
 
   WASM_VECTOR_LEN = offset;
@@ -235,6 +236,13 @@ function debugString(val) {
   return className;
 }
 
+const CLOSURE_DTORS =
+  typeof FinalizationRegistry === "undefined"
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry((state) => {
+        wasm.__wbindgen_export_3.get(state.dtor)(state.a, state.b);
+      });
+
 function makeMutClosure(arg0, arg1, dtor, f) {
   const state = { a: arg0, b: arg1, cnt: 1, dtor };
   const real = (...args) => {
@@ -249,17 +257,18 @@ function makeMutClosure(arg0, arg1, dtor, f) {
     } finally {
       if (--state.cnt === 0) {
         wasm.__wbindgen_export_3.get(state.dtor)(a, state.b);
+        CLOSURE_DTORS.unregister(state);
       } else {
         state.a = a;
       }
     }
   };
   real.original = state;
-
+  CLOSURE_DTORS.register(real, state, state);
   return real;
 }
 function __wbg_adapter_34(arg0, arg1, arg2) {
-  wasm.wasm_bindgen__convert__closures__invoke1_mut__h1a70fba700662d93(
+  wasm._dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h4c25971ee2e48850(
     arg0,
     arg1,
     addHeapObject(arg2),
@@ -372,8 +381,8 @@ function handleError(f, args) {
     wasm.__wbindgen_exn_store(addHeapObject(e));
   }
 }
-function __wbg_adapter_209(arg0, arg1, arg2, arg3) {
-  wasm.wasm_bindgen__convert__closures__invoke2_mut__hccc8c18a7a349b62(
+function __wbg_adapter_281(arg0, arg1, arg2, arg3) {
+  wasm.wasm_bindgen__convert__closures__invoke2_mut__h6bd2d73fcaa29925(
     arg0,
     arg1,
     addHeapObject(arg2),
@@ -381,6 +390,10 @@ function __wbg_adapter_209(arg0, arg1, arg2, arg3) {
   );
 }
 
+const AddressFinalization =
+  typeof FinalizationRegistry === "undefined"
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry((ptr) => wasm.__wbg_address_free(ptr >>> 0));
 /**
  * Public address of an Aleo account
  */
@@ -389,14 +402,14 @@ class Address {
     ptr = ptr >>> 0;
     const obj = Object.create(Address.prototype);
     obj.__wbg_ptr = ptr;
-
+    AddressFinalization.register(obj, obj.__wbg_ptr, obj);
     return obj;
   }
 
   __destroy_into_raw() {
     const ptr = this.__wbg_ptr;
     this.__wbg_ptr = 0;
-
+    AddressFinalization.unregister(this);
     return ptr;
   }
 
@@ -493,6 +506,11 @@ class Address {
     return ret !== 0;
   }
 }
+
+const ExecutionFinalization =
+  typeof FinalizationRegistry === "undefined"
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry((ptr) => wasm.__wbg_execution_free(ptr >>> 0));
 /**
  * Execution of an Aleo program.
  */
@@ -501,14 +519,14 @@ class Execution {
     ptr = ptr >>> 0;
     const obj = Object.create(Execution.prototype);
     obj.__wbg_ptr = ptr;
-
+    ExecutionFinalization.register(obj, obj.__wbg_ptr, obj);
     return obj;
   }
 
   __destroy_into_raw() {
     const ptr = this.__wbg_ptr;
     this.__wbg_ptr = 0;
-
+    ExecutionFinalization.unregister(this);
     return ptr;
   }
 
@@ -563,6 +581,13 @@ class Execution {
     }
   }
 }
+
+const ExecutionResponseFinalization =
+  typeof FinalizationRegistry === "undefined"
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry((ptr) =>
+        wasm.__wbg_executionresponse_free(ptr >>> 0),
+      );
 /**
  * Webassembly Representation of an Aleo function execution response
  *
@@ -574,14 +599,14 @@ class ExecutionResponse {
     ptr = ptr >>> 0;
     const obj = Object.create(ExecutionResponse.prototype);
     obj.__wbg_ptr = ptr;
-
+    ExecutionResponseFinalization.register(obj, obj.__wbg_ptr, obj);
     return obj;
   }
 
   __destroy_into_raw() {
     const ptr = this.__wbg_ptr;
     this.__wbg_ptr = 0;
-
+    ExecutionResponseFinalization.unregister(this);
     return ptr;
   }
 
@@ -679,6 +704,11 @@ class ExecutionResponse {
     return Program.__wrap(ret);
   }
 }
+
+const FieldFinalization =
+  typeof FinalizationRegistry === "undefined"
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry((ptr) => wasm.__wbg_field_free(ptr >>> 0));
 /**
  */
 class Field {
@@ -686,14 +716,14 @@ class Field {
     ptr = ptr >>> 0;
     const obj = Object.create(Field.prototype);
     obj.__wbg_ptr = ptr;
-
+    FieldFinalization.register(obj, obj.__wbg_ptr, obj);
     return obj;
   }
 
   __destroy_into_raw() {
     const ptr = this.__wbg_ptr;
     this.__wbg_ptr = 0;
-
+    FieldFinalization.unregister(this);
     return ptr;
   }
 
@@ -746,6 +776,11 @@ class Field {
     }
   }
 }
+
+const KeyPairFinalization =
+  typeof FinalizationRegistry === "undefined"
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry((ptr) => wasm.__wbg_keypair_free(ptr >>> 0));
 /**
  * Key pair object containing both the function proving and verifying keys
  */
@@ -754,14 +789,14 @@ class KeyPair {
     ptr = ptr >>> 0;
     const obj = Object.create(KeyPair.prototype);
     obj.__wbg_ptr = ptr;
-
+    KeyPairFinalization.register(obj, obj.__wbg_ptr, obj);
     return obj;
   }
 
   __destroy_into_raw() {
     const ptr = this.__wbg_ptr;
     this.__wbg_ptr = 0;
-
+    KeyPairFinalization.unregister(this);
     return ptr;
   }
 
@@ -784,7 +819,8 @@ class KeyPair {
     _assertClass(verifying_key, VerifyingKey);
     var ptr1 = verifying_key.__destroy_into_raw();
     const ret = wasm.keypair_new(ptr0, ptr1);
-    return KeyPair.__wrap(ret);
+    this.__wbg_ptr = ret >>> 0;
+    return this;
   }
   /**
    * Get the proving key. This method will remove the proving key from the key pair
@@ -829,6 +865,320 @@ class KeyPair {
     }
   }
 }
+
+const MetadataFinalization =
+  typeof FinalizationRegistry === "undefined"
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry((ptr) => wasm.__wbg_metadata_free(ptr >>> 0));
+/**
+ */
+class Metadata {
+  static __wrap(ptr) {
+    ptr = ptr >>> 0;
+    const obj = Object.create(Metadata.prototype);
+    obj.__wbg_ptr = ptr;
+    MetadataFinalization.register(obj, obj.__wbg_ptr, obj);
+    return obj;
+  }
+
+  __destroy_into_raw() {
+    const ptr = this.__wbg_ptr;
+    this.__wbg_ptr = 0;
+    MetadataFinalization.unregister(this);
+    return ptr;
+  }
+
+  free() {
+    const ptr = this.__destroy_into_raw();
+    wasm.__wbg_metadata_free(ptr);
+  }
+  /**
+   * @returns {string}
+   */
+  get name() {
+    let deferred1_0;
+    let deferred1_1;
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.__wbg_get_metadata_name(retptr, this.__wbg_ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      deferred1_0 = r0;
+      deferred1_1 = r1;
+      return getStringFromWasm0(r0, r1);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+      wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+    }
+  }
+  /**
+   * @param {string} arg0
+   */
+  set name(arg0) {
+    const ptr0 = passStringToWasm0(
+      arg0,
+      wasm.__wbindgen_malloc,
+      wasm.__wbindgen_realloc,
+    );
+    const len0 = WASM_VECTOR_LEN;
+    wasm.__wbg_set_metadata_name(this.__wbg_ptr, ptr0, len0);
+  }
+  /**
+   * @returns {string}
+   */
+  get locator() {
+    let deferred1_0;
+    let deferred1_1;
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.__wbg_get_metadata_locator(retptr, this.__wbg_ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      deferred1_0 = r0;
+      deferred1_1 = r1;
+      return getStringFromWasm0(r0, r1);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+      wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+    }
+  }
+  /**
+   * @param {string} arg0
+   */
+  set locator(arg0) {
+    const ptr0 = passStringToWasm0(
+      arg0,
+      wasm.__wbindgen_malloc,
+      wasm.__wbindgen_realloc,
+    );
+    const len0 = WASM_VECTOR_LEN;
+    wasm.__wbg_set_metadata_locator(this.__wbg_ptr, ptr0, len0);
+  }
+  /**
+   * @returns {string}
+   */
+  get prover() {
+    let deferred1_0;
+    let deferred1_1;
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.__wbg_get_metadata_prover(retptr, this.__wbg_ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      deferred1_0 = r0;
+      deferred1_1 = r1;
+      return getStringFromWasm0(r0, r1);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+      wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+    }
+  }
+  /**
+   * @param {string} arg0
+   */
+  set prover(arg0) {
+    const ptr0 = passStringToWasm0(
+      arg0,
+      wasm.__wbindgen_malloc,
+      wasm.__wbindgen_realloc,
+    );
+    const len0 = WASM_VECTOR_LEN;
+    wasm.__wbg_set_metadata_prover(this.__wbg_ptr, ptr0, len0);
+  }
+  /**
+   * @returns {string}
+   */
+  get verifier() {
+    let deferred1_0;
+    let deferred1_1;
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.__wbg_get_metadata_verifier(retptr, this.__wbg_ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      deferred1_0 = r0;
+      deferred1_1 = r1;
+      return getStringFromWasm0(r0, r1);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+      wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+    }
+  }
+  /**
+   * @param {string} arg0
+   */
+  set verifier(arg0) {
+    const ptr0 = passStringToWasm0(
+      arg0,
+      wasm.__wbindgen_malloc,
+      wasm.__wbindgen_realloc,
+    );
+    const len0 = WASM_VECTOR_LEN;
+    wasm.__wbg_set_metadata_verifier(this.__wbg_ptr, ptr0, len0);
+  }
+  /**
+   * @returns {string}
+   */
+  get verifyingKey() {
+    let deferred1_0;
+    let deferred1_1;
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.__wbg_get_metadata_verifyingKey(retptr, this.__wbg_ptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      deferred1_0 = r0;
+      deferred1_1 = r1;
+      return getStringFromWasm0(r0, r1);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+      wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+    }
+  }
+  /**
+   * @param {string} arg0
+   */
+  set verifyingKey(arg0) {
+    const ptr0 = passStringToWasm0(
+      arg0,
+      wasm.__wbindgen_malloc,
+      wasm.__wbindgen_realloc,
+    );
+    const len0 = WASM_VECTOR_LEN;
+    wasm.__wbg_set_metadata_verifyingKey(this.__wbg_ptr, ptr0, len0);
+  }
+  /**
+   * @returns {string}
+   */
+  static baseUrl() {
+    let deferred1_0;
+    let deferred1_1;
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      wasm.metadata_baseUrl(retptr);
+      var r0 = getInt32Memory0()[retptr / 4 + 0];
+      var r1 = getInt32Memory0()[retptr / 4 + 1];
+      deferred1_0 = r0;
+      deferred1_1 = r1;
+      return getStringFromWasm0(r0, r1);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+      wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+    }
+  }
+  /**
+   * @returns {Metadata}
+   */
+  static bond_public() {
+    const ret = wasm.metadata_bond_public();
+    return Metadata.__wrap(ret);
+  }
+  /**
+   * @returns {Metadata}
+   */
+  static bond_validator() {
+    const ret = wasm.metadata_bond_validator();
+    return Metadata.__wrap(ret);
+  }
+  /**
+   * @returns {Metadata}
+   */
+  static claim_unbond_public() {
+    const ret = wasm.metadata_claim_unbond_public();
+    return Metadata.__wrap(ret);
+  }
+  /**
+   * @returns {Metadata}
+   */
+  static fee_private() {
+    const ret = wasm.metadata_fee_private();
+    return Metadata.__wrap(ret);
+  }
+  /**
+   * @returns {Metadata}
+   */
+  static fee_public() {
+    const ret = wasm.metadata_fee_public();
+    return Metadata.__wrap(ret);
+  }
+  /**
+   * @returns {Metadata}
+   */
+  static inclusion() {
+    const ret = wasm.metadata_inclusion();
+    return Metadata.__wrap(ret);
+  }
+  /**
+   * @returns {Metadata}
+   */
+  static join() {
+    const ret = wasm.metadata_join();
+    return Metadata.__wrap(ret);
+  }
+  /**
+   * @returns {Metadata}
+   */
+  static set_validator_state() {
+    const ret = wasm.metadata_set_validator_state();
+    return Metadata.__wrap(ret);
+  }
+  /**
+   * @returns {Metadata}
+   */
+  static split() {
+    const ret = wasm.metadata_split();
+    return Metadata.__wrap(ret);
+  }
+  /**
+   * @returns {Metadata}
+   */
+  static transfer_private() {
+    const ret = wasm.metadata_transfer_private();
+    return Metadata.__wrap(ret);
+  }
+  /**
+   * @returns {Metadata}
+   */
+  static transfer_private_to_public() {
+    const ret = wasm.metadata_transfer_private_to_public();
+    return Metadata.__wrap(ret);
+  }
+  /**
+   * @returns {Metadata}
+   */
+  static transfer_public() {
+    const ret = wasm.metadata_transfer_public();
+    return Metadata.__wrap(ret);
+  }
+  /**
+   * @returns {Metadata}
+   */
+  static transfer_public_as_signer() {
+    const ret = wasm.metadata_transfer_public_as_signer();
+    return Metadata.__wrap(ret);
+  }
+  /**
+   * @returns {Metadata}
+   */
+  static transfer_public_to_private() {
+    const ret = wasm.metadata_transfer_public_to_private();
+    return Metadata.__wrap(ret);
+  }
+  /**
+   * @returns {Metadata}
+   */
+  static unbond_public() {
+    const ret = wasm.metadata_unbond_public();
+    return Metadata.__wrap(ret);
+  }
+}
+
+const OfflineQueryFinalization =
+  typeof FinalizationRegistry === "undefined"
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry((ptr) =>
+        wasm.__wbg_offlinequery_free(ptr >>> 0),
+      );
 /**
  * An offline query object used to insert the global state root and state paths needed to create
  * a valid inclusion proof offline.
@@ -838,14 +1188,14 @@ class OfflineQuery {
     ptr = ptr >>> 0;
     const obj = Object.create(OfflineQuery.prototype);
     obj.__wbg_ptr = ptr;
-
+    OfflineQueryFinalization.register(obj, obj.__wbg_ptr, obj);
     return obj;
   }
 
   __destroy_into_raw() {
     const ptr = this.__wbg_ptr;
     this.__wbg_ptr = 0;
-
+    OfflineQueryFinalization.unregister(this);
     return ptr;
   }
 
@@ -873,7 +1223,8 @@ class OfflineQuery {
       if (r2) {
         throw takeObject(r1);
       }
-      return OfflineQuery.__wrap(r0);
+      this.__wbg_ptr = r0 >>> 0;
+      return this;
     } finally {
       wasm.__wbindgen_add_to_stack_pointer(16);
     }
@@ -965,6 +1316,11 @@ class OfflineQuery {
     }
   }
 }
+
+const PrivateKeyFinalization =
+  typeof FinalizationRegistry === "undefined"
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry((ptr) => wasm.__wbg_privatekey_free(ptr >>> 0));
 /**
  * Private key of an Aleo account
  */
@@ -973,14 +1329,14 @@ class PrivateKey {
     ptr = ptr >>> 0;
     const obj = Object.create(PrivateKey.prototype);
     obj.__wbg_ptr = ptr;
-
+    PrivateKeyFinalization.register(obj, obj.__wbg_ptr, obj);
     return obj;
   }
 
   __destroy_into_raw() {
     const ptr = this.__wbg_ptr;
     this.__wbg_ptr = 0;
-
+    PrivateKeyFinalization.unregister(this);
     return ptr;
   }
 
@@ -995,7 +1351,8 @@ class PrivateKey {
    */
   constructor() {
     const ret = wasm.privatekey_new();
-    return PrivateKey.__wrap(ret);
+    this.__wbg_ptr = ret >>> 0;
+    return this;
   }
   /**
    * Get a private key from a series of unchecked bytes
@@ -1080,7 +1437,7 @@ class PrivateKey {
    * @returns {Address}
    */
   to_address() {
-    const ret = wasm.address_from_private_key(this.__wbg_ptr);
+    const ret = wasm.privatekey_to_address(this.__wbg_ptr);
     return Address.__wrap(ret);
   }
   /**
@@ -1195,6 +1552,13 @@ class PrivateKey {
     }
   }
 }
+
+const PrivateKeyCiphertextFinalization =
+  typeof FinalizationRegistry === "undefined"
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry((ptr) =>
+        wasm.__wbg_privatekeyciphertext_free(ptr >>> 0),
+      );
 /**
  * Private Key in ciphertext form
  */
@@ -1203,14 +1567,14 @@ class PrivateKeyCiphertext {
     ptr = ptr >>> 0;
     const obj = Object.create(PrivateKeyCiphertext.prototype);
     obj.__wbg_ptr = ptr;
-
+    PrivateKeyCiphertextFinalization.register(obj, obj.__wbg_ptr, obj);
     return obj;
   }
 
   __destroy_into_raw() {
     const ptr = this.__wbg_ptr;
     this.__wbg_ptr = 0;
-
+    PrivateKeyCiphertextFinalization.unregister(this);
     return ptr;
   }
 
@@ -1338,6 +1702,11 @@ class PrivateKeyCiphertext {
     }
   }
 }
+
+const ProgramFinalization =
+  typeof FinalizationRegistry === "undefined"
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry((ptr) => wasm.__wbg_program_free(ptr >>> 0));
 /**
  * Webassembly Representation of an Aleo program
  */
@@ -1346,14 +1715,14 @@ class Program {
     ptr = ptr >>> 0;
     const obj = Object.create(Program.prototype);
     obj.__wbg_ptr = ptr;
-
+    ProgramFinalization.register(obj, obj.__wbg_ptr, obj);
     return obj;
   }
 
   __destroy_into_raw() {
     const ptr = this.__wbg_ptr;
     this.__wbg_ptr = 0;
-
+    ProgramFinalization.unregister(this);
     return ptr;
   }
 
@@ -1771,13 +2140,20 @@ class Program {
     return takeObject(ret);
   }
 }
+
+const ProgramManagerFinalization =
+  typeof FinalizationRegistry === "undefined"
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry((ptr) =>
+        wasm.__wbg_programmanager_free(ptr >>> 0),
+      );
 /**
  */
 class ProgramManager {
   __destroy_into_raw() {
     const ptr = this.__wbg_ptr;
     this.__wbg_ptr = 0;
-
+    ProgramManagerFinalization.unregister(this);
     return ptr;
   }
 
@@ -1805,21 +2181,19 @@ class ProgramManager {
    * @returns {Transaction | Error}
    * @param {PrivateKey} private_key
    * @param {string} program
-   * @param {bigint} base_fee
-   * @param {bigint} priority_fee
-   * @param {RecordPlaintext | undefined} fee_record
-   * @param {string | undefined} url
-   * @param {object | undefined} imports
-   * @param {ProvingKey | undefined} fee_proving_key
-   * @param {VerifyingKey | undefined} fee_verifying_key
-   * @param {OfflineQuery | undefined} offline_query
+   * @param {number} fee_credits
+   * @param {RecordPlaintext | undefined} [fee_record]
+   * @param {string | undefined} [url]
+   * @param {object | undefined} [imports]
+   * @param {ProvingKey | undefined} [fee_proving_key]
+   * @param {VerifyingKey | undefined} [fee_verifying_key]
+   * @param {OfflineQuery | undefined} [offline_query]
    * @returns {Promise<Transaction>}
    */
   static buildDeploymentTransaction(
     private_key,
     program,
-    base_fee,
-    priority_fee,
+    fee_credits,
     fee_record,
     url,
     imports,
@@ -1862,8 +2236,7 @@ class ProgramManager {
       private_key.__wbg_ptr,
       ptr0,
       len0,
-      base_fee,
-      priority_fee,
+      fee_credits,
       ptr1,
       ptr2,
       len2,
@@ -1885,7 +2258,7 @@ class ProgramManager {
    * are a string representing the program source code \{ "hello.aleo": "hello.aleo source code" \}
    * @returns {u64 | Error}
    * @param {string} program
-   * @param {object | undefined} imports
+   * @param {object | undefined} [imports]
    * @returns {Promise<bigint>}
    */
   static estimateDeploymentFee(program, imports) {
@@ -1960,11 +2333,11 @@ class ProgramManager {
    * @param {Array<any>} inputs
    * @param {boolean} prove_execution
    * @param {boolean} cache
-   * @param {object | undefined} imports
-   * @param {ProvingKey | undefined} proving_key
-   * @param {VerifyingKey | undefined} verifying_key
-   * @param {string | undefined} url
-   * @param {OfflineQuery | undefined} offline_query
+   * @param {object | undefined} [imports]
+   * @param {ProvingKey | undefined} [proving_key]
+   * @param {VerifyingKey | undefined} [verifying_key]
+   * @param {string | undefined} [url]
+   * @param {OfflineQuery | undefined} [offline_query]
    * @returns {Promise<ExecutionResponse>}
    */
   static executeFunctionOffline(
@@ -2056,16 +2429,15 @@ class ProgramManager {
    * @param {string} program
    * @param {string} _function
    * @param {Array<any>} inputs
-   * @param {bigint} base_fee
-   * @param {bigint} priority_fee
-   * @param {RecordPlaintext | undefined} fee_record
-   * @param {string | undefined} url
-   * @param {object | undefined} imports
-   * @param {ProvingKey | undefined} proving_key
-   * @param {VerifyingKey | undefined} verifying_key
-   * @param {ProvingKey | undefined} fee_proving_key
-   * @param {VerifyingKey | undefined} fee_verifying_key
-   * @param {OfflineQuery | undefined} offline_query
+   * @param {number} fee_credits
+   * @param {RecordPlaintext | undefined} [fee_record]
+   * @param {string | undefined} [url]
+   * @param {object | undefined} [imports]
+   * @param {ProvingKey | undefined} [proving_key]
+   * @param {VerifyingKey | undefined} [verifying_key]
+   * @param {ProvingKey | undefined} [fee_proving_key]
+   * @param {VerifyingKey | undefined} [fee_verifying_key]
+   * @param {OfflineQuery | undefined} [offline_query]
    * @returns {Promise<Transaction>}
    */
   static buildExecutionTransaction(
@@ -2073,8 +2445,7 @@ class ProgramManager {
     program,
     _function,
     inputs,
-    base_fee,
-    priority_fee,
+    fee_credits,
     fee_record,
     url,
     imports,
@@ -2138,8 +2509,7 @@ class ProgramManager {
       ptr1,
       len1,
       addHeapObject(inputs),
-      base_fee,
-      priority_fee,
+      fee_credits,
       ptr2,
       ptr3,
       len3,
@@ -2174,11 +2544,11 @@ class ProgramManager {
    * @param {string} program
    * @param {string} _function
    * @param {Array<any>} inputs
-   * @param {string | undefined} url
-   * @param {object | undefined} imports
-   * @param {ProvingKey | undefined} proving_key
-   * @param {VerifyingKey | undefined} verifying_key
-   * @param {OfflineQuery | undefined} offline_query
+   * @param {string | undefined} [url]
+   * @param {object | undefined} [imports]
+   * @param {ProvingKey | undefined} [proving_key]
+   * @param {VerifyingKey | undefined} [verifying_key]
+   * @param {OfflineQuery | undefined} [offline_query]
    * @returns {Promise<bigint>}
    */
   static estimateExecutionFee(
@@ -2241,6 +2611,47 @@ class ProgramManager {
     return takeObject(ret);
   }
   /**
+   * Estimate the finalize fee component for executing a function. This fee is additional to the
+   * size of the execution of the program in bytes. If the function does not have a finalize
+   * step, then the finalize fee is 0.
+   *
+   * Disclaimer: Fee estimation is experimental and may not represent a correct estimate on any current or future network
+   *
+   * @param program The program containing the function to estimate the finalize fee for
+   * @param function The function to estimate the finalize fee for
+   * @returns {u64 | Error} Fee in microcredits
+   * @param {string} program
+   * @param {string} _function
+   * @returns {bigint}
+   */
+  static estimateFinalizeFee(program, _function) {
+    try {
+      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+      const ptr0 = passStringToWasm0(
+        program,
+        wasm.__wbindgen_malloc,
+        wasm.__wbindgen_realloc,
+      );
+      const len0 = WASM_VECTOR_LEN;
+      const ptr1 = passStringToWasm0(
+        _function,
+        wasm.__wbindgen_malloc,
+        wasm.__wbindgen_realloc,
+      );
+      const len1 = WASM_VECTOR_LEN;
+      wasm.programmanager_estimateFinalizeFee(retptr, ptr0, len0, ptr1, len1);
+      var r0 = getBigInt64Memory0()[retptr / 8 + 0];
+      var r2 = getInt32Memory0()[retptr / 4 + 2];
+      var r3 = getInt32Memory0()[retptr / 4 + 3];
+      if (r3) {
+        throw takeObject(r2);
+      }
+      return BigInt.asUintN(64, r0);
+    } finally {
+      wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+  }
+  /**
    * Join two records together to create a new record with an amount of credits equal to the sum
    * of the credits of the two original records
    *
@@ -2259,13 +2670,13 @@ class ProgramManager {
    * @param {RecordPlaintext} record_1
    * @param {RecordPlaintext} record_2
    * @param {number} fee_credits
-   * @param {RecordPlaintext | undefined} fee_record
-   * @param {string | undefined} url
-   * @param {ProvingKey | undefined} join_proving_key
-   * @param {VerifyingKey | undefined} join_verifying_key
-   * @param {ProvingKey | undefined} fee_proving_key
-   * @param {VerifyingKey | undefined} fee_verifying_key
-   * @param {OfflineQuery | undefined} offline_query
+   * @param {RecordPlaintext | undefined} [fee_record]
+   * @param {string | undefined} [url]
+   * @param {ProvingKey | undefined} [join_proving_key]
+   * @param {VerifyingKey | undefined} [join_verifying_key]
+   * @param {ProvingKey | undefined} [fee_proving_key]
+   * @param {VerifyingKey | undefined} [fee_verifying_key]
+   * @param {OfflineQuery | undefined} [offline_query]
    * @returns {Promise<Transaction>}
    */
   static buildJoinTransaction(
@@ -2350,10 +2761,10 @@ class ProgramManager {
    * @param {PrivateKey} private_key
    * @param {number} split_amount
    * @param {RecordPlaintext} amount_record
-   * @param {string | undefined} url
-   * @param {ProvingKey | undefined} split_proving_key
-   * @param {VerifyingKey | undefined} split_verifying_key
-   * @param {OfflineQuery | undefined} offline_query
+   * @param {string | undefined} [url]
+   * @param {ProvingKey | undefined} [split_proving_key]
+   * @param {VerifyingKey | undefined} [split_verifying_key]
+   * @param {OfflineQuery | undefined} [offline_query]
    * @returns {Promise<Transaction>}
    */
   static buildSplitTransaction(
@@ -2421,13 +2832,13 @@ class ProgramManager {
    * @param {string} transfer_type
    * @param {RecordPlaintext | undefined} amount_record
    * @param {number} fee_credits
-   * @param {RecordPlaintext | undefined} fee_record
-   * @param {string | undefined} url
-   * @param {ProvingKey | undefined} transfer_proving_key
-   * @param {VerifyingKey | undefined} transfer_verifying_key
-   * @param {ProvingKey | undefined} fee_proving_key
-   * @param {VerifyingKey | undefined} fee_verifying_key
-   * @param {OfflineQuery | undefined} offline_query
+   * @param {RecordPlaintext | undefined} [fee_record]
+   * @param {string | undefined} [url]
+   * @param {ProvingKey | undefined} [transfer_proving_key]
+   * @param {VerifyingKey | undefined} [transfer_verifying_key]
+   * @param {ProvingKey | undefined} [fee_proving_key]
+   * @param {VerifyingKey | undefined} [fee_verifying_key]
+   * @param {OfflineQuery | undefined} [offline_query]
    * @returns {Promise<Transaction>}
    */
   static buildTransferTransaction(
@@ -2528,7 +2939,7 @@ class ProgramManager {
    * @param {string} program
    * @param {string} function_id
    * @param {Array<any>} inputs
-   * @param {object | undefined} imports
+   * @param {object | undefined} [imports]
    * @returns {Promise<KeyPair>}
    */
   static synthesizeKeyPair(private_key, program, function_id, inputs, imports) {
@@ -2557,6 +2968,11 @@ class ProgramManager {
     return takeObject(ret);
   }
 }
+
+const ProvingKeyFinalization =
+  typeof FinalizationRegistry === "undefined"
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry((ptr) => wasm.__wbg_provingkey_free(ptr >>> 0));
 /**
  * Proving key for a function within an Aleo program
  */
@@ -2565,20 +2981,230 @@ class ProvingKey {
     ptr = ptr >>> 0;
     const obj = Object.create(ProvingKey.prototype);
     obj.__wbg_ptr = ptr;
-
+    ProvingKeyFinalization.register(obj, obj.__wbg_ptr, obj);
     return obj;
   }
 
   __destroy_into_raw() {
     const ptr = this.__wbg_ptr;
     this.__wbg_ptr = 0;
-
+    ProvingKeyFinalization.unregister(this);
     return ptr;
   }
 
   free() {
     const ptr = this.__destroy_into_raw();
     wasm.__wbg_provingkey_free(ptr);
+  }
+  /**
+   * Verify if the proving key is for the bond_public function
+   *
+   * @example
+   * const provingKey = ProvingKey.fromBytes("bond_public_proving_key.bin");
+   * provingKey.isBondPublicProver() ? console.log("Key verified") : throw new Error("Invalid key");
+   *
+   * @returns {boolean} returns true if the proving key is for the bond_public function, false if otherwise
+   * @returns {boolean}
+   */
+  isBondPublicProver() {
+    const ret = wasm.provingkey_isBondPublicProver(this.__wbg_ptr);
+    return ret !== 0;
+  }
+  /**
+   * Verify if the proving key is for the bond_validator function
+   *
+   * @example
+   * const provingKey = ProvingKey.fromBytes("bond_validator_proving_key.bin");
+   * provingKey.isBondPublicProver() ? console.log("Key verified") : throw new Error("Invalid key");
+   *
+   * @returns {boolean} returns true if the proving key is for the bond_validator function, false if otherwise
+   * @returns {boolean}
+   */
+  isBondValidatorProver() {
+    const ret = wasm.provingkey_isBondValidatorProver(this.__wbg_ptr);
+    return ret !== 0;
+  }
+  /**
+   * Verify if the proving key is for the claim_unbond function
+   *
+   * @example
+   * const provingKey = ProvingKey.fromBytes("claim_unbond_proving_key.bin");
+   * provingKey.isClaimUnbondProver() ? console.log("Key verified") : throw new Error("Invalid key");
+   *
+   * @returns {boolean} returns true if the proving key is for the claim_unbond function, false if otherwise
+   * @returns {boolean}
+   */
+  isClaimUnbondPublicProver() {
+    const ret = wasm.provingkey_isClaimUnbondPublicProver(this.__wbg_ptr);
+    return ret !== 0;
+  }
+  /**
+   * Verify if the proving key is for the fee_private function
+   *
+   * @example
+   * const provingKey = ProvingKey.fromBytes("fee_private_proving_key.bin");
+   * provingKey.isFeePrivateProver() ? console.log("Key verified") : throw new Error("Invalid key");
+   *
+   * @returns {boolean} returns true if the proving key is for the fee_private function, false if otherwise
+   * @returns {boolean}
+   */
+  isFeePrivateProver() {
+    const ret = wasm.provingkey_isFeePrivateProver(this.__wbg_ptr);
+    return ret !== 0;
+  }
+  /**
+   * Verify if the proving key is for the fee_public function
+   *
+   * @example
+   * const provingKey = ProvingKey.fromBytes("fee_public_proving_key.bin");
+   * provingKey.isFeePublicProver() ? console.log("Key verified") : throw new Error("Invalid key");
+   *
+   * @returns {boolean} returns true if the proving key is for the fee_public function, false if otherwise
+   * @returns {boolean}
+   */
+  isFeePublicProver() {
+    const ret = wasm.provingkey_isFeePublicProver(this.__wbg_ptr);
+    return ret !== 0;
+  }
+  /**
+   * Verify if the proving key is for the inclusion function
+   *
+   * @example
+   * const provingKey = ProvingKey.fromBytes("inclusion_proving_key.bin");
+   * provingKey.isInclusionProver() ? console.log("Key verified") : throw new Error("Invalid key");
+   *
+   * @returns {boolean} returns true if the proving key is for the inclusion function, false if otherwise
+   * @returns {boolean}
+   */
+  isInclusionProver() {
+    const ret = wasm.provingkey_isInclusionProver(this.__wbg_ptr);
+    return ret !== 0;
+  }
+  /**
+   * Verify if the proving key is for the join function
+   *
+   * @example
+   * const provingKey = ProvingKey.fromBytes("join_proving_key.bin");
+   * provingKey.isJoinProver() ? console.log("Key verified") : throw new Error("Invalid key");
+   *
+   * @returns {boolean} returns true if the proving key is for the join function, false if otherwise
+   * @returns {boolean}
+   */
+  isJoinProver() {
+    const ret = wasm.provingkey_isJoinProver(this.__wbg_ptr);
+    return ret !== 0;
+  }
+  /**
+   * Verify if the proving key is for the set_validator_state function
+   *
+   * @example
+   * const provingKey = ProvingKey.fromBytes("set_validator_set_proving_key.bin");
+   * provingKey.isSetValidatorStateProver() ? console.log("Key verified") : throw new Error("Invalid key");
+   *
+   * @returns {boolean} returns true if the proving key is for the set_validator_state function, false if otherwise
+   * @returns {boolean}
+   */
+  isSetValidatorStateProver() {
+    const ret = wasm.provingkey_isSetValidatorStateProver(this.__wbg_ptr);
+    return ret !== 0;
+  }
+  /**
+   * Verify if the proving key is for the split function
+   *
+   * @example
+   * const provingKey = ProvingKey.fromBytes("split_proving_key.bin");
+   * provingKey.isSplitProver() ? console.log("Key verified") : throw new Error("Invalid key");
+   *
+   * @returns {boolean} returns true if the proving key is for the split function, false if otherwise
+   * @returns {boolean}
+   */
+  isSplitProver() {
+    const ret = wasm.provingkey_isSplitProver(this.__wbg_ptr);
+    return ret !== 0;
+  }
+  /**
+   * Verify if the proving key is for the transfer_private function
+   *
+   * @example
+   * const provingKey = ProvingKey.fromBytes("transfer_private_proving_key.bin");
+   * provingKey.isTransferPrivateProver() ? console.log("Key verified") : throw new Error("Invalid key");
+   *
+   * @returns {boolean} returns true if the proving key is for the transfer_private function, false if otherwise
+   * @returns {boolean}
+   */
+  isTransferPrivateProver() {
+    const ret = wasm.provingkey_isTransferPrivateProver(this.__wbg_ptr);
+    return ret !== 0;
+  }
+  /**
+   * Verify if the proving key is for the transfer_private_to_public function
+   *
+   * @example
+   * const provingKey = ProvingKey.fromBytes("transfer_private_to_public_proving_key.bin");
+   * provingKey.isTransferPrivateToPublicProver() ? console.log("Key verified") : throw new Error("Invalid key");
+   *
+   * @returns {boolean} returns true if the proving key is for the transfer_private_to_public function, false if otherwise
+   * @returns {boolean}
+   */
+  isTransferPrivateToPublicProver() {
+    const ret = wasm.provingkey_isTransferPrivateToPublicProver(this.__wbg_ptr);
+    return ret !== 0;
+  }
+  /**
+   * Verify if the proving key is for the transfer_public function
+   *
+   * @example
+   * const provingKey = ProvingKey.fromBytes("transfer_public_proving_key.bin");
+   * provingKey.isTransferPublicProver() ? console.log("Key verified") : throw new Error("Invalid key");
+   *
+   * @returns {boolean} returns true if the proving key is for the transfer_public function, false if otherwise
+   * @returns {boolean}
+   */
+  isTransferPublicProver() {
+    const ret = wasm.provingkey_isTransferPublicProver(this.__wbg_ptr);
+    return ret !== 0;
+  }
+  /**
+   * Verify if the proving key is for the transfer_public_as_signer function
+   *
+   * @example
+   * const provingKey = ProvingKey.fromBytes("transfer_public_as_signer_proving_key.bin");
+   * provingKey.isTransferPublicAsSignerProver() ? console.log("Key verified") : throw new Error("Invalid key");
+   *
+   * @returns {boolean} returns true if the proving key is for the transfer_public function, false if otherwise
+   * @returns {boolean}
+   */
+  isTransferPublicAsSignerProver() {
+    const ret = wasm.provingkey_isTransferPublicAsSignerProver(this.__wbg_ptr);
+    return ret !== 0;
+  }
+  /**
+   * Verify if the proving key is for the transfer_public_to_private function
+   *
+   * @example
+   * const provingKey = ProvingKey.fromBytes("transfer_public_to_private_proving_key.bin");
+   * provingKey.isTransferPublicToPrivateProver() ? console.log("Key verified") : throw new Error("Invalid key");
+   *
+   * @returns {boolean} returns true if the proving key is for the transfer_public_to_private function, false if otherwise
+   * @returns {boolean}
+   */
+  isTransferPublicToPrivateProver() {
+    const ret = wasm.provingkey_isTransferPublicToPrivateProver(this.__wbg_ptr);
+    return ret !== 0;
+  }
+  /**
+   * Verify if the proving key is for the unbond_public function
+   *
+   * @example
+   * const provingKey = ProvingKey.fromBytes("unbond_public.bin");
+   * provingKey.isUnbondPublicProver() ? console.log("Key verified") : throw new Error("Invalid key");
+   *
+   * @returns {boolean} returns true if the proving key is for the unbond_public_prover function, false if otherwise
+   * @returns {boolean}
+   */
+  isUnbondPublicProver() {
+    const ret = wasm.provingkey_isUnbondPublicProver(this.__wbg_ptr);
+    return ret !== 0;
   }
   /**
    * Return the checksum of the proving key
@@ -2683,7 +3309,7 @@ class ProvingKey {
         throw takeObject(r2);
       }
       var v1 = getArrayU8FromWasm0(r0, r1).slice();
-      wasm.__wbindgen_free(r0, r1 * 1);
+      wasm.__wbindgen_free(r0, r1 * 1, 1);
       return v1;
     } finally {
       wasm.__wbindgen_add_to_stack_pointer(16);
@@ -2712,6 +3338,13 @@ class ProvingKey {
     }
   }
 }
+
+const RecordCiphertextFinalization =
+  typeof FinalizationRegistry === "undefined"
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry((ptr) =>
+        wasm.__wbg_recordciphertext_free(ptr >>> 0),
+      );
 /**
  * Encrypted Aleo record
  */
@@ -2720,14 +3353,14 @@ class RecordCiphertext {
     ptr = ptr >>> 0;
     const obj = Object.create(RecordCiphertext.prototype);
     obj.__wbg_ptr = ptr;
-
+    RecordCiphertextFinalization.register(obj, obj.__wbg_ptr, obj);
     return obj;
   }
 
   __destroy_into_raw() {
     const ptr = this.__wbg_ptr;
     this.__wbg_ptr = 0;
-
+    RecordCiphertextFinalization.unregister(this);
     return ptr;
   }
 
@@ -2828,6 +3461,13 @@ class RecordCiphertext {
     return ret !== 0;
   }
 }
+
+const RecordPlaintextFinalization =
+  typeof FinalizationRegistry === "undefined"
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry((ptr) =>
+        wasm.__wbg_recordplaintext_free(ptr >>> 0),
+      );
 /**
  * Plaintext representation of an Aleo record
  */
@@ -2836,14 +3476,14 @@ class RecordPlaintext {
     ptr = ptr >>> 0;
     const obj = Object.create(RecordPlaintext.prototype);
     obj.__wbg_ptr = ptr;
-
+    RecordPlaintextFinalization.register(obj, obj.__wbg_ptr, obj);
     return obj;
   }
 
   __destroy_into_raw() {
     const ptr = this.__wbg_ptr;
     this.__wbg_ptr = 0;
-
+    RecordPlaintextFinalization.unregister(this);
     return ptr;
   }
 
@@ -3032,6 +3672,11 @@ class RecordPlaintext {
     }
   }
 }
+
+const SignatureFinalization =
+  typeof FinalizationRegistry === "undefined"
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry((ptr) => wasm.__wbg_signature_free(ptr >>> 0));
 /**
  * Cryptographic signature of a message signed by an Aleo account
  */
@@ -3040,14 +3685,14 @@ class Signature {
     ptr = ptr >>> 0;
     const obj = Object.create(Signature.prototype);
     obj.__wbg_ptr = ptr;
-
+    SignatureFinalization.register(obj, obj.__wbg_ptr, obj);
     return obj;
   }
 
   __destroy_into_raw() {
     const ptr = this.__wbg_ptr;
     this.__wbg_ptr = 0;
-
+    SignatureFinalization.unregister(this);
     return ptr;
   }
 
@@ -3135,6 +3780,11 @@ class Signature {
     }
   }
 }
+
+const TransactionFinalization =
+  typeof FinalizationRegistry === "undefined"
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry((ptr) => wasm.__wbg_transaction_free(ptr >>> 0));
 /**
  * Webassembly Representation of an Aleo transaction
  *
@@ -3146,14 +3796,14 @@ class Transaction {
     ptr = ptr >>> 0;
     const obj = Object.create(Transaction.prototype);
     obj.__wbg_ptr = ptr;
-
+    TransactionFinalization.register(obj, obj.__wbg_ptr, obj);
     return obj;
   }
 
   __destroy_into_raw() {
     const ptr = this.__wbg_ptr;
     this.__wbg_ptr = 0;
-
+    TransactionFinalization.unregister(this);
     return ptr;
   }
 
@@ -3262,6 +3912,13 @@ class Transaction {
     }
   }
 }
+
+const VerifyingKeyFinalization =
+  typeof FinalizationRegistry === "undefined"
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry((ptr) =>
+        wasm.__wbg_verifyingkey_free(ptr >>> 0),
+      );
 /**
  * Verifying key for a function within an Aleo program
  */
@@ -3270,20 +3927,326 @@ class VerifyingKey {
     ptr = ptr >>> 0;
     const obj = Object.create(VerifyingKey.prototype);
     obj.__wbg_ptr = ptr;
-
+    VerifyingKeyFinalization.register(obj, obj.__wbg_ptr, obj);
     return obj;
   }
 
   __destroy_into_raw() {
     const ptr = this.__wbg_ptr;
     this.__wbg_ptr = 0;
-
+    VerifyingKeyFinalization.unregister(this);
     return ptr;
   }
 
   free() {
     const ptr = this.__destroy_into_raw();
     wasm.__wbg_verifyingkey_free(ptr);
+  }
+  /**
+   * Returns the verifying key for the bond_public function
+   *
+   * @returns {VerifyingKey} Verifying key for the bond_public function
+   * @returns {VerifyingKey}
+   */
+  static bondPublicVerifier() {
+    const ret = wasm.verifyingkey_bondPublicVerifier();
+    return VerifyingKey.__wrap(ret);
+  }
+  /**
+   * Returns the verifying key for the bond_validator function
+   *
+   * @returns {VerifyingKey} Verifying key for the bond_validator function
+   * @returns {VerifyingKey}
+   */
+  static bondValidatorVerifier() {
+    const ret = wasm.verifyingkey_bondValidatorVerifier();
+    return VerifyingKey.__wrap(ret);
+  }
+  /**
+   * Returns the verifying key for the claim_delegator function
+   *
+   * @returns {VerifyingKey} Verifying key for the claim_unbond_public function
+   * @returns {VerifyingKey}
+   */
+  static claimUnbondPublicVerifier() {
+    const ret = wasm.verifyingkey_claimUnbondPublicVerifier();
+    return VerifyingKey.__wrap(ret);
+  }
+  /**
+   * Returns the verifying key for the fee_private function
+   *
+   * @returns {VerifyingKey} Verifying key for the fee_private function
+   * @returns {VerifyingKey}
+   */
+  static feePrivateVerifier() {
+    const ret = wasm.verifyingkey_feePrivateVerifier();
+    return VerifyingKey.__wrap(ret);
+  }
+  /**
+   * Returns the verifying key for the fee_public function
+   *
+   * @returns {VerifyingKey} Verifying key for the fee_public function
+   * @returns {VerifyingKey}
+   */
+  static feePublicVerifier() {
+    const ret = wasm.verifyingkey_feePublicVerifier();
+    return VerifyingKey.__wrap(ret);
+  }
+  /**
+   * Returns the verifying key for the inclusion function
+   *
+   * @returns {VerifyingKey} Verifying key for the inclusion function
+   * @returns {VerifyingKey}
+   */
+  static inclusionVerifier() {
+    const ret = wasm.verifyingkey_inclusionVerifier();
+    return VerifyingKey.__wrap(ret);
+  }
+  /**
+   * Returns the verifying key for the join function
+   *
+   * @returns {VerifyingKey} Verifying key for the join function
+   * @returns {VerifyingKey}
+   */
+  static joinVerifier() {
+    const ret = wasm.verifyingkey_joinVerifier();
+    return VerifyingKey.__wrap(ret);
+  }
+  /**
+   * Returns the verifying key for the set_validator_state function
+   *
+   * @returns {VerifyingKey} Verifying key for the set_validator_state function
+   * @returns {VerifyingKey}
+   */
+  static setValidatorStateVerifier() {
+    const ret = wasm.verifyingkey_setValidatorStateVerifier();
+    return VerifyingKey.__wrap(ret);
+  }
+  /**
+   * Returns the verifying key for the split function
+   *
+   * @returns {VerifyingKey} Verifying key for the split function
+   * @returns {VerifyingKey}
+   */
+  static splitVerifier() {
+    const ret = wasm.verifyingkey_splitVerifier();
+    return VerifyingKey.__wrap(ret);
+  }
+  /**
+   * Returns the verifying key for the transfer_private function
+   *
+   * @returns {VerifyingKey} Verifying key for the transfer_private function
+   * @returns {VerifyingKey}
+   */
+  static transferPrivateVerifier() {
+    const ret = wasm.verifyingkey_transferPrivateVerifier();
+    return VerifyingKey.__wrap(ret);
+  }
+  /**
+   * Returns the verifying key for the transfer_private_to_public function
+   *
+   * @returns {VerifyingKey} Verifying key for the transfer_private_to_public function
+   * @returns {VerifyingKey}
+   */
+  static transferPrivateToPublicVerifier() {
+    const ret = wasm.verifyingkey_transferPrivateToPublicVerifier();
+    return VerifyingKey.__wrap(ret);
+  }
+  /**
+   * Returns the verifying key for the transfer_public function
+   *
+   * @returns {VerifyingKey} Verifying key for the transfer_public function
+   * @returns {VerifyingKey}
+   */
+  static transferPublicVerifier() {
+    const ret = wasm.verifyingkey_transferPublicVerifier();
+    return VerifyingKey.__wrap(ret);
+  }
+  /**
+   * Returns the verifying key for the transfer_public_as_signer function
+   *
+   * @returns {VerifyingKey} Verifying key for the transfer_public_as_signer function
+   * @returns {VerifyingKey}
+   */
+  static transferPublicAsSignerVerifier() {
+    const ret = wasm.verifyingkey_transferPublicAsSignerVerifier();
+    return VerifyingKey.__wrap(ret);
+  }
+  /**
+   * Returns the verifying key for the transfer_public_to_private function
+   *
+   * @returns {VerifyingKey} Verifying key for the transfer_public_to_private function
+   * @returns {VerifyingKey}
+   */
+  static transferPublicToPrivateVerifier() {
+    const ret = wasm.verifyingkey_transferPublicToPrivateVerifier();
+    return VerifyingKey.__wrap(ret);
+  }
+  /**
+   * Returns the verifying key for the unbond_public function
+   *
+   * @returns {VerifyingKey} Verifying key for the unbond_public function
+   * @returns {VerifyingKey}
+   */
+  static unbondPublicVerifier() {
+    const ret = wasm.verifyingkey_unbondPublicVerifier();
+    return VerifyingKey.__wrap(ret);
+  }
+  /**
+   * Returns the verifying key for the bond_public function
+   *
+   * @returns {VerifyingKey} Verifying key for the bond_public function
+   * @returns {boolean}
+   */
+  isBondPublicVerifier() {
+    const ret = wasm.verifyingkey_isBondPublicVerifier(this.__wbg_ptr);
+    return ret !== 0;
+  }
+  /**
+   * Returns the verifying key for the bond_validator function
+   *
+   * @returns {VerifyingKey} Verifying key for the bond_validator function
+   * @returns {boolean}
+   */
+  isBondValidatorVerifier() {
+    const ret = wasm.verifyingkey_isBondValidatorVerifier(this.__wbg_ptr);
+    return ret !== 0;
+  }
+  /**
+   * Verifies the verifying key is for the claim_delegator function
+   *
+   * @returns {bool}
+   * @returns {boolean}
+   */
+  isClaimUnbondPublicVerifier() {
+    const ret = wasm.verifyingkey_isClaimUnbondPublicVerifier(this.__wbg_ptr);
+    return ret !== 0;
+  }
+  /**
+   * Verifies the verifying key is for the fee_private function
+   *
+   * @returns {bool}
+   * @returns {boolean}
+   */
+  isFeePrivateVerifier() {
+    const ret = wasm.verifyingkey_isFeePrivateVerifier(this.__wbg_ptr);
+    return ret !== 0;
+  }
+  /**
+   * Verifies the verifying key is for the fee_public function
+   *
+   * @returns {bool}
+   * @returns {boolean}
+   */
+  isFeePublicVerifier() {
+    const ret = wasm.verifyingkey_isFeePublicVerifier(this.__wbg_ptr);
+    return ret !== 0;
+  }
+  /**
+   * Verifies the verifying key is for the inclusion function
+   *
+   * @returns {bool}
+   * @returns {boolean}
+   */
+  isInclusionVerifier() {
+    const ret = wasm.verifyingkey_isInclusionVerifier(this.__wbg_ptr);
+    return ret !== 0;
+  }
+  /**
+   * Verifies the verifying key is for the join function
+   *
+   * @returns {bool}
+   * @returns {boolean}
+   */
+  isJoinVerifier() {
+    const ret = wasm.verifyingkey_isJoinVerifier(this.__wbg_ptr);
+    return ret !== 0;
+  }
+  /**
+   * Verifies the verifying key is for the set_validator_state function
+   *
+   * @returns {bool}
+   * @returns {boolean}
+   */
+  isSetValidatorStateVerifier() {
+    const ret = wasm.verifyingkey_isSetValidatorStateVerifier(this.__wbg_ptr);
+    return ret !== 0;
+  }
+  /**
+   * Verifies the verifying key is for the split function
+   *
+   * @returns {bool}
+   * @returns {boolean}
+   */
+  isSplitVerifier() {
+    const ret = wasm.verifyingkey_isSplitVerifier(this.__wbg_ptr);
+    return ret !== 0;
+  }
+  /**
+   * Verifies the verifying key is for the transfer_private function
+   *
+   * @returns {bool}
+   * @returns {boolean}
+   */
+  isTransferPrivateVerifier() {
+    const ret = wasm.verifyingkey_isTransferPrivateVerifier(this.__wbg_ptr);
+    return ret !== 0;
+  }
+  /**
+   * Verifies the verifying key is for the transfer_private_to_public function
+   *
+   * @returns {bool}
+   * @returns {boolean}
+   */
+  isTransferPrivateToPublicVerifier() {
+    const ret = wasm.verifyingkey_isTransferPrivateToPublicVerifier(
+      this.__wbg_ptr,
+    );
+    return ret !== 0;
+  }
+  /**
+   * Verifies the verifying key is for the transfer_public function
+   *
+   * @returns {bool}
+   * @returns {boolean}
+   */
+  isTransferPublicVerifier() {
+    const ret = wasm.verifyingkey_isTransferPublicVerifier(this.__wbg_ptr);
+    return ret !== 0;
+  }
+  /**
+   * Verifies the verifying key is for the transfer_public_as_signer function
+   *
+   * @returns {bool}
+   * @returns {boolean}
+   */
+  isTransferPublicAsSignerVerifier() {
+    const ret = wasm.verifyingkey_isTransferPublicAsSignerVerifier(
+      this.__wbg_ptr,
+    );
+    return ret !== 0;
+  }
+  /**
+   * Verifies the verifying key is for the transfer_public_to_private function
+   *
+   * @returns {bool}
+   * @returns {boolean}
+   */
+  isTransferPublicToPrivateVerifier() {
+    const ret = wasm.verifyingkey_isTransferPublicToPrivateVerifier(
+      this.__wbg_ptr,
+    );
+    return ret !== 0;
+  }
+  /**
+   * Verifies the verifying key is for the unbond_public function
+   *
+   * @returns {bool}
+   * @returns {boolean}
+   */
+  isUnbondPublicVerifier() {
+    const ret = wasm.verifyingkey_isUnbondPublicVerifier(this.__wbg_ptr);
+    return ret !== 0;
   }
   /**
    * Get the checksum of the verifying key
@@ -3389,7 +4352,7 @@ class VerifyingKey {
         throw takeObject(r2);
       }
       var v1 = getArrayU8FromWasm0(r0, r1).slice();
-      wasm.__wbindgen_free(r0, r1 * 1);
+      wasm.__wbindgen_free(r0, r1 * 1, 1);
       return v1;
     } finally {
       wasm.__wbindgen_add_to_stack_pointer(16);
@@ -3418,6 +4381,11 @@ class VerifyingKey {
     }
   }
 }
+
+const ViewKeyFinalization =
+  typeof FinalizationRegistry === "undefined"
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry((ptr) => wasm.__wbg_viewkey_free(ptr >>> 0));
 /**
  */
 class ViewKey {
@@ -3425,14 +4393,14 @@ class ViewKey {
     ptr = ptr >>> 0;
     const obj = Object.create(ViewKey.prototype);
     obj.__wbg_ptr = ptr;
-
+    ViewKeyFinalization.register(obj, obj.__wbg_ptr, obj);
     return obj;
   }
 
   __destroy_into_raw() {
     const ptr = this.__wbg_ptr;
     this.__wbg_ptr = 0;
-
+    ViewKeyFinalization.unregister(this);
     return ptr;
   }
 
@@ -3580,18 +4548,18 @@ function __wbg_get_imports() {
   imports.wbg.__wbindgen_object_drop_ref = function (arg0) {
     takeObject(arg0);
   };
-  imports.wbg.__wbg_new_daafff584c71593b = function () {
+  imports.wbg.__wbg_new_71801a555ad9f2aa = function () {
     return handleError(function () {
       const ret = new XMLHttpRequest();
       return addHeapObject(ret);
     }, arguments);
   };
-  imports.wbg.__wbg_overrideMimeType_1a661d17da5f8baf = function () {
+  imports.wbg.__wbg_overrideMimeType_ee9c51919ceb418b = function () {
     return handleError(function (arg0, arg1, arg2) {
       getObject(arg0).overrideMimeType(getStringFromWasm0(arg1, arg2));
     }, arguments);
   };
-  imports.wbg.__wbg_open_56fa1eb95989f6a5 = function () {
+  imports.wbg.__wbg_open_c9eb0cf2c9d95679 = function () {
     return handleError(function (arg0, arg1, arg2, arg3, arg4, arg5) {
       getObject(arg0).open(
         getStringFromWasm0(arg1, arg2),
@@ -3600,18 +4568,24 @@ function __wbg_get_imports() {
       );
     }, arguments);
   };
-  imports.wbg.__wbg_send_9f5007eae908c72e = function () {
+  imports.wbg.__wbg_send_80d29985093c1ec5 = function () {
     return handleError(function (arg0) {
       getObject(arg0).send();
     }, arguments);
   };
-  imports.wbg.__wbg_response_f2acf2ecbe021710 = function () {
+  imports.wbg.__wbg_response_7c2e2759084f7279 = function () {
     return handleError(function (arg0) {
       const ret = getObject(arg0).response;
       return addHeapObject(ret);
     }, arguments);
   };
-  imports.wbg.__wbg_new_b51585de1b234aff = function () {
+  imports.wbg.__wbg_status_d485fb5a478426fb = function () {
+    return handleError(function (arg0) {
+      const ret = getObject(arg0).status;
+      return ret;
+    }, arguments);
+  };
+  imports.wbg.__wbg_new_72fb9a18b5ae2624 = function () {
     const ret = new Object();
     return addHeapObject(ret);
   };
@@ -3619,7 +4593,7 @@ function __wbg_get_imports() {
     const ret = getStringFromWasm0(arg0, arg1);
     return addHeapObject(ret);
   };
-  imports.wbg.__wbg_set_092e06b0f9d71865 = function () {
+  imports.wbg.__wbg_set_1f9b04f170055d33 = function () {
     return handleError(function (arg0, arg1, arg2) {
       const ret = Reflect.set(
         getObject(arg0),
@@ -3629,7 +4603,7 @@ function __wbg_get_imports() {
       return ret;
     }, arguments);
   };
-  imports.wbg.__wbg_new_1eead62f64ca15ce = function () {
+  imports.wbg.__wbg_new_ab6fd82b10560829 = function () {
     return handleError(function () {
       const ret = new Headers();
       return addHeapObject(ret);
@@ -3639,7 +4613,17 @@ function __wbg_get_imports() {
     const ret = getObject(arg0);
     return addHeapObject(ret);
   };
-  imports.wbg.__wbg_append_fda9e3432e3e88da = function () {
+  imports.wbg.__wbg_new_0d76b0581eca6298 = function () {
+    return handleError(function () {
+      const ret = new AbortController();
+      return addHeapObject(ret);
+    }, arguments);
+  };
+  imports.wbg.__wbg_signal_a61f78a3478fd9bc = function (arg0) {
+    const ret = getObject(arg0).signal;
+    return addHeapObject(ret);
+  };
+  imports.wbg.__wbg_append_7bfcb4937d1d5e29 = function () {
     return handleError(function (arg0, arg1, arg2, arg3, arg4) {
       getObject(arg0).append(
         getStringFromWasm0(arg1, arg2),
@@ -3647,31 +4631,21 @@ function __wbg_get_imports() {
       );
     }, arguments);
   };
-  imports.wbg.__wbg_new_55c9955722952374 = function () {
-    return handleError(function () {
-      const ret = new AbortController();
-      return addHeapObject(ret);
-    }, arguments);
-  };
-  imports.wbg.__wbg_signal_4bd18fb489af2d4c = function (arg0) {
-    const ret = getObject(arg0).signal;
-    return addHeapObject(ret);
-  };
-  imports.wbg.__wbg_instanceof_Response_fc4327dbfcdf5ced = function (arg0) {
+  imports.wbg.__wbg_instanceof_Response_849eb93e75734b6e = function (arg0) {
     let result;
     try {
       result = getObject(arg0) instanceof Response;
-    } catch {
+    } catch (_) {
       result = false;
     }
     const ret = result;
     return ret;
   };
-  imports.wbg.__wbg_status_ac85a3142a84caa2 = function (arg0) {
+  imports.wbg.__wbg_status_61a01141acd3cf74 = function (arg0) {
     const ret = getObject(arg0).status;
     return ret;
   };
-  imports.wbg.__wbg_url_8503de97f69da463 = function (arg0, arg1) {
+  imports.wbg.__wbg_url_5f6dc4009ac5f99d = function (arg0, arg1) {
     const ret = getObject(arg1).url;
     const ptr1 = passStringToWasm0(
       ret,
@@ -3682,15 +4656,15 @@ function __wbg_get_imports() {
     getInt32Memory0()[arg0 / 4 + 1] = len1;
     getInt32Memory0()[arg0 / 4 + 0] = ptr1;
   };
-  imports.wbg.__wbg_headers_b70de86b8e989bc0 = function (arg0) {
+  imports.wbg.__wbg_headers_9620bfada380764a = function (arg0) {
     const ret = getObject(arg0).headers;
     return addHeapObject(ret);
   };
-  imports.wbg.__wbg_iterator_97f0c81209c6c35a = function () {
+  imports.wbg.__wbg_iterator_2cee6dadfd956dfa = function () {
     const ret = Symbol.iterator;
     return addHeapObject(ret);
   };
-  imports.wbg.__wbg_get_97b561fb56f034b5 = function () {
+  imports.wbg.__wbg_get_e3c254076557e348 = function () {
     return handleError(function (arg0, arg1) {
       const ret = Reflect.get(getObject(arg0), getObject(arg1));
       return addHeapObject(ret);
@@ -3700,7 +4674,7 @@ function __wbg_get_imports() {
     const ret = typeof getObject(arg0) === "function";
     return ret;
   };
-  imports.wbg.__wbg_call_cb65541d95d71282 = function () {
+  imports.wbg.__wbg_call_27c0f87801dedf93 = function () {
     return handleError(function (arg0, arg1) {
       const ret = getObject(arg0).call(getObject(arg1));
       return addHeapObject(ret);
@@ -3711,28 +4685,28 @@ function __wbg_get_imports() {
     const ret = typeof val === "object" && val !== null;
     return ret;
   };
-  imports.wbg.__wbg_next_526fc47e980da008 = function (arg0) {
+  imports.wbg.__wbg_next_40fc327bfc8770e6 = function (arg0) {
     const ret = getObject(arg0).next;
     return addHeapObject(ret);
   };
-  imports.wbg.__wbg_next_ddb3312ca1c4e32a = function () {
+  imports.wbg.__wbg_next_196c84450b364254 = function () {
     return handleError(function (arg0) {
       const ret = getObject(arg0).next();
       return addHeapObject(ret);
     }, arguments);
   };
-  imports.wbg.__wbg_done_5c1f01fb660d73b5 = function (arg0) {
+  imports.wbg.__wbg_done_298b57d23c0fc80c = function (arg0) {
     const ret = getObject(arg0).done;
     return ret;
   };
-  imports.wbg.__wbg_value_1695675138684bd5 = function (arg0) {
+  imports.wbg.__wbg_value_d93c65011f51a456 = function (arg0) {
     const ret = getObject(arg0).value;
     return addHeapObject(ret);
   };
-  imports.wbg.__wbg_abort_654b796176d117aa = function (arg0) {
+  imports.wbg.__wbg_abort_2aa7521d5690750e = function (arg0) {
     getObject(arg0).abort();
   };
-  imports.wbg.__wbg_stringify_e25465938f3f611f = function () {
+  imports.wbg.__wbg_stringify_8887fe74e1c50d81 = function () {
     return handleError(function (arg0) {
       const ret = JSON.stringify(getObject(arg0));
       return addHeapObject(ret);
@@ -3748,37 +4722,15 @@ function __wbg_get_imports() {
     getInt32Memory0()[arg0 / 4 + 1] = len1;
     getInt32Memory0()[arg0 / 4 + 0] = ptr1;
   };
-  imports.wbg.__wbg_keypair_new = function (arg0) {
-    const ret = KeyPair.__wrap(arg0);
-    return addHeapObject(ret);
-  };
-  imports.wbg.__wbg_call_01734de55d61e11d = function () {
-    return handleError(function (arg0, arg1, arg2) {
-      const ret = getObject(arg0).call(getObject(arg1), getObject(arg2));
-      return addHeapObject(ret);
-    }, arguments);
-  };
-  imports.wbg.__wbg_log_0159ca40cddf5b15 = function (arg0, arg1) {
-    console.log(getStringFromWasm0(arg0, arg1));
-  };
   imports.wbg.__wbindgen_bigint_from_u64 = function (arg0) {
     const ret = BigInt.asUintN(64, arg0);
     return addHeapObject(ret);
   };
-  imports.wbg.__wbg_transaction_new = function (arg0) {
-    const ret = Transaction.__wrap(arg0);
-    return addHeapObject(ret);
-  };
-  imports.wbg.__wbg_newwithlength_3ec098a360da1909 = function (arg0) {
-    const ret = new Array(arg0 >>> 0);
-    return addHeapObject(ret);
-  };
-  imports.wbg.__wbg_set_502d29070ea18557 = function (arg0, arg1, arg2) {
-    getObject(arg0)[arg1 >>> 0] = takeObject(arg2);
-  };
-  imports.wbg.__wbg_executionresponse_new = function (arg0) {
-    const ret = ExecutionResponse.__wrap(arg0);
-    return addHeapObject(ret);
+  imports.wbg.__wbg_call_b3ca7c6051f9bec1 = function () {
+    return handleError(function (arg0, arg1, arg2) {
+      const ret = getObject(arg0).call(getObject(arg1), getObject(arg2));
+      return addHeapObject(ret);
+    }, arguments);
   };
   imports.wbg.__wbindgen_module = function () {
     const ret = __wbg_init.__wbindgen_wasm_module;
@@ -3798,9 +4750,31 @@ function __wbg_get_imports() {
       getObject(arg0),
       getObject(arg1),
       getObject(arg2),
-      arg3,
+      arg3 >>> 0,
     );
     return addHeapObject(ret);
+  };
+  imports.wbg.__wbg_executionresponse_new = function (arg0) {
+    const ret = ExecutionResponse.__wrap(arg0);
+    return addHeapObject(ret);
+  };
+  imports.wbg.__wbg_keypair_new = function (arg0) {
+    const ret = KeyPair.__wrap(arg0);
+    return addHeapObject(ret);
+  };
+  imports.wbg.__wbg_log_0159ca40cddf5b15 = function (arg0, arg1) {
+    console.log(getStringFromWasm0(arg0, arg1));
+  };
+  imports.wbg.__wbg_transaction_new = function (arg0) {
+    const ret = Transaction.__wrap(arg0);
+    return addHeapObject(ret);
+  };
+  imports.wbg.__wbg_newwithlength_66ae46612e7f0234 = function (arg0) {
+    const ret = new Array(arg0 >>> 0);
+    return addHeapObject(ret);
+  };
+  imports.wbg.__wbg_set_d4638f722068f043 = function (arg0, arg1, arg2) {
+    getObject(arg0)[arg1 >>> 0] = takeObject(arg2);
   };
   imports.wbg.__wbindgen_cb_drop = function (arg0) {
     const obj = takeObject(arg0).original;
@@ -3811,28 +4785,36 @@ function __wbg_get_imports() {
     const ret = false;
     return ret;
   };
-  imports.wbg.__wbg_arrayBuffer_288fb3538806e85c = function () {
+  imports.wbg.__wbg_new_16b304a2cfa7ff4a = function () {
+    const ret = new Array();
+    return addHeapObject(ret);
+  };
+  imports.wbg.__wbg_push_a5b05aedc7234f9f = function (arg0, arg1) {
+    const ret = getObject(arg0).push(getObject(arg1));
+    return ret;
+  };
+  imports.wbg.__wbg_arrayBuffer_29931d52c7206b02 = function () {
     return handleError(function (arg0) {
       const ret = getObject(arg0).arrayBuffer();
       return addHeapObject(ret);
     }, arguments);
   };
-  imports.wbg.__wbg_new_8125e318e6245eed = function (arg0) {
+  imports.wbg.__wbg_new_63b92bc8671ed464 = function (arg0) {
     const ret = new Uint8Array(getObject(arg0));
     return addHeapObject(ret);
   };
-  imports.wbg.__wbg_length_72e2208bbc0efc61 = function (arg0) {
+  imports.wbg.__wbg_length_c20a40f15020d68a = function (arg0) {
     const ret = getObject(arg0).length;
     return ret;
   };
-  imports.wbg.__wbg_new_43f1b47c28813cbd = function (arg0, arg1) {
+  imports.wbg.__wbg_new_81740750da40724f = function (arg0, arg1) {
     try {
       var state0 = { a: arg0, b: arg1 };
       var cb0 = (arg0, arg1) => {
         const a = state0.a;
         state0.a = 0;
         try {
-          return __wbg_adapter_209(a, state0.b, arg0, arg1);
+          return __wbg_adapter_281(a, state0.b, arg0, arg1);
         } finally {
           state0.a = a;
         }
@@ -3842,14 +4824,6 @@ function __wbg_get_imports() {
     } finally {
       state0.a = state0.b = 0;
     }
-  };
-  imports.wbg.__wbg_new_898a68150f225f2e = function () {
-    const ret = new Array();
-    return addHeapObject(ret);
-  };
-  imports.wbg.__wbg_push_ca1c26067ef907ac = function (arg0, arg1) {
-    const ret = getObject(arg0).push(getObject(arg1));
-    return ret;
   };
   imports.wbg.__wbindgen_number_new = function (arg0) {
     const ret = arg0;
@@ -3881,23 +4855,11 @@ function __wbg_get_imports() {
       wasm.__wbindgen_free(deferred0_0, deferred0_1, 1);
     }
   };
-  imports.wbg.__wbg_subarray_13db269f57aa838d = function (arg0, arg1, arg2) {
-    const ret = getObject(arg0).subarray(arg1 >>> 0, arg2 >>> 0);
-    return addHeapObject(ret);
-  };
-  imports.wbg.__wbg_getRandomValues_37fa2ca9e4e07fab = function () {
-    return handleError(function (arg0, arg1) {
-      getObject(arg0).getRandomValues(getObject(arg1));
-    }, arguments);
-  };
-  imports.wbg.__wbg_buffer_085ec1f694018c4f = function (arg0) {
+  imports.wbg.__wbg_buffer_12d079cc21e14bdb = function (arg0) {
     const ret = getObject(arg0).buffer;
     return addHeapObject(ret);
   };
-  imports.wbg.__wbg_set_5cf90238115182c3 = function (arg0, arg1, arg2) {
-    getObject(arg0).set(getObject(arg1), arg2 >>> 0);
-  };
-  imports.wbg.__wbg_newwithbyteoffsetandlength_6da8e527659b86aa = function (
+  imports.wbg.__wbg_newwithbyteoffsetandlength_aa4a17c33a06e5cb = function (
     arg0,
     arg1,
     arg2,
@@ -3905,24 +4867,36 @@ function __wbg_get_imports() {
     const ret = new Uint8Array(getObject(arg0), arg1 >>> 0, arg2 >>> 0);
     return addHeapObject(ret);
   };
-  imports.wbg.__wbg_randomFillSync_dc1e9a60c158336d = function () {
+  imports.wbg.__wbg_randomFillSync_5c9c955aa56b6049 = function () {
     return handleError(function (arg0, arg1) {
       getObject(arg0).randomFillSync(takeObject(arg1));
     }, arguments);
   };
-  imports.wbg.__wbg_crypto_c48a774b022d20ac = function (arg0) {
+  imports.wbg.__wbg_subarray_a1f73cd4b5b42fe1 = function (arg0, arg1, arg2) {
+    const ret = getObject(arg0).subarray(arg1 >>> 0, arg2 >>> 0);
+    return addHeapObject(ret);
+  };
+  imports.wbg.__wbg_getRandomValues_3aa56aa6edec874c = function () {
+    return handleError(function (arg0, arg1) {
+      getObject(arg0).getRandomValues(getObject(arg1));
+    }, arguments);
+  };
+  imports.wbg.__wbg_set_a47bac70306a19a7 = function (arg0, arg1, arg2) {
+    getObject(arg0).set(getObject(arg1), arg2 >>> 0);
+  };
+  imports.wbg.__wbg_crypto_1d1f22824a6a080c = function (arg0) {
     const ret = getObject(arg0).crypto;
     return addHeapObject(ret);
   };
-  imports.wbg.__wbg_process_298734cf255a885d = function (arg0) {
+  imports.wbg.__wbg_process_4a72847cc503995b = function (arg0) {
     const ret = getObject(arg0).process;
     return addHeapObject(ret);
   };
-  imports.wbg.__wbg_versions_e2e78e134e3e5d01 = function (arg0) {
+  imports.wbg.__wbg_versions_f686565e586dd935 = function (arg0) {
     const ret = getObject(arg0).versions;
     return addHeapObject(ret);
   };
-  imports.wbg.__wbg_node_1cd7a5d853dbea79 = function (arg0) {
+  imports.wbg.__wbg_node_104a2ff8d6ea03a2 = function (arg0) {
     const ret = getObject(arg0).node;
     return addHeapObject(ret);
   };
@@ -3930,47 +4904,47 @@ function __wbg_get_imports() {
     const ret = typeof getObject(arg0) === "string";
     return ret;
   };
-  imports.wbg.__wbg_msCrypto_bcb970640f50a1e8 = function (arg0) {
-    const ret = getObject(arg0).msCrypto;
-    return addHeapObject(ret);
-  };
-  imports.wbg.__wbg_newwithlength_e5d69174d6984cd7 = function (arg0) {
-    const ret = new Uint8Array(arg0 >>> 0);
-    return addHeapObject(ret);
-  };
-  imports.wbg.__wbg_require_8f08ceecec0f4fee = function () {
+  imports.wbg.__wbg_require_cca90b1a94a0255b = function () {
     return handleError(function () {
       const ret = module.require;
       return addHeapObject(ret);
     }, arguments);
   };
-  imports.wbg.__wbg_length_fff51ee6522a1a18 = function (arg0) {
+  imports.wbg.__wbg_msCrypto_eb05e62b530a1508 = function (arg0) {
+    const ret = getObject(arg0).msCrypto;
+    return addHeapObject(ret);
+  };
+  imports.wbg.__wbg_newwithlength_e9b4878cebadb3d3 = function (arg0) {
+    const ret = new Uint8Array(arg0 >>> 0);
+    return addHeapObject(ret);
+  };
+  imports.wbg.__wbg_length_cd7af8117672b8b8 = function (arg0) {
     const ret = getObject(arg0).length;
     return ret;
   };
-  imports.wbg.__wbg_get_44be0491f933a435 = function (arg0, arg1) {
+  imports.wbg.__wbg_get_bd8e338fbd5f5cc8 = function (arg0, arg1) {
     const ret = getObject(arg0)[arg1 >>> 0];
     return addHeapObject(ret);
   };
-  imports.wbg.__wbg_self_1ff1d729e9aae938 = function () {
+  imports.wbg.__wbg_self_ce0dbfc45cf2f5be = function () {
     return handleError(function () {
       const ret = self.self;
       return addHeapObject(ret);
     }, arguments);
   };
-  imports.wbg.__wbg_window_5f4faef6c12b79ec = function () {
+  imports.wbg.__wbg_window_c6fb939a7f436783 = function () {
     return handleError(function () {
       const ret = window.window;
       return addHeapObject(ret);
     }, arguments);
   };
-  imports.wbg.__wbg_globalThis_1d39714405582d3c = function () {
+  imports.wbg.__wbg_globalThis_d1e6af4856ba331b = function () {
     return handleError(function () {
       const ret = globalThis.globalThis;
       return addHeapObject(ret);
     }, arguments);
   };
-  imports.wbg.__wbg_global_651f05c6a0944d1c = function () {
+  imports.wbg.__wbg_global_207b558942527489 = function () {
     return handleError(function () {
       const ret = global.global;
       return addHeapObject(ret);
@@ -3980,22 +4954,22 @@ function __wbg_get_imports() {
     const ret = getObject(arg0) === undefined;
     return ret;
   };
-  imports.wbg.__wbg_newnoargs_581967eacc0e2604 = function (arg0, arg1) {
+  imports.wbg.__wbg_newnoargs_e258087cd0daa0ea = function (arg0, arg1) {
     const ret = new Function(getStringFromWasm0(arg0, arg1));
     return addHeapObject(ret);
   };
-  imports.wbg.__wbg_has_c5fcd020291e56b8 = function () {
+  imports.wbg.__wbg_has_0af94d20077affa2 = function () {
     return handleError(function (arg0, arg1) {
       const ret = Reflect.has(getObject(arg0), getObject(arg1));
       return ret;
     }, arguments);
   };
-  imports.wbg.__wbg_fetch_8eaf01857a5bb21f = function (arg0, arg1) {
-    const ret = getObject(arg0).fetch(getObject(arg1));
+  imports.wbg.__wbg_fetch_bc7c8e27076a5c84 = function (arg0) {
+    const ret = fetch(getObject(arg0));
     return addHeapObject(ret);
   };
-  imports.wbg.__wbg_fetch_b5d6bebed1e6c2d2 = function (arg0) {
-    const ret = fetch(getObject(arg0));
+  imports.wbg.__wbg_fetch_921fad6ef9e883dd = function (arg0, arg1) {
+    const ret = getObject(arg0).fetch(getObject(arg1));
     return addHeapObject(ret);
   };
   imports.wbg.__wbindgen_debug_string = function (arg0, arg1) {
@@ -4015,39 +4989,46 @@ function __wbg_get_imports() {
   imports.wbg.__wbindgen_rethrow = function (arg0) {
     throw takeObject(arg0);
   };
-  imports.wbg.__wbg_then_b2267541e2a73865 = function (arg0, arg1, arg2) {
+  imports.wbg.__wbg_then_a73caa9a87991566 = function (arg0, arg1, arg2) {
     const ret = getObject(arg0).then(getObject(arg1), getObject(arg2));
     return addHeapObject(ret);
   };
-  imports.wbg.__wbg_then_f7e06ee3c11698eb = function (arg0, arg1) {
+  imports.wbg.__wbg_then_0c86a60e8fcfe9f6 = function (arg0, arg1) {
     const ret = getObject(arg0).then(getObject(arg1));
     return addHeapObject(ret);
   };
-  imports.wbg.__wbg_resolve_53698b95aaf7fcf8 = function (arg0) {
+  imports.wbg.__wbg_queueMicrotask_481971b0d87f3dd4 = function (arg0) {
+    queueMicrotask(getObject(arg0));
+  };
+  imports.wbg.__wbg_queueMicrotask_3cbae2ec6b6cd3d6 = function (arg0) {
+    const ret = getObject(arg0).queueMicrotask;
+    return addHeapObject(ret);
+  };
+  imports.wbg.__wbg_resolve_b0083a7967828ec8 = function (arg0) {
     const ret = Promise.resolve(getObject(arg0));
     return addHeapObject(ret);
   };
-  imports.wbg.__wbg_waitAsync_60fb5e2e86467e31 = function () {
+  imports.wbg.__wbg_waitAsync_5d743fc9058ba01a = function () {
     const ret = Atomics.waitAsync;
     return addHeapObject(ret);
   };
-  imports.wbg.__wbg_new_a0af68041688e8fd = function (arg0) {
+  imports.wbg.__wbg_new_8cccba86b0f574cb = function (arg0) {
     const ret = new Int32Array(getObject(arg0));
     return addHeapObject(ret);
   };
-  imports.wbg.__wbg_waitAsync_73fd6eb3bace0a8d = function (arg0, arg1, arg2) {
+  imports.wbg.__wbg_waitAsync_46d5c36955b71a79 = function (arg0, arg1, arg2) {
     const ret = Atomics.waitAsync(getObject(arg0), arg1, arg2);
     return addHeapObject(ret);
   };
-  imports.wbg.__wbg_async_e1a2a669aacf35ff = function (arg0) {
+  imports.wbg.__wbg_async_19c0400d97cc72fe = function (arg0) {
     const ret = getObject(arg0).async;
     return ret;
   };
-  imports.wbg.__wbg_value_555e4f564193db05 = function (arg0) {
+  imports.wbg.__wbg_value_571d60108110e917 = function (arg0) {
     const ret = getObject(arg0).value;
     return addHeapObject(ret);
   };
-  imports.wbg.__wbindgen_link_22046963fe0b707a = function (arg0) {
+  imports.wbg.__wbindgen_link_fc1eedd35dc7e0a6 = function (arg0) {
     const ret =
       "data:application/javascript," +
       encodeURIComponent(`onmessage = function (ev) {
@@ -4066,41 +5047,35 @@ function __wbg_get_imports() {
     getInt32Memory0()[arg0 / 4 + 1] = len1;
     getInt32Memory0()[arg0 / 4 + 0] = ptr1;
   };
-  imports.wbg.__wbg_new_8e7322f46d5d019c = function () {
+  imports.wbg.__wbg_new_d1187ae36d662ef9 = function () {
     return handleError(function (arg0, arg1) {
       const ret = new Worker(getStringFromWasm0(arg0, arg1));
       return addHeapObject(ret);
     }, arguments);
   };
-  imports.wbg.__wbg_setonmessage_f0bd0280573b7084 = function (arg0, arg1) {
+  imports.wbg.__wbg_setonmessage_503809e5bb51bd33 = function (arg0, arg1) {
     getObject(arg0).onmessage = getObject(arg1);
   };
-  imports.wbg.__wbg_of_3f69007bb4eeae65 = function (arg0, arg1, arg2) {
+  imports.wbg.__wbg_of_6a70eed8d41f469c = function (arg0, arg1, arg2) {
     const ret = Array.of(getObject(arg0), getObject(arg1), getObject(arg2));
     return addHeapObject(ret);
   };
-  imports.wbg.__wbg_postMessage_8c609e2bde333d9c = function () {
+  imports.wbg.__wbg_postMessage_7380d10e8b8269df = function () {
     return handleError(function (arg0, arg1) {
       getObject(arg0).postMessage(getObject(arg1));
     }, arguments);
   };
-  imports.wbg.__wbg_data_ab99ae4a2e1e8bc9 = function (arg0) {
+  imports.wbg.__wbg_data_3ce7c145ca4fbcdc = function (arg0) {
     const ret = getObject(arg0).data;
     return addHeapObject(ret);
   };
-  imports.wbg.__wbg_newwithstrandinit_cad5cd6038c7ff5d = function () {
+  imports.wbg.__wbg_newwithstrandinit_3fd6fba4083ff2d0 = function () {
     return handleError(function (arg0, arg1, arg2) {
       const ret = new Request(getStringFromWasm0(arg0, arg1), getObject(arg2));
       return addHeapObject(ret);
     }, arguments);
   };
-  imports.wbg.__wbg_status_114ef6fe27fb8b00 = function () {
-    return handleError(function (arg0) {
-      const ret = getObject(arg0).status;
-      return ret;
-    }, arguments);
-  };
-  imports.wbg.__wbg_responseText_da275667251fd153 = function () {
+  imports.wbg.__wbg_responseText_c67ed2d48db10769 = function () {
     return handleError(function (arg0, arg1) {
       const ret = getObject(arg1).responseText;
       var ptr1 = isLikeNone(ret)
@@ -4115,12 +5090,12 @@ function __wbg_get_imports() {
       getInt32Memory0()[arg0 / 4 + 0] = ptr1;
     }, arguments);
   };
-  imports.wbg.__wbindgen_closure_wrapper5489 = function (arg0, arg1, arg2) {
-    const ret = makeMutClosure(arg0, arg1, 529, __wbg_adapter_34);
+  imports.wbg.__wbindgen_closure_wrapper5837 = function (arg0, arg1, arg2) {
+    const ret = makeMutClosure(arg0, arg1, 538, __wbg_adapter_34);
     return addHeapObject(ret);
   };
-  imports.wbg.__wbindgen_closure_wrapper5512 = function (arg0, arg1, arg2) {
-    const ret = makeMutClosure(arg0, arg1, 529, __wbg_adapter_34);
+  imports.wbg.__wbindgen_closure_wrapper5862 = function (arg0, arg1, arg2) {
+    const ret = makeMutClosure(arg0, arg1, 538, __wbg_adapter_34);
     return addHeapObject(ret);
   };
 
@@ -4187,6 +5162,7 @@ var exports = /*#__PURE__*/ Object.freeze({
   ExecutionResponse: ExecutionResponse,
   Field: Field,
   KeyPair: KeyPair,
+  Metadata: Metadata,
   OfflineQuery: OfflineQuery,
   PrivateKey: PrivateKey,
   PrivateKeyCiphertext: PrivateKeyCiphertext,

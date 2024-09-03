@@ -36,6 +36,9 @@ export class AleoProvider extends BaseProvider {
       case "testnetbeta": {
         return "testnet";
       }
+      case "mainnet": {
+        return "mainnet";
+      }
       default: {
         throw new Error("Unsupport network " + network);
       }

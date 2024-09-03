@@ -48,6 +48,28 @@ export const ALEO_CHAIN_CONFIGS: { [key in string]: AleoConfig } = {
     faucetApi: "https://faucet.aleo.org/",
     testnet: true,
   },
+  MAINNET: {
+    coinType: CoinType.ALEO,
+    uniqueId: InnerChainUniqueId.ALEO_MAINNET,
+    logo: AleoLogo,
+    chainId: "mainnet",
+    chainName: "Aleo",
+    rpcList: ReserveChainConfigs[InnerChainUniqueId.ALEO_MAINNET].rpcList,
+    syncApiList:
+      ReserveChainConfigs[InnerChainUniqueId.ALEO_MAINNET].syncApiList,
+    walletApiList:
+      ReserveChainConfigs[InnerChainUniqueId.ALEO_MAINNET].walletApiList,
+    nativeCurrency: ALEO_NATIVE_CURRENCY,
+    explorerUrls: {
+      [ExplorerLanguages.EN]: "https://aleo.info/en/",
+      [ExplorerLanguages.ZH]: "https://aleo.info/en/",
+    },
+    explorerPaths: {
+      tx: "/transaction/{txid}",
+      address: "",
+    },
+    // alphaSwapApi: "https://app.alphaswap.pro/api",
+  },
 };
 
 export const ALEO_CHAIN_IDS = Object.values(ALEO_CHAIN_CONFIGS).map(

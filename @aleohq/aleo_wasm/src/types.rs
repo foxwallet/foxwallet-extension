@@ -14,10 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with the Aleo SDK library. If not, see <https://www.gnu.org/licenses/>.
 
-pub use snarkvm_circuit_network::{Aleo, AleoTestnetV0};
+pub use snarkvm_circuit_network::{Aleo, AleoTestnetV0, AleoV0};
 pub use snarkvm_console::{
     account::{Address, PrivateKey, Signature, ViewKey, GraphKey},
-    network::{Network, TestnetV0},
+    network::{Network, TestnetV0, MainnetV0},
     program::{
         Ciphertext,
         Entry,
@@ -67,8 +67,10 @@ pub type ViewKeyNative = ViewKey<CurrentNetwork>;
 pub type FieldNative = Field<CurrentNetwork>;
 
 // Network types
-pub type CurrentNetwork = TestnetV0;
-pub type CurrentAleo = AleoTestnetV0;
+// pub type CurrentNetwork = TestnetV0;
+pub type CurrentNetwork = MainnetV0;
+// pub type CurrentAleo = AleoTestnetV0;
+pub type CurrentAleo = AleoV0;
 
 // Record types
 pub type CiphertextNative = Ciphertext<CurrentNetwork>;
