@@ -71,7 +71,7 @@ async function checkVersion() {
   const currentVersion = getVersion();
   if (existVersion) {
     // 之前的版本如果是0.12.3及之前的版本，需要重置测试网数据
-    const beforeTestnetReset = compareVersion(existVersion, "0.12.3") < 1;
+    const beforeTestnetReset = compareVersion(existVersion, "0.12.4") < 1;
 
     console.log(
       "===> checkVersion ",
@@ -82,14 +82,6 @@ async function checkVersion() {
     if (beforeTestnetReset) {
       await coinService
         .getInstance(InnerChainUniqueId.ALEO_TESTNET)
-        .resetChainData();
-      await clearSwrCache();
-    }
-
-    const beforeMainnet = compareVersion(existVersion, "0.12.4") < 1;
-    if (beforeMainnet) {
-      await coinService
-        .getInstance(InnerChainUniqueId.ALEO_MAINNET)
         .resetChainData();
       await clearSwrCache();
     }
