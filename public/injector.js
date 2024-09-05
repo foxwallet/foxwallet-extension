@@ -4,11 +4,11 @@ var f = (s, e, t) => (S(s, typeof e != "symbol" ? e + "" : e, t), t), y = (s, e,
   if (!e.has(s))
     throw TypeError("Cannot " + t);
 };
-var i = (s, e, t) => (y(s, e, "read from private field"), t ? t.call(s) : e.get(s)), w = (s, e, t) => {
+var a = (s, e, t) => (y(s, e, "read from private field"), t ? t.call(s) : e.get(s)), w = (s, e, t) => {
   if (e.has(s))
     throw TypeError("Cannot add the same private member more than once");
   e instanceof WeakSet ? e.add(s) : e.set(s, t);
-}, a = (s, e, t, n) => (y(s, e, "write to private field"), n ? n.call(s, t) : e.set(s, t), t);
+}, i = (s, e, t, n) => (y(s, e, "write to private field"), n ? n.call(s, t) : e.set(s, t), t);
 const k = "fox_dapp_request", T = "fox_dapp_response";
 function _(s) {
   return { all: s = s || /* @__PURE__ */ new Map(), on: function(e, t) {
@@ -34,18 +34,18 @@ class M {
     w(this, l, void 0);
     w(this, h, void 0);
     f(this, "onMessage", (e) => {
-      const { id: t, error: n, data: r } = e.detail, o = i(this, h).get(t);
-      o && (o(n, r), i(this, h).delete(t));
+      const { id: t, error: n, data: r } = e.detail, o = a(this, h).get(t);
+      o && (o(n, r), a(this, h).delete(t));
     });
-    f(this, "on", (e, t) => (i(this, l).on(e, t), () => i(this, l).off(e, t)));
+    f(this, "on", (e, t) => (a(this, l).on(e, t), () => a(this, l).off(e, t)));
     f(this, "emit", (e, t) => {
-      i(this, l).emit(e, t);
+      a(this, l).emit(e, t);
     });
-    a(this, g, !0), a(this, l, _()), a(this, h, /* @__PURE__ */ new Map()), window.addEventListener(T, this.onMessage);
+    i(this, g, !0), i(this, l, _()), i(this, h, /* @__PURE__ */ new Map()), window.addEventListener(T, this.onMessage);
   }
   send(e, t, n = {}) {
     return new Promise((r, o) => {
-      const c = P(), m = new CustomEvent(k, {
+      const c = P(), x = new CustomEvent(k, {
         detail: {
           id: c,
           method: e,
@@ -55,11 +55,11 @@ class M {
       }), q = (p, E) => {
         p ? o(p) : r(E);
       };
-      i(this, h).set(c, q), window.dispatchEvent(m);
+      a(this, h).set(c, q), window.dispatchEvent(x);
     });
   }
   get isFoxWallet() {
-    return i(this, g);
+    return a(this, g);
   }
 }
 g = new WeakMap(), l = new WeakMap(), h = new WeakMap();
@@ -73,13 +73,13 @@ class A extends M {
     w(this, u, void 0);
     w(this, d, void 0);
     f(this, "_readyState");
-    a(this, u, null), a(this, d, null), this._readyState = "Installed";
+    i(this, u, null), i(this, d, null), this._readyState = "Installed";
   }
   get publicKey() {
-    return i(this, u);
+    return a(this, u);
   }
   get network() {
-    return i(this, d);
+    return a(this, d);
   }
   get readyState() {
     return this._readyState;
@@ -88,6 +88,8 @@ class A extends M {
     switch (t) {
       case "testnetbeta":
         return "testnet";
+      case "mainnet":
+        return "mainnet";
       default:
         throw new Error("Unsupport network " + t);
     }
@@ -98,13 +100,13 @@ class A extends M {
       network: o,
       programs: r
     });
-    return a(this, u, c || null), a(this, d, n), !!c;
+    return i(this, u, c || null), i(this, d, n), !!c;
   }
   async disconnect() {
-    if (!i(this, u) || !this.network)
+    if (!a(this, u) || !this.network)
       throw new Error("Connect before disconnect");
     const t = await this.send("disconnect", {});
-    return a(this, u, null), a(this, d, null), t;
+    return i(this, u, null), i(this, d, null), t;
   }
   async decrypt(t, n, r, o, c) {
     return await this.send("decrypt", {
@@ -152,16 +154,16 @@ class A extends M {
   }
   send(t, n) {
     return super.send(t, n, {
-      address: i(this, u),
-      network: i(this, d) ? this.convertNetworkToChainId(i(this, d)) : ""
+      address: a(this, u),
+      network: a(this, d) ? this.convertNetworkToChainId(a(this, d)) : ""
     });
   }
 }
 u = new WeakMap(), d = new WeakMap();
-const x = new A();
+const m = new A();
 window.foxwallet = {
-  aleo: x
+  aleo: m
 };
-window.aleo = x;
+window.aleo = m;
 Object.freeze(window.foxwallet);
 Object.seal(window.aleo);

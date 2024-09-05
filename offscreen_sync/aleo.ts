@@ -44,7 +44,7 @@ export class AleoWorker {
     this.apiService = new AleoApiService({
       configs: apiList.map((item) => ({
         url: item,
-        chainId: "testnet",
+        chainId: "mainnet",
       })),
     });
   }

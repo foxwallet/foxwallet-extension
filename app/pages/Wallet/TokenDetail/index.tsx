@@ -139,7 +139,7 @@ const TokenDetailScreen = () => {
   const { selectedAccount } = useCurrAccount();
 
   const {
-    uniqueId = InnerChainUniqueId.ALEO_TESTNET,
+    uniqueId = InnerChainUniqueId.ALEO_MAINNET,
     address = selectedAccount.address,
   } = useParams<{
     uniqueId: InnerChainUniqueId;
