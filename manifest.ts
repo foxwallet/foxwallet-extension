@@ -4,7 +4,7 @@ import { version } from "./package.json";
 export default defineManifest((env) => {
   return {
     manifest_version: 3,
-    name: "FoxWallet",
+    name: "FoxWallet | Aleo Wallet",
     description: "Browser Wallet for Aleo powered by FoxWallet",
     version,
     icons: {
