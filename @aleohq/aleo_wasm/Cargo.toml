@@ -24,49 +24,49 @@ doctest = false
 [dependencies.snarkvm-circuit-network]
 git = "https://github.com/AleoNet/snarkVM"
 package = "snarkvm-circuit-network"
-rev = "6d64025f3f775fa164d70d9a8177ec93c97cd36e"
+rev = "02994a1e34e7db8da6c27587537b165aa488868c"
 
 [dependencies.snarkvm-console]
 git = "https://github.com/AleoNet/snarkVM"
 package = "snarkvm-console"
-rev = "6d64025f3f775fa164d70d9a8177ec93c97cd36e"
+rev = "02994a1e34e7db8da6c27587537b165aa488868c"
 features = [ "wasm" ]
 
 [dependencies.snarkvm-ledger-block]
 git = "https://github.com/AleoNet/snarkVM"
 package = "snarkvm-ledger-block"
-rev = "6d64025f3f775fa164d70d9a8177ec93c97cd36e"
+rev = "02994a1e34e7db8da6c27587537b165aa488868c"
 
 [dependencies.snarkvm-ledger-query]
 git = "https://github.com/AleoNet/snarkVM"
 package = "snarkvm-ledger-query"
-rev = "6d64025f3f775fa164d70d9a8177ec93c97cd36e"
+rev = "02994a1e34e7db8da6c27587537b165aa488868c"
 features = [ "async" ]
 
 [dependencies.snarkvm-ledger-store]
 git = "https://github.com/AleoNet/snarkVM"
 package = "snarkvm-ledger-store"
-rev = "6d64025f3f775fa164d70d9a8177ec93c97cd36e"
+rev = "02994a1e34e7db8da6c27587537b165aa488868c"
 version = "0.16.2"
 
 [dependencies.snarkvm-synthesizer]
 git = "https://github.com/AleoNet/snarkVM"
 package = "snarkvm-synthesizer"
-rev = "6d64025f3f775fa164d70d9a8177ec93c97cd36e"
+rev = "02994a1e34e7db8da6c27587537b165aa488868c"
 features = [ "async" ]
 
 [dependencies.snarkvm-wasm]
 # version = "0.16.2"
 git = "https://github.com/AleoNet/snarkVM"
 package = "snarkvm-wasm"
-rev = "6d64025f3f775fa164d70d9a8177ec93c97cd36e"
+rev = "02994a1e34e7db8da6c27587537b165aa488868c"
 features = [ "console", "fields", "utilities" ]
 
 [dependencies.snarkvm-utilities]
 # version = "0.16.2"
 git = "https://github.com/AleoNet/snarkVM"
 package = "snarkvm-utilities"
-rev = "6d64025f3f775fa164d70d9a8177ec93c97cd36e"
+rev = "02994a1e34e7db8da6c27587537b165aa488868c"
 features = ["wasm"]
 
 [dependencies.anyhow]
@@ -128,7 +128,7 @@ version = "1.0.183"
 # version = "0.16.2"
 git = "https://github.com/AleoNet/snarkVM"
 package = "snarkvm-parameters"
-rev = "6d64025f3f775fa164d70d9a8177ec93c97cd36e"
+rev = "02994a1e34e7db8da6c27587537b165aa488868c"
 features = [ "wasm" ]
 
 [dev-dependencies.wasm-bindgen-test]
