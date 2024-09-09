@@ -3,7 +3,7 @@ import { AllTokenResp } from "./token.di";
 import { Token } from "../../types/Token";
 import { ALPHA_TOKEN_PROGRAM_ID } from "../../constants";
 
-export const TOKEN_IMG_HOST = "https://app.alphaswap.pro/ims/image/";
+export const TOKEN_IMG_HOST = "https://mainnet.alphaswap.pro/ims/image/";
 
 export class TokenApi {
   host: string;

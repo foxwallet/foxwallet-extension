@@ -2,9 +2,9 @@ import { ChainUniqueId } from "core/types/ChainUniqueId";
 import { useCoinService } from "./useCoinService";
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
-import { useDebounce } from "use-debounce";
 import { NATIVE_TOKEN_TOKEN_ID } from "core/coins/ALEO/constants";
 import { ALEO_NATIVE_TOKEN } from "core/coins/ALEO/config/chains";
+import { InnerProgramId } from "core/coins/ALEO/types/ProgramId";
 
 export const useTokens = (uniqueId: ChainUniqueId, keyword?: string) => {
   const { coinService } = useCoinService(uniqueId);
@@ -81,6 +81,7 @@ export const useInteractiveTokens = (
 
 export const useTokenInfo = (
   uniqueId: ChainUniqueId,
+  programId: InnerProgramId,
   tokenId?: string | null,
 ) => {
   const { coinService } = useCoinService(uniqueId);
@@ -90,7 +91,7 @@ export const useTokenInfo = (
     if (!tokenId || tokenId === NATIVE_TOKEN_TOKEN_ID) {
       return ALEO_NATIVE_TOKEN;
     }
-    return await coinService.getTokenInfo(tokenId);
+    return await coinService.getTokenInfo(programId, tokenId);
   }, [coinService, tokenId]);
 
   const {

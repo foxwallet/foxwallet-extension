@@ -23,6 +23,7 @@ import {
 import { AleoGasFee } from "core/types/GasFee";
 import {
   ALPHA_TOKEN_PROGRAM_ID,
+  BETA_STAKING_PROGRAM_ID,
   FAILED_TX_REMOVE_TIME,
   LOCAL_TX_EXPIRE_TIME,
   NATIVE_TOKEN_PROGRAM_ID,
@@ -53,7 +54,8 @@ import { FaucetMessage, FaucetResp } from "../types/Faucet";
 import { ExplorerLanguages } from "core/types/ExplorerLanguages";
 import { TokenService } from "./instances/token";
 import { Token, TokenWithBalance } from "../types/Token";
-import { InnerProgramId } from "../types/ProgramId";
+import { type InnerProgramId } from "../types/ProgramId";
+import { BETA_STAKING_ALEO_TOKEN } from "../config/chains";
 
 const CREDITS_MAPPING_NAME = "account";
 
@@ -238,7 +240,21 @@ export class AleoService {
           };
           tokenRecords[commitment] = record;
         }
-        allRecordsMap[NATIVE_TOKEN_PROGRAM_ID] = creditsRecords;
+        allRecordsMap[ALPHA_TOKEN_PROGRAM_ID] = tokenRecords;
+      }
+
+      const stAleoRecords = allRecordsMap[BETA_STAKING_PROGRAM_ID];
+      if (stAleoRecords) {
+        for (const [commitment, record] of Object.entries(stAleoRecords)) {
+          if (!record || record.parsedContent) {
+            continue;
+          }
+          record.parsedContent = {
+            amount: record.content.amount.slice(0, -11),
+          };
+          stAleoRecords[commitment] = record;
+        }
+        allRecordsMap[BETA_STAKING_PROGRAM_ID] = stAleoRecords;
       }
 
       const result = {
@@ -1331,46 +1347,101 @@ export class AleoService {
   }
 
   @AutoSwitch({ serviceType: AutoSwitchServiceType.RPC })
-  async getTokenPublicBalance(address: string, tokenId: string) {
-    const id = hashBHP256(`{ token: ${tokenId}, user: ${address} }`);
-    console.log("===> public balance id: ", tokenId, address, id);
-    const balance = await this.rpcService
-      .currInstance()
-      .getProgramMappingValue(ALPHA_TOKEN_PROGRAM_ID, CREDITS_MAPPING_NAME, id);
-    console.log("===> token public balance: ", balance, id);
-    if (!balance || balance === "null") {
-      return 0n;
-    }
-    return parseU128(balance);
-  }
-
-  async getTokenPrivateBalance(address: string, tokenId: string) {
-    const result = await this.getRecords(
-      address,
-      ALPHA_TOKEN_PROGRAM_ID,
-      RecordFilter.UNSPENT,
-    );
-    return result.reduce((sum, record) => {
-      if (record.parsedContent) {
-        if (record.parsedContent.token !== tokenId) {
-          return sum;
-        } else {
-          return sum + BigInt(record.parsedContent.amount);
+  async getTokenPublicBalance(
+    address: string,
+    programId: InnerProgramId,
+    tokenId: string,
+  ) {
+    switch (programId) {
+      case ALPHA_TOKEN_PROGRAM_ID: {
+        const id = hashBHP256(`{ token: ${tokenId}, user: ${address} }`);
+        console.log("===> public balance id: ", tokenId, address, id);
+        const balance = await this.rpcService
+          .currInstance()
+          .getProgramMappingValue(programId, CREDITS_MAPPING_NAME, id);
+        console.log("===> token public balance: ", balance, id);
+        if (!balance || balance === "null") {
+          return 0n;
         }
-      } else {
-        if (record.content.token.slice(0, -8) !== tokenId) {
-          return sum;
-        } else {
-          return sum + BigInt(record.content.amount.slice(0, -12));
-        }
+        return parseU128(balance);
       }
-    }, 0n);
+      case BETA_STAKING_PROGRAM_ID: {
+        const balance = await this.rpcService
+          .currInstance()
+          .getProgramMappingValue(programId, CREDITS_MAPPING_NAME, address);
+        console.log("===> token public balance: ", balance, address);
+        if (!balance || balance === "null") {
+          return 0n;
+        }
+        return parseU64(balance);
+      }
+      default: {
+        throw new Error("Unsupported program id " + programId);
+      }
+    }
   }
 
-  async getTokenBalance(address: string, tokenId: string) {
+  async getTokenPrivateBalance(
+    address: string,
+    programId: InnerProgramId,
+    tokenId: string,
+  ) {
+    switch (programId) {
+      case ALPHA_TOKEN_PROGRAM_ID: {
+        const result = await this.getRecords(
+          address,
+          ALPHA_TOKEN_PROGRAM_ID,
+          RecordFilter.UNSPENT,
+        );
+        return result.reduce((sum, record) => {
+          if (record.parsedContent) {
+            if (record.parsedContent.token !== tokenId) {
+              return sum;
+            } else {
+              return sum + BigInt(record.parsedContent.amount);
+            }
+          } else {
+            if (record.content.token.slice(0, -8) !== tokenId) {
+              return sum;
+            } else {
+              return sum + BigInt(record.content.amount.slice(0, -12));
+            }
+          }
+        }, 0n);
+      }
+      case BETA_STAKING_PROGRAM_ID: {
+        const result = await this.getRecords(
+          address,
+          BETA_STAKING_PROGRAM_ID,
+          RecordFilter.UNSPENT,
+        );
+
+        if (!result) {
+          return 0n;
+        }
+
+        return result.reduce((sum, record) => {
+          if (record.parsedContent) {
+            return sum + BigInt(record.parsedContent.amount);
+          } else {
+            return sum + BigInt(record.content.amount.slice(0, -11));
+          }
+        }, 0n);
+      }
+      default: {
+        throw new Error("Unsupported program id " + programId);
+      }
+    }
+  }
+
+  async getTokenBalance(
+    address: string,
+    programId: InnerProgramId,
+    tokenId: string,
+  ) {
     const [privateBalance, publicBalance] = await Promise.all([
-      this.getTokenPrivateBalance(address, tokenId),
-      this.getTokenPublicBalance(address, tokenId),
+      this.getTokenPrivateBalance(address, programId, tokenId),
+      this.getTokenPublicBalance(address, programId, tokenId),
     ]);
     return {
       privateBalance,
@@ -1381,12 +1452,13 @@ export class AleoService {
 
   async getAllTokens() {
     const tokens = await this.tokenService.currInstance().getTokens();
-    return tokens;
+    return [BETA_STAKING_ALEO_TOKEN, ...tokens];
   }
 
   async searchTokens(keyword: string) {
+    const searchStAleo = keyword.includes("st") || keyword.includes("ale");
     const tokens = await this.tokenService.currInstance().searchTokens(keyword);
-    return tokens;
+    return searchStAleo ? [BETA_STAKING_ALEO_TOKEN, ...tokens] : tokens;
   }
 
   async getInteractiveTokens(address: string): Promise<TokenWithBalance[]> {
@@ -1395,7 +1467,11 @@ export class AleoService {
     let balances = await Promise.all(
       top10Tokens.map(async (token) => {
         try {
-          const balance = await this.getTokenBalance(address, token.tokenId);
+          const balance = await this.getTokenBalance(
+            address,
+            ALPHA_TOKEN_PROGRAM_ID,
+            token.tokenId,
+          );
           return {
             ...token,
             balance,
@@ -1414,7 +1490,27 @@ export class AleoService {
       }),
     );
     const non0Tokens = balances.filter((item) => item.balance.total > 0n);
-    return non0Tokens;
+    const stAleoToken: TokenWithBalance = {
+      ...BETA_STAKING_ALEO_TOKEN,
+      balance: {
+        privateBalance: 0n,
+        publicBalance: 0n,
+        total: 0n,
+      },
+    };
+    try {
+      const balance = await this.getTokenBalance(
+        address,
+        stAleoToken.programId,
+        stAleoToken.tokenId,
+      );
+      stAleoToken.balance = {
+        ...balance,
+      };
+    } catch (err) {
+      console.error("===> getInteractiveTokens stAleo error: ", err);
+    }
+    return [stAleoToken, ...non0Tokens];
   }
 
   @AutoSwitch({ serviceType: AutoSwitchServiceType.RPC })
@@ -1437,12 +1533,22 @@ export class AleoService {
     };
   }
 
-  async getTokenInfo(tokenId: string): Promise<Token | undefined> {
-    const allTokens = await this.tokenService
-      .currInstance()
-      .searchTokens(tokenId.slice(0, -5));
-    const token = allTokens.find((item) => item.tokenId === tokenId);
-    return token;
+  async getTokenInfo(
+    programId: InnerProgramId,
+    tokenId: string,
+  ): Promise<Token | undefined> {
+    switch (programId) {
+      case ALPHA_TOKEN_PROGRAM_ID: {
+        const allTokens = await this.tokenService
+          .currInstance()
+          .searchTokens(tokenId.slice(0, -5));
+        const token = allTokens.find((item) => item.tokenId === tokenId);
+        return token;
+      }
+      case BETA_STAKING_PROGRAM_ID: {
+        return { ...BETA_STAKING_ALEO_TOKEN };
+      }
+    }
   }
 
   private async getConfirmedTokenTransactionInfo({
@@ -1562,14 +1668,29 @@ export class AleoService {
           continue;
         }
         if (!record.parsedContent) {
-          record.parsedContent = {
-            token: record.content.token.slice(0, -8),
-            amount: record.content.amount.slice(0, -12),
-          };
+          switch (record.programId) {
+            case ALPHA_TOKEN_PROGRAM_ID: {
+              record.parsedContent = {
+                token: record.content.token.slice(0, -8),
+                amount: record.content.amount.slice(0, -12),
+              };
+              if (record.parsedContent.token !== token.tokenId) {
+                continue;
+              }
+            }
+            case BETA_STAKING_PROGRAM_ID: {
+              record.parsedContent = {
+                amount: record.content.amount.slice(0, -11),
+              };
+            }
+            default: {
+              throw new Error(
+                "Unsupported token program id " + record.programId,
+              );
+            }
+          }
         }
-        if (record.parsedContent.token !== token.tokenId) {
-          continue;
-        }
+
         records.push(record);
       }
       const privateTxs = await Promise.all(

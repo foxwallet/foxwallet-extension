@@ -3,7 +3,14 @@ import { AleoConfig } from "../types/AleoConfig";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { ExplorerLanguages } from "core/types/ExplorerLanguages";
 import AleoLogo from "../../../assets/images/chains/aleo.webp";
-import { NATIVE_TOKEN_PROGRAM_ID, NATIVE_TOKEN_TOKEN_ID } from "../constants";
+import StAleoLogo from "../../../assets/images/tokens/staleo.webp";
+
+import {
+  BETA_STAKING_ALEO_TOKEN_ID,
+  BETA_STAKING_PROGRAM_ID,
+  NATIVE_TOKEN_PROGRAM_ID,
+  NATIVE_TOKEN_TOKEN_ID,
+} from "../constants";
 import { ReserveChainConfigs } from "../../../../env";
 import { Token } from "../types/Token";
 
@@ -20,6 +27,16 @@ export const ALEO_NATIVE_TOKEN: Token = {
   tokenId: NATIVE_TOKEN_TOKEN_ID,
   official: true,
   programId: NATIVE_TOKEN_PROGRAM_ID,
+};
+
+export const BETA_STAKING_ALEO_TOKEN: Token = {
+  name: "stAleo",
+  decimals: 6,
+  symbol: "stALEO",
+  programId: BETA_STAKING_PROGRAM_ID,
+  logo: StAleoLogo,
+  tokenId: BETA_STAKING_ALEO_TOKEN_ID,
+  official: true,
 };
 
 export const ALEO_CHAIN_CONFIGS: { [key in string]: AleoConfig } = {
@@ -68,7 +85,7 @@ export const ALEO_CHAIN_CONFIGS: { [key in string]: AleoConfig } = {
       tx: "/transaction/{txid}",
       address: "",
     },
-    // alphaSwapApi: "https://app.alphaswap.pro/api",
+    alphaSwapApi: "https://mainnet.alphaswap.pro/api",
   },
 };
 

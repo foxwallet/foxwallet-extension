@@ -17,7 +17,6 @@ import { useCoinBasic, useCoinService } from "@/hooks/useCoinService";
 import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { useLocationParams } from "@/hooks/useLocationParams";
 import { useRecords } from "@/hooks/useRecord";
-import { useTokenInfo } from "@/hooks/useToken";
 import { Content } from "@/layouts/Content";
 import { RecordFilter } from "@/scripts/background/servers/IWalletServer";
 import {
@@ -113,6 +112,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
   const { balance, loadingBalance } = useBalance({
     uniqueId,
     address: selectedAccount.address,
+    programId: tokenInfo.programId,
     tokenId: tokenInfo.tokenId,
     refreshInterval: 10000,
   });

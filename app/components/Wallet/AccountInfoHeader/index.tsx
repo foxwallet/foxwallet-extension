@@ -54,6 +54,7 @@ import { useClient } from "@/hooks/useClient";
 import { showErrorToast } from "@/components/Custom/ErrorToast";
 import { stringToHex } from "@/common/utils/hex";
 import { useTxsNotification } from "@/hooks/useTxHistory";
+import { NATIVE_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
 
 const rotateAnimation = keyframes`
   from { transform: rotate(0deg) }
@@ -66,6 +67,7 @@ export const AccountInfoHeader = () => {
   const { nativeCurrency, chainConfig, coinService } = useCoinService(uniqueId);
   const { balance, loadingBalance } = useBalance({
     uniqueId,
+    programId: NATIVE_TOKEN_PROGRAM_ID,
     address: selectedAccount.address,
     refreshInterval: 4000,
   });
