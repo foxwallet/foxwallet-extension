@@ -160,7 +160,8 @@
     "community": "Masyarakat",
     "securityTips": "Kiat Keamanan",
     "settings": "Pengaturan",
-    "account": "Akun"
+    "account": "Akun",
+    "switchWallet": "Ganti Dompet"
   },
   "Error": {
     "invalidPassword": "Kata sandi salah"

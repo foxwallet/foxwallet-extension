@@ -160,7 +160,8 @@
     "community": "Gemeinschaft",
     "securityTips": "Sicherheitstipps",
     "settings": "Einstellungen",
-    "account": "Konto"
+    "account": "Konto",
+    "switchWallet": "Wallet wechseln"
   },
   "Error": {
     "invalidPassword": "Ungültiges Passwort"

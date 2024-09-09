@@ -160,7 +160,8 @@
     "community": "Comunidad",
     "securityTips": "Consejos de seguridad",
     "settings": "Ajustes",
-    "account": "Cuenta"
+    "account": "Cuenta",
+    "switchWallet": "Cambiar billetera"
   },
   "Error": {
     "invalidPassword": "Contraseña invalida"

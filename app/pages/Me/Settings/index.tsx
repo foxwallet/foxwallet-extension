@@ -21,6 +21,7 @@ import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import TestTheme from "../TestTheme";
+import { Button } from "@chakra-ui/react";
 
 const SettingsScreen = () => {
   const { t } = useTranslation();
@@ -95,8 +96,9 @@ const SettingsScreen = () => {
           icon={<IconInfo w={4} h={4} />}
           onPress={onAbout}
         />
-        {/* todo */}
-        {/* <TestTheme /> */}
+        <Button onClick={() => navigate("/manage_wallet")}>
+          {t("Setting:switchWallet")}
+        </Button>
       </Content>
     </PageWithHeader>
   );

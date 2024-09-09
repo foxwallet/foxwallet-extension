@@ -160,7 +160,8 @@
     "community": "Toplum",
     "securityTips": "Güvenlik İpuçları",
     "settings": "Ayarlar",
-    "account": "Hesap"
+    "account": "Hesap",
+    "switchWallet": "Cüzdanı Değiştir"
   },
   "Error": {
     "invalidPassword": "Geçersiz şifre"

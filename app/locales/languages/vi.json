@@ -160,7 +160,8 @@
     "community": "Cộng đồng",
     "securityTips": "Mẹo bảo mật",
     "settings": "Cài đặt",
-    "account": "Tài khoản"
+    "account": "Tài khoản",
+    "switchWallet": "Chuyển ví"
   },
   "Error": {
     "invalidPassword": "Mật khẩu không hợp lệ"

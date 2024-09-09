@@ -160,7 +160,8 @@
     "community": "برادری",
     "securityTips": "حفاظتی نکات",
     "settings": "ترتیبات",
-    "account": "کھاتہ"
+    "account": "کھاتہ",
+    "switchWallet": "والیٹ سوئچ کریں۔"
   },
   "Error": {
     "invalidPassword": "غلط پاسورڈ"

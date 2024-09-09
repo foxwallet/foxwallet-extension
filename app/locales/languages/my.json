@@ -160,7 +160,8 @@
     "community": "ရပ်ရွာ",
     "securityTips": "လုံခြုံရေး အကြံပြုချက်များ",
     "settings": "ဆက်တင်များ",
-    "account": "အကောင့်"
+    "account": "အကောင့်",
+    "switchWallet": "ပိုက်ဆံအိတ်ကိုပြောင်းပါ။"
   },
   "Error": {
     "invalidPassword": "စကားဝှက် မမှန်ကန်ပါ။"

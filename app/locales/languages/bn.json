@@ -160,7 +160,8 @@
     "community": "সম্প্রদায়",
     "securityTips": "নিরাপত্তা টিপস",
     "settings": "সেটিংস",
-    "account": "হিসাব"
+    "account": "হিসাব",
+    "switchWallet": "ওয়ালেট স্যুইচ করুন"
   },
   "Error": {
     "invalidPassword": "অবৈধ পাসওয়ার্ড"

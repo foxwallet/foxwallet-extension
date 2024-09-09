@@ -14,7 +14,7 @@ import { H6 } from "../../../common/theme/components/text";
 import { IconCloseLine } from "../Icon";
 
 interface ModalProps {
-  title?: string;
+  titleElement?: React.ReactNode;
   isOpen: boolean;
   hideClose?: boolean;
   onClose: () => void;
@@ -22,12 +22,12 @@ interface ModalProps {
   footer?: React.ReactNode;
   bodyStyle?: ModalBodyProps;
   footerStyle?: ModalFooterProps;
-  rightIcon?: React.ReactNode;
+  leftIcon?: React.ReactNode;
 }
 
 export function BasicDrawer(props: ModalProps) {
   const {
-    title,
+    titleElement,
     isOpen,
     hideClose,
     onClose,
@@ -35,7 +35,7 @@ export function BasicDrawer(props: ModalProps) {
     footer,
     bodyStyle,
     footerStyle,
-    rightIcon,
+    leftIcon,
   } = props;
   const bg = useColorModeValue("white", "black");
 
@@ -49,20 +49,20 @@ export function BasicDrawer(props: ModalProps) {
     >
       <ModalOverlay backdropFilter="blur(10px)" />
       <ModalContent alignSelf={"flex-end"} bg={bg} px={2.5} pt={2.5} pb={5}>
-        {(!!title || !hideClose) && (
+        {(!!titleElement || !hideClose) && (
           <ModalHeader
             display={"flex"}
             justifyContent={"space-between"}
             alignItems={"center"}
             mb={4}
           >
+            {!!leftIcon ? leftIcon : <Box w={6} h={6} />}
+            {!!titleElement ? titleElement : <Box w={6} h={6} />}
             {hideClose ? (
               <Box w={6} h={6} />
             ) : (
               <IconCloseLine w={6} h={6} cursor={"pointer"} onClick={onClose} />
             )}
-            {!!title && <H6>{title}</H6>}
-            {!!rightIcon ? rightIcon : <Box w={6} h={6} />}
           </ModalHeader>
         )}
         <ModalBody {...bodyStyle}>{body}</ModalBody>
