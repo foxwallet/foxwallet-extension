@@ -1,5 +1,3 @@
-import { ALPHA_TOKEN_PROGRAM_ID, NATIVE_TOKEN_PROGRAM_ID } from "../constants";
-
 export enum AleoTransferMethod {
   PUBLIC = "transfer_public",
   PUBLIC_TO_PRIVATE = "transfer_public_to_private",

@@ -14,6 +14,7 @@ import { useTransactionSettledToast } from "@/components/Wallet/TransactionSettl
 import { Token } from "core/coins/ALEO/types/Token";
 import {
   ALPHA_TOKEN_PROGRAM_ID,
+  BETA_STAKING_PROGRAM_ID,
   NATIVE_TOKEN_TOKEN_ID,
 } from "core/coins/ALEO/constants";
 
@@ -119,7 +120,10 @@ export const useTxHistory = ({
   const [pagination, setPagination] = useState<Pagination>({});
   const key = `/onchain_history/${uniqueId}/${address}?page=${pagination.cursor}&limit=${pagination.limit}`;
   const fetchOnChainHistory = useCallback(async () => {
-    if (token.programId === ALPHA_TOKEN_PROGRAM_ID) {
+    if (
+      token.programId === ALPHA_TOKEN_PROGRAM_ID ||
+      token.programId === BETA_STAKING_PROGRAM_ID
+    ) {
       return await coinService.getTokenOnChainHistory({
         address,
         pagination,

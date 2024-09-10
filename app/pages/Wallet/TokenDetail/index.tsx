@@ -229,10 +229,22 @@ const TokenDetailScreen = () => {
     return t("Send:recordStatistics", { COUNT: tokenRecords.length });
   }, [tokenRecords]);
 
-  const recordAmount =
-    tokenInfo.programId === ALPHA_TOKEN_PROGRAM_ID
-      ? tokenRecords[0]?.parsedContent?.amount
-      : tokenRecords[0]?.parsedContent?.microcredits;
+  const recordAmount = useMemo(() => {
+    switch (tokenInfo.programId) {
+      case NATIVE_TOKEN_PROGRAM_ID: {
+        return tokenRecords[0]?.parsedContent?.microcredits;
+      }
+      case ALPHA_TOKEN_PROGRAM_ID: {
+        return tokenRecords[0]?.parsedContent?.amount;
+      }
+      case BETA_STAKING_PROGRAM_ID: {
+        return tokenRecords[0]?.parsedContent?.amount;
+      }
+      default: {
+        console.error("Unsupport programId " + tokenInfo.programId);
+      }
+    }
+  }, [tokenInfo, tokenRecords]);
 
   const onReceive = useCallback(() => {
     navigate(`/receive`);
