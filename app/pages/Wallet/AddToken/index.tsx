@@ -16,6 +16,7 @@ import {
   InputLeftElement,
   Spinner,
 } from "@chakra-ui/react";
+import { BETA_STAKING_PROGRAM_ID } from "core/coins/ALEO/constants";
 import { Token } from "core/coins/ALEO/types/Token";
 import { isEqual } from "lodash";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -137,7 +138,11 @@ function AddToken() {
                 pr={5}
                 _hover={{ bg: "gray.50", borderRadius: "lg" }}
               >
-                <TokenItem token={token} onClick={() => selectToken(token)} />
+                <TokenItem
+                  token={token}
+                  onClick={() => selectToken(token)}
+                  hideId={token.programId === BETA_STAKING_PROGRAM_ID}
+                />
                 <Flex cursor={"pointer"} onClick={() => selectToken(token)}>
                   <IconAddCircle w={4} h={4} />
                 </Flex>

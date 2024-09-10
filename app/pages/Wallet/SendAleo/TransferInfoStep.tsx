@@ -27,7 +27,11 @@ import {
   InputRightElement,
   Text,
 } from "@chakra-ui/react";
-import { NATIVE_TOKEN_TOKEN_ID } from "core/coins/ALEO/constants";
+import {
+  ALPHA_TOKEN_PROGRAM_ID,
+  BETA_STAKING_PROGRAM_ID,
+  NATIVE_TOKEN_PROGRAM_ID,
+} from "core/coins/ALEO/constants";
 import { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 import { Token } from "core/coins/ALEO/types/Token";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
@@ -96,17 +100,28 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
   });
 
   const tokenRecords = useMemo(() => {
-    if (tokenInfo.tokenId === NATIVE_TOKEN_TOKEN_ID) {
-      return records;
+    switch (tokenInfo.programId) {
+      case NATIVE_TOKEN_PROGRAM_ID: {
+        return records;
+      }
+      case ALPHA_TOKEN_PROGRAM_ID: {
+        return records
+          .filter((record) => {
+            return record.parsedContent?.token === tokenInfo.tokenId;
+          })
+          .sort(
+            (record1, record2) =>
+              record2.parsedContent?.amount - record1.parsedContent?.amount,
+          );
+      }
+      case BETA_STAKING_PROGRAM_ID: {
+        return records;
+      }
+      default: {
+        console.error("Unsupport programId " + tokenInfo.programId);
+        return [];
+      }
     }
-    return records
-      .filter((record) => {
-        return record.parsedContent?.token === tokenInfo.tokenId;
-      })
-      .sort(
-        (record1, record2) =>
-          record2.parsedContent?.amount - record1.parsedContent?.amount,
-      );
   }, [records, tokenInfo]);
 
   const { balance, loadingBalance } = useBalance({
@@ -186,10 +201,22 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
   const currTransferRecord: RecordDetailWithSpent | undefined =
     selectedTransferRecord || tokenRecords[0];
 
-  const recordAmount =
-    tokenInfo.tokenId === NATIVE_TOKEN_TOKEN_ID
-      ? currTransferRecord?.parsedContent?.microcredits
-      : currTransferRecord?.parsedContent?.amount;
+  const recordAmount = useMemo(() => {
+    switch (tokenInfo.programId) {
+      case NATIVE_TOKEN_PROGRAM_ID: {
+        return currTransferRecord?.parsedContent?.microcredits;
+      }
+      case ALPHA_TOKEN_PROGRAM_ID: {
+        return currTransferRecord?.parsedContent?.amount;
+      }
+      case BETA_STAKING_PROGRAM_ID: {
+        return currTransferRecord?.parsedContent?.amount;
+      }
+      default: {
+        console.error("Unsupport programId " + tokenInfo.programId);
+      }
+    }
+  }, [tokenInfo, currTransferRecord]);
 
   const onSelectTransferRecord = useCallback(async () => {
     const { data } = await showSelectRecordDialog({
