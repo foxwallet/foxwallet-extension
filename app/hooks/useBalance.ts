@@ -3,10 +3,7 @@ import useSWR from "swr";
 import { useClient } from "./useClient";
 import { useCallback, useMemo } from "react";
 import { useCoinService } from "./useCoinService";
-import {
-  NATIVE_TOKEN_PROGRAM_ID,
-  NATIVE_TOKEN_TOKEN_ID,
-} from "core/coins/ALEO/constants";
+import { NATIVE_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
 import { InnerProgramId } from "core/coins/ALEO/types/ProgramId";
 
 export interface Balance {

@@ -25,7 +25,6 @@ import {
   ALPHA_TOKEN_PROGRAM_ID,
   BETA_STAKING_PROGRAM_ID,
   NATIVE_TOKEN_PROGRAM_ID,
-  NATIVE_TOKEN_TOKEN_ID,
 } from "core/coins/ALEO/constants";
 import { useLocationParams } from "@/hooks/useLocationParams";
 

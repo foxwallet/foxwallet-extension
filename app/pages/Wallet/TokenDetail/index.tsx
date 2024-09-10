@@ -43,6 +43,8 @@ import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import {
   ALPHA_TOKEN_PROGRAM_ID,
   BETA_STAKING_ALEO_TOKEN_ID,
+  BETA_STAKING_PROGRAM_ID,
+  NATIVE_TOKEN_PROGRAM_ID,
   NATIVE_TOKEN_TOKEN_ID,
 } from "core/coins/ALEO/constants";
 import { serializeToken } from "@/common/utils/string";
@@ -193,17 +195,28 @@ const TokenDetailScreen = () => {
   });
 
   const tokenRecords = useMemo(() => {
-    if (tokenInfo.tokenId === NATIVE_TOKEN_TOKEN_ID) {
-      return records;
+    switch (tokenInfo.programId) {
+      case NATIVE_TOKEN_PROGRAM_ID: {
+        return records;
+      }
+      case ALPHA_TOKEN_PROGRAM_ID: {
+        return records
+          .filter((record) => {
+            return record.parsedContent?.token === tokenInfo.tokenId;
+          })
+          .sort(
+            (record1, record2) =>
+              record2.parsedContent?.amount - record1.parsedContent?.amount,
+          );
+      }
+      case BETA_STAKING_PROGRAM_ID: {
+        return records;
+      }
+      default: {
+        console.error("Unsupport programId " + tokenInfo.programId);
+        return [];
+      }
     }
-    return records
-      .filter((record) => {
-        return record.parsedContent?.token === tokenInfo.tokenId;
-      })
-      .sort(
-        (record1, record2) =>
-          record2.parsedContent?.amount - record1.parsedContent?.amount,
-      );
   }, [records, token]);
 
   const recordStr = useMemo(() => {

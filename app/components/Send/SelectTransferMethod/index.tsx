@@ -26,7 +26,12 @@ import { useRecords } from "@/hooks/useRecord";
 import { useTranslation } from "react-i18next";
 import { Token } from "core/coins/ALEO/types/Token";
 import { RecordFilter } from "@/scripts/background/servers/IWalletServer";
-import { NATIVE_TOKEN_TOKEN_ID } from "core/coins/ALEO/constants";
+import {
+  ALPHA_TOKEN_PROGRAM_ID,
+  BETA_STAKING_PROGRAM_ID,
+  NATIVE_TOKEN_PROGRAM_ID,
+  NATIVE_TOKEN_TOKEN_ID,
+} from "core/coins/ALEO/constants";
 
 interface Props {
   isOpen: boolean;
@@ -64,17 +69,28 @@ const SelectTransferMethodDrawer = (props: Props) => {
   });
 
   const tokenRecords = useMemo(() => {
-    if (token.tokenId === NATIVE_TOKEN_TOKEN_ID) {
-      return records;
+    switch (token.programId) {
+      case NATIVE_TOKEN_PROGRAM_ID: {
+        return records;
+      }
+      case ALPHA_TOKEN_PROGRAM_ID: {
+        return records
+          .filter((record) => {
+            return record.parsedContent?.token === token.tokenId;
+          })
+          .sort(
+            (record1, record2) =>
+              record2.parsedContent?.amount - record1.parsedContent?.amount,
+          );
+      }
+      case BETA_STAKING_PROGRAM_ID: {
+        return records;
+      }
+      default: {
+        console.error("Unsupport programId " + token.programId);
+        return [];
+      }
     }
-    return records
-      .filter((record) => {
-        return record.parsedContent?.token === token.tokenId;
-      })
-      .sort(
-        (record1, record2) =>
-          record2.parsedContent?.amount - record1.parsedContent?.amount,
-      );
   }, [records, token]);
 
   const { t } = useTranslation();

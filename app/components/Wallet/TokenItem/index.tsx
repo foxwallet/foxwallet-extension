@@ -8,8 +8,8 @@ import Hover from "@/components/Custom/Hover";
 import { Token } from "core/coins/ALEO/types/Token";
 import { ChainUniqueId } from "core/types/ChainUniqueId";
 import {
-  BETA_STAKING_ALEO_TOKEN_ID,
-  NATIVE_TOKEN_TOKEN_ID,
+  BETA_STAKING_PROGRAM_ID,
+  NATIVE_TOKEN_PROGRAM_ID,
 } from "core/coins/ALEO/constants";
 
 export const TokenItemWithBalance = ({
@@ -58,8 +58,8 @@ export const TokenItemWithBalance = ({
           <Text fontSize={13} fontWeight={600}>
             {token.symbol}
           </Text>
-          {token.tokenId !== NATIVE_TOKEN_TOKEN_ID &&
-            token.tokenId !== BETA_STAKING_ALEO_TOKEN_ID && (
+          {token.programId !== NATIVE_TOKEN_PROGRAM_ID &&
+            token.programId !== BETA_STAKING_PROGRAM_ID && (
               <Text maxW={"120"} noOfLines={1} fontSize={10} color={"gray.400"}>
                 {token.tokenId}
               </Text>
