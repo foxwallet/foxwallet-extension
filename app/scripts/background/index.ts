@@ -19,6 +19,7 @@ import {
 } from "@/common/utils/version";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { clearSwrCache, swrStorageInstance } from "@/common/utils/indexeddb";
+import { startCheckSyncing } from "./offscreen";
 
 const keepAliveConnection = new Connection(
   keepAliveHandler,
@@ -95,3 +96,5 @@ checkVersion().finally(() => {
   console.log("===> checkVersion done start offscreen");
   offscreen();
 });
+
+startCheckSyncing();

@@ -8,6 +8,7 @@ import {
 } from "../../../offscreen_transaction/src/types";
 import * as browser from "webextension-polyfill";
 import { AleoSendTxParams } from "core/coins/ALEO/types/Transaction";
+import { offscreen } from "./aleo";
 
 const OFFSCREEN_TX_DOCUMENT_PATH = "/offscreen_tx.html";
 const OFFSCREEN_DOCUMENT_PATH = "/offscreen.html";
@@ -77,6 +78,11 @@ export async function stopSending() {
   await closeOffscreenDocument(OFFSCREEN_TX_DOCUMENT_PATH);
 }
 
+export async function isSyncingBlocks() {
+  const has = await hasDocument(OFFSCREEN_DOCUMENT_PATH);
+  return has;
+}
+
 export async function syncBlocks() {
   const has = await hasDocument(OFFSCREEN_DOCUMENT_PATH);
   if (has) {
@@ -97,6 +103,7 @@ export async function syncBlocks() {
 
 export async function sendTransaction(params: AleoSendTxParams) {
   try {
+    stopCheckSyncing();
     console.log("===> sendTransaction closeOffscreenTxDocument");
     await closeOffscreenDocument(OFFSCREEN_DOCUMENT_PATH);
     console.log(
@@ -131,6 +138,7 @@ export async function sendTransaction(params: AleoSendTxParams) {
       OFFSCREEN_DOCUMENT_PATH,
     );
     syncBlocks();
+    startCheckSyncing();
   }
 }
 
@@ -182,6 +190,7 @@ export async function isSendingAleoTransaction() {
 
 export async function sendDeployment(params: AleoRequestDeploymentParams) {
   try {
+    stopCheckSyncing();
     console.log("===> sendTransaction closeOffscreenTxDocument");
     await closeOffscreenDocument(OFFSCREEN_DOCUMENT_PATH);
     console.log(
@@ -216,5 +225,44 @@ export async function sendDeployment(params: AleoRequestDeploymentParams) {
       "===> setupOffscreenDocument after tx",
       OFFSCREEN_DOCUMENT_PATH,
     );
+    startCheckSyncing();
   }
 }
+
+const makeSureSyncing = () => {
+  let interval = 5000;
+  let timer: any = null;
+
+  const checkSyncing = async () => {
+    const isSyncing = await isSyncingBlocks();
+    const isSending = await isSendingAleoTransaction();
+    console.log("===> checkSyncing: ", isSyncing, isSending);
+    if (!isSyncing && !isSending) {
+      offscreen();
+    }
+  };
+
+  const startCheckSyncing = () => {
+    console.log("===> startCheckSyncing ", timer, interval);
+    if (timer !== null) return;
+    timer = setTimeout(() => {
+      checkSyncing();
+      timer = null;
+      interval = 60 * 1000;
+      startCheckSyncing();
+    }, interval);
+  };
+
+  const stopCheckSyncing = () => {
+    console.log("===> stopCheckSyncing ", timer, interval);
+    clearTimeout(timer);
+    timer = null;
+  };
+
+  return {
+    startCheckSyncing,
+    stopCheckSyncing,
+  };
+};
+
+export const { startCheckSyncing, stopCheckSyncing } = makeSureSyncing();
