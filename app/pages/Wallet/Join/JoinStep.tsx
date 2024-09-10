@@ -37,6 +37,7 @@ export const JoinStep = (props: JoinStepProps) => {
   const { balance, loadingBalance } = useBalance({
     uniqueId,
     address: selectedAccount.address,
+    programId: NATIVE_TOKEN_PROGRAM_ID,
   });
 
   const [feeInfo, setFeeInfo] = useState<AleoGasFee | null>(null);

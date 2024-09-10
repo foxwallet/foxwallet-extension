@@ -52,6 +52,7 @@ const SelectTransferMethodDrawer = (props: Props) => {
   const { balance, loadingBalance } = useBalance({
     uniqueId,
     address,
+    programId: token.programId,
     tokenId: token.tokenId,
     refreshInterval: 10000,
   });

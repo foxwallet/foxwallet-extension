@@ -10,7 +10,10 @@ import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { useRecords } from "@/hooks/useRecord";
 import { Content } from "@/layouts/Content";
 import { Button, Divider, Flex, Text } from "@chakra-ui/react";
-import { NATIVE_TOKEN_TOKEN_ID } from "core/coins/ALEO/constants";
+import {
+  NATIVE_TOKEN_PROGRAM_ID,
+  NATIVE_TOKEN_TOKEN_ID,
+} from "core/coins/ALEO/constants";
 import { AleoFeeMethod } from "core/coins/ALEO/types/FeeMethod";
 import { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 import { Token } from "core/coins/ALEO/types/Token";
@@ -58,6 +61,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
   const { balance, loadingBalance } = useBalance({
     uniqueId,
     address: selectedAccount.address,
+    programId: NATIVE_TOKEN_PROGRAM_ID,
     refreshInterval: 10000,
   });
 
@@ -67,6 +71,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
       address: selectedAccount.address,
       refreshInterval: 10000,
       tokenId: token.tokenId,
+      programId: token.programId,
     });
 
   const { records, loading: loadingRecords } = useRecords({

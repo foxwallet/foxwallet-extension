@@ -17,7 +17,10 @@ import {
   Text,
   border,
 } from "@chakra-ui/react";
-import { SPLIT_RECORD_FEE } from "core/coins/ALEO/constants";
+import {
+  NATIVE_TOKEN_PROGRAM_ID,
+  SPLIT_RECORD_FEE,
+} from "core/coins/ALEO/constants";
 import { AleoFeeMethod } from "core/coins/ALEO/types/FeeMethod";
 import { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 import {
@@ -44,6 +47,7 @@ export const SplitStep = (props: SplitStepProps) => {
   const { balance, loadingBalance } = useBalance({
     uniqueId,
     address: selectedAccount.address,
+    programId: NATIVE_TOKEN_PROGRAM_ID,
   });
 
   const [amountStr, setAmountStr] = useState<string>("");

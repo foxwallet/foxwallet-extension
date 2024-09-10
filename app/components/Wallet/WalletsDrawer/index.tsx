@@ -4,8 +4,8 @@ import { BasicDrawer } from "@/components/Custom/Drawer";
 import { useCurrWallet } from "@/hooks/useWallets";
 import {
   IconAleo,
+  IconArrowRight,
   IconCheckLineBlack,
-  IconWallet,
 } from "@/components/Custom/Icon";
 import React, { useCallback } from "react";
 import { DisplayAccount } from "@/scripts/background/store/vault/types/keyring";
@@ -14,6 +14,8 @@ import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { usePopupDispatch } from "@/hooks/useStore";
 import { CoinType } from "core/types";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
+import { H6 } from "@/common/theme/components/text";
+import { useNavigate } from "react-router-dom";
 
 interface AccountListItemProps {
   account: DisplayAccount;
@@ -110,11 +112,15 @@ const WalletsDrawer = (props: Props) => {
     <BasicDrawer
       isOpen={isOpen}
       onClose={onCancel}
-      title={selectedWallet?.walletName}
-      rightIcon={
-        <Box cursor={"pointer"} pr={1} onClick={handleManageWallet}>
-          <IconWallet />
-        </Box>
+      titleElement={
+        <Flex
+          justifyContent={"center"}
+          alignItems={"center"}
+          onClick={handleManageWallet}
+        >
+          <H6>{selectedWallet?.walletName}</H6>
+          <IconArrowRight w={18} h={18} ml={2} />
+        </Flex>
       }
       body={
         <Flex flexDirection={"column"} px={1.5}>

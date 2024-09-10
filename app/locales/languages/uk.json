@@ -160,7 +160,8 @@
     "community": "Спільнота",
     "securityTips": "Поради щодо безпеки",
     "settings": "Налаштування",
-    "account": "Обліковий запис"
+    "account": "Обліковий запис",
+    "switchWallet": "Змінити гаманець"
   },
   "Error": {
     "invalidPassword": "Невірний пароль"

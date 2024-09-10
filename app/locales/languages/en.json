@@ -29,7 +29,7 @@
       "hide": "Hide"
     },
     "Manage": {
-      "title": "Switch Wallet",
+      "title": "Wallet",
       "addWallet": "Add wallet",
       "checkAccounts": "Check accounts",
       "changeName": "Change wallet name",
@@ -177,7 +177,8 @@
     "community": "Community",
     "securityTips": "Security Tips",
     "settings": "Settings",
-    "account": "Account"
+    "account": "Account",
+    "switchWallet": "Switch Wallet"
   },
   "Me": {
     "title": "Me"

@@ -42,6 +42,7 @@ import { RecordFilter } from "@/scripts/background/servers/IWalletServer";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import {
   ALPHA_TOKEN_PROGRAM_ID,
+  BETA_STAKING_ALEO_TOKEN_ID,
   NATIVE_TOKEN_TOKEN_ID,
 } from "core/coins/ALEO/constants";
 import { serializeToken } from "@/common/utils/string";
@@ -164,6 +165,7 @@ const TokenDetailScreen = () => {
   const { balance, loadingBalance } = useBalance({
     uniqueId,
     address: selectedAccount.address,
+    programId: tokenInfo.programId,
     tokenId: tokenInfo.tokenId,
   });
 
@@ -254,13 +256,14 @@ const TokenDetailScreen = () => {
               <Text color={"#777E90"} fontSize={10} mr={2}>
                 {tokenInfo.programId}
               </Text>
-              {tokenInfo.tokenId !== NATIVE_TOKEN_TOKEN_ID && (
-                <MiddleEllipsisText
-                  text={tokenInfo.tokenId}
-                  width={150}
-                  style={{ color: "#777E90", fontSize: 10 }}
-                />
-              )}
+              {tokenInfo.tokenId !== NATIVE_TOKEN_TOKEN_ID &&
+                tokenInfo.tokenId !== BETA_STAKING_ALEO_TOKEN_ID && (
+                  <MiddleEllipsisText
+                    text={tokenInfo.tokenId}
+                    width={150}
+                    style={{ color: "#777E90", fontSize: 10 }}
+                  />
+                )}
             </Flex>
           </Flex>
         </Flex>

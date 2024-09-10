@@ -160,7 +160,8 @@
     "community": "समुदाय",
     "securityTips": "सुरक्षा युक्तियाँ",
     "settings": "समायोजन",
-    "account": "खाता"
+    "account": "खाता",
+    "switchWallet": "वॉलेट स्विच करें"
   },
   "Error": {
     "invalidPassword": "अवैध पासवर्ड"

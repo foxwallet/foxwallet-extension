@@ -6,7 +6,7 @@ export enum TaskPriority {
 
 export const NATIVE_TOKEN_PROGRAM_ID = "credits.aleo";
 
-export const ALPHA_TOKEN_PROGRAM_ID = "alphaswap_v1.aleo";
+export const ALPHA_TOKEN_PROGRAM_ID = "alphaswap.aleo";
 
 export const NATIVE_TOKEN_TOKEN_ID = "__NATIVE_TOKEN__";
 

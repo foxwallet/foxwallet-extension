@@ -21,7 +21,12 @@ import { showErrorToast } from "@/components/Custom/ErrorToast";
 import { useTranslation } from "react-i18next";
 import { AleoTxType } from "core/coins/ALEO/types/History";
 import { Token } from "core/coins/ALEO/types/Token";
-import { NATIVE_TOKEN_TOKEN_ID } from "core/coins/ALEO/constants";
+import {
+  ALPHA_TOKEN_PROGRAM_ID,
+  BETA_STAKING_PROGRAM_ID,
+  NATIVE_TOKEN_PROGRAM_ID,
+  NATIVE_TOKEN_TOKEN_ID,
+} from "core/coins/ALEO/constants";
 import { useLocationParams } from "@/hooks/useLocationParams";
 
 function SendScreen() {
@@ -107,18 +112,38 @@ function SendScreen() {
             if (!finalTransferRecord || !finalTransferRecord.plaintext) {
               throw new Error(ERROR_CODE.INVALID_ARGUMENT);
             }
-            inputs =
-              token.tokenId === NATIVE_TOKEN_TOKEN_ID
-                ? [finalTransferRecord.plaintext, to, `${amount}u64`]
-                : [finalTransferRecord.plaintext, to, `${amount}u128`];
+            switch (token.programId) {
+              case NATIVE_TOKEN_PROGRAM_ID: {
+                inputs = [finalTransferRecord.plaintext, to, `${amount}u64`];
+                break;
+              }
+              case BETA_STAKING_PROGRAM_ID: {
+                inputs = [finalTransferRecord.plaintext, to, `${amount}u64`];
+                break;
+              }
+              case ALPHA_TOKEN_PROGRAM_ID: {
+                inputs = [finalTransferRecord.plaintext, to, `${amount}u128`];
+                break;
+              }
+            }
             break;
           }
           case AleoTransferMethod.PUBLIC:
           case AleoTransferMethod.PUBLIC_TO_PRIVATE: {
-            inputs =
-              token.tokenId === NATIVE_TOKEN_TOKEN_ID
-                ? [to, `${amount}u64`]
-                : [token.tokenId, to, `${amount}u128`];
+            switch (token.programId) {
+              case NATIVE_TOKEN_PROGRAM_ID: {
+                inputs = [to, `${amount}u64`];
+                break;
+              }
+              case BETA_STAKING_PROGRAM_ID: {
+                inputs = [to, `${amount}u64`];
+                break;
+              }
+              case ALPHA_TOKEN_PROGRAM_ID: {
+                inputs = [token.tokenId, to, `${amount}u128`];
+                break;
+              }
+            }
             break;
           }
         }
