@@ -7,18 +7,18 @@
     "Create": {
       "title": "Create Wallet",
       "explain": "Create a new HD wallet.",
-      "createMnemonic": "Create new seed phase",
+      "createMnemonic": "Create new seed phrase",
       "walletName": "Wallet Name",
       "walletNamePlaceholder": "Enter wallet name",
       "dupWalletName": "Duplicate wallet name",
-      "backupMnemonic": "Backup seed phase",
-      "confirmMnemonic": "Confirm seed phase"
+      "backupMnemonic": "Backup seed phrase",
+      "confirmMnemonic": "Confirm seed phrase"
     },
     "Import": {
       "title": "Import Wallet",
       "selectType": "Select Type",
-      "importMnemonic": "Import seed phase",
-      "importMnemonicExplain": "Seed phase(mnemonic) is composed of 12 words, separated by spaces.",
+      "importMnemonic": "Import seed phrase",
+      "importMnemonicExplain": "Seed phrase(mnemonic) is composed of 12 words, separated by spaces.",
       "importPrivateKey": "Import private key",
       "importPrivateKeyExplain": "Plain text private key characters."
     },
@@ -70,17 +70,17 @@
     "stillCreate": "Still Create"
   },
   "Mnemonic": {
-    "title": "Seed phase",
-    "backup": "Backup seed phase",
-    "verification": "Seed phase verification",
-    "backupTips1": "Click here to display seed phase",
+    "title": "Seed phrase",
+    "backup": "Backup seed phrase",
+    "verification": "Seed phrase verification",
+    "backupTips1": "Click here to display seed phrase",
     "backupTips2": "Please confirm that the surroundings are safe",
     "warning1": "Please note down the seed phrase in order.",
     "warning2": "Please copy and keep it in a safe place.",
     "warning3": "Seed phrase or private key are the only way to recover your wallet. Once lost, it cannot be retrieved. Do not save them via screenshots or social medias.",
     "later": "Remind me later",
     "regenerate": "Regenerate",
-    "enterPlaceholder": "Enter the seed phase, separated by spaces",
+    "enterPlaceholder": "Enter the seed phrase, separated by spaces",
     "checkTips": "Please check \"{{WORD}}\""
   },
   "PrivateKey": {
