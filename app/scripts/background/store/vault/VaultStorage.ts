@@ -184,10 +184,6 @@ export class VaultStorage {
     if (oldWalletIndex > -1) {
       const oldWallet = hdWallets[oldWalletIndex];
       hdWallets[oldWalletIndex] = hdWallet;
-      await this.setKeyring({
-        ...keyring,
-        [WalletType.HD]: [...hdWallets],
-      });
       switch (method) {
         case AccountMethod.REGENERATE: {
           const oldAccount = oldWallet.accountsMap[CoinType.ALEO][0];
@@ -244,6 +240,10 @@ export class VaultStorage {
           break;
         }
       }
+      await this.setKeyring({
+        ...keyring,
+        [WalletType.HD]: [...hdWallets],
+      });
     }
   }
 

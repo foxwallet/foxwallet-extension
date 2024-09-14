@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { usePopupDispatch } from "@/hooks/useStore";
 import { CoinType } from "core/types";
 import { useTranslation } from "react-i18next";
+import { showErrorToast } from "@/components/Custom/ErrorToast";
 
 function OnboardCreateWalletScreen() {
   const [step, setStep] = useState(1);
@@ -36,16 +37,20 @@ function OnboardCreateWalletScreen() {
     setMnemonic(wallet.mnemonic ?? "");
   }, []);
 
-  // const regenerateWallet = useCallback(async () => {
-  //   const walletId = walletIdRef.current;
-  //   const wallet = await popupServerClient.regenerateWallet({
-  //     walletName: walletNameRef.current,
-  //     walletId,
-  //     revealMnemonic: true,
-  //   });
-  //   await dispatch.account.resyncAllWalletsToStore();
-  //   setMnemonic(wallet.mnemonic ?? "");
-  // }, []);
+  const regenerateWallet = useCallback(async () => {
+    try {
+      const walletId = walletIdRef.current;
+      const wallet = await popupServerClient.regenerateWallet({
+        walletName: walletNameRef.current,
+        walletId,
+        revealMnemonic: true,
+      });
+      await dispatch.account.resyncAllWalletsToStore();
+      setMnemonic(wallet.mnemonic ?? "");
+    } catch (err) {
+      showErrorToast({ message: "Regenerate Failed" });
+    }
+  }, []);
 
   const stepContent = useMemo(() => {
     switch (step) {
@@ -65,6 +70,7 @@ function OnboardCreateWalletScreen() {
           <BackupMnemonicStep
             mnemonic={mnemonic}
             createWallet={createWallet}
+            regenerateWallet={regenerateWallet}
             onConfirm={() => {
               setStep((_step) => _step + 1);
             }}

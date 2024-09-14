@@ -21,6 +21,7 @@ export class AleoBlockDatabase extends Dexie {
       records: "[address+begin], end",
       txs: "localId, [address+programId]",
       programs: "programId",
+      cacheTxs: "txId",
     });
 
     this.version(2).stores({
@@ -74,8 +75,7 @@ export class AleoBlockDatabase extends Dexie {
         await recordsToDelete.delete();
         const txsToDelete = this.txs.where({ address: address });
         await txsToDelete.delete();
-        const cacheTxsToDelete = this.cacheTxs.where({ address: address });
-        await cacheTxsToDelete.delete();
+        await this.cacheTxs.clear();
       },
     );
   }

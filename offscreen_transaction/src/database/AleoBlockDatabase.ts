@@ -24,6 +24,7 @@ export class AleoBlockDatabase extends Dexie {
       records: "[address+begin], end",
       txs: "localId, [address+programId]",
       programs: "programId",
+      cacheTxs: "txId",
     });
 
     this.version(2).stores({
