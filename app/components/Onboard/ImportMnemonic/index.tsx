@@ -96,7 +96,7 @@ export const ImportMnemonicStep = ({ onConfirm }: Props) => {
 
   const onInputChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
     let value = e.target.value;
-    let processText = value.toLowerCase().replace(/\s\s+/g, " ");
+    let processText = value.trim().toLowerCase().replace(/\s\s+/g, " ");
     processText = processText.replace(/[^a-zA-Z\s]/g, "");
     setMnemonic(processText);
   }, []);
