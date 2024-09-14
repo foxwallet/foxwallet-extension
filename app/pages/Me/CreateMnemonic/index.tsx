@@ -37,16 +37,16 @@ const CreateMnemonicScreen = () => {
     setMnemonic(wallet.mnemonic ?? "");
   }, []);
 
-  const regenerateWallet = useCallback(async () => {
-    const walletId = walletIdRef.current;
-    const wallet = await popupServerClient.regenerateWallet({
-      walletName: walletNameRef.current,
-      walletId,
-      revealMnemonic: true,
-    });
-    await dispatch.account.resyncAllWalletsToStore();
-    setMnemonic(wallet.mnemonic ?? "");
-  }, []);
+  // const regenerateWallet = useCallback(async () => {
+  //   const walletId = walletIdRef.current;
+  //   const wallet = await popupServerClient.regenerateWallet({
+  //     walletName: walletNameRef.current,
+  //     walletId,
+  //     revealMnemonic: true,
+  //   });
+  //   await dispatch.account.resyncAllWalletsToStore();
+  //   setMnemonic(wallet.mnemonic ?? "");
+  // }, []);
 
   const stepContent = useMemo(() => {
     switch (step) {
@@ -64,7 +64,7 @@ const CreateMnemonicScreen = () => {
           <BackupMnemonicStep
             mnemonic={mnemonic}
             createWallet={createWallet}
-            regenerateWallet={regenerateWallet}
+            // regenerateWallet={regenerateWallet}
             onConfirm={() => {
               setStep((_step) => _step + 1);
             }}
@@ -84,7 +84,7 @@ const CreateMnemonicScreen = () => {
           />
         );
     }
-  }, [step, mnemonic, createWallet, regenerateWallet]);
+  }, [step, mnemonic, createWallet]);
 
   return (
     <PageWithHeader

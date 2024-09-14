@@ -55,11 +55,11 @@ export const BackupMnemonicStep = (props: {
   mnemonic?: string;
   onConfirm: () => void;
   createWallet?: () => Promise<void>;
-  regenerateWallet?: () => Promise<void>;
+  // regenerateWallet?: () => Promise<void>;
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { mnemonic, onConfirm, createWallet, regenerateWallet } = props;
+  const { mnemonic, onConfirm, createWallet } = props;
   const [startBackup, setStartBackup] = useState(false);
   const tips = useMemo(() => {
     return [
@@ -129,19 +129,8 @@ export const BackupMnemonicStep = (props: {
           </Flex>
         ))}
       </Flex>
-      <Flex justifyContent={"center"} mt={"5"}>
-        <Link
-          textDecorationLine={"underline"}
-          textDecorationColor={"green.600"}
-          color={"green.600"}
-          fontWeight={"bold"}
-          onClick={() => navigate("/main")}
-        >
-          {t("Mnemonic:later")}
-        </Link>
-      </Flex>
-      <Flex mt={12}>
-        {!!regenerateWallet && (
+      <Flex mt={10}>
+        {/* {!!regenerateWallet && (
           <Button
             colorScheme="secondary"
             flex={1}
@@ -151,10 +140,27 @@ export const BackupMnemonicStep = (props: {
           >
             {t("Mnemonic:regenerate")}
           </Button>
-        )}
+        )} */}
         <Button flex={1} isDisabled={!startBackup} onClick={() => onConfirm()}>
           {t("Common:confirm")}
         </Button>
+      </Flex>
+      <Flex
+        justifyContent={"center"}
+        position={"fixed"}
+        bottom={7}
+        left={0}
+        right={0}
+      >
+        <Link
+          textDecorationLine={"underline"}
+          textDecorationColor={"green.600"}
+          color={"green.600"}
+          fontWeight={"bold"}
+          onClick={() => navigate("/main")}
+        >
+          <Text fontSize={"smaller"}>{t("Mnemonic:later")}</Text>
+        </Link>
       </Flex>
     </Content>
   );
