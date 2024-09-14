@@ -74,8 +74,6 @@ export class AleoBlockDatabase extends Dexie {
         await recordsToDelete.delete();
         const txsToDelete = this.txs.where({ address: address });
         await txsToDelete.delete();
-        const cacheTxsToDelete = this.cacheTxs.where({ address: address });
-        await cacheTxsToDelete.delete();
       },
     );
   }

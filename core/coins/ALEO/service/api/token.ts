@@ -58,16 +58,18 @@ export class TokenApi {
     if (resp.code !== 0) {
       throw new Error(resp.msg);
     }
-    return resp.data.tokens.map((item) => ({
-      tokenId: `${item.token_id}field`,
-      name: item.name,
-      symbol: item.symbol,
-      decimals: item.decimals,
-      logo: `${TOKEN_IMG_HOST}${item.logo}`,
-      // 1 is verified token, 2 is user created token
-      official: item.token_type === 1,
-      programId: ALPHA_TOKEN_PROGRAM_ID,
-    }));
+    return resp.data.tokens
+      .filter((item) => item.token_type === 1)
+      .map((item) => ({
+        tokenId: `${item.token_id}field`,
+        name: item.name,
+        symbol: item.symbol,
+        decimals: item.decimals,
+        logo: `${TOKEN_IMG_HOST}${item.logo}`,
+        // 1 is verified token, 2 is user created token
+        official: item.token_type === 1,
+        programId: ALPHA_TOKEN_PROGRAM_ID,
+      }));
   }
 
   async searchTokens(keyword: string): Promise<Token[]> {
