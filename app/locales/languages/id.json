@@ -161,7 +161,8 @@
     "securityTips": "Kiat Keamanan",
     "settings": "Pengaturan",
     "account": "Akun",
-    "switchWallet": "Ganti Dompet"
+    "switchWallet": "Ganti Dompet",
+    "tutorial": "tutorial"
   },
   "Error": {
     "invalidPassword": "Kata sandi salah"

@@ -40,8 +40,8 @@ export const MeTab = () => {
   const onGuide = useCallback(() => {
     const url =
       i18next.resolvedLanguage === "zh"
-        ? `${HELP_CENTER_URL}/zh/docs/`
-        : `${HELP_CENTER_URL}/docs/`;
+        ? `${HELP_CENTER_URL}/zh/blog/aleo-extension-tutorial`
+        : `${HELP_CENTER_URL}/blog/aleo-extension-tutorial`;
     browser.tabs.create({ url });
   }, []);
 
@@ -102,7 +102,7 @@ export const MeTab = () => {
           onPress={onWalletDetail}
         />
         <SettingItem
-          title={t("Setting:guide")}
+          title={t("Setting:tutorial")}
           icon={<IconGuide w={4} h={4} />}
           onPress={onGuide}
         />

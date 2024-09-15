@@ -161,7 +161,8 @@
     "securityTips": "安全提示",
     "settings": "设置",
     "account": "帐户",
-    "switchWallet": "切换钱包"
+    "switchWallet": "切换钱包",
+    "tutorial": "教程"
   },
   "Error": {
     "invalidPassword": "无效的密码"

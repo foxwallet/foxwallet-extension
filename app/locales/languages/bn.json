@@ -161,7 +161,8 @@
     "securityTips": "নিরাপত্তা টিপস",
     "settings": "সেটিংস",
     "account": "হিসাব",
-    "switchWallet": "ওয়ালেট স্যুইচ করুন"
+    "switchWallet": "ওয়ালেট স্যুইচ করুন",
+    "tutorial": "টিউটোরিয়াল"
   },
   "Error": {
     "invalidPassword": "অবৈধ পাসওয়ার্ড"

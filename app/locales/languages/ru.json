@@ -161,7 +161,8 @@
     "securityTips": "Советы по безопасности",
     "settings": "Настройки",
     "account": "Счет",
-    "switchWallet": "Сменить кошелек"
+    "switchWallet": "Сменить кошелек",
+    "tutorial": "Учебник"
   },
   "Error": {
     "invalidPassword": "Неверный пароль"

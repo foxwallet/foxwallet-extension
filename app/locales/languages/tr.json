@@ -161,7 +161,8 @@
     "securityTips": "Güvenlik İpuçları",
     "settings": "Ayarlar",
     "account": "Hesap",
-    "switchWallet": "Cüzdanı Değiştir"
+    "switchWallet": "Cüzdanı Değiştir",
+    "tutorial": "öğretici"
   },
   "Error": {
     "invalidPassword": "Geçersiz şifre"

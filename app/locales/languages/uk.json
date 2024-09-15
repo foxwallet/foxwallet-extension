@@ -161,7 +161,8 @@
     "securityTips": "Поради щодо безпеки",
     "settings": "Налаштування",
     "account": "Обліковий запис",
-    "switchWallet": "Змінити гаманець"
+    "switchWallet": "Змінити гаманець",
+    "tutorial": "Підручник"
   },
   "Error": {
     "invalidPassword": "Невірний пароль"

@@ -161,7 +161,8 @@
     "securityTips": "حفاظتی نکات",
     "settings": "ترتیبات",
     "account": "کھاتہ",
-    "switchWallet": "والیٹ سوئچ کریں۔"
+    "switchWallet": "والیٹ سوئچ کریں۔",
+    "tutorial": "ٹیوٹوریل"
   },
   "Error": {
     "invalidPassword": "غلط پاسورڈ"

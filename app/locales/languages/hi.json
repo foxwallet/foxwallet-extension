@@ -161,7 +161,8 @@
     "securityTips": "सुरक्षा युक्तियाँ",
     "settings": "समायोजन",
     "account": "खाता",
-    "switchWallet": "वॉलेट स्विच करें"
+    "switchWallet": "वॉलेट स्विच करें",
+    "tutorial": "ट्यूटोरियल"
   },
   "Error": {
     "invalidPassword": "अवैध पासवर्ड"

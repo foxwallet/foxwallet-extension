@@ -161,7 +161,8 @@
     "securityTips": "Consejos de seguridad",
     "settings": "Ajustes",
     "account": "Cuenta",
-    "switchWallet": "Cambiar billetera"
+    "switchWallet": "Cambiar billetera",
+    "tutorial": "Tutorial"
   },
   "Error": {
     "invalidPassword": "Contraseña invalida"

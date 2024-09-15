@@ -161,7 +161,8 @@
     "securityTips": "Sicherheitstipps",
     "settings": "Einstellungen",
     "account": "Konto",
-    "switchWallet": "Wallet wechseln"
+    "switchWallet": "Wallet wechseln",
+    "tutorial": "Anleitung"
   },
   "Error": {
     "invalidPassword": "Ungültiges Passwort"

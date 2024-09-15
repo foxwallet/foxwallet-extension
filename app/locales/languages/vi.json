@@ -161,7 +161,8 @@
     "securityTips": "Mẹo bảo mật",
     "settings": "Cài đặt",
     "account": "Tài khoản",
-    "switchWallet": "Chuyển ví"
+    "switchWallet": "Chuyển ví",
+    "tutorial": "Hướng dẫn"
   },
   "Error": {
     "invalidPassword": "Mật khẩu không hợp lệ"
