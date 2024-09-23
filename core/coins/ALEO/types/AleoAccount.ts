@@ -5,5 +5,5 @@ export enum AleoImportPKType {
 export enum AleoExportPKType {
   ALEO_PK = "aleo_pk",
 }
-
+  
 export type AleoAccountOption = {};

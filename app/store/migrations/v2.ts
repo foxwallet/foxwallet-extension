@@ -10,7 +10,7 @@ export const migrationV2 = (state: RootState): RootState => {
       ...state,
       account: {
         ...account,
-        selectedUniqueId: InnerChainUniqueId.ALEO_TESTNET,
+        selectedUniqueId: InnerChainUniqueId.ALEO_MAINNET,
       },
     };
   } catch (err) {

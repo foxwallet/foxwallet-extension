@@ -44,9 +44,9 @@ export const SplitStep = (props: SplitStepProps) => {
   const { getMatchAccountsWithUniqueId } = useGroupAccount();
   // TODO: get uniqueId from chain mode or page params
   const selectedAccount = useMemo(() => {
-    return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_TESTNET)[0];
+    return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_MAINNET)[0];
   }, [getMatchAccountsWithUniqueId]);
-  const uniqueId = InnerChainUniqueId.ALEO_TESTNET;
+  const uniqueId = InnerChainUniqueId.ALEO_MAINNET;
 
   const { nativeCurrency, coinService } = useCoinService(uniqueId);
   const { t } = useTranslation();

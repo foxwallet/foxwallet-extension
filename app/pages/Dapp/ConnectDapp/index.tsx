@@ -38,7 +38,7 @@ function ConnectAleoDappScreen() {
   const navigate = useNavigate();
   const { getMatchAccountsWithUniqueId } = useGroupAccount();
   const selectedAccount = useMemo(() => {
-    return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_TESTNET)[0];
+    return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_MAINNET)[0];
   }, []);
 
   const { requestId } = useParams();

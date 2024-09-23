@@ -17,7 +17,7 @@ function DeploymentScreen() {
   const navigate = useNavigate();
   const { getMatchAccountsWithUniqueId } = useGroupAccount();
   const selectedAccount = useMemo(() => {
-    return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_TESTNET)[0];
+    return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_MAINNET)[0];
   }, [getMatchAccountsWithUniqueId]);
   const { requestId } = useParams();
   const { popupServerClient } = useClient();

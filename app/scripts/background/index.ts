@@ -81,7 +81,7 @@ async function checkVersion() {
     );
     if (beforeTestnetReset) {
       await coinService
-        .getInstance(InnerChainUniqueId.ALEO_TESTNET)
+        .getInstance(InnerChainUniqueId.ALEO_MAINNET)
         .resetChainData();
       await clearSwrCache();
     }

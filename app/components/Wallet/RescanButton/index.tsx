@@ -45,7 +45,7 @@ const RescanButton = (props: RescanButtonProps) => {
 
   if (chainMode.mode !== ChainAssembleMode.SINGLE) return null;
 
-  if (chainMode.uniqueId !== InnerChainUniqueId.ALEO_TESTNET) return null;
+  if (chainMode.uniqueId !== InnerChainUniqueId.ALEO_MAINNET) return null;
 
   if (!error && progress && progress >= 100) return null;
 

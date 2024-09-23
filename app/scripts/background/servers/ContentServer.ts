@@ -87,7 +87,7 @@ export class ContentWalletServer implements IContentServer {
     if (groupAccount) {
       const selectedAccount = matchAccountsWithUnqiueId(
         groupAccount,
-        InnerChainUniqueId.ALEO_TESTNET,
+        InnerChainUniqueId.ALEO_MAINNET,
       )[0];
       if (selectedAccount) {
         const connectHistorys = await this.dappStorage.getConnectHistory(

@@ -25,6 +25,8 @@ export const chainUniqueIdToAccountOptions = (
   switch (uniqueId) {
     case InnerChainUniqueId.ALEO_TESTNET:
       return [DEFAULT_ALEO_ACCOUNT_OPTION];
+    case InnerChainUniqueId.ALEO_MAINNET:
+      return [DEFAULT_ALEO_ACCOUNT_OPTION];
     default: {
       throw new Error("unknown uniqueId: " + uniqueId);
     }

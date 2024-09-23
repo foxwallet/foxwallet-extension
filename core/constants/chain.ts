@@ -5,10 +5,10 @@ import { AccountOption } from "core/types/CoinBasic";
 export const DEFAULT_CHAIN_UNIQUE_ID: {
   [key in CoinType]: InnerChainUniqueId;
 } = {
-  [CoinType.ALEO]: InnerChainUniqueId.ALEO_TESTNET,
+  [CoinType.ALEO]: InnerChainUniqueId.ALEO_MAINNET,
 };
 
-export const DEFAULT_USER_SELECTED_CHAINS = [InnerChainUniqueId.ALEO_TESTNET];
+export const DEFAULT_USER_SELECTED_CHAINS = [InnerChainUniqueId.ALEO_MAINNET];
 
 export const getDefaultChainUniqueId = (
   coinType: CoinType,
@@ -16,7 +16,7 @@ export const getDefaultChainUniqueId = (
 ) => {
   switch (coinType) {
     case CoinType.ALEO:
-      return InnerChainUniqueId.ALEO_TESTNET;
+      return InnerChainUniqueId.ALEO_MAINNET;
     default:
       throw new Error(`getDefaultChainUniqueId for ${coinType}`);
   }

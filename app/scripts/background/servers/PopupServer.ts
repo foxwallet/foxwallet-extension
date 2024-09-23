@@ -162,7 +162,7 @@ export class PopupWalletServer implements IPopupServer {
     }
     const selectedAccount = matchAccountFromGroupAccount(
       groupAccount,
-      InnerChainUniqueId.ALEO_TESTNET,
+      InnerChainUniqueId.ALEO_MAINNET,
     );
     if (!selectedAccount) {
       throw new Error("No selected account");
@@ -225,7 +225,7 @@ export class PopupWalletServer implements IPopupServer {
     }
     const selectedAccount = matchAccountFromGroupAccount(
       groupAccount,
-      InnerChainUniqueId.ALEO_TESTNET,
+      InnerChainUniqueId.ALEO_MAINNET,
     );
     if (!selectedAccount) {
       throw new Error("No selected account");
@@ -326,7 +326,7 @@ export class PopupWalletServer implements IPopupServer {
     }
     const selectedAccount = matchAccountFromGroupAccount(
       groupAccount,
-      InnerChainUniqueId.ALEO_TESTNET,
+      InnerChainUniqueId.ALEO_MAINNET,
     );
     if (!selectedAccount) {
       throw new Error("No selected account");
@@ -430,7 +430,7 @@ export class PopupWalletServer implements IPopupServer {
     }
     const selectedAccount = matchAccountFromGroupAccount(
       groupAccount,
-      InnerChainUniqueId.ALEO_TESTNET,
+      InnerChainUniqueId.ALEO_MAINNET,
     );
     if (!selectedAccount) {
       throw new Error("No selected account");
@@ -700,7 +700,7 @@ export class PopupWalletServer implements IPopupServer {
         (account) => account.coinType === CoinType.ALEO,
       );
       if (groupAccount && account) {
-        const selectedUniqueId = InnerChainUniqueId.ALEO_TESTNET;
+        const selectedUniqueId = InnerChainUniqueId.ALEO_MAINNET;
         await this.coinService
           .getInstance(selectedUniqueId)
           .clearAddressLocalData(account.address);
@@ -739,7 +739,7 @@ export class PopupWalletServer implements IPopupServer {
       //   coinType: CoinType.ALEO,
       // });
       await this.coinService
-        .getInstance(InnerChainUniqueId.ALEO_TESTNET)
+        .getInstance(InnerChainUniqueId.ALEO_MAINNET)
         .resetChainData();
       return true;
     } catch (err) {

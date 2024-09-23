@@ -18,13 +18,13 @@ import { useParams } from "react-router-dom";
 function RequestTxScreen() {
   const { getMatchAccountsWithUniqueId } = useGroupAccount();
   const selectedAccount = useMemo(() => {
-    return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_TESTNET)[0];
+    return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_MAINNET)[0];
   }, [getMatchAccountsWithUniqueId]);
   const { requestId } = useParams();
   const { popupServerClient } = useClient();
   const { dappRequest, loading } = useDappRequest(requestId);
   const { t } = useTranslation();
-  const { nativeCurrency } = useCoinService(InnerChainUniqueId.ALEO_TESTNET);
+  const { nativeCurrency } = useCoinService(InnerChainUniqueId.ALEO_MAINNET);
 
   const dappRequestInfo = useMemo(() => {
     if (!dappRequest) {
