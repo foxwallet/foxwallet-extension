@@ -119,7 +119,7 @@ const WalletsDrawer = (props: Props) => {
           onClick={handleManageWallet}
         >
           <H6>{selectedWallet?.walletName}</H6>
-          <IconArrowRight w={18} h={18} ml={2} />
+          <IconArrowRight w={18} h={18} ml={0.5} />
         </Flex>
       }
       body={

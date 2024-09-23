@@ -63,7 +63,7 @@ export const ImportMnemonicStep = ({ onConfirm }: Props) => {
 
   const checkMnemonicWord = useCallback(
     (originalText: string) => {
-      const words = originalText.split(" ");
+      const words = originalText.trim().split(" ");
       const lastWord = words.pop() || "";
       const { correct: lastWordCorrect, matchWords: _matchWords } =
         checkLastWord(lastWord);
@@ -96,7 +96,7 @@ export const ImportMnemonicStep = ({ onConfirm }: Props) => {
 
   const onInputChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
     let value = e.target.value;
-    let processText = value.trim().toLowerCase().replace(/\s\s+/g, " ");
+    let processText = value.toLowerCase().replace(/\s\s+/g, " ");
     processText = processText.replace(/[^a-zA-Z\s]/g, "");
     setMnemonic(processText);
   }, []);
@@ -112,7 +112,7 @@ export const ImportMnemonicStep = ({ onConfirm }: Props) => {
   }, []);
 
   const isValid = useMemo(() => {
-    return validateMnemonic(mnemonic);
+    return validateMnemonic(mnemonic.trim());
   }, [mnemonic]);
 
   const showError = useMemo(() => {

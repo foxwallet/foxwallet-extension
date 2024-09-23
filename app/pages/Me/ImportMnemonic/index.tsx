@@ -45,7 +45,7 @@ const ImportMnemonicScreen = () => {
                   const wallet = await popupServerClient.importHDWallet({
                     walletId,
                     walletName,
-                    mnemonic,
+                    mnemonic: mnemonic.trim(),
                   });
                   await dispatch.account.resyncAllWalletsToStore();
                   dispatch.account.changeWalletBackupedMnemonic({
