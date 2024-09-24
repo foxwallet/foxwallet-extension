@@ -26,6 +26,7 @@ export class PopupServerHandler implements IHandler {
   handle(port: Runtime.Port): void | Promise<void> {
     port.onMessage.addListener(async (msg: ServerMessage) => {
       const release = await mutex.acquire();
+      await executeServerMethod(this.popupServer.clearTimeoutLock());
       try {
         if (msg.type !== MessageType.REQUEST) {
           return;

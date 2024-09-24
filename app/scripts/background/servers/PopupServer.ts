@@ -503,6 +503,10 @@ export class PopupWalletServer implements IPopupServer {
     return this.authManager.timeoutLock();
   }
 
+  async clearTimeoutLock(): Promise<void> {
+    return this.authManager.clearTimeoutLock();
+  }
+
   async createWallet(params: CreateWalletProps): Promise<DisplayWallet> {
     const wallet = await this.keyringManager.createNewWallet(params);
     const account = wallet.accountsMap[CoinType.ALEO][0];

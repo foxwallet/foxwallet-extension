@@ -63,6 +63,11 @@ export class AuthManager {
     console.log("===> AuthManager timeoutLock: ", this.#loginTimestamp);
   };
 
+  clearTimeoutLock = () => {
+    clearTimeout(this.#timerId);
+    this.#timerId = undefined;
+  };
+
   async login(password: string) {
     const cipher = await this.#storage.getCipher();
     if (!cipher) {
@@ -85,11 +90,6 @@ export class AuthManager {
 
   getLoginTime() {
     return this.#loginTimestamp;
-  }
-
-  async logout() {
-    this.#token = undefined;
-    this.#loginTimestamp = undefined;
   }
 
   async checkPassword(password: string): Promise<boolean> {

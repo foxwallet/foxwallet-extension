@@ -36,10 +36,6 @@ export const useAuth = () => {
     dispatch.user.setHasAuth({ hasAuth: false });
   }, []);
 
-  const timeoutLock = useCallback(async () => {
-    return await popupServerClient.timeoutLock();
-  }, []);
-
   const checkPassword = useCallback(async (password: string) => {
     return await popupServerClient.checkPassword(password);
   }, []);
@@ -54,7 +50,6 @@ export const useAuth = () => {
     getAuth,
     login,
     lock,
-    timeoutLock,
     checkPassword,
   };
 };
