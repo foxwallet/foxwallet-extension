@@ -362,7 +362,7 @@ const TokenDetailScreen = () => {
         {loading && history.length === 0 ? (
           <Spinner w={6} h={6} alignSelf={"center"} mt={10} />
         ) : history.length > 0 ? (
-          <Flex ref={listRef} direction={"column"} maxH={320} overflowY="auto">
+          <Flex ref={listRef} direction={"column"} maxH={310} overflowY="auto">
             {loadingLocalTxs && (
               <Spinner w={6} h={6} alignSelf={"center"} mt={10} />
             )}

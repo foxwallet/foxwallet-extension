@@ -12,7 +12,7 @@ import {
   InputItem,
   RecordFilter,
 } from "@/scripts/background/servers/IWalletServer";
-import { uniqBy } from "lodash";
+import { groupBy, uniqBy } from "lodash";
 import { AleoRpcService } from "./instances/rpc";
 import { AleoCreditMethod } from "../types/TransferMethod";
 import {
@@ -56,6 +56,7 @@ import { TokenService } from "./instances/token";
 import { Token, TokenWithBalance } from "../types/Token";
 import { type InnerProgramId } from "../types/ProgramId";
 import { BETA_STAKING_ALEO_TOKEN } from "../config/chains";
+import { Transition } from "../types/AleoTransition";
 
 const CREDITS_MAPPING_NAME = "account";
 
@@ -1071,6 +1072,71 @@ export class AleoService {
     });
 
     return historyList;
+  }
+
+  async getPrivateTxHistory(
+    address: string,
+    program?: string,
+    tokenId?: string,
+  ) {
+    const result = await this.debounceSyncBlocks(address);
+    if (!result) return [];
+    const { recordsMap } = result;
+    let records: RecordDetailWithSpent[] = [];
+    if (program) {
+      if (program === ALPHA_TOKEN_PROGRAM_ID) {
+        records = Object.values(recordsMap[program] ?? {}).filter((item) => {
+          if (!item) return false;
+          return item.parsedContent?.token === tokenId;
+        }) as RecordDetailWithSpent[];
+      } else {
+        records = Object.values(recordsMap[program] ?? {}).filter(
+          (item) => !!item,
+        );
+      }
+    } else {
+      let programs = Object.keys(recordsMap);
+      for (let program of programs) {
+        let res = Object.values(recordsMap[program] ?? {}).filter(
+          (item) => !!item,
+        );
+        records = records.concat(res);
+      }
+    }
+
+    const groupRecords = groupBy(records, (item) => item.transactionId);
+
+    const transactionIds = Object.keys(groupRecords);
+    transactionIds.sort((txId1, txId2) => {
+      const records1 = groupRecords[txId1];
+      const records2 = groupRecords[txId2];
+      return records2[0].height - records1[0].height;
+    });
+
+    return transactionIds.map((txId) => {
+      const records = groupRecords[txId];
+      let executionRecords = [];
+      let feeRecords = [];
+      let height = 0;
+      for (let record of records) {
+        height = record.height;
+        record.timestamp = record.timestamp * 1000;
+        if (
+          record.programId === NATIVE_TOKEN_PROGRAM_ID &&
+          record.functionName.startsWith("fee")
+        ) {
+          feeRecords.push(record);
+        } else {
+          executionRecords.push(record);
+        }
+      }
+      return {
+        txId,
+        height,
+        executionRecords,
+        feeRecords,
+      };
+    });
   }
 
   async getTxHistory(

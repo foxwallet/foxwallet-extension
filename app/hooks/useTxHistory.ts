@@ -5,8 +5,11 @@ import useSWR from "swr";
 import { Pagination } from "core/coins/ALEO/types/Pagination";
 import {
   AleoHistoryItem,
+  AleoHistoryType,
   AleoLocalHistoryItem,
   AleoOnChainHistoryItem,
+  AleoTxAddressType,
+  AleoTxType,
 } from "core/coins/ALEO/types/History";
 import { isEqual, uniqBy } from "lodash";
 import { AleoTxStatus } from "core/coins/ALEO/types/Transaction";
@@ -117,6 +120,21 @@ export const useTxHistory = ({
     isLoading: loadingLocalTxs,
   } = useSWR(localTxKey, getLocalTxs, { refreshInterval });
 
+  const privateTxsKey = `/privateTxs/${uniqueId}/${address}/${token.tokenId}`;
+  const getPrivateTxs = useCallback(async () => {
+    const res = await coinService.getPrivateTxHistory(
+      address,
+      token.tokenId !== NATIVE_TOKEN_TOKEN_ID ? token.programId : undefined,
+      token.tokenId,
+    );
+    return res;
+  }, [coinService, address, token]);
+  const {
+    data: privateTxs,
+    error: privateTxsError,
+    isLoading: loadingPrivateTxs,
+  } = useSWR(privateTxsKey, getPrivateTxs, { refreshInterval });
+
   const [pagination, setPagination] = useState<Pagination>({});
   const key = `/onchain_history/${uniqueId}/${address}?page=${pagination.cursor}&limit=${pagination.limit}`;
   const fetchOnChainHistory = useCallback(async () => {
@@ -174,10 +192,32 @@ export const useTxHistory = ({
         uncompletedLocalTxs.push(tx);
       }
     }
+
+    const privateFinalizedTxs: AleoOnChainHistoryItem[] = [];
+
+    for (let privateTx of privateTxs ?? []) {
+      if (privateTx.executionRecords.length === 0) {
+        continue;
+      }
+      const item: AleoOnChainHistoryItem = {
+        txId: privateTx.txId,
+        txType: AleoTxType.EXECUTION,
+        height: privateTx.height,
+        programId: privateTx.executionRecords[0].programId,
+        functionName: privateTx.executionRecords[0].functionName,
+        timestamp: privateTx.executionRecords[0].timestamp,
+        type: AleoHistoryType.ON_CHAIN,
+        addressType: AleoTxAddressType.SEND,
+        status: AleoTxStatus.FINALIZD,
+      };
+      privateFinalizedTxs.push(item);
+    }
+
     const completedTxs = uniqBy(
-      [...completedLocalTxs, ...onChainHistory],
+      [...completedLocalTxs, ...privateFinalizedTxs, ...onChainHistory],
       "txId",
     );
+
     const txs = [...uncompletedLocalTxs, ...completedTxs];
     txs.sort((item1, item2) => {
       if (
@@ -201,10 +241,12 @@ export const useTxHistory = ({
   }, [localTxs, onChainHistory]);
 
   return {
-    loading: loadingLocalTxs || loadingOnChainHistory || loading,
+    loading:
+      loadingLocalTxs || loadingPrivateTxs || loadingOnChainHistory || loading,
     loadingLocalTxs,
+    loadingPrivateTxs,
     loadingOnChainHistory,
-    error: localTxsError || onChainHistoryError,
+    error: localTxsError || privateTxsError || onChainHistoryError,
     history,
     getMore,
   };
