@@ -36,6 +36,9 @@ export class AleoProvider extends BaseProvider {
       case "testnetbeta": {
         return "testnet";
       }
+      case "mainnetbeta": {
+        return "mainnet";
+      }
       case "mainnet": {
         return "mainnet";
       }

@@ -88,6 +88,8 @@ class A extends M {
     switch (t) {
       case "testnetbeta":
         return "testnet";
+      case "mainnetbeta":
+        return "mainnet";
       case "mainnet":
         return "mainnet";
       default:
