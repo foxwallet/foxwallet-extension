@@ -1085,14 +1085,14 @@ export class AleoService {
         }) as RecordDetailWithSpent[];
       } else {
         records = Object.values(recordsMap[program] ?? {}).filter(
-          (item) => !!item,
+            (item): item is RecordDetailWithSpent => !!item
         );
       }
     } else {
       let programs = Object.keys(recordsMap);
       for (let program of programs) {
         let res = Object.values(recordsMap[program] ?? {}).filter(
-          (item) => !!item,
+            (item): item is RecordDetailWithSpent => !!item
         );
         records = records.concat(res);
       }
