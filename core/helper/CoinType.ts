@@ -8,8 +8,8 @@ import { AccountOption } from "core/types/CoinBasic";
 
 export const chainUniqueIdToCoinType = (uniqueId: ChainUniqueId): CoinType => {
   switch (uniqueId) {
-    case InnerChainUniqueId.ALEO_TESTNET:
-      return CoinType.ALEO;
+    // case InnerChainUniqueId.ALEO_TESTNET:
+    //   return CoinType.ALEO;
     case InnerChainUniqueId.ALEO_MAINNET:
       return CoinType.ALEO;
     default: {
@@ -23,8 +23,8 @@ export const chainUniqueIdToAccountOptions = (
   walletType: WalletType,
 ): Array<AccountOption[CoinType]> => {
   switch (uniqueId) {
-    case InnerChainUniqueId.ALEO_TESTNET:
-      return [DEFAULT_ALEO_ACCOUNT_OPTION];
+    // case InnerChainUniqueId.ALEO_TESTNET:
+    //   return [DEFAULT_ALEO_ACCOUNT_OPTION];
     case InnerChainUniqueId.ALEO_MAINNET:
       return [DEFAULT_ALEO_ACCOUNT_OPTION];
     default: {

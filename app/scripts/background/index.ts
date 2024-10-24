@@ -79,12 +79,12 @@ async function checkVersion() {
       currentVersion,
       beforeTestnetReset,
     );
-    if (beforeTestnetReset) {
-      await coinService
-        .getInstance(InnerChainUniqueId.ALEO_TESTNET)
-        .resetChainData();
-      await clearSwrCache();
-    }
+    // if (beforeTestnetReset) {
+    //   await coinService
+    //     .getInstance(InnerChainUniqueId.ALEO_TESTNET)
+    //     .resetChainData();
+    //   await clearSwrCache();
+    // }
   }
   if (existVersion !== currentVersion) {
     await extensionInfoDB.setVersion(currentVersion);

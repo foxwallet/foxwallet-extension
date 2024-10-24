@@ -4,7 +4,7 @@ export enum InnerChainUniqueId {
   /**
    * @deprecated
    */
-  ALEO_TESTNET = "ALEO_TESTNET",
+  // ALEO_TESTNET = "ALEO_TESTNET",
 }
 
 export type ChainUniqueId = InnerChainUniqueId;

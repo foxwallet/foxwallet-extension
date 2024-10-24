@@ -19,11 +19,15 @@ import {
 } from "core/coins/ALEO/types/SyncTask";
 import { ALEO_CHAIN_CONFIGS } from "core/coins/ALEO/config/chains";
 import { AleoRpcService } from "core/coins/ALEO/service/instances/rpc";
-import { AccountSettingStorageV1 } from "@/scripts/background/store/account/AccountStorageV1";
+import {
+  accountSettingStorage,
+  AccountSettingStorage,
+} from "@/scripts/background/store/account/AccountStorage";
 import { CoinType } from "core/types";
 import { uniqueIdToAleoChainId } from "core/coins/ALEO/utils/chainId";
 import { createAleoApiService } from "core/coins/ALEO/service/instances/sync";
 import { Mutex } from "async-mutex";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 
 // larger limit
 export const SYNC_TASK_QUENE_LIMIT = 100;
@@ -47,7 +51,7 @@ export class MainLoop {
   workerList: WorkerAPI[];
   taskInProcess: Array<Promise<void> | undefined>;
   aleoStorage: AleoStorage;
-  accountSettingStorage: AccountSettingStorageV1;
+  accountSettingStorage: AccountSettingStorage;
 
   static getInstace(apiList: string[]) {
     const cacheInstance = MainLoop.instance;
@@ -71,7 +75,7 @@ export class MainLoop {
         chainId: CHAIN_ID,
       })),
     );
-    this.accountSettingStorage = AccountSettingStorageV1.getInstance();
+    this.accountSettingStorage = accountSettingStorage;
   }
 
   async sendMessage(message: OffscreenMessage) {
@@ -591,8 +595,22 @@ export class MainLoop {
     try {
       const addressList = await this.aleoStorage.getAccountsAddress();
       console.log("===> addressList ", addressList.length, addressList);
-      const selectedAccount =
-        await this.accountSettingStorage.getSelectedAccount(CoinType.ALEO);
+      const selectedUnqueId = InnerChainUniqueId.ALEO_MAINNET;
+      const groupAccount =
+        await this.accountSettingStorage.getSelectedGroupAccount();
+      if (!groupAccount) {
+        console.error("selected groupAccount not found");
+        return;
+      }
+      const aleoAccount = groupAccount.group.accounts.filter(
+        (item) => item.coinType === CoinType.ALEO,
+      );
+      const address = aleoAccount[0]?.address;
+      if (!address) {
+        console.error("selected aleoAccount not found");
+        return;
+      }
+      const selectedAccount = await this.aleoStorage.getAccountInfo(address);
       if (!selectedAccount) {
         console.error("selected account not found");
         await sleep(5000);
@@ -606,8 +624,7 @@ export class MainLoop {
         await sleep(2000);
         return this.loop();
       }
-      const selectedUnqueId =
-        await this.accountSettingStorage.getSelectedUniqueId(CoinType.ALEO);
+
       const chainId = uniqueIdToAleoChainId(selectedUnqueId);
       const lastHeight = await this.getLatestHeight(chainId);
       if (!lastHeight) {

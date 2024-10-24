@@ -8,7 +8,7 @@ import { ChainUniqueId, InnerChainUniqueId } from "core/types/ChainUniqueId";
 
 // If support user config, get chain config map from store
 const ChainConfigMap = {
-  [InnerChainUniqueId.ALEO_TESTNET]: ALEO_CHAIN_CONFIGS.TESTNET,
+  // [InnerChainUniqueId.ALEO_TESTNET]: ALEO_CHAIN_CONFIGS.TESTNET,
   [InnerChainUniqueId.ALEO_MAINNET]: ALEO_CHAIN_CONFIGS.MAINNET,
 };
 
