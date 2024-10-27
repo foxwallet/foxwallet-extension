@@ -1,0 +1,62 @@
+diff --git a/node_modules/@crxjs/vite-plugin/dist/index.cjs b/node_modules/@crxjs/vite-plugin/dist/index.cjs
+index 1a26eca..56993d0 100644
+--- a/node_modules/@crxjs/vite-plugin/dist/index.cjs
++++ b/node_modules/@crxjs/vite-plugin/dist/index.cjs
+@@ -3260,7 +3260,7 @@ const pluginResources = ({ contentScripts = {} }) => {
+               ...rest
+             })).filter(({ resources }) => resources.length);
+             manifest.web_accessible_resources.push({
+-              use_dynamic_url: true,
++              use_dynamic_url: false,
+               matches: ["<all_urls>"],
+               resources: ["**/*", "*"]
+             });
+@@ -3342,7 +3342,7 @@ const pluginResources = ({ contentScripts = {} }) => {
+                     const resource = {
+                       matches: script.matches,
+                       resources: [...assets, ...imports],
+-                      use_dynamic_url: true
++                      use_dynamic_url: false
+                     };
+                     if (css.size)
+                       if (injectCss) {
+@@ -3543,7 +3543,7 @@ const pluginBackground = () => {
+ const defineManifest = (manifest) => manifest;
+ const defineDynamicResource = ({
+   matches = ["http://*/*", "https://*/*"],
+-  use_dynamic_url = true
++  use_dynamic_url = false
+ }) => ({
+   matches,
+   resources: [dynamicResourcesName],
+diff --git a/node_modules/@crxjs/vite-plugin/dist/index.mjs b/node_modules/@crxjs/vite-plugin/dist/index.mjs
+index d28a7c4..e78b624 100644
+--- a/node_modules/@crxjs/vite-plugin/dist/index.mjs
++++ b/node_modules/@crxjs/vite-plugin/dist/index.mjs
+@@ -3227,7 +3227,7 @@ const pluginResources = ({ contentScripts = {} }) => {
+               ...rest
+             })).filter(({ resources }) => resources.length);
+             manifest.web_accessible_resources.push({
+-              use_dynamic_url: true,
++              use_dynamic_url: false,
+               matches: ["<all_urls>"],
+               resources: ["**/*", "*"]
+             });
+@@ -3309,7 +3309,7 @@ const pluginResources = ({ contentScripts = {} }) => {
+                     const resource = {
+                       matches: script.matches,
+                       resources: [...assets, ...imports],
+-                      use_dynamic_url: true
++                      use_dynamic_url: false
+                     };
+                     if (css.size)
+                       if (injectCss) {
+@@ -3510,7 +3510,7 @@ const pluginBackground = () => {
+ const defineManifest = (manifest) => manifest;
+ const defineDynamicResource = ({
+   matches = ["http://*/*", "https://*/*"],
+-  use_dynamic_url = true
++  use_dynamic_url = false
+ }) => ({
+   matches,
+   resources: [dynamicResourcesName],
