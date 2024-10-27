@@ -15,7 +15,7 @@
     "translate": "node ./scripts/translate.cjs",
     "lint": "eslint --ext .ts,.js --max-warnings=0 .",
     "format": "prettier --write .",
-    "postinstall": "node ./scripts/postinstall.cjs"
+    "postinstall": "node ./scripts/postinstall.cjs && patch-package"
   },
   "lint-staged": {
     "*.{ts,js,tsx,jsx}": [
