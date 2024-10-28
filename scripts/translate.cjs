@@ -20,8 +20,13 @@ const otherLanguages = [
 
 const debug = false;
 
+// run `yarn tranlate -p [your port]` and the default port is 7890
+const args = process.argv;
+const portIndex = args.indexOf("-p");
+const port = portIndex !== -1 ? args[portIndex + 1] : "7890";
+
 // 填写自己的代理地址
-const agent = new HttpsProxyAgent("http://127.0.0.1:7890");
+const agent = new HttpsProxyAgent(`http://127.0.0.1:${port}`);
 
 const readJson = (p) => {
   return JSON.parse(fs.readFileSync(p, "utf-8"));
