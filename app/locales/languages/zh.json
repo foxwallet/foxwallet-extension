@@ -249,5 +249,10 @@
   "ManageToken": {
     "title": "管理代币",
     "searchHint": "搜索（ID、名称、符号）"
+  },
+  "Stake": {
+    "title": "质押",
+    "dialogTitle": "下载APP",
+    "dialogContent": "扩展钱包中不支持质押功能。质押$ALEO，请扫描二维码下载FoxWallet APP。"
   }
 }

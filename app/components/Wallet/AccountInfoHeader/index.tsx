@@ -241,7 +241,6 @@ export const AccountInfoHeader = () => {
       {
         title: t("Stake:title"),
         icon: <IconStake w={9} h={9} />,
-        disabled: sendingAleoTx || balance === undefined,
         onPress: () => showDownloadDialog(),
       }
     ];

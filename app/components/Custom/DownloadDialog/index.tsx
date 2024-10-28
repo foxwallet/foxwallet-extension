@@ -1,9 +1,8 @@
-import { BasicModal } from '@/components/Custom/Modal'
-import { promisifyChooseDialogWrapper } from "../../../common/utils/dialog";
 import { useTranslation } from "react-i18next";
 import { Image, Center, Text } from "@chakra-ui/react";
 import Qrcode from '@/common/assets/image/qrcode.png';
-
+import { promisifyChooseDialogWrapper } from "@/common/utils/dialog";
+import { BasicModal } from '@/components/Custom/Modal'
 
 interface Props {
   isOpen: boolean;
