@@ -10,6 +10,7 @@ import {
   IconLogo,
   IconReceive,
   IconSend,
+  IconStake
 } from "@/components/Custom/Icon";
 import { useCurrAccount } from "@/hooks/useCurrAccount";
 import {
@@ -43,6 +44,7 @@ import {
   SelectJoinSplitOption,
   showSelectJoinSplitDialog,
 } from "@/components/Send/SelectJoinSplit";
+import { showDownloadDialog } from '@/components/Custom/DownloadDialog';
 import { useFaucetStatus } from "@/hooks/useFaucetStatus";
 import { FaucetStatus } from "core/coins/ALEO/types/Faucet";
 import { showFaucetClaimedDialog } from "../FaucetClaimedDialog";
@@ -236,6 +238,11 @@ export const AccountInfoHeader = () => {
           }
         },
       },
+      {
+        title: t("Stake:title"),
+        icon: <IconStake w={9} h={9} />,
+        onPress: () => showDownloadDialog(),
+      }
     ];
     if (chainConfig.testnet) {
       return initOptions.concat({

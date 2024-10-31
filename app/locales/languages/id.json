@@ -249,5 +249,10 @@
   "ManageToken": {
     "title": "Kelola Token",
     "searchHint": "Token pencarian (ID, Nama, Simbol)"
+  },
+  "Stake": {
+    "title": "Mempertaruhkan",
+    "dialogTitle": "Unduh APLIKASI",
+    "dialogContent": "Fitur staking tidak tersedia di dompet ekstensi. Untuk mempertaruhkan $ALEO, silakan pindai kode QR untuk mengunduh APLIKASI FoxWallet."
   }
 }

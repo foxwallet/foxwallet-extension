@@ -249,5 +249,10 @@
   "ManageToken": {
     "title": "Token verwalten",
     "searchHint": "Suchtoken (ID, Name, Symbol)"
+  },
+  "Stake": {
+    "title": "Einsatz",
+    "dialogTitle": "APP herunterladen",
+    "dialogContent": "Die Absteckfunktion ist im Erweiterungs-Wallet nicht verfügbar. Um $ALEO zu setzen, scannen Sie bitte den QR-Code, um die FoxWallet-APP herunterzuladen."
   }
 }
