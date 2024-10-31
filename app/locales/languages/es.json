@@ -351,5 +351,10 @@
     "title": "Seleccionar token",
     "searchToken": "Token de búsqueda",
     "searchHint": "Search Token (símbolo, dirección)"
+  },
+  "Stake": {
+    "title": "Apostar",
+    "dialogTitle": "Descargar la aplicación",
+    "dialogContent": "La función de apuesta no está disponible en la billetera de extensión. Para apostar $ALEO, escanee el código QR para descargar la APLICACIÓN FoxWallet."
   }
 }

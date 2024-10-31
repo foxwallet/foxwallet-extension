@@ -351,5 +351,10 @@
     "title": "Wählen Sie Token",
     "searchToken": "Suche Token",
     "searchHint": "Suche Token (Symbol, Adresse)"
+  },
+  "Stake": {
+    "title": "Einsatz",
+    "dialogTitle": "APP herunterladen",
+    "dialogContent": "Die Absteckfunktion ist im Erweiterungs-Wallet nicht verfügbar. Um $ALEO zu setzen, scannen Sie bitte den QR-Code, um die FoxWallet-APP herunterzuladen."
   }
 }

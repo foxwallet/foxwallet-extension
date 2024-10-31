@@ -359,6 +359,12 @@
   },
   "Error": {
     "invalidPassword": "Invalid password",
-    "invalidAddress": "Invalid address"
+    "invalidAddress": "Invalid address",
+    "invalidPassword": "Invalid password"
+  },
+  "Stake": {
+    "title": "Stake",
+    "dialogTitle": "Download APP",
+    "dialogContent": "The staking feature is unavailable in the extension wallet. To stake $ALEO, please scan the QR code to download the FoxWallet APP."
   }
 }

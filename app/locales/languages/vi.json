@@ -351,5 +351,10 @@
     "title": "Chọn mã thông báo",
     "searchToken": "Tìm kiếm mã thông báo",
     "searchHint": "Mã thông báo tìm kiếm (Biểu tượng, địa chỉ)"
+  },
+  "Stake": {
+    "title": "cổ phần",
+    "dialogTitle": "Tải xuống ứng dụng",
+    "dialogContent": "Tính năng đặt cược không khả dụng trong ví mở rộng. Để đặt cọc $ALEO, vui lòng quét mã QR để tải xuống Ứng dụng FoxWallet."
   }
 }

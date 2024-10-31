@@ -351,5 +351,10 @@
     "title": "选择令牌",
     "searchToken": "搜索令牌",
     "searchHint": "搜索令牌（符号，地址）"
+  },
+  "Stake": {
+    "title": "质押",
+    "dialogTitle": "下载APP",
+    "dialogContent": "扩展钱包中不支持质押功能。质押$ALEO，请扫描二维码下载FoxWallet APP。"
   }
 }

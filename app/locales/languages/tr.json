@@ -351,5 +351,10 @@
     "title": "Token'i seçin",
     "searchToken": "Jeton Ara",
     "searchHint": "Ara jeton (sembol, adres)"
+  },
+  "Stake": {
+    "title": "Bahis",
+    "dialogTitle": "Uygulamayı İndir",
+    "dialogContent": "Staking özelliği uzatma cüzdanında mevcut değildir. $ALEO stake etmek için lütfen FoxWallet Uygulamasını indirmek üzere QR kodunu tarayın."
   }
 }

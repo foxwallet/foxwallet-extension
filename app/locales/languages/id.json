@@ -350,6 +350,11 @@
   "SelectToken": {
     "title": "Pilih token",
     "searchToken": "Token Cari",
-    "searchHint": "Token Cari (simbol, alamat)"
+    "searchHint": "Token Cari (simbol, alamat)",
+  },
+  "Stake": {
+    "title": "Mempertaruhkan",
+    "dialogTitle": "Unduh APLIKASI",
+    "dialogContent": "Fitur staking tidak tersedia di dompet ekstensi. Untuk mempertaruhkan $ALEO, silakan pindai kode QR untuk mengunduh APLIKASI FoxWallet."
   }
 }
