@@ -75,6 +75,9 @@ import UpgradeReminderDark from "@/common/assets/image/icon_upgrade_reminder_dar
 import AddCircle from "@/common/assets/image/icon_add_circle.svg";
 import RemoveCircle from "@/common/assets/image/icon_remove_circle.svg";
 import Search from "@/common/assets/image/icon_search_line.svg";
+import Contact from "@/common/assets/image/icon_contact.svg";
+import Network from "@/common/assets/image/icon_network.svg";
+import Connect from "@/common/assets/image/icon_connect.svg";
 
 const ThemeIconFill: (i: any) => ChakraComponent<any, any> =
   (icon: any) => (props: ChakraComponent<any, any>) => {
@@ -162,3 +165,6 @@ export const IconUpgradeReminderDark = chakra(UpgradeReminderDark);
 export const IconAddCircle = ThemeIconStroke(AddCircle);
 export const IconRemoveCircle = ThemeIconStroke(RemoveCircle);
 export const IconSearch = ThemeIconStroke(Search);
+export const IconContact = ThemeIconStroke(Contact);
+export const IconNetwork = ThemeIconStroke(Network);
+export const IconConnect = ThemeIconStroke(Connect);

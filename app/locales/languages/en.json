@@ -179,7 +179,10 @@
     "securityTips": "Security Tips",
     "settings": "Settings",
     "account": "Account",
-    "switchWallet": "Switch Wallet"
+    "switchWallet": "Switch Wallet",
+    "networks": "Networks",
+    "contacts": "Contacts",
+    "connectedSites": "Connected Sites"
   },
   "Me": {
     "title": "Me"

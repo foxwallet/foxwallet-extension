@@ -55,6 +55,11 @@ const ChangePassword = lazy(
   async () => await import("../pages/Me/ChangePassword"),
 );
 const WalletDetail = lazy(async () => await import("../pages/Me/WalletDetail"));
+const Contacts = lazy(async () => await import("../pages/Me/Contacts"));
+const ConnectedSites = lazy(
+  async () => await import("../pages/Me/ConnectedSites"),
+);
+const Networks = lazy(async () => await import("../pages/Me/Networks"));
 
 // Onboard
 const OnboardHome = lazy(
@@ -196,6 +201,18 @@ export const routesConfig: RouteObject[] = [
       {
         path: "select_token/:uniqueId/:address",
         element: <SelectToken />,
+      },
+      {
+        path: "contacts",
+        element: <Contacts />,
+      },
+      {
+        path: "connectedSites",
+        element: <ConnectedSites />,
+      },
+      {
+        path: "networks",
+        element: <Networks />,
       },
     ],
   },
