@@ -2,7 +2,7 @@ import { Flex, Image, TabPanel, Text } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { useCallback, useMemo } from "react";
 import { useAssetList } from "@/hooks/useAssetList";
-import { Token } from "core/coins/ALEO/types/Token";
+import { type Token } from "core/coins/ALEO/types/Token";
 import { TokenItemWithBalance } from "../TokenItem";
 import { serializeToken } from "@/common/utils/string";
 import { useGroupAccount } from "@/hooks/useGroupAccount";

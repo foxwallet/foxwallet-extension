@@ -1,4 +1,4 @@
-import { ChainUniqueId } from "core/types/ChainUniqueId";
+import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import { useCoinService } from "./useCoinService";
 import { useCallback, useEffect, useMemo } from "react";
 import { usePopupDispatch, usePopupSelector } from "./useStore";

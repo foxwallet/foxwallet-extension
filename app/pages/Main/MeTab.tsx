@@ -73,7 +73,7 @@ export const MeTab = () => {
   }, [navigate]);
 
   const onConnectedSites = useCallback(() => {
-    navigate("/connectedSites");
+    navigate("/connected_sites");
   }, [navigate]);
 
   const { borderColor } = useThemeStyle();

@@ -60,6 +60,7 @@ const ConnectedSites = lazy(
   async () => await import("../pages/Me/ConnectedSites"),
 );
 const Networks = lazy(async () => await import("../pages/Me/Networks"));
+const AddContact = lazy(async () => await import("../pages/Me/AddContact"));
 
 // Onboard
 const OnboardHome = lazy(
@@ -207,12 +208,16 @@ export const routesConfig: RouteObject[] = [
         element: <Contacts />,
       },
       {
-        path: "connectedSites",
+        path: "connected_sites",
         element: <ConnectedSites />,
       },
       {
         path: "networks",
         element: <Networks />,
+      },
+      {
+        path: "add_contact",
+        element: <AddContact />,
       },
     ],
   },
