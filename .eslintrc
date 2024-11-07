@@ -6,8 +6,8 @@
   "extends": [
     "plugin:react/recommended",
     "plugin:react/jsx-runtime",
-    "react-hooks",
-    "plugin:standard-with-typescript",
+    "plugin:react-hooks/recommended",
+    "standard-with-typescript",
     "plugin:prettier/recommended"
   ],
   "parserOptions": {
@@ -29,7 +29,13 @@
     "@typescript-eslint/prefer-readonly": 0,
     "@typescript-eslint/return-await": 0,
     "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": "warn"
+    "react-hooks/exhaustive-deps": "warn",
+    "@typescript-eslint/no-floating-promises": "off",
+    "@typescript-eslint/prefer-nullish-coalescing": "off",
+    "@typescript-eslint/no-misused-promises": "off",
+    "@typescript-eslint/no-confusing-void-expression": ["error", {
+      "ignoreArrowShorthand": true
+    }]
   },
   "settings": {
     "react": {

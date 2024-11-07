@@ -184,6 +184,16 @@
     "contacts": "Contacts",
     "connectedSites": "Connected Sites"
   },
+  "Contacts": {
+    "title": "Contacts",
+    "searchHint": "Search address",
+    "addContact": "Add Contact",
+    "editContact": "Edit Contact",
+    "contactInfo": "Contact Info",
+    "enterContactName": "Enter contact name",
+    "enterAddress": "Enter address",
+    "confirmCreate": "Confirm Create"
+  },
   "Me": {
     "title": "Me"
   },
