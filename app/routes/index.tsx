@@ -1,6 +1,6 @@
 import React, { lazy } from "react";
 import { Navigate, Outlet, type RouteObject } from "react-router-dom";
-import { CheckOnboard } from "../components/Onboard/CheckOnboard";
+import { CheckOnboard } from "@/components/Onboard/CheckOnboard";
 import { CheckAuth } from "@/components/Onboard/CheckAuth";
 import { CheckBrowserVersion } from "@/components/Onboard/CheckBrowserVersion";
 
@@ -60,7 +60,9 @@ const ConnectedSites = lazy(
   async () => await import("../pages/Me/ConnectedSites"),
 );
 const Networks = lazy(async () => await import("../pages/Me/Networks"));
-const AddContact = lazy(async () => await import("../pages/Me/AddContact"));
+const AddOrEditContact = lazy(
+  async () => await import("../pages/Me/AddOrEditContact"),
+);
 
 // Onboard
 const OnboardHome = lazy(
@@ -216,8 +218,8 @@ export const routesConfig: RouteObject[] = [
         element: <Networks />,
       },
       {
-        path: "add_contact",
-        element: <AddContact />,
+        path: "add_or_edit_contact/:addOrEdit",
+        element: <AddOrEditContact />,
       },
     ],
   },

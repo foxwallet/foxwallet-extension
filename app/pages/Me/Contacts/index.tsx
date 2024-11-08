@@ -56,7 +56,10 @@ const ContactsScreen = () => {
       <Content>
         <VStack spacing={4} justify={"center"} h={"70%"}>
           <IconEmptyTxPlaceholder />
-          <Button w={"full"} onClick={() => navigate("/add_contact")}>
+          <Button
+            w={"full"}
+            onClick={() => navigate(`/add_or_edit_contact/add`)}
+          >
             {t("Contacts:addContact")}
           </Button>
         </VStack>

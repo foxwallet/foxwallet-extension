@@ -4,7 +4,7 @@ import { Content } from "@/layouts/Content";
 import { PageWithHeader } from "@/layouts/Page";
 import { isEqual } from "lodash";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button, Flex, Text } from "@chakra-ui/react";
 import { BaseInput, BaseInputGroup } from "@/components/Custom/Input";
 import type React from "react";
@@ -14,22 +14,20 @@ import { useCoinBasic } from "@/hooks/useCoinService";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { IconChevronRight } from "@/components/Custom/Icon";
 import { showSelectNetworkDrawer } from "@/components/Me/SelectNetworkDrawer";
+import { useThemeStyle } from "@/hooks/useThemeStyle";
 
-interface AddContactProps {
-  paramAddress?: string;
-}
-
-const AddContactScreen = (props: AddContactProps) => {
-  const { paramAddress } = props;
+const AddOrEditContactScreen = () => {
+  const { addOrEdit } = useParams(); // "add" "edit"
   const { t } = useTranslation();
-  const navigate = useNavigate();
+  const isAdd = useMemo(() => addOrEdit === "add", [addOrEdit]);
+  const { deleteColor } = useThemeStyle();
 
   // 此处多链需要修改
   const uniqueId = InnerChainUniqueId.ALEO_MAINNET;
   const coinBasic = useCoinBasic(uniqueId);
 
   const [contactName, setContactName] = useState("");
-  const [address, setAddress] = useState(paramAddress ?? "");
+  const [address, setAddress] = useState("");
   const [debounceAddress] = useDebounce(address, 500);
 
   const onContactNameChange = useCallback(
@@ -68,6 +66,10 @@ const AddContactScreen = (props: AddContactProps) => {
     return true;
   }, [addressValid, contactName, debounceAddress]);
 
+  const onConfirm = useCallback(() => {}, []);
+
+  const onDelete = useCallback(() => {}, []);
+
   return (
     <PageWithHeader title={t("Contacts:addContact")}>
       <Content>
@@ -104,12 +106,22 @@ const AddContactScreen = (props: AddContactProps) => {
             <IconChevronRight w={4} h={4} mr={-1} />
           </Flex>
         )}
-        <Button mt={10} w={"full"} onClick={() => {}} isDisabled={!canSubmit}>
-          {t("Contacts:confirmCreate")}
+        <Button mt={10} w={"full"} onClick={onConfirm} isDisabled={!canSubmit}>
+          {isAdd ? t("Contacts:confirmCreate") : t("Contacts:confirmUpdate")}
         </Button>
+        {!isAdd && (
+          <Button
+            backgroundColor={deleteColor}
+            mt={5}
+            w={"full"}
+            onClick={onDelete}
+          >
+            {t("Contacts:remove")}
+          </Button>
+        )}
       </Content>
     </PageWithHeader>
   );
 };
 
-export default AddContactScreen;
+export default AddOrEditContactScreen;
