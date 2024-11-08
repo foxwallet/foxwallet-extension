@@ -192,7 +192,9 @@
     "contactInfo": "Contact Info",
     "enterContactName": "Enter contact name",
     "enterAddress": "Enter address",
-    "confirmCreate": "Confirm Create"
+    "confirmCreate": "Confirm Create",
+    "selectNetwork": "Select Network",
+    "networkName": "Network name"
   },
   "Me": {
     "title": "Me"

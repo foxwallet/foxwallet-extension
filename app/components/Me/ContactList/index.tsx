@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useCallback, useMemo } from "react";
 import { useAssetList } from "@/hooks/useAssetList";
 import { type Token } from "core/coins/ALEO/types/Token";
-import { TokenItemWithBalance } from "../TokenItem";
+import { TokenItemWithBalance } from "../../Wallet/TokenItem";
 import { serializeToken } from "@/common/utils/string";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { useChainMode } from "@/hooks/useChainMode";

@@ -32,8 +32,8 @@ import {
   BETA_STAKING_PROGRAM_ID,
   NATIVE_TOKEN_PROGRAM_ID,
 } from "core/coins/ALEO/constants";
-import { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
-import { Token } from "core/coins/ALEO/types/Token";
+import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
+import { type Token } from "core/coins/ALEO/types/Token";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { parseUnits } from "ethers/lib/utils";
