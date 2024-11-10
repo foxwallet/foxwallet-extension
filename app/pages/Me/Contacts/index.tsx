@@ -1,8 +1,5 @@
-import { useClient } from "@/hooks/useClient";
-import { usePopupSelector } from "@/hooks/useStore";
 import { Content } from "@/layouts/Content";
 import { PageWithHeader } from "@/layouts/Page";
-import { isEqual } from "lodash";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
@@ -14,22 +11,16 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { IconEmptyTxPlaceholder, IconSearch } from "@/components/Custom/Icon";
+import type React from "react";
 import { useCallback, useState } from "react";
 
 const ContactsScreen = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { currLanguage } = usePopupSelector(
-    (state) => ({
-      currLanguage: state.setting.language,
-      currCurrency: state.setting.currency,
-    }),
-    isEqual,
-  );
-  const { popupServerClient } = useClient();
+
   const [searchStr, setSearchStr] = useState("");
 
-  const onKeywordChange = useCallback(
+  const onInputChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const value = event.target.value.trim();
       setSearchStr(value);
@@ -47,7 +38,7 @@ const ContactsScreen = () => {
           alignSelf={"stretch"}
           bg={"gray.50"}
           value={searchStr}
-          onChange={onKeywordChange}
+          onChange={onInputChange}
           placeholder={t("Contacts:searchHint")}
           pl={10}
           py={2}

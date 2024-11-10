@@ -1,8 +1,5 @@
-import { useClient } from "@/hooks/useClient";
-import { usePopupSelector } from "@/hooks/useStore";
 import { Content } from "@/layouts/Content";
 import { PageWithHeader } from "@/layouts/Page";
-import { isEqual } from "lodash";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button, Flex, Text } from "@chakra-ui/react";

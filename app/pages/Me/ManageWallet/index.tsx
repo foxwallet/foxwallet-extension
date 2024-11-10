@@ -1,11 +1,13 @@
 import { PageWithHeader } from "@/layouts/Page";
 import { Box, Button, Flex, Text, useDisclosure } from "@chakra-ui/react";
-import { SyntheticEvent, useCallback } from "react";
+import { type SyntheticEvent } from "react";
+import type React from "react";
+import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCurrWallet, useWallets } from "@/hooks/useWallets";
 import {
-  DisplayGroupAccount,
-  DisplayWallet,
+  type DisplayGroupAccount,
+  type DisplayWallet,
 } from "@/scripts/background/store/vault/types/keyring";
 import { useTranslation } from "react-i18next";
 import {
