@@ -22,7 +22,7 @@ import { useThemeStyle } from "@/hooks/useThemeStyle";
 import { useWallets } from "@/hooks/useWallets";
 import { PageWithHeader } from "@/layouts/Page";
 import {
-  OneMatchGroupAccount,
+  type OneMatchGroupAccount,
   WalletType,
 } from "@/scripts/background/store/vault/types/keyring";
 import {

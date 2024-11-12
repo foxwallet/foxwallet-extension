@@ -184,6 +184,10 @@
     "contacts": "Contacts",
     "connectedSites": "Connected Sites"
   },
+  "Networks": {
+    "title": "Networks",
+    "searchHint": "Search networks"
+  },
   "Contacts": {
     "title": "Contacts",
     "searchHint": "Search address",
@@ -262,7 +266,8 @@
     "remind": "Remind",
     "account": "Account",
     "ok": "OK",
-    "wrongPassword": "Incorrect password"
+    "wrongPassword": "Incorrect password",
+    "noSearchResult": "No search result"
   },
   "Error": {
     "invalidPassword": "Invalid password"

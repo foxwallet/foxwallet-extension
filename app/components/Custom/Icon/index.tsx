@@ -1,5 +1,5 @@
 import {
-  ChakraComponent,
+  type ChakraComponent,
   chakra,
   useColorModeValue,
   useStyleConfig,
@@ -62,7 +62,7 @@ import Discord from "@/common/assets/image/icon_discord.svg";
 import Youtube from "@/common/assets/image/icon_youtube.svg";
 import Language from "@/common/assets/image/icon_language.svg";
 import Currency from "@/common/assets/image/icon_currency.svg";
-import Info from "@/common/assets/image/icon_info.svg";
+import About from "@/common/assets/image/icon_about.svg";
 import Web from "@/common/assets/image/icon_web.svg";
 import MeSelected from "@/common/assets/image/icon_me_selected.svg";
 import MeUnselected from "@/common/assets/image/icon_me_unselected.svg";
@@ -78,6 +78,9 @@ import Search from "@/common/assets/image/icon_search_line.svg";
 import Contact from "@/common/assets/image/icon_contact.svg";
 import Network from "@/common/assets/image/icon_network.svg";
 import Connect from "@/common/assets/image/icon_connect.svg";
+import Info from "@/common/assets/image/icon_info.svg";
+import CheckboxSelected from "@/common/assets/image/icon_checkbox_selected.svg";
+import CheckboxUnselected from "@/common/assets/image/icon_checkbox_unselected.svg";
 
 const ThemeIconFill: (i: any) => ChakraComponent<any, any> =
   (icon: any) => (props: ChakraComponent<any, any>) => {
@@ -154,7 +157,7 @@ export const IconDiscord = ThemeIconFill(Discord);
 export const IconYoutube = ThemeIconFill(Youtube);
 export const IconLanguage = ThemeIconFill(Language);
 export const IconCurrency = chakra(Currency);
-export const IconInfo = ThemeIconFill(Info);
+export const IconAbout = ThemeIconFill(About);
 export const IconWeb = chakra(Web);
 export const IconMeSelected = ThemeIconFill(MeSelected);
 export const IconMeUnselected = ThemeIconFill(MeUnselected);
@@ -168,3 +171,6 @@ export const IconSearch = ThemeIconStroke(Search);
 export const IconContact = ThemeIconStroke(Contact);
 export const IconNetwork = ThemeIconStroke(Network);
 export const IconConnect = ThemeIconStroke(Connect);
+export const IconInfo = ThemeIconStroke(Info);
+export const IconCheckboxSelected = ThemeIconStroke(CheckboxSelected);
+export const IconCheckboxUnselected = ThemeIconStroke(CheckboxUnselected);

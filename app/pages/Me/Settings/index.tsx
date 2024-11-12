@@ -2,7 +2,7 @@ import {
   IconChevronDown,
   IconCurrency,
   IconEdit,
-  IconInfo,
+  IconAbout,
   IconLanguage,
   IconReset,
 } from "@/components/Custom/Icon";
@@ -87,7 +87,7 @@ const SettingsScreen = () => {
         />
         <SettingItem
           title={t("About:title")}
-          icon={<IconInfo w={4} h={4} />}
+          icon={<IconAbout w={4} h={4} />}
           onPress={onAbout}
         />
         <Button onClick={() => navigate("/manage_wallet")}>
