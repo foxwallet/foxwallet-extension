@@ -54,6 +54,7 @@
     "ethereumjs-util": "^7.1.5",
     "ethers": "^5.7.0",
     "framer-motion": "^10.16.4",
+    "fuse.js": "6.5.3",
     "gas-price-oracle": "^0.5.2",
     "i18next": "^23.4.9",
     "localforage": "^1.10.0",
