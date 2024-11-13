@@ -29,7 +29,7 @@
     "@typescript-eslint/prefer-readonly": 0,
     "@typescript-eslint/return-await": 0,
     "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": "warn",
+    "react-hooks/exhaustive-deps": "error",
     "@typescript-eslint/no-floating-promises": "off",
     "@typescript-eslint/prefer-nullish-coalescing": "off",
     "@typescript-eslint/no-misused-promises": "off",

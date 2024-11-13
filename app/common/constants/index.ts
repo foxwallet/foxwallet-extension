@@ -33,3 +33,5 @@ export const EXTENSION_STORE_URL =
   "https://chromewebstore.google.com/detail/foxwallet/";
 
 export const CHROME_MIN_VERSION = "120";
+
+export const SEARCH_ITEM_NUM = 10;

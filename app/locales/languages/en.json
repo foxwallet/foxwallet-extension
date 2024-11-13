@@ -202,6 +202,10 @@
     "networkName": "Network name",
     "remove": "Remove"
   },
+  "SelectToken": {
+    "title": "Select Token",
+    "searchToken": "Search token"
+  },
   "Me": {
     "title": "Me"
   },

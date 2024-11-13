@@ -13,7 +13,7 @@ export const EmptyView = ({
     return null;
   }
   return (
-    <VStack spacing={4} justify={"center"} h={"70%"}>
+    <VStack spacing={4} justify={"center"}>
       <IconEmptyTxPlaceholder />
       {text && <Text>{text}</Text>}
     </VStack>
