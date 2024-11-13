@@ -172,7 +172,7 @@ const WalletDetailScreen = () => {
       wallet: restWallet,
       group: a,
     }));
-  }, [walletInfo?.groupAccounts, walletId]);
+  }, [walletInfo]);
 
   const onAddAccount = useCallback(() => {
     void addAccount(walletId || "", nanoid());

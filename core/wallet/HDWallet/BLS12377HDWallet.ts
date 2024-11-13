@@ -19,7 +19,7 @@ export class BLS12377HDWallet<T extends CoinType> implements BaseHDWallet<T> {
   private readonly coinRoot: BLS12377HDKey;
   private readonly symbol: T;
 
-  constructor(symbol: T, hdWallet: HDKey[T]) {
+  constructor(symbol: T, hdWallet: BLS12377HDKey) {
     this.symbol = symbol;
     this.coinRootPath = getCoinDerivation(symbol).path[0];
     this.coinRoot = hdWallet.derive(this.coinRootPath);

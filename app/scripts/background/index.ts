@@ -97,3 +97,5 @@ checkVersion().finally(() => {
 });
 
 startCheckSyncing();
+
+export {keyringManager}

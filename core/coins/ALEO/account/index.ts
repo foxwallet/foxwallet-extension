@@ -13,17 +13,6 @@ class AleoBasic extends CoinBasic<CoinType.ALEO> {
     void init();
   }
 
-  public isValidAddress(address: string): boolean {
-    try {
-      const addressObj = Address.from_string(address);
-      console.log("===> addressObj: ", addressObj, !!addressObj);
-      return !!addressObj;
-    } catch (err) {
-      logger.log("===> isValidAddress failed: ", err, address);
-      return false;
-    }
-  }
-
   public isValidPrivateKey(
     privateKey: string,
     pkType: AleoImportPKType,

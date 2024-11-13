@@ -14,6 +14,7 @@ import { appStorageInstance } from "../common/utils/indexeddb";
 // import { isDev } from "../common/utils/env";
 import { logger } from "../common/utils/logger";
 import { migrations, version } from "./migrations";
+import { devToolsEnhancer, composeWithDevTools } from "@redux-devtools/remote";
 
 type FullModel = ExtraModelsFromLoading<RootModel>;
 
@@ -43,7 +44,30 @@ export const store = init<RootModel, FullModel>({
     selectPlugin(),
   ],
   models,
-  redux: {},
+  redux: {
+    // devtoolComposer: composeWithDevTools({
+    //   name: "Redux",
+    //   hostname: "localhost",
+    //   realtime: true,
+    //   port: 8000,
+    // }),
+    // devtoolComposer: [
+    //   composeWithDevTools(
+    //     devToolsEnhancer({
+    //       name: "Redux",
+    //       hostname: "localhost",
+    //       port: 8000,
+    //       realtime: true,
+    //     }),
+    //   ),
+    // ],
+    devtoolComposer: composeWithDevTools({
+      name: "Redux",
+      hostname: "localhost",
+      port: 8000,
+      realtime: true,
+    }),
+  },
 });
 
 export type Store = typeof store;

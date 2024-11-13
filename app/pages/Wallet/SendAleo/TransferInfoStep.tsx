@@ -81,6 +81,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
   const uniqueId = InnerChainUniqueId.ALEO_MAINNET;
 
   const coinBasic = useCoinBasic(uniqueId);
+  const { coinService } = useCoinService(uniqueId);
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -154,10 +155,10 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
   );
   useEffect(() => {
     if (debounceReceiverAddress) {
-      const valid = coinBasic.isValidAddress(debounceReceiverAddress);
+      const valid = coinService.validateAddress(debounceReceiverAddress);
       setAddressValid(valid);
     }
-  }, [debounceReceiverAddress, coinBasic]);
+  }, [debounceReceiverAddress, coinService]);
 
   // Transfer method
   const isPrivateMethod = useMemo(() => {

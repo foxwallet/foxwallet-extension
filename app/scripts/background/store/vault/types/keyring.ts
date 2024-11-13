@@ -1,7 +1,7 @@
 import {
   CoinType,
   EncryptedKeyPairWithViewKey,
-  EncryptedField,
+  EncryptedField, EncryptedKeyPairWithPublicKey,
 } from "core/types";
 
 export interface Cipher {
@@ -18,7 +18,11 @@ export type AccountWithViewKey = EncryptedKeyPairWithViewKey & {
   accountName: string;
 };
 
-export type ComposedAccount = AccountWithViewKey;
+export type AccountWithPublicKey = EncryptedKeyPairWithPublicKey & {
+  accountName: string;
+};
+
+export type ComposedAccount = AccountWithViewKey | AccountWithPublicKey;
 
 export type DisplayComposedAccount = Omit<
   ComposedAccount,

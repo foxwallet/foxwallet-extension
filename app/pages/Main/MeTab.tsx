@@ -20,6 +20,7 @@ import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import browser from "webextension-polyfill";
+import { usePopupSelector } from "@/hooks/useStore";
 
 export const MeTab = () => {
   const navigate = useNavigate();
@@ -49,7 +50,13 @@ export const MeTab = () => {
     navigate("/community");
   }, [navigate]);
 
+  // TODO local
+  const state = usePopupSelector((state) => state);
   const onSecurityTips = useCallback(() => {
+    console.log(state);
+  }, [state]);
+
+  const onSecurityTips1 = useCallback(() => {
     const url =
       i18next.resolvedLanguage === "zh"
         ? `${HELP_CENTER_URL}/zh/docs/security-tips`

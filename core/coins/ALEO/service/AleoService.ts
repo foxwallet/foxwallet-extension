@@ -119,6 +119,17 @@ export class AleoService {
     }
   }
 
+  validateAddress(address: string): boolean {
+    try {
+      const addressObj = Address.from_string(address);
+      console.log("===> addressObj: ", addressObj, !!addressObj);
+      return !!addressObj;
+    } catch (err) {
+      logger.log("===> isValidAddress failed: ", err, address);
+      return false;
+    }
+  }
+
   private async getSpentTagsInRange(tags: string[]) {
     return await this.apiService.getSpentTags(tags);
   }

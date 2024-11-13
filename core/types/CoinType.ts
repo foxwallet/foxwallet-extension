@@ -1,5 +1,9 @@
+export enum CoinTypeV1 {
+  ALEO = "ALEO",
+}
+
 export enum CoinType {
-  // ETH = "ETH",
+  ETH = "ETH",
   ALEO = "ALEO",
 }
 

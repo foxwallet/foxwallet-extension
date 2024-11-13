@@ -231,6 +231,8 @@ export const accountV2 = createModel<RootModel>()({
           clients.popupServerClient.getAllWallet(),
           clients.popupServerClient.getSelectedGroupAccount(),
         ]);
+        console.log("resyncAllWalletsToStore", wallets);
+        console.log("resyncAllWalletsToStore", selectedGroupAccount);
         if (!wallets) return;
         const hdWallets = wallets[WalletType.HD] ?? [];
         const simpleWallets = wallets[WalletType.SIMPLE] ?? [];
@@ -238,6 +240,7 @@ export const accountV2 = createModel<RootModel>()({
         dispatch.accountV2._setAllWalletInfo({ walletList });
 
         if (!selectedGroupAccount) return;
+        console.log("resyncAllWalletsToStore===", selectedGroupAccount);
         dispatch.accountV2._setSelectedGroupAccount({
           groupAccount: selectedGroupAccount,
         });
