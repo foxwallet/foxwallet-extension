@@ -32,8 +32,8 @@ import {
   BETA_STAKING_PROGRAM_ID,
   NATIVE_TOKEN_PROGRAM_ID,
 } from "core/coins/ALEO/constants";
-import { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
-import { Token } from "core/coins/ALEO/types/Token";
+import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
+import { type Token } from "core/coins/ALEO/types/Token";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { parseUnits } from "ethers/lib/utils";
@@ -128,7 +128,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
         return records;
       }
       default: {
-        console.error("Unsupport programId " + tokenInfo.programId);
+        console.error(`Unsupport programId ${tokenInfo.programId}`);
         return [];
       }
     }
@@ -209,7 +209,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
 
   // transfer record
   const currTransferRecord: RecordDetailWithSpent | undefined =
-    selectedTransferRecord || tokenRecords[0];
+    selectedTransferRecord ?? tokenRecords[0];
 
   const recordAmount = useMemo(() => {
     switch (tokenInfo.programId) {
@@ -223,7 +223,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
         return currTransferRecord?.parsedContent?.amount;
       }
       default: {
-        console.error("Unsupport programId " + tokenInfo.programId);
+        console.error(`Unsupport programId ${tokenInfo.programId}`);
       }
     }
   }, [tokenInfo, currTransferRecord]);
@@ -375,7 +375,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
           <Flex align={"center"}>
             <TokenItem
               token={tokenInfo}
-              onClick={() =>
+              onClick={() => {
                 navigate(
                   `/select_token/${uniqueId}/${
                     selectedAccount.account.address
@@ -383,8 +383,8 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
                   {
                     replace: true,
                   },
-                )
-              }
+                );
+              }}
               hideId
               style={{ pr: 1 }}
             />
@@ -477,7 +477,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
       />
       <Flex align={"center"} mt={2} position={"relative"}>
         {isPrivateMethod ? (
-          !!currTransferRecord ? (
+          currTransferRecord ? (
             <Flex flex={1}>
               {showPrivateHint && (
                 <Flex
@@ -502,8 +502,12 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
                 </Flex>
               )}
               <Box
-                onMouseEnter={() => setShowPrivateHint(true)}
-                onMouseLeave={() => setShowPrivateHint(false)}
+                onMouseEnter={() => {
+                  setShowPrivateHint(true);
+                }}
+                onMouseLeave={() => {
+                  setShowPrivateHint(false);
+                }}
               >
                 <IconQuestionCircle mr={1} />
               </Box>

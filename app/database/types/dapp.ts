@@ -1,6 +1,6 @@
-import { SiteInfo } from "@/scripts/content/host";
-import { ContentServerMethod } from "@/scripts/background/servers/IWalletServer";
-import { CoinType } from "core/types";
+import { type SiteInfo } from "@/scripts/content/host";
+import { type ContentServerMethod } from "@/scripts/background/servers/IWalletServer";
+import { type CoinType } from "core/types";
 
 export interface DappRequest {
   id: string;

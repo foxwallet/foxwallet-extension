@@ -1,9 +1,9 @@
-import { ChainUniqueId } from "core/types/ChainUniqueId";
-import { AleoConfig } from "./ALEO/types/AleoConfig";
+import { type ChainUniqueId } from "core/types/ChainUniqueId";
+import { type AleoConfig } from "./ALEO/types/AleoConfig";
 import { AleoService } from "./ALEO/service/AleoService";
 import { CoinType } from "core/types";
 import { AleoStorage } from "@/scripts/background/store/aleo/AleoStorage";
-import { ChainBaseConfig } from "core/types/ChainBaseConfig";
+import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
 
 export type CoinService = AleoService;
 

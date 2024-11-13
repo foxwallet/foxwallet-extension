@@ -2,12 +2,12 @@ import { createModel } from "@rematch/core";
 import { type RootModel } from "./index";
 import {
   WalletType,
-  DisplayWallet,
-  OneMatchGroupAccount,
+  type DisplayWallet,
+  type OneMatchGroupAccount,
 } from "@/scripts/background/store/vault/types/keyring";
 import { CoinType } from "core/types";
 import { getClients } from "@/hooks/useClient";
-import { ChainUniqueId } from "core/types/ChainUniqueId";
+import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import {
   chainUniqueIdToAccountOptions,
   chainUniqueIdToCoinType,
@@ -102,7 +102,7 @@ export const accountV2 = createModel<RootModel>()({
 
       const allWalletInfo: WalletInfoMap = {};
 
-      walletList.map((wallet) => {
+      walletList.forEach((wallet) => {
         const { mnemonic, ...restInfo } = wallet;
 
         if (oldAllWalletIds.includes(wallet.walletId)) {
@@ -256,7 +256,7 @@ export const accountV2 = createModel<RootModel>()({
       const hdWallets = wallets[WalletType.HD] ?? [];
       const simpleWallets = wallets[WalletType.SIMPLE] ?? [];
       const walletList = [...hdWallets, ...simpleWallets];
-      dispatch.accountV2._setAllWalletInfo({ walletList: walletList });
+      dispatch.accountV2._setAllWalletInfo({ walletList });
       return [...walletList];
     },
   }),

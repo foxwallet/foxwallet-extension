@@ -1,5 +1,5 @@
-import { Input } from "./AleoInput";
-import { Output } from "./AleoOutput";
+import { type Input } from "./AleoInput";
+import { type Output } from "./AleoOutput";
 
 export type Transition = {
   id: string;

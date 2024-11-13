@@ -138,7 +138,7 @@ export const CURRENCY = {
   },
 };
 
-export const COUNTRY_CURRENCY: { [key: string]: SupportCurrency } = {
+export const COUNTRY_CURRENCY: Record<string, SupportCurrency> = {
   US: SupportCurrency.USD,
   AU: SupportCurrency.AUD,
   CA: SupportCurrency.CAD,

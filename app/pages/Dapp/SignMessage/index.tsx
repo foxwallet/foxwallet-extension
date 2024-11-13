@@ -53,7 +53,7 @@ function SignMessageScreen() {
 
   const onConfirm = useCallback(() => {
     if (requestId && selectedAccount?.account.address) {
-      popupServerClient.onRequestFinish({
+      void popupServerClient.onRequestFinish({
         requestId,
       });
     }
@@ -61,7 +61,7 @@ function SignMessageScreen() {
 
   const onCancel = useCallback(() => {
     if (requestId) {
-      popupServerClient.onRequestFinish({
+      void popupServerClient.onRequestFinish({
         requestId,
         error: ERROR_CODE.USER_CANCEL,
       });

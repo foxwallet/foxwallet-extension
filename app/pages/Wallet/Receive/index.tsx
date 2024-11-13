@@ -8,7 +8,6 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import { QRCodeSVG } from "qrcode.react";
-// @ts-ignore
 import WALLET_LOGO from "@/common/assets/image/logo.png";
 import { Content } from "@/layouts/Content";
 import { HeaderLeftIconType } from "@/components/Custom/Header";

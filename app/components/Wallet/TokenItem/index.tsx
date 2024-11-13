@@ -1,12 +1,12 @@
-import { ChakraProps, Flex, Image, Text } from "@chakra-ui/react";
+import { type ChakraProps, Flex, Image, Text } from "@chakra-ui/react";
 import { TokenNum } from "../TokenNum";
 import { useBalance } from "@/hooks/useBalance";
 import { useNavigate } from "react-router-dom";
 import { useCallback } from "react";
 import { usePopupSelector } from "@/hooks/useStore";
 import Hover from "@/components/Custom/Hover";
-import { Token } from "core/coins/ALEO/types/Token";
-import { ChainUniqueId } from "core/types/ChainUniqueId";
+import { type Token } from "core/coins/ALEO/types/Token";
+import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import {
   BETA_STAKING_PROGRAM_ID,
   NATIVE_TOKEN_PROGRAM_ID,

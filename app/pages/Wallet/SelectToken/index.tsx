@@ -9,8 +9,8 @@ import { useAssetList } from "@/hooks/useAssetList";
 import { useLocationParams } from "@/hooks/useLocationParams";
 import { PageWithHeader } from "@/layouts/Page";
 import { Flex } from "@chakra-ui/react";
-import { Token } from "core/coins/ALEO/types/Token";
-import { InnerChainUniqueId } from "core/types/ChainUniqueId";
+import { type Token } from "core/coins/ALEO/types/Token";
+import { type InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -46,7 +46,7 @@ const SelectTokenScreen = () => {
       title={t("SelectToken:title")}
       enableBack
       onBack={() => {
-        navigate(`/${nextPage}?token=${currToken}`);
+        navigate(`/${nextPage}?token=${currToken?.tokenId}`);
         return false;
       }}
     >

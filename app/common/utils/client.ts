@@ -1,4 +1,4 @@
-import { InnerChainUniqueId } from "core/types/ChainUniqueId";
+import { type InnerChainUniqueId } from "core/types/ChainUniqueId";
 import {
   type PopupServerMethod,
   type IPopupServer,
@@ -6,22 +6,22 @@ import {
   type RegenerateWalletProps,
   type ImportHDWalletProps,
   type AddAccountProps,
-  AleoSendTxProps,
-  GetSelectedAccountProps,
-  SetSelectedAccountProps,
-  RequestFinfishProps,
-  GetSelectedUniqueIdProps,
-  SetSelectedUniqueIdProps,
+  type AleoSendTxProps,
+  type GetSelectedAccountProps,
+  type SetSelectedAccountProps,
+  type RequestFinfishProps,
+  type GetSelectedUniqueIdProps,
+  type SetSelectedUniqueIdProps,
   ResyncAleoProps,
-  ImportPrivateKeyProps,
-  GetPrivateKeyProps,
-  ChangeAccountStateProps,
-  PopupSignMessageProps,
+  type ImportPrivateKeyProps,
+  type GetPrivateKeyProps,
+  type ChangeAccountStateProps,
+  type PopupSignMessageProps,
 } from "../../scripts/background/servers/IWalletServer";
 import {
   type DisplayWallet,
   type DisplayKeyring,
-  OneMatchGroupAccount,
+  type OneMatchGroupAccount,
 } from "../../scripts/background/store/vault/types/keyring";
 import { KEEP_ALIVE_INTERVAL } from "../constants";
 import {
@@ -34,7 +34,7 @@ import { PortName } from "../types/port";
 import { logger } from "./logger";
 import { type IPort, Port } from "./port";
 import { nanoid } from "nanoid";
-import { CoinType } from "core/types";
+import { type CoinType } from "core/types";
 
 export interface IClient {
   _connect: () => void;
@@ -134,11 +134,11 @@ export class PopupServerClient implements IClient, IPopupServer {
   }
 
   async lock(): Promise<void> {
-    return await this.#send("lock", {});
+    await this.#send("lock", {});
   }
 
   async timeoutLock(): Promise<void> {
-    return await this.#send("timeoutLock", {});
+    await this.#send("timeoutLock", {});
   }
 
   async createWallet(params: CreateWalletProps): Promise<DisplayWallet> {
@@ -194,7 +194,7 @@ export class PopupServerClient implements IClient, IPopupServer {
   }
 
   async sendAleoTransaction(params: AleoSendTxProps): Promise<void> {
-    return await this.#send("sendAleoTransaction", params);
+    await this.#send("sendAleoTransaction", params);
   }
 
   async isSendingAleoTransaction(): Promise<boolean> {
@@ -206,7 +206,7 @@ export class PopupServerClient implements IClient, IPopupServer {
   }
 
   async onRequestFinish(params: RequestFinfishProps): Promise<void> {
-    return await this.#send("onRequestFinish", params);
+    await this.#send("onRequestFinish", params);
   }
 
   async getHDMnemonic(walletId: string): Promise<string> {
@@ -226,7 +226,7 @@ export class PopupServerClient implements IClient, IPopupServer {
   }
 
   async #send<T, R>(method: PopupServerMethod, payload: T): Promise<R> {
-    return await new Promise<R>((resolve, reject) => {
+    return new Promise<R>((resolve, reject) => {
       const id = nanoid();
       const message: ServerMessage = {
         type: MessageType.REQUEST,

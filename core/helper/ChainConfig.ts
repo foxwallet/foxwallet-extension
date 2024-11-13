@@ -1,6 +1,6 @@
 import { CoinType } from "core/types";
-import { ChainBaseConfig } from "core/types/ChainBaseConfig";
-import { ChainUniqueId } from "core/types/ChainUniqueId";
+import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
+import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import { chainUniqueIdToCoinType } from "./CoinType";
 import { INNER_ALEO_CONFIG } from "core/coins/ALEO/config/chains";
 

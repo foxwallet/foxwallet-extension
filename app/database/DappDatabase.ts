@@ -1,5 +1,5 @@
 import Dexie from "dexie";
-import { AleoConnectHistory, DappRequest } from "./types/dapp";
+import { type AleoConnectHistory, type DappRequest } from "./types/dapp";
 
 export class DappDatabase extends Dexie {
   aleo_history: Dexie.Table<AleoConnectHistory, string>;

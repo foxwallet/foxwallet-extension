@@ -1,5 +1,5 @@
 import React, { type PropsWithChildren } from "react";
-import { Flex, FlexProps } from "@chakra-ui/react";
+import { Flex, type FlexProps } from "@chakra-ui/react";
 
 export const Body = (props: PropsWithChildren & FlexProps) => {
   const { children, ...rest } = props;

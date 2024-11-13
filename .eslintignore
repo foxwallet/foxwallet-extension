@@ -5,3 +5,5 @@
 **/scripts/
 manifest.ts
 vite.config.ts
+public/injector.js
+app/common/types/vite.ts

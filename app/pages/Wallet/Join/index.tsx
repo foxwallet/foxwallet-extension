@@ -3,13 +3,13 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useRecords } from "@/hooks/useRecord";
 import { useCoinService } from "@/hooks/useCoinService";
-import { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
+import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 import { JoinStep } from "./JoinStep";
 import { useDataRef } from "@/hooks/useDataRef";
-import { AleoGasFee } from "core/types/GasFee";
+import { type AleoGasFee } from "core/types/GasFee";
 import { nanoid } from "nanoid";
 import {
-  AleoLocalTxInfo,
+  type AleoLocalTxInfo,
   AleoTxStatus,
 } from "core/coins/ALEO/types/Transaction";
 import { useClient } from "@/hooks/useClient";
@@ -79,7 +79,7 @@ function JoinScreen() {
           inputs,
           baseFee: gasFee.baseFee.toString(),
           priorityFee: gasFee.priorityFee.toString(),
-          feeRecord: feeRecord?.plaintext || null,
+          feeRecord: feeRecord?.plaintext ?? null,
           status: AleoTxStatus.QUEUED,
           timestamp,
           amount: amount.toString(),
@@ -94,7 +94,7 @@ function JoinScreen() {
             walletId: selectedAccount.wallet.walletId,
             accountId: selectedAccount.account.accountId,
             coinType: chainConfig.coinType,
-            address: address,
+            address,
             localId,
             chainId: chainConfig.chainId,
             programId: nativeCurrency.address,
@@ -114,7 +114,7 @@ function JoinScreen() {
           });
         navigate(-1);
       } catch (err) {
-        showErrorToast({ message: (err as Error).message });
+        void showErrorToast({ message: (err as Error).message });
       } finally {
         setSubmitting(false);
       }

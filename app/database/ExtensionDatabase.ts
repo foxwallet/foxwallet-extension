@@ -1,5 +1,5 @@
 import Dexie from "dexie";
-import { ExtensionVersion } from "./types/version";
+import { type ExtensionVersion } from "./types/version";
 
 export class ExtensionInfoDatabase extends Dexie {
   info: Dexie.Table<ExtensionVersion, string>;
@@ -21,7 +21,7 @@ export class ExtensionInfoDatabase extends Dexie {
 
   async setVersion(version: string): Promise<string> {
     await this.info.clear();
-    await this.info.add({ version: version });
+    await this.info.add({ version });
     return version;
   }
 }

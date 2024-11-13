@@ -14,7 +14,7 @@ import {
 import {
   Box,
   Flex,
-  FlexProps,
+  type FlexProps,
   Spinner,
   Text,
   keyframes,
@@ -103,7 +103,7 @@ export const AccountInfoHeader = () => {
         switch (status?.status) {
           case FaucetStatus.UNREADY: {
             if (chainConfig.faucetApi) {
-              Browser.tabs.create({ url: chainConfig.faucetApi });
+              void Browser.tabs.create({ url: chainConfig.faucetApi });
             }
             break;
           }
@@ -113,7 +113,7 @@ export const AccountInfoHeader = () => {
             const { rawMessage, displayMessage } =
               await coinService.faucetMessage(address);
             const { confirmed } = await showSignMessageDialog({
-              address: address,
+              address,
               message: displayMessage,
             });
             if (confirmed) {
@@ -150,7 +150,7 @@ export const AccountInfoHeader = () => {
                   : ExplorerLanguages.EN;
               const url = coinService.getTxDetailUrl(status.txId, lang);
               if (url) {
-                Browser.tabs.create({ url });
+                void Browser.tabs.create({ url });
               }
             }
             break;
@@ -199,10 +199,10 @@ export const AccountInfoHeader = () => {
         //   await getFaucetStatus();
         // }
       } else if (chainConfig.faucetApi) {
-        Browser.tabs.create({ url: chainConfig.faucetApi });
+        void Browser.tabs.create({ url: chainConfig.faucetApi });
       }
     } catch (err) {
-      showErrorToast({ message: (err as Error).message });
+      void showErrorToast({ message: (err as Error).message });
     } finally {
       setRequestingFaucet(false);
     }
@@ -221,18 +221,22 @@ export const AccountInfoHeader = () => {
       {
         title: t("Receive:title"),
         icon: <IconReceive w={9} h={9} />,
-        onPress: () => navigate("/receive"),
+        onPress: () => {
+          navigate("/receive");
+        },
       },
       {
         title: t("Send:title"),
         icon: <IconSend w={9} h={9} />,
-        disabled: sendingAleoTx || balance === undefined,
-        onPress: () => navigate("/send_aleo"),
+        disabled: sendingAleoTx ?? balance === undefined,
+        onPress: () => {
+          navigate("/send_aleo");
+        },
       },
       {
         title: t("JoinSplit:title"),
         icon: <IconJoinSplit w={9} h={9} />,
-        disabled: sendingAleoTx || balance === undefined,
+        disabled: sendingAleoTx ?? balance === undefined,
         onPress: async () => {
           const { confirmed, data } = await showSelectJoinSplitDialog();
           if (confirmed && data) {
@@ -266,8 +270,10 @@ export const AccountInfoHeader = () => {
   ]);
 
   const onChangeWallet = useCallback(() => {
-    showWalletsDrawer({
-      onManageWallet: () => navigate("/manage_wallet"),
+    void showWalletsDrawer({
+      onManageWallet: () => {
+        navigate("/manage_wallet");
+      },
     });
   }, [showWalletsDrawer, navigate]);
 
@@ -324,7 +330,7 @@ export const AccountInfoHeader = () => {
             justify={"center"}
             borderColor={selectedBorderColor}
             cursor={"pointer"}
-            onClick={() => lock()}
+            onClick={async () => lock()}
           >
             <IconLock w={5} h={5} />
           </Flex>
@@ -385,7 +391,9 @@ export const AccountInfoHeader = () => {
           align={"center"}
           mt={2}
           mx={6}
-          onClick={() => navigate(`/token_detail/${uniqueId}`)}
+          onClick={() => {
+            navigate(`/token_detail/${uniqueId}`);
+          }}
         >
           <IconLoading
             w={4}
@@ -408,7 +416,7 @@ interface ActionButtonProps {
   icon: any;
   disabled?: boolean;
   isLoading?: boolean;
-  onPress: () => void;
+  onPress: () => void | Promise<void>;
 }
 const ActionButton = ({
   title,

@@ -110,7 +110,7 @@ export class HDKeyring {
         },
       );
     }
-    return this.coinWallets[symbol]! as BaseHDWallet<T>;
+    return this.coinWallets[symbol] as BaseHDWallet<T>;
   }
 
   public async derive<T extends CoinType>(

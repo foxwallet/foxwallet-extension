@@ -26,7 +26,7 @@ const ExportPrivateKeyScreen = () => {
   }, [popupServerClient.getPrivateKey, walletId, accountId]);
 
   useEffect(() => {
-    fetchPrivateKey();
+    void fetchPrivateKey();
   }, [fetchPrivateKey]);
 
   const tips = useMemo(() => {
@@ -56,7 +56,12 @@ const ExportPrivateKeyScreen = () => {
             </Flex>
           ))}
         </Flex>
-        <Button mt={20} onClick={() => navigate(-1)}>
+        <Button
+          mt={20}
+          onClick={() => {
+            navigate(-1);
+          }}
+        >
           {t("Common:confirm")}
         </Button>
       </Content>

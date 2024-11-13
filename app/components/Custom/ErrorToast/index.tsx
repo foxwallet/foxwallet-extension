@@ -11,7 +11,7 @@ import {
   ModalOverlay,
   useDisclosure,
   Text,
-  TextProps,
+  type TextProps,
   ModalProps,
   useToast,
   VStack,
@@ -47,7 +47,7 @@ export function MessageToast(props: MessageToastProps & ToastProps) {
           alignItems={"center"}
         >
           <Flex bgColor={"red.50"} px={4} py={3} borderRadius={"lg"}>
-            {messageNode || (
+            {messageNode ?? (
               <Text color={"red.500"} {...messageStyle}>
                 {message.length > 30 ? message.slice(0, 30) + "..." : message}
               </Text>
@@ -64,11 +64,11 @@ function MessageToastWrapper(
 ) {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const duration = props.duration || 3000;
+  const duration = props.duration ?? 3000;
 
   useEffect(() => {
     onOpen();
-    let timer = setTimeout(() => {
+    const timer = setTimeout(() => {
       onClose();
       props.onDismiss();
     }, duration);
@@ -85,8 +85,8 @@ export function promisifyMessageToastWrapper() {
   return async (props: MessageToastProps) => {
     const id = Date.now();
 
-    return await new Promise<void>((resolve, reject) => {
-      const onDismiss = async () => {
+    await new Promise<void>((resolve, reject) => {
+      const onDismiss = () => {
         resolve();
       };
       popupEvents.emit(

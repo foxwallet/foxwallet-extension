@@ -1,7 +1,7 @@
 import {
-  ALPHA_TOKEN_PROGRAM_ID,
-  BETA_STAKING_PROGRAM_ID,
-  NATIVE_TOKEN_PROGRAM_ID,
+  type ALPHA_TOKEN_PROGRAM_ID,
+  type BETA_STAKING_PROGRAM_ID,
+  type NATIVE_TOKEN_PROGRAM_ID,
 } from "../constants";
 
 export type InnerProgramId =

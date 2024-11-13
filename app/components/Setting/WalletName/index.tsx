@@ -1,5 +1,6 @@
 import { Button, Flex } from "@chakra-ui/react";
-import React, { useCallback, useMemo, useState } from "react";
+import type React from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Content } from "../../../layouts/Content";
 import { BaseInputGroup } from "../../Custom/Input";
 import { WarningArea } from "../../Custom/WarningArea";

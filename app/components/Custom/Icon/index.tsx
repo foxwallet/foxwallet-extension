@@ -1,5 +1,5 @@
 import {
-  ChakraComponent,
+  type ChakraComponent,
   chakra,
   useColorModeValue,
   useStyleConfig,
@@ -76,20 +76,26 @@ import AddCircle from "@/common/assets/image/icon_add_circle.svg";
 import RemoveCircle from "@/common/assets/image/icon_remove_circle.svg";
 import Search from "@/common/assets/image/icon_search_line.svg";
 
-const ThemeIconFill: (i: any) => ChakraComponent<any, any> =
-  (icon: any) => (props: ChakraComponent<any, any>) => {
+const ThemeIconFill: (i: any) => ChakraComponent<any, any> = (icon: any) => {
+  const ThemeIcon = (props: ChakraComponent<any, any>) => {
     const styles = useStyleConfig("SvgIcon");
     const OriginIcon = chakra(icon);
     return <OriginIcon __css={styles} {...props} />;
   };
+  ThemeIcon.displayName = `ThemeIconFill(${icon.displayName || icon.name})`;
+  return ThemeIcon;
+};
 
-const ThemeIconStroke: (i: any) => ChakraComponent<any, any> =
-  (icon: any) => (props: ChakraComponent<any, any>) => {
+const ThemeIconStroke: (i: any) => ChakraComponent<any, any> = (icon: any) => {
+  const ThemeIcon = (props: ChakraComponent<any, any>) => {
     const iconStrokeColor = useColorModeValue("black", "white");
 
     const OriginIcon = chakra(icon);
     return <OriginIcon stroke={iconStrokeColor} {...props} />;
   };
+  ThemeIcon.displayName = `ThemeIconStroke(${icon.displayName || icon.name})`;
+  return ThemeIcon;
+};
 
 export const IconCheckCircle = chakra(CheckCircle);
 export const IconCheckLine = chakra(CheckLine);

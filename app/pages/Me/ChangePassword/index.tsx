@@ -58,12 +58,12 @@ function ChangePasswordScreen() {
         setCorrectOldPwd(true);
       }
     };
-    checkOldPassword();
+    void checkOldPassword();
   }, [debounceOldPassword]);
 
   useEffect(() => {
     if (debouncePassword) {
-      getPasswordStrength(debouncePassword).then((score) => {
+      void getPasswordStrength(debouncePassword).then((score) => {
         setPasswordScore(score);
       });
     } else {
@@ -96,11 +96,10 @@ function ChangePasswordScreen() {
     if (!passwordScore || passwordScore < 3) {
       const { confirmed } = await showPasswordWarningDialog();
       if (!confirmed) {
-        return;
+        /* empty */
       }
 
       // todo submit
-      return;
     }
     // todo submit
   }, [disableConfirm, passwordScore, password]);

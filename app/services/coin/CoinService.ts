@@ -1,10 +1,13 @@
-import { RootState, store } from "@/store/store";
+import { type RootState, store } from "@/store/store";
 import { ALEO_CHAIN_CONFIGS } from "core/coins/ALEO/config/chains";
 import { CoinServiceEntry } from "core/coins/CoinServiceEntry";
 import { getInnerChainConfig } from "core/helper/ChainConfig";
 import { chainUniqueIdToCoinType } from "core/helper/CoinType";
-import { ChainBaseConfig } from "core/types/ChainBaseConfig";
-import { ChainUniqueId, InnerChainUniqueId } from "core/types/ChainUniqueId";
+import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
+import {
+  type ChainUniqueId,
+  InnerChainUniqueId,
+} from "core/types/ChainUniqueId";
 
 // If support user config, get chain config map from store
 const ChainConfigMap = {

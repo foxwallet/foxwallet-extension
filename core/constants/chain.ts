@@ -1,6 +1,6 @@
 import { CoinType } from "core/types";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
-import { AccountOption } from "core/types/CoinBasic";
+import { type AccountOption } from "core/types/CoinBasic";
 
 export const DEFAULT_CHAIN_UNIQUE_ID: {
   [key in CoinType]: InnerChainUniqueId;
@@ -18,6 +18,7 @@ export const getDefaultChainUniqueId = (
     case CoinType.ALEO:
       return InnerChainUniqueId.ALEO_MAINNET;
     default:
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       throw new Error(`getDefaultChainUniqueId for ${coinType}`);
   }
 };

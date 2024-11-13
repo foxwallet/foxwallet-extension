@@ -10,7 +10,7 @@ import { logger } from "@/common/utils/logger";
 class AleoBasic extends CoinBasic<CoinType.ALEO> {
   constructor() {
     super(CoinType.ALEO);
-    init();
+    void init();
   }
 
   public isValidAddress(address: string): boolean {

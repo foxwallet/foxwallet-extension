@@ -10,13 +10,13 @@ import { Content } from "@/layouts/Content";
 import { Button, Flex, Text } from "@chakra-ui/react";
 import { NATIVE_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
 import { AleoFeeMethod } from "core/coins/ALEO/types/FeeMethod";
-import { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
+import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 import {
   AleoRecordMethod,
   AleoTransferMethod,
 } from "core/coins/ALEO/types/TransferMethod";
 import { ChainUniqueId, InnerChainUniqueId } from "core/types/ChainUniqueId";
-import { AleoGasFee } from "core/types/GasFee";
+import { type AleoGasFee } from "core/types/GasFee";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -67,7 +67,7 @@ export const JoinStep = (props: JoinStepProps) => {
         setFeeInfo({ baseFee, priorityFee });
       } catch (err) {
         setFeeInfo(null);
-        showErrorToast({ message: (err as Error).message });
+        void showErrorToast({ message: (err as Error).message });
       } finally {
         setLoadingGasFee(false);
       }
@@ -75,7 +75,7 @@ export const JoinStep = (props: JoinStepProps) => {
     [coinService],
   );
   useEffect(() => {
-    getGasFee(AleoRecordMethod.JOIN);
+    void getGasFee(AleoRecordMethod.JOIN);
   }, []);
 
   // fee record
@@ -90,7 +90,7 @@ export const JoinStep = (props: JoinStepProps) => {
   const [selectedFeeRecord, setSelectedFeeRecord] = useState<
     RecordDetailWithSpent | undefined
   >();
-  const currFeeRecord = selectedFeeRecord || defaultFeeRecord;
+  const currFeeRecord = selectedFeeRecord ?? defaultFeeRecord;
 
   // fee type
   const defaultFeeType = useMemo(() => {
@@ -117,7 +117,7 @@ export const JoinStep = (props: JoinStepProps) => {
   const [selectedFeeType, setSelectedFeeType] = useState<AleoFeeMethod | null>(
     null,
   );
-  const currFeeType: AleoFeeMethod = selectedFeeType || defaultFeeType;
+  const currFeeType: AleoFeeMethod = selectedFeeType ?? defaultFeeType;
   const onSelectFeeType = useCallback(async () => {
     if (!balance) {
       return;
@@ -133,7 +133,7 @@ export const JoinStep = (props: JoinStepProps) => {
       balance,
       selectedFeeMethod: currFeeType,
       selectedFeeRecord: currFeeRecord,
-      recordList: recordList,
+      recordList,
       nativeCurrency,
     });
     if (data) {
@@ -252,7 +252,7 @@ export const JoinStep = (props: JoinStepProps) => {
         <Flex fontSize={"small"} color={"gray.500"} flex={1}>
           {currFeeType === AleoFeeMethod.FEE_PRIVATE ? (
             <Flex onClick={onSelectFeeType} mt={2} flex={1}>
-              {!!currFeeRecord ? (
+              {currFeeRecord ? (
                 <Flex>
                   {t("Send:payPrivateRecord")}&nbsp; (
                   <TokenNum

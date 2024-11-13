@@ -1,10 +1,10 @@
-import { ChainUniqueId } from "core/types/ChainUniqueId";
+import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import { useCoinService } from "./useCoinService";
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { NATIVE_TOKEN_TOKEN_ID } from "core/coins/ALEO/constants";
 import { ALEO_NATIVE_TOKEN } from "core/coins/ALEO/config/chains";
-import { InnerProgramId } from "core/coins/ALEO/types/ProgramId";
+import { type InnerProgramId } from "core/coins/ALEO/types/ProgramId";
 
 export const useTokens = (uniqueId: ChainUniqueId, keyword?: string) => {
   const { coinService } = useCoinService(uniqueId);

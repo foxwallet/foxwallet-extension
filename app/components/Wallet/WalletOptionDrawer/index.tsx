@@ -5,7 +5,7 @@ import { BottomUpDrawer } from "@/components/Custom/BottomUpDrawer";
 import { useTranslation } from "react-i18next";
 import { IconDelete, IconExportPhrase } from "@/components/Custom/Icon";
 import {
-  DisplayWallet,
+  type DisplayWallet,
   WalletType,
 } from "@/scripts/background/store/vault/types/keyring";
 import { usePopupSelector } from "@/hooks/useStore";

@@ -1,6 +1,6 @@
 import { type PropsWithChildren } from "react";
 import { Flex } from "@chakra-ui/react";
-import { Header, HeaderProps } from "../../components/Custom/Header";
+import { Header, type HeaderProps } from "../../components/Custom/Header";
 
 export const Page = (props: PropsWithChildren) => {
   return (

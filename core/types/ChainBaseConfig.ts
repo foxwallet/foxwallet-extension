@@ -1,5 +1,5 @@
 import { type ChainUniqueId } from "./ChainUniqueId";
-import { AccountOption } from "./CoinBasic";
+import { type AccountOption } from "./CoinBasic";
 import { type CoinType } from "./CoinType";
 import { type ExplorerLanguages } from "./ExplorerLanguages";
 import { type NativeToken } from "./Token";

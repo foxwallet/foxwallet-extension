@@ -8,7 +8,7 @@ import { usePopupDispatch } from "@/hooks/useStore";
 export const WalletTab = () => {
   const dispatch = usePopupDispatch();
   useEffect(() => {
-    dispatch.accountV2.resyncAllWalletsToStore();
+    void dispatch.accountV2.resyncAllWalletsToStore();
   }, [dispatch.accountV2]);
 
   return (

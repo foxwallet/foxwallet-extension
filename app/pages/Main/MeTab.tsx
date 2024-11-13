@@ -35,14 +35,14 @@ export const MeTab = () => {
     if (selectedWallet) {
       navigate(`/wallet_detail/${selectedWallet.walletId}`);
     }
-  }, [navigate, selectedWallet?.walletId]);
+  }, [navigate, selectedWallet]);
 
   const onGuide = useCallback(() => {
     const url =
       i18next.resolvedLanguage === "zh"
         ? `${HELP_CENTER_URL}/zh/blog/aleo-extension-tutorial`
         : `${HELP_CENTER_URL}/blog/aleo-extension-tutorial`;
-    browser.tabs.create({ url });
+    void browser.tabs.create({ url });
   }, []);
 
   const onCummunity = useCallback(() => {
@@ -54,7 +54,7 @@ export const MeTab = () => {
       i18next.resolvedLanguage === "zh"
         ? `${HELP_CENTER_URL}/zh/docs/security-tips`
         : `${HELP_CENTER_URL}/docs/security-tips`;
-    browser.tabs.create({ url });
+    void browser.tabs.create({ url });
   }, []);
 
   const onSettings = useCallback(() => {

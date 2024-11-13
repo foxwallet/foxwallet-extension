@@ -1,4 +1,4 @@
-import { ChangeEvent, useCallback, useMemo, useState } from "react";
+import { type ChangeEvent, useCallback, useMemo, useState } from "react";
 import { H6 } from "../../../common/theme/components/text";
 import { Button, Textarea } from "@chakra-ui/react";
 import { Content } from "../../../layouts/Content";

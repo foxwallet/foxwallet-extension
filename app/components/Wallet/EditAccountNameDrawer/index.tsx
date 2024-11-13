@@ -1,13 +1,14 @@
 import { Box, Button, Flex, Text } from "@chakra-ui/react";
 import { promisifyChooseDialogWrapper } from "../../../common/utils/dialog";
-import React, { useCallback, useMemo, useState } from "react";
+import type React from "react";
+import { useCallback, useMemo, useState } from "react";
 import { BottomUpDrawer } from "@/components/Custom/BottomUpDrawer";
 import { BaseInput } from "@/components/Custom/Input";
 import { useTranslation } from "react-i18next";
 import { WarningArea } from "@/components/Custom/WarningArea";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
 import { isEqual } from "lodash";
-import { OneMatchGroupAccount } from "@/scripts/background/store/vault/types/keyring";
+import { type OneMatchGroupAccount } from "@/scripts/background/store/vault/types/keyring";
 import { dupGroupNameSelector } from "@/store/selectors/account";
 
 interface Props {

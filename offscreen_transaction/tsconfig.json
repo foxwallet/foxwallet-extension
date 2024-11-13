@@ -20,5 +20,5 @@
     "emitDecoratorMetadata": true,
     "types": ["@types/chrome"]
   },
-  "include": ["./src"]
+  "include": ["./src","rollup.config.js"]
 }

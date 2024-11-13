@@ -30,7 +30,7 @@ const persistConfig: PersistConfig<RootState> = {
   writeFailHandler: (err) => {
     logger.error("redux persist write fail", err.message);
   },
-  // @ts-ignore
+  // @ts-expect-error migration states are not typed correct
   migrate: createMigrate(migrations, { debug: true }),
 };
 

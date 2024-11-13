@@ -1,5 +1,6 @@
 import { Button, Flex, InputRightElement } from "@chakra-ui/react";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import type React from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Content } from "../../../layouts/Content";
 import { BaseInput, BaseInputGroup } from "../../Custom/Input";
 import { WarningArea } from "../../Custom/WarningArea";
@@ -48,7 +49,7 @@ export const CreatePasswordStep = (props: {
 
   useEffect(() => {
     if (debouncePassword) {
-      getPasswordStrength(debouncePassword).then((score) => {
+      void getPasswordStrength(debouncePassword).then((score) => {
         setPasswordScore(score);
       });
     } else {

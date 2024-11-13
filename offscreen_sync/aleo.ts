@@ -22,7 +22,7 @@ import {
   type AleoApiService,
   createAleoApiService,
 } from "core/coins/ALEO/service/instances/sync";
-import type { RecordRawInfo } from "core/coins/ALEO/service/api/sync.di";
+import { type RecordRawInfo } from "core/coins/ALEO/service/api/sync.di";
 
 export class AleoWorker {
   static logger: LogFunc | undefined;
@@ -31,6 +31,7 @@ export class AleoWorker {
   private measureMap: {
     [process in string]?: { time: number; count: number; max: number };
   } = {};
+
   apiService: AleoApiService;
   // private currIndex: number | undefined;
 

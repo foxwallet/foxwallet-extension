@@ -22,7 +22,7 @@ import { useThemeStyle } from "@/hooks/useThemeStyle";
 import { useWallets } from "@/hooks/useWallets";
 import { PageWithHeader } from "@/layouts/Page";
 import {
-  OneMatchGroupAccount,
+  type OneMatchGroupAccount,
   WalletType,
 } from "@/scripts/background/store/vault/types/keyring";
 import {
@@ -35,6 +35,7 @@ import {
 } from "@chakra-ui/react";
 import { CoinType } from "core/types";
 import { nanoid } from "nanoid";
+import type React from "react";
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
@@ -63,7 +64,7 @@ const AccountListItem: React.FC<AccountListItemProps> = ({ account }) => {
   );
 
   const handleEditName = useCallback(() => {
-    showEditAccountNameDrawer({
+    void showEditAccountNameDrawer({
       account,
     });
   }, [account]);
@@ -174,7 +175,7 @@ const WalletDetailScreen = () => {
   }, [walletInfo?.groupAccounts, walletId]);
 
   const onAddAccount = useCallback(() => {
-    addAccount(walletId || "", nanoid());
+    void addAccount(walletId || "", nanoid());
   }, [addAccount, walletId]);
 
   const onBackupMnemonic = useCallback(async () => {
@@ -197,23 +198,23 @@ const WalletDetailScreen = () => {
         navigate(-1);
       }
     } catch (e) {
-      console.warn("delete wallet error " + e);
+      console.warn("delete wallet error ", e);
     }
   }, [deleteWallet, walletInfo?.walletId, navigate]);
 
   const onWalletMoreAction = useCallback(() => {
-    showWalletOptionDrawer({
+    void showWalletOptionDrawer({
       wallet: walletInfo,
-      onClickOption: async (option) => {
+      onClickOption: (option) => {
         switch (option) {
           case WalletOperateOption.BackupMnemonic:
-            onBackupMnemonic();
+            void onBackupMnemonic();
             break;
           case WalletOperateOption.ExportPhrase:
-            onExportSeedPhrase();
+            void onExportSeedPhrase();
             break;
           case WalletOperateOption.Delete:
-            onDeleteWallet();
+            void onDeleteWallet();
             break;
           default:
             break;

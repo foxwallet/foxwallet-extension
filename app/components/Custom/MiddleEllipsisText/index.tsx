@@ -1,5 +1,5 @@
 import {
-  CSSProperties,
+  type CSSProperties,
   useCallback,
   useEffect,
   useMemo,
@@ -73,7 +73,7 @@ function MiddleEllipsisText(props: TruncateProps) {
     if (width) {
       targetW = width;
     } else {
-      targetW = containerRef.current?.getBoundingClientRect().width || 0;
+      targetW = containerRef.current?.getBoundingClientRect().width ?? 0;
     }
     setTargetWidth(targetW);
     const measureWidth = canvas.measureText(text).width;

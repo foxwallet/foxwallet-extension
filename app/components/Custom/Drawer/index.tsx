@@ -56,8 +56,8 @@ export function BasicDrawer(props: ModalProps) {
             alignItems={"center"}
             mb={4}
           >
-            {!!leftIcon ? leftIcon : <Box w={6} h={6} />}
-            {!!titleElement ? titleElement : <Box w={6} h={6} />}
+            {leftIcon ?? <Box w={6} h={6} />}
+            {titleElement ?? <Box w={6} h={6} />}
             {hideClose ? (
               <Box w={6} h={6} />
             ) : (

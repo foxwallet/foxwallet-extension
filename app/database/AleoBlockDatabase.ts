@@ -1,9 +1,9 @@
 import Dexie from "dexie";
-import { AleoAddressInfo } from "./types/address";
-import { AddressRecords } from "./types/records";
-import { AleoLocalTx } from "./types/tx";
-import { AleoProgram } from "./types/program";
-import { AleoOnChainHistoryItem } from "core/coins/ALEO/types/History";
+import { type AleoAddressInfo } from "./types/address";
+import { type AddressRecords } from "./types/records";
+import { type AleoLocalTx } from "./types/tx";
+import { type AleoProgram } from "./types/program";
+import { type AleoOnChainHistoryItem } from "core/coins/ALEO/types/History";
 import { NATIVE_TOKEN_TOKEN_ID } from "core/coins/ALEO/constants";
 
 export class AleoBlockDatabase extends Dexie {
@@ -31,7 +31,7 @@ export class AleoBlockDatabase extends Dexie {
       .stores({
         txs: "localId, [address+programId], notification",
       })
-      .upgrade((transaction) => {
+      .upgrade(async (transaction) => {
         return transaction
           .table("txs")
           .toCollection()
@@ -44,7 +44,7 @@ export class AleoBlockDatabase extends Dexie {
       .stores({
         txs: "localId, [address+programId], notification, tokenId",
       })
-      .upgrade((transaction) => {
+      .upgrade(async (transaction) => {
         return transaction
           .table("txs")
           .toCollection()
@@ -68,11 +68,11 @@ export class AleoBlockDatabase extends Dexie {
       this.txs,
       this.cacheTxs,
       async () => {
-        const infosToDelete = this.infos.where({ address: address });
+        const infosToDelete = this.infos.where({ address });
         await infosToDelete.delete();
-        const recordsToDelete = this.records.where({ address: address });
+        const recordsToDelete = this.records.where({ address });
         await recordsToDelete.delete();
-        const txsToDelete = this.txs.where({ address: address });
+        const txsToDelete = this.txs.where({ address });
         await txsToDelete.delete();
       },
     );
@@ -106,15 +106,15 @@ export class AleoBlockDatabase extends Dexie {
       // delete the item with same begin
       const count = await this.records
         .where({
-          address: address,
-          begin: begin,
+          address,
+          begin,
         })
         .count();
       if (count) {
         await this.records
           .where({
-            address: address,
-            begin: begin,
+            address,
+            begin,
           })
           .modify(recordsData);
       } else {

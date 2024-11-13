@@ -4,6 +4,7 @@ import {
   IconCloseLine,
   IconEyeClose,
   IconEyeOn,
+  IconFoxWallet,
 } from "@/components/Custom/Icon";
 import { BaseInputGroup } from "@/components/Custom/Input";
 import { useAuth } from "@/hooks/useAuth";
@@ -16,11 +17,9 @@ import {
   Text,
   useToast,
 } from "@chakra-ui/react";
-import { useCallback, useState, KeyboardEvent } from "react";
+import { useCallback, useState, type KeyboardEvent } from "react";
 import { useNavigate } from "react-router-dom";
-// @ts-ignore
 import WALLET_LOGO from "@/common/assets/image/logo.png";
-import { IconFoxWallet } from "@/components/Custom/Icon";
 import { useTranslation } from "react-i18next";
 import { useWrongPasswordToast } from "@/components/Custom/WrongPasswordToast";
 
@@ -65,7 +64,7 @@ function Lock() {
     (e: KeyboardEvent<HTMLInputElement>) => {
       if (e.key === "Enter") {
         e.preventDefault();
-        onConfirm();
+        void onConfirm();
       }
     },
     [onConfirm],

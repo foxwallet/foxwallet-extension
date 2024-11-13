@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useGroupAccount } from "./useGroupAccount";
 import { useSelector } from "react-redux";
-import { RootState } from "@/store/store";
+import { type RootState } from "@/store/store";
 import { isEqual } from "lodash";
 import {
   chainModeSelector,
@@ -10,10 +10,10 @@ import {
 } from "@/store/selectors/account";
 import { useCallback, useMemo } from "react";
 import { ChainAssembleMode } from "core/types/ChainUniqueId";
-import { OneMatchAccount } from "@/scripts/background/store/vault/types/keyring";
+import { type OneMatchAccount } from "@/scripts/background/store/vault/types/keyring";
 import { matchAccountsWithUnqiueId } from "@/store/accountV2";
 import { AleoConfig } from "core/coins/ALEO/types/AleoConfig";
-import { ChainBaseConfig } from "core/types/ChainBaseConfig";
+import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
 
 export const useChainMode = () => {
   const { t } = useTranslation();

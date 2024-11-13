@@ -20,10 +20,11 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import {
-  AleoHistoryItem,
+  type AleoHistoryItem,
   AleoTxAddressType,
 } from "core/coins/ALEO/types/History";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
+import type React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
@@ -36,7 +37,7 @@ import { useThemeStyle } from "@/hooks/useThemeStyle";
 import { useBottomReach } from "@/hooks/useBottomReach";
 import { useLocationParams } from "@/hooks/useLocationParams";
 import { useAssetList } from "@/hooks/useAssetList";
-import { Token } from "core/coins/ALEO/types/Token";
+import { type Token } from "core/coins/ALEO/types/Token";
 import { RecordFilter } from "@/scripts/background/servers/IWalletServer";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import {
@@ -74,7 +75,7 @@ const TokenTxHistoryItem: React.FC<TokenTxHistoryItemProps> = ({
       return;
     }
     const url = coinService.getTxDetailUrl(item.txId);
-    browser.tabs.create({ url });
+    void browser.tabs.create({ url });
   }, [item.txId]);
 
   const txLabel = useMemo(
@@ -217,7 +218,7 @@ const TokenDetailScreen = () => {
         return records;
       }
       default: {
-        console.error("Unsupport programId " + tokenInfo.programId);
+        console.error(`Unsupport programId ${tokenInfo.programId}`);
         return [];
       }
     }
@@ -245,7 +246,7 @@ const TokenDetailScreen = () => {
         return tokenRecords[0]?.parsedContent?.amount;
       }
       default: {
-        console.error("Unsupport programId " + tokenInfo.programId);
+        console.error(`Unsupport programId ${tokenInfo.programId}`);
       }
     }
   }, [tokenInfo, tokenRecords]);

@@ -64,7 +64,9 @@ const SelectJoinSplit = (props: Props) => {
               borderRadius={"lg"}
               justify={"space-between"}
               align={"center"}
-              onClick={() => onConfirm(SelectJoinSplitOption.JOIN)}
+              onClick={() => {
+                onConfirm(SelectJoinSplitOption.JOIN);
+              }}
             >
               <Text>{optionMap[SelectJoinSplitOption.JOIN].title}</Text>
               <Text fontSize={"small"} color={"gray.500"}>
@@ -81,7 +83,9 @@ const SelectJoinSplit = (props: Props) => {
               borderRadius={"lg"}
               justify={"space-between"}
               align={"center"}
-              onClick={() => onConfirm(SelectJoinSplitOption.SPLIT)}
+              onClick={() => {
+                onConfirm(SelectJoinSplitOption.SPLIT);
+              }}
             >
               <Text>{optionMap[SelectJoinSplitOption.SPLIT].title}</Text>
               <Text fontSize={"small"} color={"gray.500"}>

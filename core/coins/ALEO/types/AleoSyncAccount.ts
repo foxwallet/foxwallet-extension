@@ -1,4 +1,4 @@
-import { TaskPriority } from "./SyncTask";
+import { type TaskPriority } from "./SyncTask";
 
 export interface AleoSyncAccount {
   walletId: string;

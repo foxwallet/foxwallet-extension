@@ -17,13 +17,13 @@ import { promisifyChooseDialogWrapper } from "../../../common/utils/dialog";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
 import { useMemo } from "react";
 import { useBalance } from "@/hooks/useBalance";
-import { ChainUniqueId } from "core/types/ChainUniqueId";
+import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import { TokenNum } from "@/components/Wallet/TokenNum";
 import { useCoinService } from "@/hooks/useCoinService";
 import { IconCheckLine } from "@/components/Custom/Icon";
 import { useRecords } from "@/hooks/useRecord";
 import { useTranslation } from "react-i18next";
-import { Token } from "core/coins/ALEO/types/Token";
+import { type Token } from "core/coins/ALEO/types/Token";
 import { RecordFilter } from "@/scripts/background/servers/IWalletServer";
 import {
   ALPHA_TOKEN_PROGRAM_ID,
@@ -86,7 +86,8 @@ const SelectTransferMethodDrawer = (props: Props) => {
         return records;
       }
       default: {
-        console.error("Unsupport programId " + token.programId);
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        console.error(`Unsupport programId ${token.programId}`);
         return [];
       }
     }
@@ -150,7 +151,7 @@ const SelectTransferMethodDrawer = (props: Props) => {
                 <Spinner w={2} h={2} />
               ) : (
                 <TokenNum
-                  amount={balance?.publicBalance || 0n}
+                  amount={balance?.publicBalance ?? 0n}
                   decimals={token.decimals}
                   symbol={token.symbol}
                 />
@@ -163,7 +164,7 @@ const SelectTransferMethodDrawer = (props: Props) => {
                   <Spinner w={2} h={2} />
                 ) : (
                   <TokenNum
-                    amount={balance?.privateBalance || 0n}
+                    amount={balance?.privateBalance ?? 0n}
                     decimals={token.decimals}
                     symbol={token.symbol}
                   />
@@ -188,9 +189,8 @@ const SelectTransferMethodDrawer = (props: Props) => {
           </Flex>
           <Flex direction={"column"}>
             {transferMethods.map((method) => (
-              <Flex flexDir={"column"}>
+              <Flex key={method} flexDir={"column"}>
                 <Flex
-                  key={method}
                   flex={1}
                   mt="4"
                   px={4}
@@ -198,7 +198,9 @@ const SelectTransferMethodDrawer = (props: Props) => {
                   border="1px solid"
                   borderColor={selectedMethod === method ? "black" : "gray.100"}
                   borderRadius={"lg"}
-                  onClick={() => onConfirm(method)}
+                  onClick={() => {
+                    onConfirm(method);
+                  }}
                   justify={"space-between"}
                 >
                   <Text>{transferMethodMap[method].title}</Text>

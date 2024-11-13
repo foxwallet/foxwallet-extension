@@ -1,5 +1,5 @@
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
-import { OneMatchAccount } from "@/scripts/background/store/vault/types/keyring";
+import { type OneMatchAccount } from "@/scripts/background/store/vault/types/keyring";
 import { Flex, Text } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
 

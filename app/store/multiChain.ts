@@ -1,15 +1,18 @@
 import { createModel } from "@rematch/core";
-import { RootModel } from "./index";
-import { ChainBaseConfig } from "core/types/ChainBaseConfig";
-import { CoinType } from "core/types";
-import { ChainUniqueId, InnerChainUniqueId } from "core/types/ChainUniqueId";
+import { type RootModel } from "./index";
+import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
+import { type CoinType } from "core/types";
+import {
+  type ChainUniqueId,
+  InnerChainUniqueId,
+} from "core/types/ChainUniqueId";
 import { INNER_CHAIN_CONFIG } from "core/helper/CoinType";
 import { WalletType } from "@/scripts/background/store/vault/types/keyring";
 import {
   DEFAULT_USER_SELECTED_CHAINS,
   getDefaultChainUniqueId,
 } from "core/constants/chain";
-import { AccountOption } from "core/types/CoinBasic";
+import { type AccountOption } from "core/types/CoinBasic";
 import { walletByIdSelector } from "./selectors/account";
 
 export type ChainConfigItems = ChainBaseConfig[];
@@ -71,7 +74,7 @@ export const multiChain = createModel<RootModel>()({
       chainConfigItems[index] = { ...chainConfig };
       return {
         ...state,
-        chainConfigItems: chainConfigItems,
+        chainConfigItems,
       } as MultiChainModel;
     },
     removeChainConfig(state, payload: { chainConfig: ChainBaseConfig }) {
@@ -88,7 +91,7 @@ export const multiChain = createModel<RootModel>()({
       });
 
       const walletChainMap = state.walletChainMap;
-      for (let [walletId, chainMap] of Object.entries(walletChainMap)) {
+      for (const [walletId, chainMap] of Object.entries(walletChainMap)) {
         if (!chainMap) {
           console.error(
             `removeChainConfig walletId ${walletId} isn't exist in walletChainMap`,
@@ -254,14 +257,14 @@ export const multiChain = createModel<RootModel>()({
         chainConfigItems.push(chainConfig);
       }
       const walletChainMap: WalletChainMap = state.multiChain.walletChainMap;
-      for (let [walletId, chainMap] of Object.entries(walletChainMap)) {
+      for (const [walletId, chainMap] of Object.entries(walletChainMap)) {
         if (!chainMap) {
           console.error(
             `addChainConfig walletId ${walletId} isn't exist in walletChainMap`,
           );
           continue;
         }
-        let walletById = walletByIdSelector(state as any, { walletId });
+        const walletById = walletByIdSelector(state as any, { walletId });
         if (!walletById) {
           continue;
         }
@@ -331,7 +334,7 @@ export const multiChain = createModel<RootModel>()({
       },
       state,
     ) {
-      let walletById = walletByIdSelector(state as any, {
+      const walletById = walletByIdSelector(state as any, {
         walletId: payload.walletId,
       });
       if (!walletById) {

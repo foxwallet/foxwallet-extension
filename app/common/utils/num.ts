@@ -1,4 +1,4 @@
-import { BigNumberish, BigNumber, utils } from "ethers";
+import { type BigNumberish, BigNumber, utils } from "ethers";
 
 export const formatTokenNum = (
   num: BigNumberish | undefined,

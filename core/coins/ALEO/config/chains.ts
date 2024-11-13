@@ -1,5 +1,5 @@
 import { CoinType } from "core/types";
-import { AleoConfig } from "../types/AleoConfig";
+import { type AleoConfig } from "../types/AleoConfig";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { ExplorerLanguages } from "core/types/ExplorerLanguages";
 import AleoLogo from "../../../assets/images/chains/aleo.webp";
@@ -12,7 +12,7 @@ import {
   NATIVE_TOKEN_TOKEN_ID,
 } from "../constants";
 import { ReserveChainConfigs } from "../../../../env";
-import { Token } from "../types/Token";
+import { type Token } from "../types/Token";
 
 export const ALEO_NATIVE_CURRENCY = {
   name: "Aleo",

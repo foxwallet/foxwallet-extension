@@ -113,7 +113,7 @@ function ConnectAleoDappScreen() {
       return;
     }
     if (requestId && selectedAccount?.account.address) {
-      popupServerClient.onRequestFinish({
+      void popupServerClient.onRequestFinish({
         requestId,
         data: selectedAccount.account.address,
       });
@@ -128,7 +128,7 @@ function ConnectAleoDappScreen() {
 
   const onCancel = useCallback(() => {
     if (requestId) {
-      popupServerClient.onRequestFinish({
+      void popupServerClient.onRequestFinish({
         requestId,
         error: ERROR_CODE.USER_CANCEL,
       });

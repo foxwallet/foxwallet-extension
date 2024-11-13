@@ -1,9 +1,9 @@
-import { ChainUniqueId } from "core/types/ChainUniqueId";
+import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import { usePopupDispatch, usePopupSelector } from "./useStore";
 import { useCallback, useEffect } from "react";
 import { selectedGroupAccountSelector } from "@/store/selectors/account";
 import { matchAccountsWithUnqiueId } from "@/store/accountV2";
-import { OneMatchAccount } from "@/scripts/background/store/vault/types/keyring";
+import { type OneMatchAccount } from "@/scripts/background/store/vault/types/keyring";
 import { isEqual } from "lodash";
 
 export const useGroupAccount = () => {
@@ -15,7 +15,7 @@ export const useGroupAccount = () => {
   const dispatch = usePopupDispatch();
 
   useEffect(() => {
-    dispatch.accountV2.getSelectedGroupAccount();
+    void dispatch.accountV2.getSelectedGroupAccount();
   }, []);
 
   const getMatchAccountsWithUniqueId = useCallback(

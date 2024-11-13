@@ -52,7 +52,7 @@ function OnboardHomeScreen() {
   const language = usePopupSelector((state) => state.setting.language);
   const dispatch = usePopupDispatch();
   const changeLanguage = useCallback((newLanguage: SupportLanguages) => {
-    dispatch.setting.changeLanguage({ language: newLanguage });
+    void dispatch.setting.changeLanguage({ language: newLanguage });
   }, []);
   const { t } = useTranslation();
 
@@ -96,7 +96,9 @@ function OnboardHomeScreen() {
                 {Object.values(SupportLanguages).map((item) => (
                   <MenuItem
                     key={item}
-                    onClick={() => changeLanguage(item)}
+                    onClick={() => {
+                      changeLanguage(item);
+                    }}
                     fontSize={"xs"}
                     fontWeight={"normal"}
                     mt={1}
@@ -158,7 +160,7 @@ function OnboardHomeScreen() {
             textDecorationColor={"green.500"}
             color="green.400"
             onClick={() => {
-              browser.tabs.create({
+              void browser.tabs.create({
                 url: "https://hc.foxwallet.com/terms-of-service",
               });
             }}
@@ -171,7 +173,7 @@ function OnboardHomeScreen() {
             textDecorationColor={"green.500"}
             color="green.400"
             onClick={() => {
-              browser.tabs.create({
+              void browser.tabs.create({
                 url: "https://hc.foxwallet.com/privacy-policy",
               });
             }}

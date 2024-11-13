@@ -15,7 +15,7 @@ const BackupMnemonicScreen = () => {
   const [step, setStep] = useState(1);
   const [mnemonic, setMnemonic] = useState("");
   const { popupServerClient } = useClient();
-  const walletIdRef = useRef(walletIdFromRoute || "");
+  const walletIdRef = useRef(walletIdFromRoute ?? "");
   const navigate = useNavigate();
   const dispatch = usePopupDispatch();
   const { t } = useTranslation();
@@ -27,7 +27,7 @@ const BackupMnemonicScreen = () => {
       );
       setMnemonic(mnemonic);
     };
-    fetchMnemonic();
+    void fetchMnemonic();
   }, [popupServerClient]);
 
   const stepContent = useMemo(() => {

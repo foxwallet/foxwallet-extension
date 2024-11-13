@@ -1,5 +1,5 @@
 import { Token } from "./Token";
-import { AleoTxStatus } from "./Transaction";
+import { type AleoTxStatus } from "./Transaction";
 
 export enum AleoHistoryType {
   ON_CHAIN = "on_chain",
