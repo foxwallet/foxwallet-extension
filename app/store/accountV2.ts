@@ -109,7 +109,7 @@ export const accountV2 = createModel<RootModel>()({
           const oldGroupAccountList =
             oldAllWalletInfo[wallet.walletId].groupAccounts || [];
 
-          const newAccountList = [...(wallet.groupAccounts || [])].map(
+          const newGroupAccountList = [...(wallet.groupAccounts || [])].map(
             (account) => {
               const matchedAccount = oldGroupAccountList.find(
                 (oldAccount) => oldAccount.groupId === account.groupId,
@@ -117,7 +117,7 @@ export const accountV2 = createModel<RootModel>()({
               if (matchedAccount) {
                 return {
                   ...account,
-                  ...matchedAccount, // using accountName of the existed account in Redux store
+                  groupName: matchedAccount.groupName,
                 };
               }
               return account;
@@ -128,7 +128,7 @@ export const accountV2 = createModel<RootModel>()({
             ...restInfo,
             // make sure using walletName in Redux store
             walletName: oldAllWalletInfo[wallet.walletId].walletName || "",
-            groupAccounts: newAccountList,
+            groupAccounts: newGroupAccountList,
           };
         } else {
           allWalletInfo[wallet.walletId] = restInfo;
