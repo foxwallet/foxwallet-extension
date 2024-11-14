@@ -15,6 +15,12 @@ yarn
 yarn build:dev
 ```
 
+## Locale
+
+```
+yarn translate -p [your port]
+```
+
 ## Features
 
 | Feature                    | Status             |
