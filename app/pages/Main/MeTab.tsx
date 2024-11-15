@@ -38,7 +38,7 @@ export const MeTab = () => {
     if (selectedWallet) {
       navigate(`/wallet_detail/${selectedWallet.walletId}`);
     }
-  }, [navigate, selectedWallet?.walletId]);
+  }, [navigate, selectedWallet]);
 
   const onGuide = useCallback(() => {
     const url =

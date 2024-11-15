@@ -274,6 +274,7 @@
     "noSearchResult": "No search result"
   },
   "Error": {
-    "invalidPassword": "Invalid password"
+    "invalidPassword": "Invalid password",
+    "invalidAddress": "Invalid address"
   }
 }

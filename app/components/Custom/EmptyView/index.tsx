@@ -1,6 +1,5 @@
 import { Text, VStack } from "@chakra-ui/react";
 import { IconEmptyTxPlaceholder } from "@/components/Custom/Icon";
-import type React from "react";
 
 export const EmptyView = ({
   searching,

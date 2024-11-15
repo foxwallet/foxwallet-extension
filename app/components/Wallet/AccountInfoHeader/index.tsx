@@ -14,7 +14,7 @@ import {
 import {
   Box,
   Flex,
-  FlexProps,
+  type FlexProps,
   Spinner,
   Text,
   keyframes,
@@ -113,7 +113,7 @@ export const AccountInfoHeader = () => {
             const { rawMessage, displayMessage } =
               await coinService.faucetMessage(address);
             const { confirmed } = await showSignMessageDialog({
-              address: address,
+              address,
               message: displayMessage,
             });
             if (confirmed) {
@@ -227,7 +227,7 @@ export const AccountInfoHeader = () => {
         title: t("Send:title"),
         icon: <IconSend w={9} h={9} />,
         disabled: sendingAleoTx || balance === undefined,
-        onPress: () => navigate("/send_aleo"),
+        onPress: () => navigate("/send_token"), // 地雷
       },
       {
         title: t("JoinSplit:title"),
@@ -324,7 +324,7 @@ export const AccountInfoHeader = () => {
             justify={"center"}
             borderColor={selectedBorderColor}
             cursor={"pointer"}
-            onClick={() => lock()}
+            onClick={async () => lock()}
           >
             <IconLock w={5} h={5} />
           </Flex>
