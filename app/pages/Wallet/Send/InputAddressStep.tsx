@@ -3,7 +3,7 @@ import { H6 } from "@/common/theme/components/text";
 import { useTranslation } from "react-i18next";
 import { Content } from "@/layouts/Content";
 import type React from "react";
-import { useMemo, useCallback, useState } from "react";
+import { useEffect, useMemo, useCallback, useState } from "react";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { useCoinBasic } from "@/hooks/useCoinService";
 import { useDebounce } from "use-debounce";
@@ -61,6 +61,16 @@ export const InputAddressStep = (props: InputAddressStepProps) => {
       </Text>
     );
   }, [address, addressValid, debounceAddress, t]);
+
+  useEffect(() => {
+    const addr = sessionStorage.getItem("contactAddress");
+    console.log("===> contact address: ", addr);
+    if (addr) {
+      setAddress(addr);
+    }
+    // 使用完后删除
+    sessionStorage.removeItem("contactAddress");
+  }, []);
 
   return (
     <Content>

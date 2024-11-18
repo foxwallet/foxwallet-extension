@@ -63,6 +63,7 @@ const Networks = lazy(async () => await import("../pages/Me/Networks"));
 const AddOrEditContact = lazy(
   async () => await import("../pages/Me/AddOrEditContact"),
 );
+const SendToken = lazy(async () => await import("../pages/Wallet/Send"));
 
 // Onboard
 const OnboardHome = lazy(
@@ -220,6 +221,10 @@ export const routesConfig: RouteObject[] = [
       {
         path: "add_or_edit_contact/:addOrEdit",
         element: <AddOrEditContact />,
+      },
+      {
+        path: "send_token",
+        element: <SendToken />,
       },
     ],
   },
