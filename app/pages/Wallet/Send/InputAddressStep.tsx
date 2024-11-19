@@ -10,14 +10,18 @@ import { useDebounce } from "use-debounce";
 import { IconSendContact } from "@/components/Custom/Icon";
 import { useNavigate } from "react-router-dom";
 
-interface InputAddressStepProps {}
+interface InputAddressStepProps {
+  onStep2: (toAddr: string) => void;
+  toAddr?: string;
+}
 
 export const InputAddressStep = (props: InputAddressStepProps) => {
+  const { onStep2, toAddr } = props;
   const { t } = useTranslation();
   const navigate = useNavigate();
 
   const [borderColor, setBorderColor] = useState("gray.100");
-  const [address, setAddress] = useState("");
+  const [address, setAddress] = useState(toAddr ?? "");
   const [debounceAddress] = useDebounce(address, 500);
 
   // 此处多链需要修改
@@ -37,8 +41,8 @@ export const InputAddressStep = (props: InputAddressStepProps) => {
     if (debounceAddress) {
       const valid = coinBasic.isValidAddress(debounceAddress);
       console.log("valid      " + valid);
-      // return valid;  //地雷
-      return false;
+      // return valid;
+      return true; // 地雷
     }
     return false;
   }, [coinBasic, debounceAddress]);
@@ -51,7 +55,7 @@ export const InputAddressStep = (props: InputAddressStepProps) => {
     return !!debounceAddress && !!address && addressValid;
   }, [debounceAddress, address, addressValid]);
 
-  const InvalidAddressWarn = useMemo(() => {
+  const AddressInfo = useMemo(() => {
     if (!address || !debounceAddress) {
       return null;
     }
@@ -68,7 +72,6 @@ export const InputAddressStep = (props: InputAddressStepProps) => {
     if (addr) {
       setAddress(addr);
     }
-    // 使用完后删除
     sessionStorage.removeItem("contactAddress");
   }, []);
 
@@ -82,12 +85,10 @@ export const InputAddressStep = (props: InputAddressStepProps) => {
         borderWidth={"1.5px"}
         direction={"column"}
         p={2}
-        // bg={"yellow"}
         justify={"space-between"}
       >
         <Flex direction={"column"}>
           <Textarea
-            // bg={"aqua"}
             flex={1}
             minH={"130px"}
             alignItems={"flex-start"}
@@ -105,22 +106,26 @@ export const InputAddressStep = (props: InputAddressStepProps) => {
             onChange={onAddressChange}
             isInvalid={!addressValid && !!debounceAddress}
           />
-          {InvalidAddressWarn}
+          {AddressInfo}
         </Flex>
         <Flex direction={"column"}>
           <Divider h={"1px"} bg={"gray.100"} />
           <Flex mt={1} alignItems={"center"} justify={"flex-end"} h={"20px"}>
-            <IconSendContact onClick={openContact} />
+            <Button size={"xxs"} bg={"transparent"} onClick={openContact}>
+              <IconSendContact style={{ pointerEvents: "none" }} />
+            </Button>
           </Flex>
         </Flex>
       </Flex>
       <Button
         w={"full"}
         mt={"40px"}
-        onClick={() => navigate(`/add_or_edit_contact/add`)}
+        onClick={() => {
+          onStep2(address);
+        }}
         isDisabled={!canConfirm}
       >
-        {t("Common:next")}
+        {t("Send:next")}
       </Button>
     </Content>
   );

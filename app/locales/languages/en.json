@@ -95,6 +95,7 @@
     "transferToken": "Transfer Token",
     "to": "To Address",
     "toPlaceholder": "Enter receiver address",
+    "next": "Next",
     "private": "Private",
     "public": "Public",
     "balance": "Balance",

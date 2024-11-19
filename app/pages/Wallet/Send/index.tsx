@@ -17,11 +17,20 @@ const SendScreen = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
+  const [toAddress, setToAddress] = useState("");
 
   const content = useMemo(() => {
     switch (step) {
       case 1: {
-        return <InputAddressStep />;
+        return (
+          <InputAddressStep
+            onStep2={(toAddr) => {
+              setToAddress(toAddr);
+              setStep(2);
+            }}
+            toAddr={toAddress}
+          />
+        );
       }
       case 2: {
         return <Text>222</Text>;
