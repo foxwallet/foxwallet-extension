@@ -88,6 +88,8 @@ export const ALEO_CHAIN_CONFIGS: { [key in string]: AleoConfig } = {
     },
     alphaSwapApi: "https://mainnet.alphaswap.pro/api",
     aleoInfoApi: "https://api.aleo.info",
+    arcaneApi:
+      "https://arcane-finance-backend-mainnet-2wxtu.ondigitalocean.app",
   },
 };
 
