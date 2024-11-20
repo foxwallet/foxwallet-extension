@@ -179,7 +179,28 @@
     "securityTips": "Security Tips",
     "settings": "Settings",
     "account": "Account",
-    "switchWallet": "Switch Wallet"
+    "switchWallet": "Switch Wallet",
+    "networks": "Networks",
+    "contacts": "Contacts",
+    "connectedSites": "Connected Sites"
+  },
+  "Networks": {
+    "title": "Networks",
+    "searchHint": "Search networks"
+  },
+  "Contacts": {
+    "title": "Contacts",
+    "searchHint": "Search address",
+    "addContact": "Add Contact",
+    "editContact": "Edit Contact",
+    "contactInfo": "Contact Info",
+    "enterContactName": "Enter contact name",
+    "enterAddress": "Enter address",
+    "confirmCreate": "Confirm Create",
+    "confirmUpdate": "Confirm Update",
+    "selectNetwork": "Select Network",
+    "networkName": "Network name",
+    "remove": "Remove"
   },
   "Me": {
     "title": "Me"
@@ -245,7 +266,8 @@
     "remind": "Remind",
     "account": "Account",
     "ok": "OK",
-    "wrongPassword": "Incorrect password"
+    "wrongPassword": "Incorrect password",
+    "noSearchResult": "No search result"
   },
   "Error": {
     "invalidPassword": "Invalid password"

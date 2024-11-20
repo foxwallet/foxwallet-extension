@@ -1,6 +1,6 @@
 import React, { lazy } from "react";
 import { Navigate, Outlet, type RouteObject } from "react-router-dom";
-import { CheckOnboard } from "../components/Onboard/CheckOnboard";
+import { CheckOnboard } from "@/components/Onboard/CheckOnboard";
 import { CheckAuth } from "@/components/Onboard/CheckAuth";
 import { CheckBrowserVersion } from "@/components/Onboard/CheckBrowserVersion";
 
@@ -55,6 +55,14 @@ const ChangePassword = lazy(
   async () => await import("../pages/Me/ChangePassword"),
 );
 const WalletDetail = lazy(async () => await import("../pages/Me/WalletDetail"));
+const Contacts = lazy(async () => await import("../pages/Me/Contacts"));
+const ConnectedSites = lazy(
+  async () => await import("../pages/Me/ConnectedSites"),
+);
+const Networks = lazy(async () => await import("../pages/Me/Networks"));
+const AddOrEditContact = lazy(
+  async () => await import("../pages/Me/AddOrEditContact"),
+);
 
 // Onboard
 const OnboardHome = lazy(
@@ -196,6 +204,22 @@ export const routesConfig: RouteObject[] = [
       {
         path: "select_token/:uniqueId/:address",
         element: <SelectToken />,
+      },
+      {
+        path: "contacts",
+        element: <Contacts />,
+      },
+      {
+        path: "connected_sites",
+        element: <ConnectedSites />,
+      },
+      {
+        path: "networks",
+        element: <Networks />,
+      },
+      {
+        path: "add_or_edit_contact/:addOrEdit",
+        element: <AddOrEditContact />,
       },
     ],
   },

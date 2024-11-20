@@ -34,6 +34,10 @@
     "@typescript-eslint/return-await": 0,
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn",
+    "@typescript-eslint/no-floating-promises": "off",
+    "@typescript-eslint/no-confusing-void-expression": ["error", {
+      "ignoreArrowShorthand": true
+    }],
     "@typescript-eslint/ban-types": [
       "error",
       {

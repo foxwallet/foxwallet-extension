@@ -16,7 +16,7 @@ export const useGroupAccount = () => {
 
   useEffect(() => {
     void dispatch.accountV2.getSelectedGroupAccount();
-  }, []);
+  }, [dispatch.accountV2]);
 
   const getMatchAccountsWithUniqueId = useCallback(
     (uniqueId: ChainUniqueId) => {

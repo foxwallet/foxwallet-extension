@@ -2,8 +2,11 @@ import { HELP_CENTER_URL } from "@/common/constants";
 import {
   IconChevronRight,
   IconCommunity,
+  IconConnect,
+  IconContact,
   IconGuide,
   IconLogo,
+  IconNetwork,
   IconSecurityTips,
   IconSettings,
   IconWallet,
@@ -109,6 +112,18 @@ export const MeTab = () => {
     navigate("/settings");
   }, [navigate]);
 
+  const onNetworks = useCallback(() => {
+    navigate("/networks");
+  }, [navigate]);
+
+  const onContact = useCallback(() => {
+    navigate("/contacts");
+  }, [navigate]);
+
+  const onConnectedSites = useCallback(() => {
+    navigate("/connected_sites");
+  }, [navigate]);
+
   const { borderColor } = useThemeStyle();
 
   return (
@@ -153,6 +168,22 @@ export const MeTab = () => {
           onPress={onWalletDetail}
         />
         <SettingItem
+          title={t("Setting:networks")}
+          icon={<IconNetwork w={4} h={4} />}
+          onPress={onNetworks}
+        />
+        <SettingItem
+          title={t("Setting:contacts")}
+          icon={<IconContact w={4} h={4} />}
+          onPress={onContact}
+        />
+        <SettingItem
+          title={t("Setting:connectedSites")}
+          icon={<IconConnect w={4} h={4} />}
+          onPress={onConnectedSites}
+        />
+        <Divider h={"1px"} mb={2.5} />
+        <SettingItem
           title={t("Setting:tutorial")}
           icon={<IconGuide w={4} h={4} />}
           onPress={onGuide}
@@ -162,7 +193,6 @@ export const MeTab = () => {
           icon={<IconCommunity w={4} h={4} />}
           onPress={onCummunity}
         />
-        <Divider h={"1px"} mb={2.5} />
         <SettingItem
           title={t("Setting:securityTips")}
           icon={<IconSecurityTips w={4} h={4} />}
