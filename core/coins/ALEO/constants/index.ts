@@ -15,3 +15,5 @@ export const SPLIT_RECORD_FEE = "0.01";
 export const ALPHA_TOKEN_PROGRAM_ID = "alphaswap.aleo";
 
 export const BETA_STAKING_PROGRAM_ID = "betastaking.aleo";
+
+export const ARCANE_PROGRAM_ID = "token_registry.aleo";

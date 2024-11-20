@@ -2,11 +2,9 @@ import { get, post } from "@/common/utils/request";
 import { AllTokenResp } from "./token.di";
 import { Token } from "../../types/Token";
 import { ALPHA_TOKEN_PROGRAM_ID } from "../../constants";
-import { InnerProgramId } from "../../types/ProgramId";
+import { ArcaneTokensResp } from "./arcane.di";
 
-export const TOKEN_IMG_HOST = "https://mainnet.alphaswap.pro/ims/image/";
-
-export class TokenApi {
+export class ArcaneApi {
   host: string;
   chainId: string;
 
@@ -55,44 +53,39 @@ export class TokenApi {
   }
 
   async getTokens(): Promise<Token[]> {
-    const resp = await this.fetchData<AllTokenResp>(`/tokens`);
-    if (resp.code !== 0) {
-      throw new Error(resp.msg);
-    }
-    return resp.data.tokens
-      .filter((item) => item.token_type === 1)
+    const resp = await this.fetchData<ArcaneTokensResp>(`/token/all`);
+    return resp.tokens
+      .filter((item) => item.verified)
       .map((item) => ({
-        tokenId: `${item.token_id}field`,
-        name: item.name,
+        tokenId: `${item.tokenId.value}field`,
+        name: item.name ?? item.symbol,
         symbol: item.symbol,
-        decimals: item.decimals,
-        logo: `${TOKEN_IMG_HOST}${item.logo}`,
-        // 1 is verified token, 2 is user created token
-        official: item.token_type === 1,
-        programId: ALPHA_TOKEN_PROGRAM_ID,
+        decimals: Number(item.decimals.value),
+        logo: item.logo,
+        official: true,
+        programId: item.program,
       }));
   }
 
   async searchTokens(keyword: string): Promise<Token[]> {
-    const formatText = keyword.endsWith("field")
-      ? keyword.slice(0, -5)
-      : keyword;
-    const resp = await this.fetchData<AllTokenResp>(
-      `/search/tokens/${formatText}?_=${Date.now()}`,
-    );
-    if (resp.code !== 0) {
-      throw new Error(resp.msg);
+    try {
+      const formatText = keyword.endsWith("field")
+        ? keyword.slice(0, -5).toLowerCase()
+        : keyword.toLowerCase();
+      const tokens = await this.getTokens();
+      const result = tokens.filter((item) => {
+        if (
+          item.name.toLowerCase().includes(formatText) ||
+          item.symbol.toLowerCase().includes(formatText)
+        ) {
+          return true;
+        }
+        return false;
+      });
+      return result;
+    } catch (err) {
+      console.error("arcane search error: ", err);
+      return [];
     }
-    const result = resp.data.tokens.map((item) => ({
-      tokenId: `${item.token_id}field`,
-      name: item.name,
-      symbol: item.symbol,
-      decimals: item.decimals,
-      logo: `${TOKEN_IMG_HOST}${item.logo}`,
-      // 1 is verified token, 2 is user created token
-      official: item.token_type === 1,
-      programId: ALPHA_TOKEN_PROGRAM_ID as InnerProgramId,
-    }));
-    return result;
   }
 }
