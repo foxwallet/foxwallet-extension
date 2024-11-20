@@ -19,6 +19,12 @@ export const chainUniqueIdToCoinType = (uniqueId: ChainUniqueId): CoinType => {
     case InnerChainUniqueId.ALEO_MAINNET:
       return CoinType.ALEO;
     default: {
+      if (InnerChainUniqueIdValues.includes(uniqueId as InnerChainUniqueId)) {
+        return CoinType.ETH;
+      }
+      if (uniqueId.startsWith(EthRpcPrefix)) {
+        return CoinType.ETH;
+      }
       // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
       throw new Error("unknown uniqueId: " + uniqueId);
     }

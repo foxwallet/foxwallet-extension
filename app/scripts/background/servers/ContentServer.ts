@@ -168,7 +168,7 @@ export class ContentWalletServer implements IContentServer {
       address,
       chainId,
     );
-    const connectHistory = connectHistorys.find(
+    const connectHistory = connectHistorys?.find(
       (item) =>
         item.site?.origin === siteInfo.origin && item.network === chainId,
     );

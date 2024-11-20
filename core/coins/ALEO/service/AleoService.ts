@@ -64,6 +64,8 @@ import { type InnerProgramId } from "../types/ProgramId";
 import { BETA_STAKING_ALEO_TOKEN } from "../config/chains";
 import { Transition } from "../types/AleoTransition";
 import { isNotEmpty } from "core/utils/is";
+import { AleoStorage } from "@/scripts/background/store/aleo/AleoStorage";
+import { CoinServiceBasic } from "core/coins/CoinServiceBasic";
 
 const CREDITS_MAPPING_NAME = "account";
 
@@ -76,7 +78,7 @@ const SYNS_BLOCK_INTERVAL = 1000;
 const GET_SPENT_TAGS_SIZE = 500;
 
 // only for popup thread
-export class AleoService {
+export class AleoService extends CoinServiceBasic {
   config: AleoConfig;
   chainId: string;
   private aleoStorage: IAleoStorage;
@@ -87,10 +89,11 @@ export class AleoService {
   private cachedSyncBlock: AleoAddressInfo | null = null;
   private lastSyncBlockTime: number = 0;
 
-  constructor(config: AleoConfig, storage: IAleoStorage) {
+  constructor(config: AleoConfig) {
+    super(config);
     this.config = config;
     this.chainId = config.chainId;
-    this.aleoStorage = storage;
+    this.aleoStorage = AleoStorage.getInstance();
     this.rpcService = createAleoRpcService(
       config.rpcList.map((item) => ({
         url: item,

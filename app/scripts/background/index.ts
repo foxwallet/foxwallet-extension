@@ -1,4 +1,3 @@
-import { coinServiceEntry } from "@/services/coin/CoinService";
 import { PortName } from "../../common/types/port";
 import { Connection } from "../../common/utils/connection";
 import { offscreen } from "./aleo";
@@ -20,6 +19,7 @@ import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { clearSwrCache, swrStorageInstance } from "@/common/utils/indexeddb";
 import { startCheckSyncing } from "./offscreen";
 import { accountSettingStorage } from "./store/account/AccountStorage";
+import { coinServiceEntry } from "core/coins/CoinServiceEntry";
 
 const keepAliveConnection = new Connection(
   keepAliveHandler,

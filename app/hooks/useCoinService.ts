@@ -1,7 +1,10 @@
-import { coinServiceEntry } from "@/services/coin/CoinService";
+// import { coinServiceEntry } from "@/services/coin/CoinService";
 import { ALEO_CHAIN_CONFIGS } from "core/coins/ALEO/config/chains";
 import { coinBasicFactory } from "core/coins/CoinBasicFactory";
-import { CoinServiceEntry } from "core/coins/CoinServiceEntry";
+import {
+  coinServiceEntry,
+  CoinServiceEntry,
+} from "core/coins/CoinServiceEntry";
 import { chainUniqueIdToCoinType } from "core/helper/CoinType";
 import {
   type ChainUniqueId,

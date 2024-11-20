@@ -28,7 +28,7 @@ export const useAuth = () => {
     if (res) {
       dispatch.user.setHasAuth({ hasAuth: true });
       // console.log("resyncAllWalletsToStore called");
-      void dispatch.accountV2.resyncAllWalletsToStore();
+      await dispatch.accountV2.resyncAllWalletsToStore();
     }
     return res;
   }, []);

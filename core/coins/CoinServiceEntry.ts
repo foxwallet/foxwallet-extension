@@ -4,17 +4,21 @@ import { AleoService } from "./ALEO/service/AleoService";
 import { CoinType } from "core/types";
 import { AleoStorage } from "@/scripts/background/store/aleo/AleoStorage";
 import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
+import { getChainConfig } from "@/services/coin/CoinService";
+import { type ETHConfig } from "core/coins/ETH/types/ETHConfig";
+import { EthService } from "core/coins/ETH/service/EthService";
+import { type CoinServiceBasic } from "core/coins/CoinServiceBasic";
 
-export type CoinService = AleoService;
+export type CoinService = AleoService | EthService;
 
 export type ChainConfigMap = {
   [uniqueId in ChainUniqueId]: ChainBaseConfig;
 };
 
 export class CoinServiceEntry {
-  serviceMap: { [uniqueId in ChainUniqueId]?: AleoService };
+  serviceMap: { [uniqueId in ChainUniqueId]?: CoinServiceBasic };
 
-  constructor(private chainConfig: ChainConfigMap) {
+  constructor() {
     this.serviceMap = {};
   }
 
@@ -25,7 +29,12 @@ export class CoinServiceEntry {
       switch (config.coinType) {
         case CoinType.ALEO: {
           const aleoConfig = config as AleoConfig;
-          instance = this.initAleosService(aleoConfig);
+          instance = this.initAleoService(aleoConfig);
+          break;
+        }
+        case CoinType.ETH: {
+          const ethConfig = config as ETHConfig;
+          instance = this.initEthService(ethConfig);
           break;
         }
         default: {
@@ -45,10 +54,17 @@ export class CoinServiceEntry {
   }
 
   getChainConfig(uniqueId: ChainUniqueId): ChainBaseConfig {
-    return this.chainConfig[uniqueId];
+    // return this.chainConfig[uniqueId];
+    return getChainConfig({ uniqueId });
   }
 
-  protected initAleosService(aleoConfig: AleoConfig) {
-    return new AleoService(aleoConfig, AleoStorage.getInstance());
+  protected initAleoService(aleoConfig: AleoConfig) {
+    return new AleoService(aleoConfig);
+  }
+
+  protected initEthService(ethConfig: ETHConfig) {
+    return new EthService(ethConfig);
   }
 }
+
+export const coinServiceEntry = new CoinServiceEntry();

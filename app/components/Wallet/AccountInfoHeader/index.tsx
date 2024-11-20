@@ -56,6 +56,7 @@ import { useTxsNotification } from "@/hooks/useTxHistory";
 import { NATIVE_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { useChainMode } from "@/hooks/useChainMode";
+import { type AleoService } from "core/coins/ALEO/service/AleoService";
 
 const rotateAnimation = keyframes`
   from { transform: rotate(0deg) }
@@ -110,8 +111,9 @@ export const AccountInfoHeader = () => {
           case FaucetStatus.EMPTY: {
             const address = selectedAccount.account.address;
             const coinType = chainUniqueIdToCoinType(uniqueId);
-            const { rawMessage, displayMessage } =
-              await coinService.faucetMessage(address);
+            const { rawMessage, displayMessage } = await (
+              coinService as AleoService
+            ).faucetMessage(address);
             const { confirmed } = await showSignMessageDialog({
               address,
               message: displayMessage,
@@ -123,7 +125,7 @@ export const AccountInfoHeader = () => {
                 coinType,
                 message: stringToHex(rawMessage),
               });
-              const res = await coinService.requestFaucet({
+              const res = await (coinService as AleoService).requestFaucet({
                 address,
                 message: rawMessage,
                 signature,
@@ -148,7 +150,10 @@ export const AccountInfoHeader = () => {
                 getCurrLanguage() === SupportLanguages.ZH
                   ? ExplorerLanguages.ZH
                   : ExplorerLanguages.EN;
-              const url = coinService.getTxDetailUrl(status.txId, lang);
+              const url = (coinService as AleoService).getTxDetailUrl(
+                status.txId,
+                lang,
+              );
               if (url) {
                 void Browser.tabs.create({ url });
               }

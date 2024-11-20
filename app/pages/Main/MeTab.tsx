@@ -21,6 +21,11 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import browser from "webextension-polyfill";
 import { usePopupSelector } from "@/hooks/useStore";
+import { useCoinService } from "@/hooks/useCoinService";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
+import type { GasFee } from "core/types/GasFee";
+import { CoinType } from "core/types";
+import { useClient } from "@/hooks/useClient";
 
 export const MeTab = () => {
   const navigate = useNavigate();
@@ -49,12 +54,48 @@ export const MeTab = () => {
   const onCummunity = useCallback(() => {
     navigate("/community");
   }, [navigate]);
+  const { popupServerClient } = useClient();
+
+  const { nativeCurrency, chainConfig, coinService } = useCoinService(
+    InnerChainUniqueId.SEPOLIA,
+  );
 
   // TODO local
   const state = usePopupSelector((state) => state);
-  const onSecurityTips = useCallback(() => {
-    console.log(state);
-  }, [state]);
+  const onSecurityTips = useCallback(async () => {
+    const walletAddress = "0x2A4f7271bB40cEdcD03c80e2A039F46966D54168";
+    const targetAddress = "0x6C072DB1b73e2bf4e354cCE3d4a87970c77e9dB0";
+    const balance = await coinService.getBalance(walletAddress);
+    console.log("balance", balance);
+    const gas = (await coinService.estimateGasFee({
+      tx: {
+        from: walletAddress,
+        to: targetAddress,
+        value: 10000000000000n,
+      },
+    })) as GasFee<CoinType.ETH>;
+    console.log("gas", gas);
+    const nonce = await coinService.getNonce({
+      address: walletAddress,
+    });
+    const privateKey = await popupServerClient.getPrivateKey({
+      walletId: "U8DxGFQQ_qyJGaDmc01H2",
+      accountId: "2qcb0omId_YZUI4QUV_Ay",
+      coinType: CoinType.ETH,
+    });
+
+    const tx = await coinService.sendNativeCoin({
+      tx: {
+        from: walletAddress,
+        to: targetAddress,
+        value: 1000000000000000n,
+        gasFee: gas,
+        nonce,
+      },
+      signer: { privateKey },
+    });
+    console.log("tx", tx);
+  }, [coinService, popupServerClient]);
 
   const onSecurityTips1 = useCallback(() => {
     const url =
