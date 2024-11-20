@@ -23,6 +23,7 @@ import { AleoTxType } from "core/coins/ALEO/types/History";
 import { Token } from "core/coins/ALEO/types/Token";
 import {
   ALPHA_TOKEN_PROGRAM_ID,
+  ARCANE_PROGRAM_ID,
   BETA_STAKING_PROGRAM_ID,
   NATIVE_TOKEN_PROGRAM_ID,
 } from "core/coins/ALEO/constants";
@@ -124,10 +125,34 @@ function SendScreen() {
                 inputs = [finalTransferRecord.plaintext, to, `${amount}u128`];
                 break;
               }
+              case ARCANE_PROGRAM_ID: {
+                inputs = [to, `${amount}u128`, finalTransferRecord.plaintext];
+                break;
+              }
             }
             break;
           }
-          case AleoTransferMethod.PUBLIC:
+          case AleoTransferMethod.PUBLIC: {
+            switch (token.programId) {
+              case NATIVE_TOKEN_PROGRAM_ID: {
+                inputs = [to, `${amount}u64`];
+                break;
+              }
+              case BETA_STAKING_PROGRAM_ID: {
+                inputs = [to, `${amount}u64`];
+                break;
+              }
+              case ALPHA_TOKEN_PROGRAM_ID: {
+                inputs = [token.tokenId, to, `${amount}u128`];
+                break;
+              }
+              case ARCANE_PROGRAM_ID: {
+                inputs = [token.tokenId, to, `${amount}u128`];
+                break;
+              }
+            }
+            break;
+          }
           case AleoTransferMethod.PUBLIC_TO_PRIVATE: {
             switch (token.programId) {
               case NATIVE_TOKEN_PROGRAM_ID: {
@@ -140,6 +165,10 @@ function SendScreen() {
               }
               case ALPHA_TOKEN_PROGRAM_ID: {
                 inputs = [token.tokenId, to, `${amount}u128`];
+                break;
+              }
+              case ARCANE_PROGRAM_ID: {
+                inputs = [token.tokenId, to, `${amount}u128`, "false"];
                 break;
               }
             }

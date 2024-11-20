@@ -23,6 +23,7 @@ import {
 import { AleoGasFee } from "core/types/GasFee";
 import {
   ALPHA_TOKEN_PROGRAM_ID,
+  ARCANE_PROGRAM_ID,
   BETA_STAKING_PROGRAM_ID,
   FAILED_TX_REMOVE_TIME,
   LOCAL_TX_EXPIRE_TIME,
@@ -57,6 +58,7 @@ import { Token, TokenWithBalance } from "../types/Token";
 import { type InnerProgramId } from "../types/ProgramId";
 import { BETA_STAKING_ALEO_TOKEN } from "../config/chains";
 import { Transition } from "../types/AleoTransition";
+import { ArcaneService } from "./instances/arcane";
 
 const CREDITS_MAPPING_NAME = "account";
 
@@ -75,6 +77,7 @@ export class AleoService {
   private aleoStorage: IAleoStorage;
   private rpcService: AleoRpcService;
   private apiService: AleoApiService;
+  private arcaneService: ArcaneService;
   private walletService: AleoWalletService;
   private tokenService: TokenService;
   private cachedSyncBlock: AleoAddressInfo | null = null;
@@ -107,6 +110,16 @@ export class AleoService {
         configs: [
           {
             url: this.config.alphaSwapApi,
+            chainId: this.config.chainId,
+          },
+        ],
+      });
+    }
+    if (this.config.arcaneApi) {
+      this.arcaneService = new ArcaneService({
+        configs: [
+          {
+            url: this.config.arcaneApi,
             chainId: this.config.chainId,
           },
         ],
@@ -256,6 +269,21 @@ export class AleoService {
           stAleoRecords[commitment] = record;
         }
         allRecordsMap[BETA_STAKING_PROGRAM_ID] = stAleoRecords;
+      }
+
+      const arcaneRecords = allRecordsMap[ARCANE_PROGRAM_ID];
+      if (arcaneRecords) {
+        for (const [commitment, record] of Object.entries(arcaneRecords)) {
+          if (!record || record.parsedContent) {
+            continue;
+          }
+          record.parsedContent = {
+            token: record.content.token_id.slice(0, -8),
+            amount: record.content.amount.slice(0, -12),
+          };
+          arcaneRecords[commitment] = record;
+        }
+        allRecordsMap[ARCANE_PROGRAM_ID] = arcaneRecords;
       }
 
       const result = {
@@ -1084,15 +1112,25 @@ export class AleoService {
     const { recordsMap } = result;
     let records: RecordDetailWithSpent[] = [];
     if (program) {
-      if (program === ALPHA_TOKEN_PROGRAM_ID) {
-        records = Object.values(recordsMap[program] ?? {}).filter((item) => {
-          if (!item) return false;
-          return item.parsedContent?.token === tokenId;
-        }) as RecordDetailWithSpent[];
-      } else {
-        records = Object.values(recordsMap[program] ?? {}).filter(
-          (item) => !!item,
-        );
+      switch (program) {
+        case ALPHA_TOKEN_PROGRAM_ID:
+        case ARCANE_PROGRAM_ID: {
+          records = Object.values(recordsMap[program] ?? {}).filter((item) => {
+            if (!item) return false;
+            return item.parsedContent?.token === tokenId;
+          }) as RecordDetailWithSpent[];
+          break;
+        }
+        case BETA_STAKING_PROGRAM_ID: {
+          records = Object.values(recordsMap[program] ?? {}).filter(
+            (item) => !!item,
+          );
+        }
+        default: {
+          records = Object.values(recordsMap[program] ?? {}).filter(
+            (item) => !!item,
+          );
+        }
       }
     } else {
       let programs = Object.keys(recordsMap);
@@ -1441,6 +1479,22 @@ export class AleoService {
         }
         return parseU64(balance);
       }
+      case ARCANE_PROGRAM_ID: {
+        const id = hashBHP256(`{account: ${address}, token_id: ${tokenId}}`);
+        const res = await this.rpcService
+          .currInstance()
+          .getProgramMappingValue(programId, "authorized_balances", id);
+        if (!res || typeof res !== "string" || res === "null") {
+          return 0n;
+        }
+        const match = res.match(/balance:\s*(\d+)u128?/);
+        const balance = match?.[1];
+        if (!balance) {
+          return 0n;
+        } else {
+          return BigInt(balance);
+        }
+      }
       default: {
         throw new Error("Unsupported program id " + programId);
       }
@@ -1494,6 +1548,28 @@ export class AleoService {
           }
         }, 0n);
       }
+      case ARCANE_PROGRAM_ID: {
+        const result = await this.getRecords(
+          address,
+          ARCANE_PROGRAM_ID,
+          RecordFilter.UNSPENT,
+        );
+        return result.reduce((sum, record) => {
+          if (record.parsedContent) {
+            if (record.parsedContent.token !== tokenId) {
+              return sum;
+            } else {
+              return sum + BigInt(record.parsedContent.amount);
+            }
+          } else {
+            if (record.content.token_id.slice(0, -8) !== tokenId) {
+              return sum;
+            } else {
+              return sum + BigInt(record.content.amount.slice(0, -12));
+            }
+          }
+        }, 0n);
+      }
       default: {
         throw new Error("Unsupported program id " + programId);
       }
@@ -1517,25 +1593,34 @@ export class AleoService {
   }
 
   async getAllTokens() {
-    const tokens = await this.tokenService.currInstance().getTokens();
-    return [BETA_STAKING_ALEO_TOKEN, ...tokens];
+    const [tokens, arcaneTokens] = await Promise.all([
+      this.tokenService.currInstance().getTokens(),
+      this.arcaneService.currInstance().getTokens(),
+    ]);
+    return [BETA_STAKING_ALEO_TOKEN, ...tokens, ...arcaneTokens];
   }
 
   async searchTokens(keyword: string) {
     const searchStAleo = keyword.includes("st") || keyword.includes("ale");
-    const tokens = await this.tokenService.currInstance().searchTokens(keyword);
-    return searchStAleo ? [BETA_STAKING_ALEO_TOKEN, ...tokens] : tokens;
+    const [tokens, arcaneTokens] = await Promise.all([
+      this.tokenService.currInstance().searchTokens(keyword),
+      this.arcaneService.currInstance().searchTokens(keyword),
+    ]);
+    return searchStAleo
+      ? [BETA_STAKING_ALEO_TOKEN, ...tokens, ...arcaneTokens]
+      : [...tokens, ...arcaneTokens];
   }
 
   async getInteractiveTokens(address: string): Promise<TokenWithBalance[]> {
     const tokens = await this.getAllTokens();
-    const top10Tokens = tokens.slice(0, 10);
+    // exclude stAleo
+    const top10Tokens = tokens.slice(1, 11);
     let balances = await Promise.all(
       top10Tokens.map(async (token) => {
         try {
           const balance = await this.getTokenBalance(
             address,
-            ALPHA_TOKEN_PROGRAM_ID,
+            token.programId,
             token.tokenId,
           );
           return {
@@ -1748,6 +1833,15 @@ export class AleoService {
               record.parsedContent = {
                 amount: record.content.amount.slice(0, -11),
               };
+            }
+            case ARCANE_PROGRAM_ID: {
+              record.parsedContent = {
+                token: record.content.token_id.slice(0, -8),
+                amount: record.content.amount.slice(0, -12),
+              };
+              if (record.parsedContent.token !== token.tokenId) {
+                continue;
+              }
             }
             default: {
               throw new Error(
