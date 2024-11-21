@@ -25,13 +25,24 @@ const CreateWalletScreen = () => {
     <PageWithHeader title={t("Wallet:Manage:addWallet")} enableBack>
       <Content>
         <Flex flexDir={"column"} h={"full"} justify={"center"} align={"center"}>
-          <Button onClick={() => createMnemonic()} alignSelf={"stretch"}>
+          <Button
+            onClick={() => {
+              createMnemonic();
+            }}
+            alignSelf={"stretch"}
+          >
             {t("Wallet:Create:title")}
           </Button>
           <Text color={"gray.500"} fontSize={"smaller"} mt={2}>
             {t("Wallet:Create:explain")}
           </Text>
-          <Button mt={6} onClick={() => importMnemonic()} alignSelf={"stretch"}>
+          <Button
+            mt={6}
+            onClick={() => {
+              importMnemonic();
+            }}
+            alignSelf={"stretch"}
+          >
             {t("Wallet:Import:importMnemonic")}
           </Button>
           <Text color={"gray.500"} fontSize={"smaller"} mt={2}>
@@ -39,7 +50,9 @@ const CreateWalletScreen = () => {
           </Text>
           <Button
             mt={6}
-            onClick={() => importPrivateKey()}
+            onClick={() => {
+              importPrivateKey();
+            }}
             alignSelf={"stretch"}
           >
             {t("Wallet:Import:importPrivateKey")}

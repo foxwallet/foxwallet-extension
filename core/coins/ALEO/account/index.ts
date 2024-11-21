@@ -10,18 +10,7 @@ import { logger } from "@/common/utils/logger";
 class AleoBasic extends CoinBasic<CoinType.ALEO> {
   constructor() {
     super(CoinType.ALEO);
-    init();
-  }
-
-  public isValidAddress(address: string): boolean {
-    try {
-      const addressObj = Address.from_string(address);
-      console.log("===> addressObj: ", addressObj, !!addressObj);
-      return !!addressObj;
-    } catch (err) {
-      logger.log("===> isValidAddress failed: ", err, address);
-      return false;
-    }
+    void init();
   }
 
   public isValidPrivateKey(

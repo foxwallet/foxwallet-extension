@@ -1,4 +1,4 @@
-import { AccountOption } from "./CoinBasic";
+import { type AccountOption } from "./CoinBasic";
 import { type CoinType } from "./CoinType";
 import { type EncryptedField } from "./EncryptedField";
 

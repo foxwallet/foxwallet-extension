@@ -29,5 +29,6 @@ body {
   position: relative;
   font-size: 14px;
   overflow: hidden;
-  max-height: 600px;
+  height: 100vh;
+  min-height: 600px;
 }

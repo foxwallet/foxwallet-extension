@@ -22,7 +22,7 @@ import {
   SPLIT_RECORD_FEE,
 } from "core/coins/ALEO/constants";
 import { AleoFeeMethod } from "core/coins/ALEO/types/FeeMethod";
-import { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
+import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 import {
   AleoRecordMethod,
   AleoTransferMethod,

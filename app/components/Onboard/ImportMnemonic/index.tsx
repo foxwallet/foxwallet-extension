@@ -1,10 +1,10 @@
 import {
-  ChangeEvent,
+  type ChangeEvent,
   useCallback,
   useEffect,
   useMemo,
   useState,
-  KeyboardEvent,
+  type KeyboardEvent,
 } from "react";
 import { H6 } from "../../../common/theme/components/text";
 import { Box, Button, Flex, Text, Textarea } from "@chakra-ui/react";
@@ -35,7 +35,7 @@ export const ImportMnemonicStep = ({ onConfirm }: Props) => {
     const wordlist = wordlists.english;
     let exist = false;
     const matches = [];
-    for (let word of wordlist) {
+    for (const word of wordlist) {
       if (word === lastWord) {
         exist = true;
         break;
@@ -64,7 +64,7 @@ export const ImportMnemonicStep = ({ onConfirm }: Props) => {
   const checkMnemonicWord = useCallback(
     (originalText: string) => {
       const words = originalText.trim().split(" ");
-      const lastWord = words.pop() || "";
+      const lastWord = words.pop() ?? "";
       const { correct: lastWordCorrect, matchWords: _matchWords } =
         checkLastWord(lastWord);
       setMatchWords(_matchWords);
@@ -95,7 +95,7 @@ export const ImportMnemonicStep = ({ onConfirm }: Props) => {
   );
 
   const onInputChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
-    let value = e.target.value;
+    const value = e.target.value;
     let processText = value.toLowerCase().replace(/\s\s+/g, " ");
     processText = processText.replace(/[^a-zA-Z\s]/g, "");
     setMnemonic(processText);
@@ -148,7 +148,9 @@ export const ImportMnemonicStep = ({ onConfirm }: Props) => {
               py={"1"}
               mr={"2"}
               mt={"2"}
-              onClick={() => onReplaceLastWord(item)}
+              onClick={() => {
+                onReplaceLastWord(item);
+              }}
             >
               <Text color={"green.700"}>{item}</Text>
             </Box>

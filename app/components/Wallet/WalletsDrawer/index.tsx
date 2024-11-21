@@ -7,13 +7,14 @@ import {
   IconArrowRight,
   IconCheckLineBlack,
 } from "@/components/Custom/Icon";
-import React, { useCallback } from "react";
+import type React from "react";
+import { useCallback } from "react";
 import { usePopupDispatch } from "@/hooks/useStore";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
 import { H6 } from "@/common/theme/components/text";
 import { useNavigate } from "react-router-dom";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
-import { OneMatchGroupAccount } from "@/scripts/background/store/vault/types/keyring";
+import { type OneMatchGroupAccount } from "@/scripts/background/store/vault/types/keyring";
 
 interface AccountListItemProps {
   account: OneMatchGroupAccount;
@@ -78,7 +79,7 @@ const WalletsDrawer = (props: Props) => {
     (account: OneMatchGroupAccount) => {
       if (!selectedWallet?.walletId) return;
 
-      dispatch.accountV2.setSelectedGroupAccount({
+      void dispatch.accountV2.setSelectedGroupAccount({
         selectedGroupAccount: account,
       });
       onConfirm?.();

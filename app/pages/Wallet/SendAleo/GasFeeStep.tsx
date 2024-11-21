@@ -15,11 +15,11 @@ import {
   NATIVE_TOKEN_TOKEN_ID,
 } from "core/coins/ALEO/constants";
 import { AleoFeeMethod } from "core/coins/ALEO/types/FeeMethod";
-import { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
-import { Token } from "core/coins/ALEO/types/Token";
+import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
+import { type Token } from "core/coins/ALEO/types/Token";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
-import { AleoGasFee } from "core/types/GasFee";
+import { type AleoGasFee } from "core/types/GasFee";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -107,7 +107,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
         setFeeInfo({ baseFee, priorityFee });
       } catch (err) {
         setFeeInfo(null);
-        showErrorToast({ message: (err as Error).message });
+        void showErrorToast({ message: (err as Error).message });
       } finally {
         setLoadingGasFee(false);
       }
@@ -115,7 +115,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
     [coinService, token],
   );
   useEffect(() => {
-    getGasFee(transferMethod);
+    void getGasFee(transferMethod);
   }, [transferMethod]);
 
   // fee record
@@ -129,7 +129,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
         if (!transferRecord) {
           return undefined;
         }
-        for (let record of records) {
+        for (const record of records) {
           if (record.commitment === transferRecord.commitment) {
             continue;
           }
@@ -146,7 +146,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
   const [selectedFeeRecord, setSelectedFeeRecord] = useState<
     RecordDetailWithSpent | undefined
   >();
-  const currFeeRecord = selectedFeeRecord || defaultFeeRecord;
+  const currFeeRecord = selectedFeeRecord ?? defaultFeeRecord;
 
   const isPrivateMethod: boolean = useMemo(() => {
     return transferMethod.startsWith("transfer_private");
@@ -178,7 +178,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
   const [selectedFeeType, setSelectedFeeType] = useState<AleoFeeMethod | null>(
     null,
   );
-  const currFeeType: AleoFeeMethod = selectedFeeType || defaultFeeType;
+  const currFeeType: AleoFeeMethod = selectedFeeType ?? defaultFeeType;
   const onSelectFeeType = useCallback(async () => {
     if (!balance) {
       return;
@@ -193,7 +193,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
       balance,
       selectedFeeMethod: currFeeType,
       selectedFeeRecord: currFeeRecord,
-      recordList: recordList,
+      recordList,
       nativeCurrency,
     });
     if (data) {
@@ -443,7 +443,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
           <Flex fontSize={"small"} color={"gray.500"} flex={1}>
             {currFeeType === AleoFeeMethod.FEE_PRIVATE ? (
               <Flex onClick={onSelectFeeType} mt={2} flex={1}>
-                {!!currFeeRecord ? (
+                {currFeeRecord ? (
                   <Flex>
                     {t("Send:payPrivateRecord")}&nbsp; (
                     <TokenNum

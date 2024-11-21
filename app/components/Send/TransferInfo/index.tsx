@@ -10,9 +10,12 @@ import {
 } from "@chakra-ui/react";
 import { P3 } from "../../../common/theme/components/text";
 import { promisifyChooseDialogWrapper } from "../../../common/utils/dialog";
-import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
-import { NativeToken, NativeTokenWithAddress } from "core/types/Token";
-import { AleoFeeMethod } from "core/coins/ALEO/types/FeeMethod";
+import { type AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
+import {
+  type NativeToken,
+  type NativeTokenWithAddress,
+} from "core/types/Token";
+import { type AleoFeeMethod } from "core/coins/ALEO/types/FeeMethod";
 import { TokenNum } from "@/components/Wallet/TokenNum";
 import { useTranslation } from "react-i18next";
 
@@ -92,7 +95,14 @@ const AleoTransferInfoDrawer = (props: Props) => {
                 symbol={nativeCurrency.symbol}
               />
             </Flex>
-            <Button flex={1} mx="2" mt="2" onClick={() => onConfirm()}>
+            <Button
+              flex={1}
+              mx="2"
+              mt="2"
+              onClick={() => {
+                onConfirm();
+              }}
+            >
               Confirm
             </Button>
           </Flex>

@@ -1,18 +1,20 @@
-import { RootState, store } from "@/store/store";
+import { type RootState, store } from "@/store/store";
 import { ALEO_CHAIN_CONFIGS } from "core/coins/ALEO/config/chains";
-import { CoinServiceEntry } from "core/coins/CoinServiceEntry";
+import { ETH_CHAIN_CONFIGS } from "core/coins/ETH/config/chains";
 import { getInnerChainConfig } from "core/helper/ChainConfig";
 import { chainUniqueIdToCoinType } from "core/helper/CoinType";
-import { ChainBaseConfig } from "core/types/ChainBaseConfig";
-import { ChainUniqueId, InnerChainUniqueId } from "core/types/ChainUniqueId";
+import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
+import {
+  type ChainUniqueId,
+  InnerChainUniqueId,
+} from "core/types/ChainUniqueId";
 
 // If support user config, get chain config map from store
 const ChainConfigMap = {
   // [InnerChainUniqueId.ALEO_TESTNET]: ALEO_CHAIN_CONFIGS.TESTNET,
   [InnerChainUniqueId.ALEO_MAINNET]: ALEO_CHAIN_CONFIGS.MAINNET,
+  [InnerChainUniqueId.ETHEREUM]: ETH_CHAIN_CONFIGS.MAINNET,
 };
-
-export const coinServiceEntry = new CoinServiceEntry(ChainConfigMap);
 
 export const getChainConfig = ({
   state,

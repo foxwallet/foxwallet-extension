@@ -1,25 +1,25 @@
-import { AleoConfig } from "../types/AleoConfig";
-import { IAleoStorage } from "../types/IAleoStorage";
+import { type AleoConfig } from "../types/AleoConfig";
+import { type IAleoStorage } from "../types/IAleoStorage";
 import {
-  AleoAddressInfo,
-  FutureJSON,
-  RecordDetailWithSpent,
+  type AleoAddressInfo,
+  type FutureJSON,
+  type RecordDetailWithSpent,
 } from "../types/SyncTask";
 import { parseU128, parseU64 } from "../utils/num";
 import { logger } from "@/common/utils/logger";
 import {
-  InputItem,
+  type InputItem,
   RecordFilter,
 } from "@/scripts/background/servers/IWalletServer";
-import { groupBy, uniqBy } from "lodash";
-import { AleoRpcService, createAleoRpcService } from "./instances/rpc";
-import { AleoCreditMethod } from "../types/TransferMethod";
+import { groupBy, isEmpty, uniqBy } from "lodash";
+import { type AleoRpcService, createAleoRpcService } from "./instances/rpc";
+import { type AleoCreditMethod } from "../types/TransferMethod";
 import {
-  AleoLocalTxInfo,
-  AleoTransaction,
+  type AleoLocalTxInfo,
+  type AleoTransaction,
   AleoTxStatus,
 } from "../types/Transaction";
-import { AleoGasFee } from "core/types/GasFee";
+import { type AleoGasFee } from "core/types/GasFee";
 import {
   ALPHA_TOKEN_PROGRAM_ID,
   BETA_STAKING_PROGRAM_ID,
@@ -29,10 +29,10 @@ import {
   NATIVE_TOKEN_TOKEN_ID,
 } from "../constants";
 import {
-  AleoHistoryItem,
+  type AleoHistoryItem,
   AleoHistoryType,
-  AleoLocalHistoryItem,
-  AleoOnChainHistoryItem,
+  type AleoLocalHistoryItem,
+  type AleoOnChainHistoryItem,
   AleoTxAddressType,
   AleoTxType,
 } from "../types/History";
@@ -44,21 +44,28 @@ import {
   RecordCiphertext,
   hashBHP256,
   Plaintext,
+  Address,
 } from "aleo_wasm";
-import { AleoApiService, createAleoApiService } from "./instances/sync";
-import { AleoSyncAccount } from "../types/AleoSyncAccount";
-import { AleoWalletService, createAleoWalletService } from "./instances/api";
-import { Pagination } from "../types/Pagination";
-import { FaucetMessage, FaucetResp } from "../types/Faucet";
+import { type AleoApiService, createAleoApiService } from "./instances/sync";
+import { type AleoSyncAccount } from "../types/AleoSyncAccount";
+import {
+  type AleoWalletService,
+  createAleoWalletService,
+} from "./instances/api";
+import { type Pagination } from "../types/Pagination";
+import { type FaucetMessage, type FaucetResp } from "../types/Faucet";
 import { ExplorerLanguages } from "core/types/ExplorerLanguages";
 import {
-  AlphaSwapTokenService,
+  type AlphaSwapTokenService,
   createAlphaSwapTokenService,
 } from "./instances/token";
-import { Token, TokenWithBalance } from "../types/Token";
+import { type Token, type TokenWithBalance } from "../types/Token";
 import { type InnerProgramId } from "../types/ProgramId";
 import { BETA_STAKING_ALEO_TOKEN } from "../config/chains";
 import { Transition } from "../types/AleoTransition";
+import { isNotEmpty } from "core/utils/is";
+import { AleoStorage } from "@/scripts/background/store/aleo/AleoStorage";
+import { CoinServiceBasic } from "core/coins/CoinServiceBasic";
 
 const CREDITS_MAPPING_NAME = "account";
 
@@ -71,7 +78,7 @@ const SYNS_BLOCK_INTERVAL = 1000;
 const GET_SPENT_TAGS_SIZE = 500;
 
 // only for popup thread
-export class AleoService {
+export class AleoService extends CoinServiceBasic {
   config: AleoConfig;
   chainId: string;
   private aleoStorage: IAleoStorage;
@@ -82,10 +89,11 @@ export class AleoService {
   private cachedSyncBlock: AleoAddressInfo | null = null;
   private lastSyncBlockTime: number = 0;
 
-  constructor(config: AleoConfig, storage: IAleoStorage) {
+  constructor(config: AleoConfig) {
+    super(config);
     this.config = config;
     this.chainId = config.chainId;
-    this.aleoStorage = storage;
+    this.aleoStorage = AleoStorage.getInstance();
     this.rpcService = createAleoRpcService(
       config.rpcList.map((item) => ({
         url: item,
@@ -111,6 +119,17 @@ export class AleoService {
           chainId: this.config.chainId,
         },
       ]);
+    }
+  }
+
+  validateAddress(address: string): boolean {
+    try {
+      const addressObj = Address.from_string(address);
+      console.log("===> addressObj: ", addressObj, !!addressObj);
+      return !!addressObj;
+    } catch (err) {
+      logger.log("===> isValidAddress failed: ", err, address);
+      return false;
     }
   }
 
@@ -366,8 +385,8 @@ export class AleoService {
     ]);
 
     return {
-      privateBalance: privateBalance,
-      publicBalance: publicBalance,
+      privateBalance,
+      publicBalance,
       total: privateBalance + publicBalance,
     };
   }
@@ -568,7 +587,7 @@ export class AleoService {
       const { records: recordWithName, changed } =
         await this.getRecordsWithName(
           programId,
-          result.recordsMap[programId] || {},
+          result.recordsMap[programId] ?? {},
         );
       recordsMap = recordWithName;
       if (changed) {
@@ -597,6 +616,8 @@ export class AleoService {
         case RecordFilter.ALL: {
           return true;
         }
+        default:
+          return false;
       }
     }) as RecordDetailWithSpent[];
     if (programId !== NATIVE_TOKEN_PROGRAM_ID) {
@@ -956,9 +977,9 @@ export class AleoService {
             const isOwner = this.isRecordOwner(viewKey, output.value);
             if (isOwner) {
               isSender = true;
-              const baseFee = parseU64(feeTransition.inputs?.[1].value || "");
+              const baseFee = parseU64(feeTransition.inputs?.[1].value ?? "");
               const priorityFee = parseU64(
-                feeTransition.inputs?.[2].value || "",
+                feeTransition.inputs?.[2].value ?? "",
               );
               fee = baseFee + priorityFee;
             }
@@ -971,7 +992,7 @@ export class AleoService {
     const history: AleoOnChainHistoryItem = {
       type: AleoHistoryType.ON_CHAIN,
       txId: item.origin_data.id,
-      programId: programId,
+      programId,
       functionName: funcName,
       height: item.height,
       timestamp: item.timestamp,
@@ -979,7 +1000,7 @@ export class AleoService {
         ? AleoTxAddressType.SEND
         : AleoTxAddressType.RECEIVE,
       status: AleoTxStatus.FINALIZD,
-      txType: txType,
+      txType,
     };
     await this.aleoStorage.cacheTransaction(this.chainId, history);
     return history;
@@ -1006,11 +1027,11 @@ export class AleoService {
       const viewKeyObj = this.parseViewKey(account.viewKey);
       const recordsMap = syncBlocksResult?.recordsMap ?? {};
       const records = [];
-      for (let recordMap of Object.values(recordsMap)) {
+      for (const recordMap of Object.values(recordsMap)) {
         if (!recordMap) {
           continue;
         }
-        for (let record of Object.values(recordMap)) {
+        for (const record of Object.values(recordMap)) {
           if (!record) {
             continue;
           }
@@ -1052,14 +1073,8 @@ export class AleoService {
     }
     const historyList = [...publicHistory, ...privateHistory];
     historyList.sort((item1, item2) => {
-      if (
-        (item1 as AleoOnChainHistoryItem).height &&
-        (item2 as AleoOnChainHistoryItem).height
-      ) {
-        return (
-          (item2 as AleoOnChainHistoryItem).height -
-          (item1 as AleoOnChainHistoryItem).height
-        );
+      if (item1.height && item2.height) {
+        return item2.height - item1.height;
       }
       return item2.timestamp - item1.timestamp;
     });
@@ -1083,16 +1098,12 @@ export class AleoService {
           return item.parsedContent?.token === tokenId;
         }) as RecordDetailWithSpent[];
       } else {
-        records = Object.values(recordsMap[program] ?? {}).filter(
-          (item) => !!item,
-        );
+        records = Object.values(recordsMap[program] ?? {}).filter(isNotEmpty);
       }
     } else {
-      let programs = Object.keys(recordsMap);
-      for (let program of programs) {
-        let res = Object.values(recordsMap[program] ?? {}).filter(
-          (item) => !!item,
-        );
+      const programs = Object.keys(recordsMap);
+      for (const program of programs) {
+        const res = Object.values(recordsMap[program] ?? {}).filter(isNotEmpty);
         records = records.concat(res);
       }
     }
@@ -1108,10 +1119,10 @@ export class AleoService {
 
     return transactionIds.map((txId) => {
       const records = groupRecords[txId];
-      let executionRecords = [];
-      let feeRecords = [];
+      const executionRecords = [];
+      const feeRecords = [];
       let height = 0;
-      for (let record of records) {
+      for (const record of records) {
         height = record.height;
         record.timestamp = record.timestamp * 1000;
         if (
@@ -1152,11 +1163,11 @@ export class AleoService {
       const viewKeyObj = this.parseViewKey(account.viewKey);
       const recordsMap = syncBlocksResult?.recordsMap ?? {};
       const records = [];
-      for (let recordMap of Object.values(recordsMap)) {
+      for (const recordMap of Object.values(recordsMap)) {
         if (!recordMap) {
           continue;
         }
-        for (let record of Object.values(recordMap)) {
+        for (const record of Object.values(recordMap)) {
           if (!record) {
             continue;
           }
@@ -1335,7 +1346,7 @@ export class AleoService {
         return `[${item.join(",")}]`;
       }
       if (item.id && item.owner && item.program_id) {
-        const records = recordsMap[item.program_id] || {};
+        const records = recordsMap[item.program_id] ?? {};
         const existRecord = records[item.id];
         if (existRecord && existRecord.plaintext) {
           if (item.program_id === NATIVE_TOKEN_PROGRAM_ID) {
@@ -1344,10 +1355,10 @@ export class AleoService {
           return existRecord.plaintext;
         }
       }
-      throw new Error("Invalid input item: " + item);
+      throw new Error(`Invalid input item: ${JSON.stringify(item)}`);
     });
     const creditsRecords = Object.values(
-      recordsMap[NATIVE_TOKEN_PROGRAM_ID] || {},
+      recordsMap[NATIVE_TOKEN_PROGRAM_ID] ?? {},
     ).filter((item) => {
       if (!item) {
         return false;
@@ -1522,7 +1533,7 @@ export class AleoService {
   async getInteractiveTokens(address: string): Promise<TokenWithBalance[]> {
     const tokens = await this.getAllTokens();
     const top10Tokens = tokens.slice(0, 10);
-    let balances = await Promise.all(
+    const balances = await Promise.all(
       top10Tokens.map(async (token) => {
         try {
           const balance = await this.getTokenBalance(
@@ -1673,9 +1684,9 @@ export class AleoService {
             const isOwner = this.isRecordOwner(viewKey, output.value);
             if (isOwner) {
               isSender = true;
-              const baseFee = parseU64(feeTransition.inputs?.[1].value || "");
+              const baseFee = parseU64(feeTransition.inputs?.[1].value ?? "");
               const priorityFee = parseU64(
-                feeTransition.inputs?.[2].value || "",
+                feeTransition.inputs?.[2].value ?? "",
               );
               fee = baseFee + priorityFee;
             }
@@ -1688,7 +1699,7 @@ export class AleoService {
     const history: AleoOnChainHistoryItem = {
       type: AleoHistoryType.ON_CHAIN,
       txId: item.origin_data.id,
-      programId: programId,
+      programId,
       functionName: funcName,
       height: item.height,
       timestamp: item.timestamp,
@@ -1696,7 +1707,7 @@ export class AleoService {
         ? AleoTxAddressType.SEND
         : AleoTxAddressType.RECEIVE,
       status: AleoTxStatus.FINALIZD,
-      txType: txType,
+      txType,
     };
     await this.aleoStorage.cacheTransaction(this.chainId, history);
     return history;
@@ -1718,7 +1729,7 @@ export class AleoService {
       const viewKeyObj = this.parseViewKey(account.viewKey);
       const recordMap = syncBlocksResult?.recordsMap[token.programId] ?? {};
       const records: RecordDetailWithSpent[] = [];
-      for (let record of Object.values(recordMap)) {
+      for (const record of Object.values(recordMap)) {
         if (!record) {
           continue;
         }
@@ -1732,11 +1743,13 @@ export class AleoService {
               if (record.parsedContent.token !== token.tokenId) {
                 continue;
               }
+              break;
             }
             case BETA_STAKING_PROGRAM_ID: {
               record.parsedContent = {
                 amount: record.content.amount.slice(0, -11),
               };
+              break;
             }
             default: {
               throw new Error(
@@ -1764,14 +1777,8 @@ export class AleoService {
     }
     const historyList = [...privateHistory];
     historyList.sort((item1, item2) => {
-      if (
-        (item1 as AleoOnChainHistoryItem).height &&
-        (item2 as AleoOnChainHistoryItem).height
-      ) {
-        return (
-          (item2 as AleoOnChainHistoryItem).height -
-          (item1 as AleoOnChainHistoryItem).height
-        );
+      if (item1.height && item2.height) {
+        return item2.height - item1.height;
       }
       return item2.timestamp - item1.timestamp;
     });

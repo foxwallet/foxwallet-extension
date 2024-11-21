@@ -1,7 +1,7 @@
-import { Execution } from "./AleoExecution";
-import { Fee } from "./AleoFee";
-import { AleoDeploymentInTx } from "./Deployment";
-import { AleoTxType } from "./History";
+import { type Execution } from "./AleoExecution";
+import { type Fee } from "./AleoFee";
+import { type AleoDeploymentInTx } from "./Deployment";
+import { type AleoTxType } from "./History";
 import { Token } from "./Token";
 
 export interface AleoSendTxParams {

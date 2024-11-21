@@ -2,12 +2,12 @@ import { createModel } from "@rematch/core";
 import { type RootModel } from "./index";
 import {
   WalletType,
-  DisplayWallet,
-  OneMatchGroupAccount,
+  type DisplayWallet,
+  type OneMatchGroupAccount,
 } from "@/scripts/background/store/vault/types/keyring";
 import { CoinType } from "core/types";
 import { getClients } from "@/hooks/useClient";
-import { ChainUniqueId } from "core/types/ChainUniqueId";
+import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import {
   chainUniqueIdToAccountOptions,
   chainUniqueIdToCoinType,
@@ -102,14 +102,14 @@ export const accountV2 = createModel<RootModel>()({
 
       const allWalletInfo: WalletInfoMap = {};
 
-      walletList.map((wallet) => {
+      walletList.forEach((wallet) => {
         const { mnemonic, ...restInfo } = wallet;
 
         if (oldAllWalletIds.includes(wallet.walletId)) {
           const oldGroupAccountList =
             oldAllWalletInfo[wallet.walletId].groupAccounts || [];
 
-          const newAccountList = [...(wallet.groupAccounts || [])].map(
+          const newGroupAccountList = [...(wallet.groupAccounts || [])].map(
             (account) => {
               const matchedAccount = oldGroupAccountList.find(
                 (oldAccount) => oldAccount.groupId === account.groupId,
@@ -117,7 +117,7 @@ export const accountV2 = createModel<RootModel>()({
               if (matchedAccount) {
                 return {
                   ...account,
-                  ...matchedAccount, // using accountName of the existed account in Redux store
+                  groupName: matchedAccount.groupName,
                 };
               }
               return account;
@@ -128,7 +128,7 @@ export const accountV2 = createModel<RootModel>()({
             ...restInfo,
             // make sure using walletName in Redux store
             walletName: oldAllWalletInfo[wallet.walletId].walletName || "",
-            groupAccounts: newAccountList,
+            groupAccounts: newGroupAccountList,
           };
         } else {
           allWalletInfo[wallet.walletId] = restInfo;
@@ -231,6 +231,8 @@ export const accountV2 = createModel<RootModel>()({
           clients.popupServerClient.getAllWallet(),
           clients.popupServerClient.getSelectedGroupAccount(),
         ]);
+        console.log("resyncAllWalletsToStore", wallets);
+        console.log("resyncAllWalletsToStore", selectedGroupAccount);
         if (!wallets) return;
         const hdWallets = wallets[WalletType.HD] ?? [];
         const simpleWallets = wallets[WalletType.SIMPLE] ?? [];
@@ -238,6 +240,7 @@ export const accountV2 = createModel<RootModel>()({
         dispatch.accountV2._setAllWalletInfo({ walletList });
 
         if (!selectedGroupAccount) return;
+        console.log("resyncAllWalletsToStore===", selectedGroupAccount);
         dispatch.accountV2._setSelectedGroupAccount({
           groupAccount: selectedGroupAccount,
         });
@@ -256,7 +259,7 @@ export const accountV2 = createModel<RootModel>()({
       const hdWallets = wallets[WalletType.HD] ?? [];
       const simpleWallets = wallets[WalletType.SIMPLE] ?? [];
       const walletList = [...hdWallets, ...simpleWallets];
-      dispatch.accountV2._setAllWalletInfo({ walletList: walletList });
+      dispatch.accountV2._setAllWalletInfo({ walletList });
       return [...walletList];
     },
   }),

@@ -1,8 +1,8 @@
-import { useMemo } from "react";
+import { type PropsWithChildren, useMemo } from "react";
 import UpgradeReminderScreen from "@/pages/Onboard/UpgradeReminder";
 import { CHROME_MIN_VERSION } from "@/common/constants";
 
-export const CheckBrowserVersion = (props: { children: React.ReactNode }) => {
+export const CheckBrowserVersion = (props: PropsWithChildren): JSX.Element => {
   const showReminder = useMemo(() => {
     const userAgent = navigator.userAgent.toLowerCase();
     if (!userAgent.includes("chrome")) {

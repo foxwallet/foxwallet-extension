@@ -1,9 +1,9 @@
-import { ChainUniqueId } from "core/types/ChainUniqueId";
+import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import { useCoinService } from "./useCoinService";
 import { useCallback, useMemo } from "react";
-import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
+import { type AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
 import useSWR from "swr";
-import { InnerProgramId } from "core/coins/ALEO/types/ProgramId";
+import { type InnerProgramId } from "core/coins/ALEO/types/ProgramId";
 
 export const useAleoGasFee = (
   uniqueId: ChainUniqueId,

@@ -1,10 +1,12 @@
 import { createModel } from "@rematch/core";
 import { type RootModel } from "./index";
-import { DisplayWalletV1 } from "@/scripts/background/store/vault/types/keyringV1";
+import {
+  type DisplayWalletV1,
+  type DisplayAccountV1,
+} from "@/scripts/background/store/vault/types/keyringV1";
 import { CoinType } from "core/types";
 import { DEFAULT_CHAIN_UNIQUE_ID } from "core/constants/chain";
-import { ChainUniqueId } from "core/types/ChainUniqueId";
-import { DisplayAccountV1 } from "@/scripts/background/store/vault/types/keyringV1";
+import { type ChainUniqueId } from "core/types/ChainUniqueId";
 
 type SelectedAccount = DisplayAccountV1 & {
   walletId: string;

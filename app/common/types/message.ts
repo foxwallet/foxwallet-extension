@@ -1,6 +1,6 @@
 import { SiteInfo } from "@/scripts/content/host";
 import {
-  SiteMetadata,
+  type SiteMetadata,
   type ContentServerMethod,
   type PopupServerMethod,
 } from "../../scripts/background/servers/IWalletServer";

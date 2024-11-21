@@ -29,7 +29,9 @@ function CurrencyScreen() {
           {Object.values(SupportCurrency).map((currency) => (
             <Flex
               key={currency}
-              onClick={() => changeCurrency(currency)}
+              onClick={() => {
+                changeCurrency(currency);
+              }}
               justify={"space-between"}
               align={"center"}
               borderStyle={"solid"}

@@ -64,7 +64,7 @@ const CommunityScreen = () => {
         py={2.5}
         mb={2.5}
         as={"button"}
-        onClick={() => Browser.tabs.create({ url: item.url })}
+        onClick={async () => Browser.tabs.create({ url: item.url })}
       >
         <Flex align={"center"}>
           {item.icon}

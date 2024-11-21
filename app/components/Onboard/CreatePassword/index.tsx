@@ -49,7 +49,7 @@ export const CreatePasswordStep = (props: {
 
   useEffect(() => {
     if (debouncePassword) {
-      getPasswordStrength(debouncePassword).then((score) => {
+      void getPasswordStrength(debouncePassword).then((score) => {
         setPasswordScore(score);
       });
     } else {

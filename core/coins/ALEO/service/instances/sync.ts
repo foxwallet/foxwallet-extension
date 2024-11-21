@@ -1,4 +1,7 @@
-import { AutoSwitchProxy, createAutoSwitchApi } from "../../../../utils/retry";
+import {
+  type AutoSwitchProxy,
+  createAutoSwitchApi,
+} from "../../../../utils/retry";
 import { AleoSyncApi } from "../api/sync";
 
 interface SyncApiConfig {

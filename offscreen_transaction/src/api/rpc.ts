@@ -1,5 +1,4 @@
-import { Block } from "../types";
-import { Transaction } from "../types";
+import { type Block, type Transaction } from "../types";
 
 async function get(url: URL | string) {
   try {
@@ -75,8 +74,8 @@ export class AleoRpc {
    * @example
    * const blockRange = networkClient.getBlockRange(2050, 2100);
    */
-  async getBlockRange(start: number, end: number): Promise<Array<Block>> {
-    return await this.fetchData<Array<Block>>(
+  async getBlockRange(start: number, end: number): Promise<Block[]> {
+    return await this.fetchData<Block[]>(
       "/blocks?start=" + start + "&end=" + end,
     );
   }
@@ -88,7 +87,7 @@ export class AleoRpc {
    * const latestHeight = networkClient.getLatestBlock();
    */
   async getLatestBlock(): Promise<Block> {
-    return (await this.fetchData<Block>("/latest/block")) as Block;
+    return await this.fetchData<Block>("/latest/block");
   }
 
   /**
@@ -135,8 +134,8 @@ export class AleoRpc {
    * const expectedMappings = ["account"];
    * assert.deepStrictEqual(mappings, expectedMappings);
    */
-  async getProgramMappingNames(programId: string): Promise<Array<string>> {
-    return await this.fetchData<Array<string>>(
+  async getProgramMappingNames(programId: string): Promise<string[]> {
+    return await this.fetchData<string[]>(
       "/program/" + programId + "/mappings",
     );
   }
@@ -193,8 +192,8 @@ export class AleoRpc {
    * @example
    * const transactions = networkClient.getTransactions(654);
    */
-  async getTransactions(height: number): Promise<Array<Transaction>> {
-    return await this.fetchData<Array<Transaction>>(
+  async getTransactions(height: number): Promise<Transaction[]> {
+    return await this.fetchData<Transaction[]>(
       "/block/" + height.toString() + "/transactions",
     );
   }
@@ -205,19 +204,19 @@ export class AleoRpc {
    * @example
    * const transactions = networkClient.getTransactionsInMempool();
    */
-  async getTransactionsInMempool(): Promise<Array<Transaction>> {
-    return await this.fetchData<Array<Transaction>>("/memoryPool/transactions");
+  async getTransactionsInMempool(): Promise<Transaction[]> {
+    return await this.fetchData<Transaction[]>("/memoryPool/transactions");
   }
 
   /**
    * Returns the transition id by its unique identifier
-   * @param {string} transition_id - The transition id to get
+   * @param {string} transitionId - The transition id to get
    *
    * @example
    * const transition = networkClient.getTransitionId("2429232855236830926144356377868449890830704336664550203176918782554219952323field");
    */
-  async getTransitionId(transition_id: string): Promise<string> {
-    return await this.fetchData<string>("/find/transitionID/" + transition_id);
+  async getTransitionId(transitionId: string): Promise<string> {
+    return await this.fetchData<string>(`/find/transitionID/${transitionId}`);
   }
 
   /**
@@ -229,16 +228,18 @@ export class AleoRpc {
   async submitTransaction(transaction: any): Promise<string> {
     const url = `${this.host}/${this.chainId}/transaction/broadcast`;
     try {
-      const transaction_string = transaction.toString();
+      const transactionString = transaction.toString();
       const response = await post(url, {
-        body: transaction_string,
+        body: transactionString,
         headers: {
           "Content-Type": "application/json",
         },
       });
       if (!response.ok) {
         throw new Error(
-          `post error: submitTransaction statusCode ${response.status} body ${response.body}`,
+          `post error: submitTransaction statusCode ${
+            response.status
+          } body ${await response.text()}`,
         );
       }
 

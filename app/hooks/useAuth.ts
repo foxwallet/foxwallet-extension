@@ -27,6 +27,8 @@ export const useAuth = () => {
     const res = await popupServerClient.login({ password });
     if (res) {
       dispatch.user.setHasAuth({ hasAuth: true });
+      // console.log("resyncAllWalletsToStore called");
+      await dispatch.accountV2.resyncAllWalletsToStore();
     }
     return res;
   }, []);

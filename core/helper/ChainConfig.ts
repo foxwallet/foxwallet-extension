@@ -1,8 +1,9 @@
 import { CoinType } from "core/types";
-import { ChainBaseConfig } from "core/types/ChainBaseConfig";
-import { ChainUniqueId } from "core/types/ChainUniqueId";
+import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
+import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import { chainUniqueIdToCoinType } from "./CoinType";
 import { INNER_ALEO_CONFIG } from "core/coins/ALEO/config/chains";
+import { INNER_ETH_CONFIG } from "core/coins/ETH/config/chains";
 
 export const getInnerChainConfig = ({
   coinType,
@@ -16,6 +17,8 @@ export const getInnerChainConfig = ({
     type = chainUniqueIdToCoinType(uniqueId);
   }
   switch (type) {
+    case CoinType.ETH:
+      return INNER_ETH_CONFIG.find((item) => item.uniqueId === uniqueId);
     case CoinType.ALEO:
       return INNER_ALEO_CONFIG.find((item) => item.uniqueId === uniqueId);
     default:

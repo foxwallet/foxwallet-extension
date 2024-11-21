@@ -1,9 +1,9 @@
-import { ChainUniqueId } from "core/types/ChainUniqueId";
+import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import { useCallback } from "react";
 import useSWR from "swr";
 import { useCoinService } from "./useCoinService";
 import { FaucetStatus } from "core/coins/ALEO/types/Faucet";
-import { OneMatchAccount } from "@/scripts/background/store/vault/types/keyring";
+import { type OneMatchAccount } from "@/scripts/background/store/vault/types/keyring";
 
 export const useFaucetStatus = (
   uniqueId: ChainUniqueId,

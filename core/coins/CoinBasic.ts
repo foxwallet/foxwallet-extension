@@ -14,8 +14,6 @@ export abstract class CoinBasic<T extends CoinType> {
     address?: string,
   ): string;
 
-  public abstract isValidAddress(address: string): boolean;
-
   public abstract isValidPrivateKey(
     rawPrivateKey: string,
     pkType: ImportPrivateKeyTypeMap[T],
@@ -24,5 +22,5 @@ export abstract class CoinBasic<T extends CoinType> {
   public abstract deriveAccount(
     privateKey: string,
     pkType: ImportPrivateKeyTypeMap[T],
-  ): { address: string; publicKey: string; viewKey: string };
+  ): { address: string; publicKey: string; viewKey?: string };
 }

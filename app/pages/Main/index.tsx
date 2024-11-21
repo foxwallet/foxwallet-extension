@@ -1,10 +1,8 @@
-import { Flex, Text, useTab } from "@chakra-ui/react";
+import { Flex, Text, useTab, Tabs, TabList, TabPanels } from "@chakra-ui/react";
 import { useCallback, forwardRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { Tabs, TabList, TabPanels } from "@chakra-ui/react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { WalletTab } from "./WalletTab";
 import { MeTab } from "./MeTab";
-import { useLocation } from "react-router-dom";
 import {
   IconMeSelected,
   IconMeUnselected,
@@ -20,13 +18,16 @@ function MainScreen() {
 
   // 获取 URL 中的 Tab 索引
   const tabIndex = parseInt(
-    new URLSearchParams(location.search).get("tab") || "0",
+    new URLSearchParams(location.search).get("tab") ?? "0",
   );
 
   const navigate = useNavigate();
-  const handleTabsChange = useCallback((index: number) => {
-    navigate(`?tab=${index}`);
-  }, []);
+  const handleTabsChange = useCallback(
+    (index: number) => {
+      navigate(`?tab=${index}`);
+    },
+    [navigate],
+  );
 
   const { borderColor, backgroundColor } = useThemeStyle();
 
@@ -95,3 +96,4 @@ const CustomTab = forwardRef<any, any>((props, ref) => {
     </Flex>
   );
 });
+CustomTab.displayName = "CustomTab";

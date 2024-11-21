@@ -1,6 +1,6 @@
 import { CoinCurve } from "../../../types/CoinCurve";
-import { CoinDerivation } from "../../../types/CoinDerivation";
-import { AleoAccountOption } from "../types/AleoAccount";
+import { type CoinDerivation } from "../../../types/CoinDerivation";
+import { type AleoAccountOption } from "../types/AleoAccount";
 
 export const ALEO_DERIVATION: CoinDerivation = {
   path: ["m/44'/0'"],

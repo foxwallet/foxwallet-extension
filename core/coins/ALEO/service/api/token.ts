@@ -1,6 +1,6 @@
 import { get, post } from "@/common/utils/request";
-import { AllTokenResp } from "./token.di";
-import { Token } from "../../types/Token";
+import { type AllTokenResp } from "./token.di";
+import { type Token } from "../../types/Token";
 import { ALPHA_TOKEN_PROGRAM_ID } from "../../constants";
 
 export const TOKEN_IMG_HOST = "https://mainnet.alphaswap.pro/ims/image/";

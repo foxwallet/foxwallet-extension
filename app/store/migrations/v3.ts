@@ -1,5 +1,5 @@
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
-import { RootState } from "../store";
+import { type RootState } from "../store";
 
 export const migrationV3 = (state: RootState): RootState => {
   try {

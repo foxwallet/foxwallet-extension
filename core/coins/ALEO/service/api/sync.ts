@@ -1,5 +1,9 @@
 import { get, post } from "@/common/utils/request";
-import { RecordFileInfo, RecordRawInfo, SyncResp } from "./sync.di";
+import {
+  type RecordFileInfo,
+  type RecordRawInfo,
+  type SyncResp,
+} from "./sync.di";
 
 export class AleoSyncApi {
   host: string;

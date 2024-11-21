@@ -1,8 +1,7 @@
 import { PageWithHeader } from "@/layouts/Page";
 import { Box, Button, Flex, Text, useDisclosure } from "@chakra-ui/react";
-import { type SyntheticEvent } from "react";
 import type React from "react";
-import { useCallback } from "react";
+import { type SyntheticEvent, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCurrWallet, useWallets } from "@/hooks/useWallets";
 import {
@@ -47,7 +46,7 @@ const WalletItem: React.FC<WalletItemProps> = ({
 
   const handleEditName = useCallback(
     (event: SyntheticEvent) => {
-      showEditWalletNameDrawer({ wallet });
+      void showEditWalletNameDrawer({ wallet });
       event.stopPropagation();
     },
     [showEditWalletNameDrawer, wallet],
@@ -111,7 +110,7 @@ function ManageWalletScreen() {
           wallet.groupAccounts[0];
 
         if (account) {
-          dispatch.accountV2.setSelectedGroupAccount({
+          void dispatch.accountV2.setSelectedGroupAccount({
             selectedGroupAccount: {
               wallet: restWallet,
               group: account,
@@ -132,7 +131,7 @@ function ManageWalletScreen() {
           navigate("/onboard/home");
         }
       } catch (e) {
-        console.warn("delete wallet error " + e);
+        console.warn("delete wallet error ", e);
       }
     },
     [deleteWallet, navigate],
@@ -180,7 +179,9 @@ function ManageWalletScreen() {
           bottom={5}
           left={5}
           right={5}
-          onClick={() => navigate("/create_wallet")}
+          onClick={() => {
+            navigate("/create_wallet");
+          }}
         >
           {t("Wallet:Manage:addWallet")}
         </Button>

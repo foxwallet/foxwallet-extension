@@ -59,7 +59,11 @@ export const BackupReminderView = () => {
       </Flex>
       <Flex align={"flex-start"}>
         <IconBackupReminder mt={1} />
-        <Hover onClick={() => setVisible((prev) => !prev)}>
+        <Hover
+          onClick={() => {
+            setVisible((prev) => !prev);
+          }}
+        >
           <IconCloseLineGray w={4} h={4} />
         </Hover>
       </Flex>

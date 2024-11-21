@@ -9,7 +9,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { promisifyChooseDialogWrapper } from "../../../common/utils/dialog";
-import { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
+import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 import { TokenNum } from "@/components/Wallet/TokenNum";
 import { NativeToken } from "core/types/Token";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
@@ -18,7 +18,7 @@ import {
   IconUncheckCircleGray,
 } from "@/components/Custom/Icon";
 import { useTranslation } from "react-i18next";
-import { Token } from "core/coins/ALEO/types/Token";
+import { type Token } from "core/coins/ALEO/types/Token";
 
 interface Props {
   isOpen: boolean;
@@ -62,7 +62,9 @@ const SelectRecordDrawer = (props: Props) => {
                 pb={"2"}
                 borderBottom="1px solid"
                 borderColor={"gray.100"}
-                onClick={() => onConfirm(record)}
+                onClick={() => {
+                  onConfirm(record);
+                }}
                 justifyContent={"space-between"}
               >
                 <Flex align={"center"}>

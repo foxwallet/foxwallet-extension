@@ -1,4 +1,4 @@
-import { RecordDetail } from "./address";
+import { type RecordDetail } from "./address";
 
 export interface AddressRecords {
   address: string;

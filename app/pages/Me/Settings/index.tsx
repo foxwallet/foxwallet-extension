@@ -90,7 +90,11 @@ const SettingsScreen = () => {
           icon={<IconAbout w={4} h={4} />}
           onPress={onAbout}
         />
-        <Button onClick={() => navigate("/manage_wallet")}>
+        <Button
+          onClick={() => {
+            navigate("/manage_wallet");
+          }}
+        >
           {t("Setting:switchWallet")}
         </Button>
       </Content>

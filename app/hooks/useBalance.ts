@@ -4,7 +4,7 @@ import { useClient } from "./useClient";
 import { useCallback, useMemo } from "react";
 import { useCoinService } from "./useCoinService";
 import { NATIVE_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
-import { InnerProgramId } from "core/coins/ALEO/types/ProgramId";
+import { type InnerProgramId } from "core/coins/ALEO/types/ProgramId";
 
 export interface Balance {
   privateBalance: bigint;
@@ -48,7 +48,7 @@ export const useBalance = ({
     mutate: getBalance,
     isLoading: loadingBalance,
   } = useSWR(key, fetchBalance, {
-    refreshInterval: refreshInterval,
+    refreshInterval,
   });
 
   const res = useMemo(() => {

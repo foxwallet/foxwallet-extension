@@ -1,12 +1,13 @@
 import { Button, Flex, Text } from "@chakra-ui/react";
 import { promisifyChooseDialogWrapper } from "../../../common/utils/dialog";
 import { useCurrWallet, useWallets } from "@/hooks/useWallets";
-import React, { useCallback, useMemo, useState } from "react";
+import type React from "react";
+import { useCallback, useMemo, useState } from "react";
 import { BottomUpDrawer } from "@/components/Custom/BottomUpDrawer";
 import { BaseInput } from "@/components/Custom/Input";
 import { useTranslation } from "react-i18next";
 import { WarningArea } from "@/components/Custom/WarningArea";
-import { DisplayWallet } from "@/scripts/background/store/vault/types/keyring";
+import { type DisplayWallet } from "@/scripts/background/store/vault/types/keyring";
 
 interface Props {
   wallet: DisplayWallet;

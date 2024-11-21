@@ -83,20 +83,26 @@ import CheckboxSelected from "@/common/assets/image/icon_checkbox_selected.svg";
 import CheckboxUnselected from "@/common/assets/image/icon_checkbox_unselected.svg";
 import SendContact from "@/common/assets/image/icon_send_contact.svg";
 
-const ThemeIconFill: (i: any) => ChakraComponent<any, any> =
-  (icon: any) => (props: ChakraComponent<any, any>) => {
+const ThemeIconFill: (i: any) => ChakraComponent<any, any> = (icon: any) => {
+  const ThemeIcon = (props: ChakraComponent<any, any>) => {
     const styles = useStyleConfig("SvgIcon");
     const OriginIcon = chakra(icon);
     return <OriginIcon __css={styles} {...props} />;
   };
+  ThemeIcon.displayName = `ThemeIconFill(${icon.displayName || icon.name})`;
+  return ThemeIcon;
+};
 
-const ThemeIconStroke: (i: any) => ChakraComponent<any, any> =
-  (icon: any) => (props: ChakraComponent<any, any>) => {
+const ThemeIconStroke: (i: any) => ChakraComponent<any, any> = (icon: any) => {
+  const ThemeIcon = (props: ChakraComponent<any, any>) => {
     const iconStrokeColor = useColorModeValue("black", "white");
 
     const OriginIcon = chakra(icon);
     return <OriginIcon stroke={iconStrokeColor} {...props} />;
   };
+  ThemeIcon.displayName = `ThemeIconStroke(${icon.displayName || icon.name})`;
+  return ThemeIcon;
+};
 
 export const IconCheckCircle = chakra(CheckCircle);
 export const IconCheckLine = chakra(CheckLine);

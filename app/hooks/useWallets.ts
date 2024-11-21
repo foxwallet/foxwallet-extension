@@ -5,7 +5,7 @@ import { isEqual } from "lodash";
 import { showPasswordVerifyDrawer } from "@/components/Custom/PasswordVerifyDrawer";
 import { showDeleteWalletWarningDialog } from "@/components/Wallet/DeleteWalletWarningDialog";
 import { useGroupAccount } from "./useGroupAccount";
-import { OneMatchGroupAccount } from "@/scripts/background/store/vault/types/keyring";
+import { type OneMatchGroupAccount } from "@/scripts/background/store/vault/types/keyring";
 
 export const useWallets = () => {
   const { popupServerClient } = useClient();
@@ -23,7 +23,7 @@ export const useWallets = () => {
   }, [allWalletInfo]);
 
   useEffect(() => {
-    dispatch.accountV2.resyncAllWalletsToStore();
+    void dispatch.accountV2.resyncAllWalletsToStore();
   }, [dispatch]);
 
   const addAccount = useCallback(
@@ -45,12 +45,12 @@ export const useWallets = () => {
     async (walletId: string) => {
       const { confirmed: confirmedPass } = await showPasswordVerifyDrawer();
       if (!confirmedPass) {
-        return Promise.reject("Password verify failed!");
+        return Promise.reject(new Error("Password verify failed!"));
       }
 
       const { confirmed } = await showDeleteWalletWarningDialog();
       if (!confirmed) {
-        return Promise.reject("Cancel deleting!");
+        return Promise.reject(new Error("Cancel deleting!"));
       }
 
       const newWallets = await dispatch.accountV2.deleteWallet(walletId);

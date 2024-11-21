@@ -1,5 +1,5 @@
-import { ChainBaseConfig } from "core/types/ChainBaseConfig";
-import { NativeToken, NativeTokenWithAddress } from "core/types/Token";
+import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
+import { NativeToken, type NativeTokenWithAddress } from "core/types/Token";
 
 export type AleoConfig = ChainBaseConfig & {
   chainId: string;

@@ -3,7 +3,7 @@ import { PortName } from "../../common/types/port";
 import { KeepAliveClient } from "../../common/utils/client";
 import { logger } from "../../common/utils/logger";
 import { ContentClient } from "./ContentClient";
-import { RequestParams } from "./type";
+import { RequestParams } from './type';
 import { getSiteInfo } from "./host";
 
 const inject = () => {

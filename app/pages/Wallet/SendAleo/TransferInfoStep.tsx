@@ -81,6 +81,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
   const uniqueId = InnerChainUniqueId.ALEO_MAINNET;
 
   const coinBasic = useCoinBasic(uniqueId);
+  const { coinService } = useCoinService(uniqueId);
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -128,7 +129,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
         return records;
       }
       default: {
-        console.error("Unsupport programId " + tokenInfo.programId);
+        console.error(`Unsupport programId ${tokenInfo.programId}`);
         return [];
       }
     }
@@ -154,10 +155,10 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
   );
   useEffect(() => {
     if (debounceReceiverAddress) {
-      const valid = coinBasic.isValidAddress(debounceReceiverAddress);
+      const valid = coinService.validateAddress(debounceReceiverAddress);
       setAddressValid(valid);
     }
-  }, [debounceReceiverAddress, coinBasic]);
+  }, [debounceReceiverAddress, coinService]);
 
   // Transfer method
   const isPrivateMethod = useMemo(() => {
@@ -209,7 +210,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
 
   // transfer record
   const currTransferRecord: RecordDetailWithSpent | undefined =
-    selectedTransferRecord || tokenRecords[0];
+    selectedTransferRecord ?? tokenRecords[0];
 
   const recordAmount = useMemo(() => {
     switch (tokenInfo.programId) {
@@ -223,7 +224,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
         return currTransferRecord?.parsedContent?.amount;
       }
       default: {
-        console.error("Unsupport programId " + tokenInfo.programId);
+        console.error(`Unsupport programId ${tokenInfo.programId}`);
       }
     }
   }, [tokenInfo, currTransferRecord]);
@@ -375,7 +376,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
           <Flex align={"center"}>
             <TokenItem
               token={tokenInfo}
-              onClick={() =>
+              onClick={() => {
                 navigate(
                   `/select_token/${uniqueId}/${
                     selectedAccount.account.address
@@ -383,8 +384,8 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
                   {
                     replace: true,
                   },
-                )
-              }
+                );
+              }}
               hideId
               style={{ pr: 1 }}
             />
@@ -477,7 +478,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
       />
       <Flex align={"center"} mt={2} position={"relative"}>
         {isPrivateMethod ? (
-          !!currTransferRecord ? (
+          currTransferRecord ? (
             <Flex flex={1}>
               {showPrivateHint && (
                 <Flex
@@ -502,8 +503,12 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
                 </Flex>
               )}
               <Box
-                onMouseEnter={() => setShowPrivateHint(true)}
-                onMouseLeave={() => setShowPrivateHint(false)}
+                onMouseEnter={() => {
+                  setShowPrivateHint(true);
+                }}
+                onMouseLeave={() => {
+                  setShowPrivateHint(false);
+                }}
               >
                 <IconQuestionCircle mr={1} />
               </Box>

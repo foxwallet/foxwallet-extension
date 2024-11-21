@@ -1,14 +1,14 @@
 import { get, post } from "@/common/utils/request";
-import { SyncResp } from "./sync.di";
-import { AleoTransactionWithHeight } from "../../types/Transaction";
+import { type SyncResp } from "./sync.di";
+import { type AleoTransactionWithHeight } from "../../types/Transaction";
 import {
-  AleoBaseFeeResp,
-  AleoFaucetContentResp,
-  AleoFaucetStatusResp,
-  AleoPriorityFeeResp,
-  AleoRequestFaucetResp,
+  type AleoBaseFeeResp,
+  type AleoFaucetContentResp,
+  type AleoFaucetStatusResp,
+  type AleoPriorityFeeResp,
+  type AleoRequestFaucetResp,
 } from "./api.di";
-import { AleoCreditMethod } from "../../types/TransferMethod";
+import { type AleoCreditMethod } from "../../types/TransferMethod";
 
 const FAUCET_TYPE = "1001";
 
@@ -64,7 +64,7 @@ export class AleoWalletApi {
     address: string,
     cursor?: string,
   ): Promise<
-    {
+    Array<{
       id: number;
       blockHeight: number;
       blockTime: number;
@@ -80,12 +80,12 @@ export class AleoWalletApi {
       executionFunction: string;
       executionFutureValue: string;
       executionValue: string;
-    }[]
+    }>
   > {
     const cursorStr = cursor !== undefined ? `&last_height=${cursor}` : "";
     const resp = await this.fetchData<
       SyncResp<
-        {
+        Array<{
           id: number;
           block_height: number;
           block_time: number;
@@ -109,7 +109,7 @@ export class AleoWalletApi {
           // to_address: string;
           // amount: string;
           // token: string;
-        }[]
+        }>
       >
     >(`/public/tx_history?addr=${address}${cursorStr}`);
     if (resp.status !== 0) {

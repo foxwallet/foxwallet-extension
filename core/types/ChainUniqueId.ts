@@ -1,5 +1,10 @@
 export enum InnerChainUniqueId {
-  ALEO_MAINNET = "ALEO_MAINNET",
+  ALEO_MAINNET = "aleo_mainnet",
+  ETHEREUM = "ethereum",
+  BNB = "bnb",
+  FILECOIN_EVM = "filecoin-evm",
+  SEPOLIA = "sepolia",
+  // TODO other evm
 
   /**
    * @deprecated
@@ -7,12 +12,16 @@ export enum InnerChainUniqueId {
   // ALEO_TESTNET = "ALEO_TESTNET",
 }
 
+export const InnerChainUniqueIdValues = Object.values(InnerChainUniqueId);
+
 export type ChainUniqueId = InnerChainUniqueId;
 
 export enum ChainAssembleMode {
   ALL = "all",
   SINGLE = "single",
 }
+
+export const EthRpcPrefix = `${InnerChainUniqueId.ETHEREUM}-`;
 
 export type ChainDisplayMode =
   | {

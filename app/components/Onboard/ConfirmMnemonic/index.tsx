@@ -125,7 +125,7 @@ export const ConfirmMnemonicStep = (props: {
   );
 
   const [finishSelected, isValid] = useMemo(() => {
-    let havePlaceholder = answerWordList.some((item) => item === PLACEHOLDER);
+    const havePlaceholder = answerWordList.some((item) => item === PLACEHOLDER);
     if (havePlaceholder) {
       return [false, false];
     }
@@ -205,7 +205,13 @@ export const ConfirmMnemonicStep = (props: {
               width={"32%"}
               mr={(index + 1) % 3 === 0 ? "0" : "2%"}
               mt={index >= 3 ? 2 : 0}
-              onClick={option ? () => onWordCancel(index) : undefined}
+              onClick={
+                option
+                  ? () => {
+                      onWordCancel(index);
+                    }
+                  : undefined
+              }
             >
               <Text
                 wordBreak={"break-word"}
@@ -252,7 +258,9 @@ export const ConfirmMnemonicStep = (props: {
             alignItems={"center"}
             flexWrap={"wrap"}
             data-child={index}
-            onClick={() => onWordSelect(otherWord)}
+            onClick={() => {
+              onWordSelect(otherWord);
+            }}
           >
             <Text
               wordBreak={"break-word"}

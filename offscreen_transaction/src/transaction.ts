@@ -4,7 +4,7 @@ import {
   Program,
   ProgramManager,
   RecordPlaintext,
-  Transaction,
+  type Transaction,
   ProvingKey,
   VerifyingKey,
 } from "@aleohq/wasm";
@@ -14,11 +14,11 @@ import {
   type AleoSendTxParams,
   type AleoTransaction,
   type AleoLocalTxInfo,
-  AleoRequestDeploymentParams,
+  type AleoRequestDeploymentParams,
   NATIVE_TOKEN_PROGRAM_ID,
   NATIVE_TOKEN_TOKEN_ID,
 } from "./types";
-import { AleoRpcService, createAleoRpcService } from "./instances/rpc";
+import { type AleoRpcService, createAleoRpcService } from "./instances/rpc";
 import { utils } from "ethers";
 import { parseU64 } from "./utils/num";
 

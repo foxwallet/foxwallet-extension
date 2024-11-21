@@ -1,4 +1,4 @@
-import { Transition } from "./AleoTransition";
+import { type Transition } from "./AleoTransition";
 
 export type Fee = {
   transition: Transition;

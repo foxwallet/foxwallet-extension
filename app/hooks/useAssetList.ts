@@ -35,7 +35,7 @@ export const useAssetList = (uniqueId: ChainUniqueId, address: string) => {
           });
         }
       };
-      initTokens();
+      void initTokens();
     }
   }, [inited, getInteractiveTokens]);
 

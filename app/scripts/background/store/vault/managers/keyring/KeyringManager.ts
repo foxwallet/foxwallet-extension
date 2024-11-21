@@ -1,9 +1,5 @@
 import { HDKeyring } from "core/wallet/HDKeyring";
-import {
-  CoinType,
-  EncryptedField,
-  EncryptedKeyPairWithViewKey,
-} from "core/types";
+import { CoinType, EncryptedField, EncryptedKeyPairWithViewKey, } from "core/types";
 import { VaultStorage, vaultStorage } from "../../VaultStorage";
 import {
   AccountMethod,
@@ -15,19 +11,17 @@ import {
   DisplayWallet,
   GroupAccount,
   HDWallet,
-  SimpleWallet,
+  SimpleWallet, Vault, VaultKeys,
   WalletType,
 } from "../../types/keyring";
 import { nanoid } from "nanoid";
 import { AuthManager } from "../auth/AuthManager";
 import { decryptStr, encryptStr } from "core/utils/encrypt";
-import {
-  AddAccountProps,
-  ImportPrivateKeyProps,
-} from "../../../../servers/IWalletServer";
+import { AddAccountProps, ImportPrivateKeyProps, } from "../../../../servers/IWalletServer";
 import initAleoWasm from "aleo_wasm";
 import { ERROR_CODE } from "@/common/types/error";
 import { coinBasicFactory } from "core/coins/CoinBasicFactory";
+import { vaultVersion } from "@/scripts/background/store/vault/types/version";
 
 export class KeyringManager {
   #storage: VaultStorage;
@@ -61,7 +55,7 @@ export class KeyringManager {
     return groupAccounts.map((groupAccount) => {
       const { accounts, ...rest } = groupAccount;
       const displayAccounts = accounts.map((account) => {
-        const { privateKey, viewKey, ...rest } = account;
+        const { privateKey, viewKey, ...rest } = account as AccountWithViewKey;
         return rest;
       });
       return {
@@ -95,6 +89,7 @@ export class KeyringManager {
       this.#getToken();
     }
     const keyrings = (await this.#storage.getKeyring()) || {};
+    console.log("keyrings", keyrings);
     const hdWallets = (keyrings[WalletType.HD] || []).map((item) =>
       this.#formatDisplayWallet(item),
     );
@@ -362,6 +357,65 @@ export class KeyringManager {
     return await this.getHDWallet(walletId);
   }
 
+  async completeAccountsForHdWallet(): Promise<void> {
+    console.log("=====> completeAccountsForHdWallet");
+    const token = this.#getToken();
+    const vaultV2 = await this.#storage.getVault();
+    const keyringV2 = vaultV2[VaultKeys.keyring] ?? {};
+    const hdWalletsV2 = keyringV2[WalletType.HD] || [];
+    const hdWalletsPromise = hdWalletsV2.map(async (hdWalletV2)=>{
+      const { groupAccounts, ...restWallet } = hdWalletV2;
+      const keyring = await HDKeyring.restore({
+        walletId: hdWalletV2.walletId,
+        token,
+        mnemonic: hdWalletV2.mnemonic,
+      });
+      const newGroupAccountsPromise = groupAccounts.map(async (groupAccount)=>{
+        const { accounts, ...restGroup} = groupAccount;
+        const newAccounts: AccountWithViewKey[] = [];
+        for (let coinType of Object.values(CoinType)) {
+          if (accounts.some((account) => account.coinType === coinType)) {
+            continue;
+          }
+          const newAccount = (await keyring.derive(
+            nanoid(),
+            groupAccount.index ,
+            coinType,
+            token,
+          )) as EncryptedKeyPairWithViewKey;
+          const accountName = `Account ${groupAccount.index + 1}`;
+          newAccounts.push({
+            ...newAccount,
+            accountName,
+          });
+        }
+        return {
+          ...restGroup,
+          accounts: [
+            ...accounts,
+            ...newAccounts,
+          ]
+        } as GroupAccount;
+      });
+      const newGroupAccounts = await Promise.all(newGroupAccountsPromise)
+      return {
+        ...restWallet,
+        groupAccounts: newGroupAccounts,
+      } as HDWallet;
+    });
+    const newHdWallets = await Promise.all(hdWalletsPromise)
+    const newVault: Vault = {
+      [VaultKeys.cipher]: vaultV2[VaultKeys.cipher],
+      [VaultKeys.keyring]: {
+        [WalletType.HD]: newHdWallets,
+        [WalletType.SIMPLE]: keyringV2[WalletType.SIMPLE],
+        version: vaultVersion,
+      },
+    };
+    console.log("completeAccountsForHdWallet", newVault);
+    await this.#storage.setVault(newVault);
+  }
+
   async importPrivateKey<T extends CoinType>({
     walletId,
     walletName,
@@ -508,13 +562,16 @@ export class KeyringManager {
     if (!keyring) {
       throw new Error("Empty keyring");
     }
+    if (coinType !== CoinType.ALEO) {
+      throw new Error("do not support ViewKey");
+    }
     const { HD: hdWallets, SIMPLE: simpleWallets } = keyring;
     if (hdWallets) {
       for (const wallet of hdWallets) {
         for (let groupAccount of wallet.groupAccounts) {
           for (let account of groupAccount.accounts) {
             if (account.address === address && account.coinType === coinType) {
-              return account.viewKey;
+              return (account as AccountWithViewKey).viewKey;
             }
           }
         }
@@ -525,7 +582,7 @@ export class KeyringManager {
         for (let groupAccount of wallet.groupAccounts) {
           for (let account of groupAccount.accounts) {
             if (account.address === address && account.coinType === coinType) {
-              return account.viewKey;
+              return (account as AccountWithViewKey).viewKey;
             }
           }
         }

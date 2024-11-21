@@ -2,7 +2,7 @@ import {
   useDisclosure,
   ChakraBaseProvider,
   useColorMode,
-  ColorMode,
+  type ColorMode,
 } from "@chakra-ui/react";
 import React, { useEffect, useImperativeHandle, useState } from "react";
 import ReactDOM from "react-dom/client";
@@ -37,7 +37,7 @@ function ChooseDialogWrapper<OtherProps = Record<string, any>, T = undefined>(
   }, [onOpen]);
 
   const onConfirm = async (resp: T) => {
-    props.onConfirm(resp);
+    void props.onConfirm(resp);
     onClose();
   };
 

@@ -2,14 +2,14 @@ import { ERROR_CODE } from "@/common/types/error";
 import { useClient } from "@/hooks/useClient";
 import { useCoinService } from "@/hooks/useCoinService";
 import { PageWithHeader } from "@/layouts/Page";
-import { AleoFeeMethod } from "core/coins/ALEO/types/FeeMethod";
-import { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
+import { type AleoFeeMethod } from "core/coins/ALEO/types/FeeMethod";
+import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 import {
-  AleoLocalTxInfo,
+  type AleoLocalTxInfo,
   AleoTxStatus,
 } from "core/coins/ALEO/types/Transaction";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
-import { AleoGasFee } from "core/types/GasFee";
+import { type AleoGasFee } from "core/types/GasFee";
 import { nanoid } from "nanoid";
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -19,7 +19,7 @@ import { useDataRef } from "@/hooks/useDataRef";
 import { showErrorToast } from "@/components/Custom/ErrorToast";
 import { useTranslation } from "react-i18next";
 import { AleoTxType } from "core/coins/ALEO/types/History";
-import { Token } from "core/coins/ALEO/types/Token";
+import { type Token } from "core/coins/ALEO/types/Token";
 import {
   ALPHA_TOKEN_PROGRAM_ID,
   BETA_STAKING_PROGRAM_ID,
@@ -156,7 +156,7 @@ function SendScreen() {
         const timestamp = Date.now();
         const pendingTx: AleoLocalTxInfo = {
           localId,
-          address: address,
+          address,
           programId: token.programId,
           functionName: finalTransferMethod,
           inputs,
@@ -177,7 +177,7 @@ function SendScreen() {
             walletId: selectedAccount.wallet.walletId,
             accountId: selectedAccount.account.accountId,
             coinType: chainConfig.coinType,
-            address: address,
+            address,
             localId,
             chainId: chainConfig.chainId,
             programId: token.programId,
@@ -197,7 +197,7 @@ function SendScreen() {
           });
         navigate(-1);
       } catch (err) {
-        showErrorToast({ message: (err as Error).message });
+        void showErrorToast({ message: (err as Error).message });
       } finally {
         setSubmitting(false);
       }
@@ -218,17 +218,19 @@ function SendScreen() {
         return (
           <TransferInfoStep
             receiverAddress={receiverAddress}
-            setReceiverAddress={(str: string) => setReceiverAddress(str)}
+            setReceiverAddress={(str: string) => {
+              setReceiverAddress(str);
+            }}
             amountStr={amountStr}
             setAmountStr={setAmountStr}
             transferMethod={transferMethod}
-            setTransferMethod={(method: AleoTransferMethod) =>
-              setTransferMethod(method)
-            }
+            setTransferMethod={(method: AleoTransferMethod) => {
+              setTransferMethod(method);
+            }}
             selectedTransferRecord={transferRecord}
-            setSelectedTransferRecord={(record?: RecordDetailWithSpent) =>
-              setTransferRecord(record)
-            }
+            setSelectedTransferRecord={(record?: RecordDetailWithSpent) => {
+              setTransferRecord(record);
+            }}
             onConfirm={onStep1Submit}
           />
         );
@@ -236,7 +238,7 @@ function SendScreen() {
       case 2: {
         return (
           <GasFeeStep
-            receiverAddress={receiverAddress!}
+            receiverAddress={receiverAddress}
             amountNum={transferAmount!}
             transferMethod={transferMethod}
             transferRecord={transferRecord}

@@ -1,20 +1,20 @@
-import { ChainUniqueId } from "core/types/ChainUniqueId";
+import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import { useCoinService } from "./useCoinService";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
-import { Pagination } from "core/coins/ALEO/types/Pagination";
+import { type Pagination } from "core/coins/ALEO/types/Pagination";
 import {
-  AleoHistoryItem,
+  type AleoHistoryItem,
   AleoHistoryType,
-  AleoLocalHistoryItem,
-  AleoOnChainHistoryItem,
+  type AleoLocalHistoryItem,
+  type AleoOnChainHistoryItem,
   AleoTxAddressType,
   AleoTxType,
 } from "core/coins/ALEO/types/History";
 import { isEqual, uniqBy } from "lodash";
 import { AleoTxStatus } from "core/coins/ALEO/types/Transaction";
 import { useTransactionSettledToast } from "@/components/Wallet/TransactionSettledToast/useTransactionSettledToast";
-import { Token } from "core/coins/ALEO/types/Token";
+import { type Token } from "core/coins/ALEO/types/Token";
 import {
   ALPHA_TOKEN_PROGRAM_ID,
   BETA_STAKING_PROGRAM_ID,
@@ -63,6 +63,8 @@ export const useTxsNotification = (
         case AleoTxStatus.REJECTED: {
           return true;
         }
+        default:
+          return false;
       }
     });
   }, [localTxs]);
@@ -74,7 +76,7 @@ export const useTxsNotification = (
     async function notification() {
       try {
         if (newSettledTxs.length > 0) {
-          for (let tx of newSettledTxs) {
+          for (const tx of newSettledTxs) {
             if (!notifiedTxs.current.includes(tx.localId)) {
               notifiedTxs.current.push(tx.localId);
               if (Date.now() - tx.timestamp <= NotificationExpiredTime) {
@@ -88,7 +90,7 @@ export const useTxsNotification = (
         console.error("notification error: ", err);
       }
     }
-    notification();
+    void notification();
   }, [newSettledTxs, showToast, coinService]);
 };
 
@@ -185,7 +187,7 @@ export const useTxHistory = ({
     setLoading(true);
     const uncompletedLocalTxs: AleoLocalHistoryItem[] = [];
     const completedLocalTxs: AleoLocalHistoryItem[] = [];
-    for (let tx of localTxs || []) {
+    for (const tx of localTxs ?? []) {
       if (tx.txId) {
         completedLocalTxs.push(tx);
       } else {
@@ -195,7 +197,7 @@ export const useTxHistory = ({
 
     const privateFinalizedTxs: AleoOnChainHistoryItem[] = [];
 
-    for (let privateTx of privateTxs ?? []) {
+    for (const privateTx of privateTxs ?? []) {
       if (privateTx.executionRecords.length === 0) {
         continue;
       }

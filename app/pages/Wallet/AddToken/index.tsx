@@ -18,7 +18,7 @@ import {
   Spinner,
 } from "@chakra-ui/react";
 import { BETA_STAKING_PROGRAM_ID } from "core/coins/ALEO/constants";
-import { Token } from "core/coins/ALEO/types/Token";
+import { type Token } from "core/coins/ALEO/types/Token";
 import { isEqual } from "lodash";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -44,7 +44,7 @@ function AddToken() {
 
   const [selectedTokens, unselectedTokens] = useMemo(() => {
     const useTokenIds = new Set(
-      userTokens?.map((token) => token.tokenId) || [],
+      userTokens?.map((token) => token.tokenId) ?? [],
     );
     const _selectedTokens: Token[] = [];
     const _unselectedTokens: Token[] = [];
@@ -122,9 +122,16 @@ function AddToken() {
                     uniqueId={uniqueId}
                     address={selectedAccount.account.address}
                     token={token}
-                    onClick={() => unselectToken(token)}
+                    onClick={() => {
+                      unselectToken(token);
+                    }}
                   />
-                  <Flex cursor={"pointer"} onClick={() => unselectToken(token)}>
+                  <Flex
+                    cursor={"pointer"}
+                    onClick={() => {
+                      unselectToken(token);
+                    }}
+                  >
                     <IconRemoveCircle w={4} h={4} />
                   </Flex>
                 </Flex>
@@ -149,10 +156,17 @@ function AddToken() {
               >
                 <TokenItem
                   token={token}
-                  onClick={() => selectToken(token)}
+                  onClick={() => {
+                    selectToken(token);
+                  }}
                   hideId={token.programId === BETA_STAKING_PROGRAM_ID}
                 />
-                <Flex cursor={"pointer"} onClick={() => selectToken(token)}>
+                <Flex
+                  cursor={"pointer"}
+                  onClick={() => {
+                    selectToken(token);
+                  }}
+                >
                   <IconAddCircle w={4} h={4} />
                 </Flex>
               </Flex>

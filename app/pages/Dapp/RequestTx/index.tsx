@@ -74,7 +74,7 @@ function RequestTxScreen() {
 
   const onConnect = useCallback(() => {
     if (requestId && selectedAccount?.account.address) {
-      popupServerClient.onRequestFinish({
+      void popupServerClient.onRequestFinish({
         requestId,
         data: selectedAccount.account.address,
       });
@@ -83,7 +83,7 @@ function RequestTxScreen() {
 
   const onCancel = useCallback(() => {
     if (requestId) {
-      popupServerClient.onRequestFinish({
+      void popupServerClient.onRequestFinish({
         requestId,
         error: ERROR_CODE.USER_CANCEL,
       });

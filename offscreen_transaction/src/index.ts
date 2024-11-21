@@ -67,7 +67,6 @@ async function handleMessages(
               type: "sendTx",
               payload: message.payload,
             });
-            return;
           } else if (event.data?.type === "finished") {
             sendResponse({
               type: OffscreenMessageType.RESPONSE,
@@ -125,7 +124,6 @@ async function handleMessages(
               type: "deploy",
               payload: message.payload,
             });
-            return;
           } else if (event.data?.type === "finished") {
             sendResponse({
               type: OffscreenMessageType.RESPONSE,

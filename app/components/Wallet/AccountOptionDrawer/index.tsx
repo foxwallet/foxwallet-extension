@@ -8,7 +8,7 @@ import {
   IconEyeClose,
   IconEyeOn,
 } from "@/components/Custom/Icon";
-import { DisplayWallet } from "@/scripts/background/store/vault/types/keyring";
+import { type DisplayWallet } from "@/scripts/background/store/vault/types/keyring";
 import { CoinType } from "core/types";
 
 export enum AccountOperateOptions {

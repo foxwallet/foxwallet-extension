@@ -1,4 +1,7 @@
-import { ChainUniqueId, InnerChainUniqueId } from "core/types/ChainUniqueId";
+import {
+  type ChainUniqueId,
+  InnerChainUniqueId,
+} from "core/types/ChainUniqueId";
 
 export const uniqueIdToAleoChainId = (uniqueId: ChainUniqueId) => {
   switch (uniqueId) {
@@ -9,6 +12,7 @@ export const uniqueIdToAleoChainId = (uniqueId: ChainUniqueId) => {
       return "mainnet";
     }
     default: {
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       throw new Error(`Unknown uniqueId: ${uniqueId}`);
     }
   }

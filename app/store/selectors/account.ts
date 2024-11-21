@@ -1,11 +1,14 @@
 import { createSelector } from "reselect";
-import { RootState } from "../store";
+import { type RootState } from "../store";
 import { DEFAULT_CHAIN_DISPLAY_MODE } from "../wallet";
-import { DisplayWallet } from "@/scripts/background/store/vault/types/keyring";
+import { type DisplayWallet } from "@/scripts/background/store/vault/types/keyring";
 import { INNER_CHAIN_CONFIG } from "core/helper/CoinType";
-import { ChainBaseConfig } from "core/types/ChainBaseConfig";
+import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
 import { mergeLocalChainConfig } from "@/services/coin/CoinService";
-import { ChainAssembleMode, ChainUniqueId } from "core/types/ChainUniqueId";
+import {
+  ChainAssembleMode,
+  type ChainUniqueId,
+} from "core/types/ChainUniqueId";
 import { uniq } from "lodash";
 import { matchAccountsWithUnqiueId } from "../accountV2";
 
@@ -78,10 +81,10 @@ export const allChainConfigsSelector = createAppSelector(
   (chainConfigs) => {
     const innerConfigs = INNER_CHAIN_CONFIG;
     const configs: ChainBaseConfig[] = [];
-    for (let chainConfig of chainConfigs) {
+    for (const chainConfig of chainConfigs) {
       configs.push(mergeLocalChainConfig(chainConfig.uniqueId, chainConfig));
     }
-    for (let innerConfig of innerConfigs) {
+    for (const innerConfig of innerConfigs) {
       if (configs.some((item) => item.uniqueId === innerConfig.uniqueId)) {
         continue;
       }

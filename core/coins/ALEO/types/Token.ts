@@ -1,5 +1,5 @@
-import { Balance } from "./Balance";
-import { InnerProgramId } from "./ProgramId";
+import { type Balance } from "./Balance";
+import { type InnerProgramId } from "./ProgramId";
 
 export interface Token {
   tokenId: string;

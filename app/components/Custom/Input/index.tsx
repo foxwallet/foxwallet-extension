@@ -60,7 +60,7 @@ export const BaseInputGroup = (props: BaseInputGroupProps) => {
       {!!title && (
         <Flex justify={"space-between"}>
           <H6 mb={"2"}>{title}</H6>
-          {headerRightElement ? headerRightElement : null}
+          {headerRightElement ?? null}
         </Flex>
       )}
       <InputGroup>

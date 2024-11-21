@@ -16,7 +16,7 @@ function LanguageScreen() {
   const dispatch = usePopupDispatch();
   const changeLanguage = useCallback(
     (newLanguage: SupportLanguages) => {
-      dispatch.setting.changeLanguage({ language: newLanguage });
+      void dispatch.setting.changeLanguage({ language: newLanguage });
       navigate(-1);
     },
     [dispatch.setting, navigate],
@@ -31,7 +31,9 @@ function LanguageScreen() {
           {Object.values(SupportLanguages).map((language) => (
             <Flex
               key={language}
-              onClick={() => changeLanguage(language)}
+              onClick={() => {
+                changeLanguage(language);
+              }}
               justify={"space-between"}
               align={"center"}
               borderStyle={"solid"}

@@ -1,7 +1,10 @@
-import { WalletType } from "@/scripts/background/store/vault/types/keyring";
+import { type WalletType } from "@/scripts/background/store/vault/types/keyring";
 import { createModel } from "@rematch/core";
-import { ChainAssembleMode, ChainDisplayMode } from "core/types/ChainUniqueId";
-import { RootModel } from ".";
+import {
+  ChainAssembleMode,
+  type ChainDisplayMode,
+} from "core/types/ChainUniqueId";
+import { type RootModel } from ".";
 import { isEqual } from "lodash";
 
 export type AccountMatchingMeta = {

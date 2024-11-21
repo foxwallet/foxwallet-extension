@@ -1,4 +1,4 @@
-import { ChainUniqueId } from "core/types/ChainUniqueId";
+import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import { useCallback, useMemo } from "react";
 import { useClient } from "./useClient";
 import useSWR from "swr";

@@ -1,5 +1,5 @@
 import Dexie from "dexie";
-import { OneMatchGroupAccount } from "@/scripts/background/store/vault/types/keyring";
+import { type OneMatchGroupAccount } from "@/scripts/background/store/vault/types/keyring";
 
 export class AccountDatabase extends Dexie {
   selectedGroupAccount: Dexie.Table<OneMatchGroupAccount, string>;

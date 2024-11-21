@@ -1,3 +1,4 @@
+import type React from "react";
 import { IconChevronRight } from "@/components/Custom/Icon";
 import { Flex, Text } from "@chakra-ui/react";
 

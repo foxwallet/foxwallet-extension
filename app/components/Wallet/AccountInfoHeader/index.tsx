@@ -56,6 +56,7 @@ import { useTxsNotification } from "@/hooks/useTxHistory";
 import { NATIVE_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { useChainMode } from "@/hooks/useChainMode";
+import { type AleoService } from "core/coins/ALEO/service/AleoService";
 
 const rotateAnimation = keyframes`
   from { transform: rotate(0deg) }
@@ -103,15 +104,16 @@ export const AccountInfoHeader = () => {
         switch (status?.status) {
           case FaucetStatus.UNREADY: {
             if (chainConfig.faucetApi) {
-              Browser.tabs.create({ url: chainConfig.faucetApi });
+              void Browser.tabs.create({ url: chainConfig.faucetApi });
             }
             break;
           }
           case FaucetStatus.EMPTY: {
             const address = selectedAccount.account.address;
             const coinType = chainUniqueIdToCoinType(uniqueId);
-            const { rawMessage, displayMessage } =
-              await coinService.faucetMessage(address);
+            const { rawMessage, displayMessage } = await (
+              coinService as AleoService
+            ).faucetMessage(address);
             const { confirmed } = await showSignMessageDialog({
               address,
               message: displayMessage,
@@ -123,7 +125,7 @@ export const AccountInfoHeader = () => {
                 coinType,
                 message: stringToHex(rawMessage),
               });
-              const res = await coinService.requestFaucet({
+              const res = await (coinService as AleoService).requestFaucet({
                 address,
                 message: rawMessage,
                 signature,
@@ -148,9 +150,12 @@ export const AccountInfoHeader = () => {
                 getCurrLanguage() === SupportLanguages.ZH
                   ? ExplorerLanguages.ZH
                   : ExplorerLanguages.EN;
-              const url = coinService.getTxDetailUrl(status.txId, lang);
+              const url = (coinService as AleoService).getTxDetailUrl(
+                status.txId,
+                lang,
+              );
               if (url) {
-                Browser.tabs.create({ url });
+                void Browser.tabs.create({ url });
               }
             }
             break;
@@ -199,10 +204,10 @@ export const AccountInfoHeader = () => {
         //   await getFaucetStatus();
         // }
       } else if (chainConfig.faucetApi) {
-        Browser.tabs.create({ url: chainConfig.faucetApi });
+        void Browser.tabs.create({ url: chainConfig.faucetApi });
       }
     } catch (err) {
-      showErrorToast({ message: (err as Error).message });
+      void showErrorToast({ message: (err as Error).message });
     } finally {
       setRequestingFaucet(false);
     }
@@ -221,18 +226,22 @@ export const AccountInfoHeader = () => {
       {
         title: t("Receive:title"),
         icon: <IconReceive w={9} h={9} />,
-        onPress: () => navigate("/receive"),
+        onPress: () => {
+          navigate("/receive");
+        },
       },
       {
         title: t("Send:title"),
         icon: <IconSend w={9} h={9} />,
-        disabled: sendingAleoTx || balance === undefined,
-        onPress: () => navigate("/send_token"), // 地雷
+        disabled: sendingAleoTx ?? balance === undefined,
+        onPress: () => {
+          navigate("/send_aleo");
+        },
       },
       {
         title: t("JoinSplit:title"),
         icon: <IconJoinSplit w={9} h={9} />,
-        disabled: sendingAleoTx || balance === undefined,
+        disabled: sendingAleoTx ?? balance === undefined,
         onPress: async () => {
           const { confirmed, data } = await showSelectJoinSplitDialog();
           if (confirmed && data) {
@@ -266,8 +275,10 @@ export const AccountInfoHeader = () => {
   ]);
 
   const onChangeWallet = useCallback(() => {
-    showWalletsDrawer({
-      onManageWallet: () => navigate("/manage_wallet"),
+    void showWalletsDrawer({
+      onManageWallet: () => {
+        navigate("/manage_wallet");
+      },
     });
   }, [showWalletsDrawer, navigate]);
 
@@ -385,7 +396,9 @@ export const AccountInfoHeader = () => {
           align={"center"}
           mt={2}
           mx={6}
-          onClick={() => navigate(`/token_detail/${uniqueId}`)}
+          onClick={() => {
+            navigate(`/token_detail/${uniqueId}`);
+          }}
         >
           <IconLoading
             w={4}
@@ -408,7 +421,7 @@ interface ActionButtonProps {
   icon: any;
   disabled?: boolean;
   isLoading?: boolean;
-  onPress: () => void;
+  onPress: () => void | Promise<void>;
 }
 const ActionButton = ({
   title,

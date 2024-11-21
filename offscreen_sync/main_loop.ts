@@ -15,13 +15,13 @@ import {
   type SyncRecordParams,
   type TaskParamWithRange,
   TaskPriority,
-  SyncRecordResult,
+  type SyncRecordResult,
 } from "core/coins/ALEO/types/SyncTask";
 import { ALEO_CHAIN_CONFIGS } from "core/coins/ALEO/config/chains";
 import { AleoRpcService } from "core/coins/ALEO/service/instances/rpc";
 import {
   accountSettingStorage,
-  AccountSettingStorage,
+  type AccountSettingStorage,
 } from "@/scripts/background/store/account/AccountStorage";
 import { CoinType } from "core/types";
 import { uniqueIdToAleoChainId } from "core/coins/ALEO/utils/chainId";
@@ -295,7 +295,7 @@ export class MainLoop {
           if (!existRecords) {
             lastRecordsMap[key] = { ...value };
           } else {
-            for (let [commitment, record] of Object.entries(value)) {
+            for (const [commitment, record] of Object.entries(value)) {
               if (!record) {
                 continue;
               }

@@ -40,7 +40,7 @@ const RescanButton = (props: RescanButtonProps) => {
   const { selectedBorderColor } = useThemeStyle();
 
   const onRescan = useCallback(() => {
-    getProgress();
+    void getProgress();
   }, [getProgress]);
 
   if (chainMode.mode !== ChainAssembleMode.SINGLE) return null;

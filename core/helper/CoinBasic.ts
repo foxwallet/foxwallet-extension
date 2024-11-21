@@ -5,9 +5,9 @@ import { CoinType } from "../types/CoinType";
 
 export const getCoinDerivation = (coinType: CoinType): CoinDerivation => {
   switch (coinType) {
-    // case CoinType.ETH: {
-    //   return ETH_DERIVATION;
-    // }
+    case CoinType.ETH: {
+      return ETH_DERIVATION;
+    }
     case CoinType.ALEO: {
       return ALEO_DERIVATION;
     }

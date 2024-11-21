@@ -15,7 +15,7 @@ export const useGroupAccount = () => {
   const dispatch = usePopupDispatch();
 
   useEffect(() => {
-    dispatch.accountV2.getSelectedGroupAccount();
+    void dispatch.accountV2.getSelectedGroupAccount();
   }, [dispatch.accountV2]);
 
   const getMatchAccountsWithUniqueId = useCallback(

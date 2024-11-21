@@ -12,9 +12,12 @@ import { type EncryptedKeyPair } from "../types/KeyPair";
 import { decryptStr, encryptStr } from "../utils/encrypt";
 import { type HDKey } from "./HDKey";
 import { BLS12377HDKey } from "./HDKey/BLS12377HDKey";
-import { EthHDKey } from "./HDKey/EthHDKey";
 import { type BaseHDWallet, getHDWallet } from "./HDWallet/BaseHDWallet";
 import { Mnemonic } from "./mnemonic";
+import {
+  Secp256k1HDKey,
+  type Secp256k1HDKeyType,
+} from "core/wallet/HDKey/Secp256k1HDKey";
 
 type CoinsWallets = {
   [coinType in CoinType]?: BaseHDWallet<CoinType>;
@@ -22,7 +25,7 @@ type CoinsWallets = {
 
 export class HDKeyring {
   private mnemonic?: EncryptedField;
-  // private secp256k1Root?: EthHDKey;
+  private secp256k1Root?: Secp256k1HDKeyType;
   private bls12377Root?: BLS12377HDKey;
   private coinWallets?: CoinsWallets;
 
@@ -59,9 +62,9 @@ export class HDKeyring {
   public getCoinRoot<T extends CoinType>(coin: T): HDKey[T] {
     const curve = getCoinDerivation(coin).curve;
     switch (curve) {
-      // case CoinCurve.SECP256K1: {
-      //   return this.secp256k1Root as HDKey[T];
-      // }
+      case CoinCurve.SECP256K1: {
+        return this.secp256k1Root as HDKey[T];
+      }
       case CoinCurve.BLS12377: {
         return this.bls12377Root as HDKey[T];
       }
@@ -81,7 +84,7 @@ export class HDKeyring {
 
   public async initFromMnemonic(mnemonic: string) {
     const seed = Mnemonic.toSeed(mnemonic);
-    // this.secp256k1Root = EthHDKey.fromMasterSeed(seed);
+    this.secp256k1Root = Secp256k1HDKey.fromMasterSeed(seed);
     this.bls12377Root = BLS12377HDKey.fromMasterSeed(seed);
     this.coinWallets = {};
   }
@@ -110,7 +113,7 @@ export class HDKeyring {
         },
       );
     }
-    return this.coinWallets[symbol]! as BaseHDWallet<T>;
+    return this.coinWallets[symbol] as BaseHDWallet<T>;
   }
 
   public async derive<T extends CoinType>(

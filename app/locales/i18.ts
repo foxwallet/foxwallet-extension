@@ -13,29 +13,35 @@ import bn from "./languages/bn.json";
 import hi from "./languages/hi.json";
 import ur from "./languages/ur.json";
 import de from "./languages/de.json";
+import ja from "./languages/ja.json";
+import ko from "./languages/ko.json";
 import { logger } from "@/common/utils/logger";
 
 // import { isDev } from "../common/utils/env";
 
 export enum SupportLanguages {
-  EN = "en",
-  ZH = "zh",
-  ES = "es",
-  ID = "id",
-  RU = "ru",
-  UK = "uk",
+  EN = "en", // 英语
+  ZH = "zh", // 中文
+  ES = "es", // 西班牙语
+  ID = "id", // 印尼语
+  RU = "ru", // 俄语
+  UK = "uk", // 乌克兰语
   MY = "my", // 缅甸语 Burmese
   TR = "tr", // 土耳其语 Turkish
   VI = "vi", // 越南语 Vietnamese
   BN = "bn", // 孟加拉语 Bengali
   HI = "hi", // 印地语 Hindi
-  UR = "ur", // 乌尔都语 Urdu
+  UR = "ur", // 巴基斯坦 乌尔都语 Urdu
   DE = "de", // 德语 Deutsch
+  JA = "ja", // 日语 日本語
+  KO = "ko", // 韩语 한국어
 }
 
 export const LanguageLabels: { [key in SupportLanguages]: string } = {
   [SupportLanguages.EN]: "English",
   [SupportLanguages.ZH]: "简体中文",
+  [SupportLanguages.JA]: "日本語",
+  [SupportLanguages.KO]: "한국어",
   [SupportLanguages.ES]: "Español",
   [SupportLanguages.DE]: "Deutsch",
   [SupportLanguages.ID]: "Bahasa Indonesia",
@@ -66,6 +72,8 @@ const resources = {
   hi,
   ur,
   de,
+  ja,
+  ko,
 };
 
 const languageDetector: LanguageDetectorModule = {

@@ -1,6 +1,6 @@
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
-import { RootState } from "../store";
-import { MultiChainModel } from "../multiChain";
+import { type RootState } from "../store";
+import { type MultiChainModel } from "../multiChain";
 
 export const migrationV4 = (state: RootState): RootState => {
   try {

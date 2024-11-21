@@ -1,7 +1,10 @@
 import { createModel } from "@rematch/core";
-import { RootModel } from ".";
-import { ChainUniqueId, InnerChainUniqueId } from "core/types/ChainUniqueId";
-import { Token } from "core/coins/ALEO/types/Token";
+import { type RootModel } from ".";
+import {
+  type ChainUniqueId,
+  type InnerChainUniqueId,
+} from "core/types/ChainUniqueId";
+import { type Token } from "core/coins/ALEO/types/Token";
 
 export type TokenMap = {
   [address: string]: Token[] | undefined;
@@ -120,7 +123,7 @@ export const tokens = createModel<RootModel>()({
       const { uniqueId, address, newInitState } = payload;
       const { hasInitTokensByInteractiveTokens } = state;
       const addressInitState =
-        hasInitTokensByInteractiveTokens?.[uniqueId] || {};
+        hasInitTokensByInteractiveTokens?.[uniqueId] ?? {};
       return {
         ...state,
         hasInitTokensByInteractiveTokens: {

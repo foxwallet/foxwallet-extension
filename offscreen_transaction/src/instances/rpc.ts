@@ -1,4 +1,4 @@
-import { createAutoSwitchApi, AutoSwitchProxy } from "../utils/retry";
+import { createAutoSwitchApi, type AutoSwitchProxy } from "../utils/retry";
 import { AleoRpc } from "../api/rpc";
 
 export type AleoRpcService = AutoSwitchProxy<string, AleoRpc>;
