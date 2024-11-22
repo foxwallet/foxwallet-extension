@@ -7,7 +7,6 @@ import {
   RecordCiphertext,
   Future,
 } from "aleo_wasm";
-import { AutoSwitch, AutoSwitchServiceType } from "core/utils/retry";
 import { Measure, MeasureAsync } from "@/common/utils/measure";
 import { ALEO_SYNC_HEIGHT_SIZE } from "@/common/constants";
 import { shuffle } from "@/common/utils/array";
@@ -17,12 +16,13 @@ import {
   type SyncRecordResp,
   type AddressSyncRecordResp,
   type WorkerSyncTask,
+  type RecordTrimDetail,
 } from "core/coins/ALEO/types/SyncTask";
 import {
   type AleoApiService,
   createAleoApiService,
 } from "core/coins/ALEO/service/instances/sync";
-import { type RecordRawInfo } from "core/coins/ALEO/service/api/sync.di";
+import { type RecordTrimInfo } from "core/coins/ALEO/service/api/sync.di";
 
 export class AleoWorker {
   static logger: LogFunc | undefined;
@@ -131,8 +131,44 @@ export class AleoWorker {
     this.apiService.setChainId(chainId);
     const index =
       Math.floor(start / ALEO_SYNC_HEIGHT_SIZE) * ALEO_SYNC_HEIGHT_SIZE;
-    const recordsInRange = await this.apiService.getRecords(index);
+    // const recordsInRange = await this.apiService.getRecords(index);
+    const recordsInRange = await this.apiService.getTrimRecords(index);
     return recordsInRange;
+  }
+
+  @MeasureAsync()
+  async getRecordsDetail(chainId: string, records: RecordTrimDetail[]) {
+    // maxium 10
+    this.apiService.setChainId(chainId);
+    const recordsInRange = await this.apiService.getTrimRecordsInfo(records);
+    return recordsInRange;
+  }
+
+  @MeasureAsync()
+  async getRecordsDetailInRange(
+    chainId: string,
+    records: RecordTrimDetail[],
+  ): Promise<RecordDetail[]> {
+    if (records.length === 0) {
+      return [];
+    }
+    this.apiService.setChainId(chainId);
+    const tasks: RecordTrimDetail[][] = [];
+    for (let i = 0; i < records.length; i++) {
+      const index = Math.floor(i / 10);
+      const taskQuene = tasks[index] ?? [];
+      taskQuene.push(records[i]);
+      tasks[index] = taskQuene;
+    }
+    const result = await Promise.all(
+      tasks.map(async (task) => {
+        const recordsInRange = await this.getRecordsDetail(chainId, task);
+        return recordsInRange;
+      }),
+    );
+    return result.reduce<RecordDetail[]>((prev, curr) => {
+      return prev.concat(curr);
+    }, []);
   }
 
   @Measure()
@@ -151,19 +187,10 @@ export class AleoWorker {
   private decryptRecord(
     viewKey: ViewKey,
     skTag: Field,
-    recordRawInfo: RecordRawInfo,
-  ): RecordDetail | undefined {
+    recordRawInfo: RecordTrimInfo,
+  ): RecordTrimDetail | undefined {
     try {
-      const {
-        ciphertext,
-        commitment,
-        transition_program: programId,
-        transition_function: functionName,
-        transaction_id: transactionId,
-        transition_id: transitionId,
-        block_height: height,
-        block_time: timestamp,
-      } = recordRawInfo;
+      const { c: ciphertext, b: commitment, a: height } = recordRawInfo;
       const record = this.parseRecordCiphertext(ciphertext);
       if (!record) {
         return undefined;
@@ -178,12 +205,7 @@ export class AleoWorker {
         return {
           commitment,
           ciphertext,
-          programId,
-          functionName,
-          transactionId,
-          transitionId,
           height,
-          timestamp,
           plaintext: plaintext.toString(),
           content: JSON.parse(plaintext.toJSON()),
           nonce,
@@ -240,50 +262,66 @@ export class AleoWorker {
           addressResultMap[address] = resultMap;
         });
       } else {
-        for (let i = recordsInRange.length - 1; i >= 0; i--) {
-          const recordRawInfo = recordsInRange[i];
-          syncParams.forEach((syncParam) => {
+        await Promise.all(
+          syncParams.map(async (syncParam) => {
             const { address, viewKey } = syncParam;
-            const cache = addressCache[address];
-            let viewKeyObj: ViewKey;
-            let skTag: Field;
-            if (!cache) {
-              viewKeyObj = this.parseViewKey(viewKey);
-              skTag = viewKeyObj.skTag();
-              addressCache[address] = {
-                viewKey: viewKeyObj,
+            const decryptedRecords: RecordTrimDetail[] = [];
+            for (let i = recordsInRange.length - 1; i >= 0; i--) {
+              const recordRawInfo = recordsInRange[i];
+              const cache = addressCache[address];
+              let viewKeyObj: ViewKey;
+              let skTag: Field;
+              if (!cache) {
+                viewKeyObj = this.parseViewKey(viewKey);
+                skTag = viewKeyObj.skTag();
+                addressCache[address] = {
+                  viewKey: viewKeyObj,
+                  skTag,
+                };
+              } else {
+                viewKeyObj = cache.viewKey;
+                skTag = cache.skTag;
+              }
+
+              const decryptedRecord = this.decryptRecord(
+                viewKeyObj,
                 skTag,
+                recordRawInfo,
+              );
+              if (decryptedRecord) {
+                decryptedRecords.push(decryptedRecord);
+              }
+            }
+
+            if (decryptedRecords.length === 0) {
+              const resultMap = addressResultMap[address] ?? {
+                recordsMap: {},
+                ...syncParam,
+                range: [begin, end],
               };
+              addressResultMap[address] = resultMap;
             } else {
-              viewKeyObj = cache.viewKey;
-              skTag = cache.skTag;
+              const decryptedRecordsInfo = await this.getRecordsDetailInRange(
+                chainId,
+                decryptedRecords,
+              );
+
+              decryptedRecordsInfo.forEach((item) => {
+                const { programId, commitment } = item;
+                const resultMap = addressResultMap[address] ?? {
+                  recordsMap: {},
+                  ...syncParam,
+                  range: [begin, end],
+                };
+                resultMap.recordsMap[programId] = {
+                  ...(resultMap.recordsMap[programId] ?? {}),
+                  [commitment]: item,
+                };
+                addressResultMap[address] = resultMap;
+              });
             }
-
-            const decryptedRecord = this.decryptRecord(
-              viewKeyObj,
-              skTag,
-              recordRawInfo,
-            );
-            const resultMap = addressResultMap[address] ?? {
-              recordsMap: {},
-              ...syncParam,
-              range: [begin, end],
-            };
-
-            if (decryptedRecord) {
-              const { programId } = decryptedRecord;
-              resultMap.recordsMap[programId] = {
-                ...(resultMap.recordsMap[programId] ?? {}),
-                [decryptedRecord.commitment]: decryptedRecord,
-              };
-            }
-
-            // resultMap.range[0] = i === 0 ? begin : recordRawInfo.id;
-            addressResultMap[address] = resultMap;
-
-            // this.currIndex = recordRawInfo.id;
-          });
-        }
+          }),
+        );
       }
     } catch (err) {
       this.error("===> syncRecords error: ", err);

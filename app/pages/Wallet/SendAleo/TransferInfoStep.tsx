@@ -22,6 +22,7 @@ import {
 } from "@chakra-ui/react";
 import {
   ALPHA_TOKEN_PROGRAM_ID,
+  ARCANE_PROGRAM_ID,
   BETA_STAKING_PROGRAM_ID,
   NATIVE_TOKEN_PROGRAM_ID,
 } from "core/coins/ALEO/constants";
@@ -105,6 +106,16 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
       }
       case BETA_STAKING_PROGRAM_ID: {
         return records;
+      }
+      case ARCANE_PROGRAM_ID: {
+        return records
+          .filter((record) => {
+            return record.parsedContent?.token === tokenInfo.tokenId;
+          })
+          .sort(
+            (record1, record2) =>
+              record2.parsedContent?.amount - record1.parsedContent?.amount,
+          );
       }
       default: {
         console.error(`Unsupport programId ${tokenInfo.programId}`);
@@ -205,6 +216,9 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
         return currTransferRecord?.parsedContent?.amount;
       }
       case BETA_STAKING_PROGRAM_ID: {
+        return currTransferRecord?.parsedContent?.amount;
+      }
+      case ARCANE_PROGRAM_ID: {
         return currTransferRecord?.parsedContent?.amount;
       }
       default: {

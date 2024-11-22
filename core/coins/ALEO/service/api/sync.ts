@@ -2,8 +2,10 @@ import { get, post } from "@/common/utils/request";
 import {
   type RecordFileInfo,
   type RecordRawInfo,
+  type RecordTrimInfo,
   type SyncResp,
 } from "./sync.di";
+import { type RecordDetail, type RecordTrimDetail } from "../../types/SyncTask";
 
 export class AleoSyncApi {
   host: string;
@@ -88,6 +90,61 @@ export class AleoSyncApi {
       return info.data;
     }
     return [];
+  }
+
+  async getTrimRecords(index: number): Promise<RecordTrimInfo[]> {
+    const recordFileInfo = await this.getRecordFile(index);
+    if (recordFileInfo?.trim_file_path) {
+      const resp = await fetch(recordFileInfo.trim_file_path);
+      if (resp.ok) {
+        return await resp.json();
+      }
+    } else {
+      const info = await this.fetchData<SyncResp<RecordTrimInfo[]>>(
+        `/db/trim/records?start=${index}`,
+      );
+      if (info.status !== 0) {
+        throw new Error(info.msg);
+      }
+      return info.data;
+    }
+    return [];
+  }
+
+  async getTrimRecordsInfo(
+    records: RecordTrimDetail[],
+  ): Promise<RecordDetail[]> {
+    const info = await this.postData<SyncResp<RecordRawInfo[]>>(
+      `/records/info`,
+      records.map((item) => ({
+        a: item.height,
+        b: item.commitment,
+      })),
+    );
+    if (info.status !== 0) {
+      throw new Error(info.msg);
+    }
+    const recordMap: { [commitment: string]: RecordRawInfo } = {};
+    info.data.forEach((item) => {
+      recordMap[item.commitment] = item;
+    });
+    return records
+      .map((item) => {
+        const recordInfo = recordMap[item.commitment];
+        if (!recordInfo) return item;
+
+        return {
+          ...item,
+          programId: recordInfo.transition_program,
+          functionName: recordInfo.transition_function,
+          transactionId: recordInfo.transaction_id,
+          transitionId: recordInfo.transition_id,
+          timestamp: recordInfo.block_time,
+        };
+      })
+      .filter((item) => !!(item as RecordDetail).programId) as Array<
+      RecordDetail & { address: string }
+    >;
   }
 
   // /**

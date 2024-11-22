@@ -16,7 +16,6 @@ import {
 import { isEqual, uniqBy } from "lodash";
 import { AleoTxStatus } from "core/coins/ALEO/types/Transaction";
 import { useTransactionSettledToast } from "@/components/Wallet/TransactionSettledToast/useTransactionSettledToast";
-import { NATIVE_TOKEN_TOKEN_ID } from "core/coins/ALEO/constants";
 import { AssetType, type TokenV2 } from "core/types/Token";
 import { type AleoService } from "core/coins/ALEO/service/AleoService";
 import type { TxHistoryPaginationParam } from "core/types/Pagination";
@@ -25,6 +24,12 @@ import {
   type TransactionHistoryResp,
 } from "core/types/TransactionHistory";
 import { logger } from "@/common/utils/logger";
+import {
+  ALPHA_TOKEN_PROGRAM_ID,
+  ARCANE_PROGRAM_ID,
+  BETA_STAKING_PROGRAM_ID,
+  NATIVE_TOKEN_TOKEN_ID,
+} from "core/coins/ALEO/constants";
 
 const NotificationExpiredTime = 1000 * 60 * 60 * 5;
 
