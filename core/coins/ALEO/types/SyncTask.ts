@@ -31,6 +31,16 @@ export interface RecordDetail {
   recordName?: string;
 }
 
+export interface RecordTrimDetail {
+  commitment: string;
+  plaintext: string;
+  ciphertext: string;
+  content: { [key in string]: any };
+  nonce: string;
+  tag: string;
+  height: number;
+}
+
 export type RecordDetailWithSpent = RecordDetail & {
   spent: boolean;
   parsedContent?: { [key in string]: any };

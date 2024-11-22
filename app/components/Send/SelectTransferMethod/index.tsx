@@ -28,6 +28,7 @@ import { Token } from "core/coins/ALEO/types/Token";
 import { RecordFilter } from "@/scripts/background/servers/IWalletServer";
 import {
   ALPHA_TOKEN_PROGRAM_ID,
+  ARCANE_PROGRAM_ID,
   BETA_STAKING_PROGRAM_ID,
   NATIVE_TOKEN_PROGRAM_ID,
   NATIVE_TOKEN_TOKEN_ID,
@@ -85,6 +86,16 @@ const SelectTransferMethodDrawer = (props: Props) => {
       }
       case BETA_STAKING_PROGRAM_ID: {
         return records;
+      }
+      case ARCANE_PROGRAM_ID: {
+        return records
+          .filter((record) => {
+            return record.parsedContent?.token === token.tokenId;
+          })
+          .sort(
+            (record1, record2) =>
+              record2.parsedContent?.amount - record1.parsedContent?.amount,
+          );
       }
       default: {
         console.error("Unsupport programId " + token.programId);

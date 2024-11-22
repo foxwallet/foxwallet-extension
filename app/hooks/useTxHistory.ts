@@ -17,6 +17,7 @@ import { useTransactionSettledToast } from "@/components/Wallet/TransactionSettl
 import { Token } from "core/coins/ALEO/types/Token";
 import {
   ALPHA_TOKEN_PROGRAM_ID,
+  ARCANE_PROGRAM_ID,
   BETA_STAKING_PROGRAM_ID,
   NATIVE_TOKEN_TOKEN_ID,
 } from "core/coins/ALEO/constants";
@@ -140,7 +141,8 @@ export const useTxHistory = ({
   const fetchOnChainHistory = useCallback(async () => {
     if (
       token.programId === ALPHA_TOKEN_PROGRAM_ID ||
-      token.programId === BETA_STAKING_PROGRAM_ID
+      token.programId === BETA_STAKING_PROGRAM_ID ||
+      token.programId === ARCANE_PROGRAM_ID
     ) {
       return await coinService.getTokenOnChainHistory({
         address,
