@@ -256,9 +256,7 @@ export class AleoWorker {
     } = {};
 
     try {
-      console.log("===> syncRecords start get records");
       const recordsInRange = await this.getRecordsInRange(chainId, begin, end);
-      console.log("===> syncRecords end get records ", recordsInRange);
       if (recordsInRange.length === 0) {
         syncParams.forEach((syncParam) => {
           const { address } = syncParam;
@@ -273,7 +271,6 @@ export class AleoWorker {
         await Promise.all(
           syncParams.map(async (syncParam) => {
             const { address, viewKey } = syncParam;
-            console.log("===> syncRecords ", address, viewKey);
             const decryptedRecords: Array<RecordTrimDetail> = [];
             for (let i = recordsInRange.length - 1; i >= 0; i--) {
               const recordRawInfo = recordsInRange[i];
@@ -310,19 +307,9 @@ export class AleoWorker {
               };
               addressResultMap[address] = resultMap;
             } else {
-              console.log(
-                "===> syncRecords decryptedRecords ",
-                decryptedRecords,
-              );
-
               const decryptedRecordsInfo = await this.getRecordsDetailInRange(
                 chainId,
                 decryptedRecords,
-              );
-
-              console.log(
-                "===> syncRecords decryptedRecordsInfo ",
-                decryptedRecordsInfo,
               );
 
               decryptedRecordsInfo.forEach((item) => {
@@ -337,10 +324,6 @@ export class AleoWorker {
                   [commitment]: item,
                 };
                 addressResultMap[address] = resultMap;
-                console.log(
-                  "===> modifiy addressResultMap: ",
-                  addressResultMap,
-                );
               });
             }
           }),
@@ -387,13 +370,7 @@ export class AleoWorker {
     this.measureMap = {};
     let resp;
     try {
-      console.log("===> beginSyncRecordTask: ", params.begin, params.end);
       resp = await this.syncRecords(params);
-      console.log(
-        "===> beginSyncRecordTask finish: ",
-        params.begin,
-        params.end,
-      );
     } catch (err) {
       this.error("===> syncRecords error: ", err);
     }
