@@ -100,7 +100,6 @@ export class AleoSyncApi {
         return await resp.json();
       }
     } else {
-      // TODO: replace by new trim db interface
       const info = await this.fetchData<SyncResp<RecordTrimInfo[]>>(
         `/db/trim/records?start=${index}`,
       );
