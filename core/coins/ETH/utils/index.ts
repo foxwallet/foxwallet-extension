@@ -1,4 +1,11 @@
-import EthConstants from "../constants";
+import EthConstants, { FUNC_SIG } from "../constants";
+import { utils as ethUtils } from "ethers";
+import { TxLabel } from "core/types/TransactionHistory";
+import { type ParamType } from "@ethersproject/abi";
+import commonABI from "core/assets/abi/commonABI.json";
+
+// @ts-expect-error json?
+const commonABIInterface = new ethUtils.Interface(commonABI);
 
 export const stripHexPrefix = (address: string) => {
   if (address.startsWith("0x")) {
@@ -39,3 +46,73 @@ export const parseEthChainId = (
   }
   return { valid: false, chainId };
 };
+
+export const toChecksumAddress = (address: string | undefined): string => {
+  try {
+    if (!address) return "";
+    return ethUtils.getAddress(address ?? "");
+  } catch (error) {
+    console.log("toChecksumAddress", error);
+    return address ?? "";
+  }
+};
+
+export type TxDataInfo = {
+  funcName: string;
+  paramNames?: ParamType[];
+  paramValues?: ethUtils.Result;
+};
+
+export const decodeTxData = (txData: string): TxDataInfo | undefined => {
+  if (!txData || txData.length < 10 || !txData.startsWith("0x")) {
+    return undefined;
+  }
+  const funcSig = txData.slice(0, 10);
+  try {
+    const funcFrag = commonABIInterface.getFunction(funcSig);
+    const paramValues = commonABIInterface.decodeFunctionData(funcFrag, txData);
+    return {
+      funcName: funcFrag.name,
+      paramNames: funcFrag.inputs,
+      paramValues,
+    };
+  } catch (e) {
+    return undefined;
+  }
+};
+
+export function getTxLabelEVM(data: string, to: string): TxLabel | undefined {
+  if (data && data.length >= 10) {
+    if (to === "0x") {
+      return TxLabel.CONTRACT_CREATE;
+    }
+
+    const funcSig = data.slice(0, 10);
+    switch (funcSig) {
+      case FUNC_SIG.INSCRIBE:
+        return TxLabel.INSCRIBE;
+      case FUNC_SIG.TOKEN_APPROVE:
+      case FUNC_SIG.TOKEN_APPROVE_FOR_ALL:
+      case FUNC_SIG.TOKEN_INCREASE_ALLOWANCE:
+        return TxLabel.TOKEN_APPROVE;
+      case FUNC_SIG.TOKEN_TRANSFER:
+        return TxLabel.TOKEN_TRANSFER;
+      case FUNC_SIG.STAKE:
+        return TxLabel.STAKE;
+      case FUNC_SIG.UNSTAKE:
+        return TxLabel.UNSTAKE;
+      default: {
+        const decoded = decodeTxData(data);
+        const funcName = decoded?.funcName ?? "";
+        if (funcName.toLowerCase().startsWith("swap")) {
+          return TxLabel.SWAP;
+        }
+        if (funcName.toLowerCase().startsWith("bridge")) {
+          return TxLabel.BRDIGE;
+        }
+        return TxLabel.CONTRACT_CALL;
+      }
+    }
+  }
+  return undefined;
+}

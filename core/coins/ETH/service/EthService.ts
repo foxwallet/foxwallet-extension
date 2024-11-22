@@ -13,6 +13,7 @@ import {
   type NativeCoinSendTxRes,
   type NativeCoinSendTxParams,
   type EstimateGasParam,
+  type NativeCoinTxHistoryParams,
 } from "core/types/NativeCoinTransaction";
 import { type CoinType } from "core/types";
 import {
@@ -63,11 +64,26 @@ import { addHexPrefix, stripHexPrefix } from "ethereumjs-util";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { isSameAddress } from "core/utils/address";
 import { hexValue } from "ethers/lib/utils";
+import { type TransactionHistoryResp } from "core/types/TransactionHistory";
+import {
+  type BlockBookService,
+  createEthBlockBookService,
+} from "./instances/blockbook";
+import {
+  type BlockScoutService,
+  createEthBlockScoutService,
+} from "./instances/blockscout";
+import { FilfoxService } from "core/coins/ETH/service/instances/filfox";
+import { MoralisService } from "core/coins/ETH/service/instances/moralis";
 
 export class EthService extends CoinServiceBasic {
   config: ETHConfig;
   chainId: number;
   rpcService: EthRpcService;
+  blockbookService?: BlockBookService;
+  blockscoutService?: BlockScoutService;
+  filfoxService?: FilfoxService;
+  moralisService?: MoralisService;
 
   signWalletMap: { [address: string]: Wallet };
   voidSignerMap: { [address: string]: VoidSigner };
@@ -81,9 +97,35 @@ export class EthService extends CoinServiceBasic {
         `Invalid chainId ${config.chainId} for ${config.chainName}}`,
       );
     }
-    this.rpcService = createEthRpcService(config);
-
     this.chainId = chainId;
+    this.rpcService = createEthRpcService(config);
+    const {
+      blockbookApiList,
+      blockscoutApiList,
+      uniqueId,
+      filfoxApi,
+      moralisEnabled,
+    } = config;
+    if (blockbookApiList) {
+      this.blockbookService = createEthBlockBookService(config);
+    }
+
+    if (blockscoutApiList) {
+      this.blockscoutService = createEthBlockScoutService(config);
+    }
+
+    if (filfoxApi) {
+      this.filfoxService = new FilfoxService(
+        filfoxApi,
+        uniqueId,
+        config.nativeCurrency,
+      );
+    }
+
+    if (moralisEnabled) {
+      this.moralisService = new MoralisService(uniqueId);
+    }
+
     this.signWalletMap = {};
     this.voidSignerMap = {};
     this.contractMap = {};
@@ -500,9 +542,9 @@ export class EthService extends CoinServiceBasic {
       data: txResp.data,
       gasFee: gasFeeResp,
       timestamp: +Date.now(),
-      // chainSpecificReturn: {
-      //   wait: txResp.wait,
-      // },
+      chainSpecificReturn: {
+        wait: txResp.wait,
+      },
     };
   }
 
@@ -595,5 +637,66 @@ export class EthService extends CoinServiceBasic {
         }
       }
     }
+  }
+
+  supportNativeCoinTxHistory(): boolean {
+    return (
+      !!this.blockbookService ||
+      !!this.blockscoutService ||
+      !!this.filfoxService
+    );
+  }
+
+  async getNativeCoinTxHistory(
+    params: NativeCoinTxHistoryParams,
+  ): Promise<TransactionHistoryResp> {
+    const {
+      pagination: { pageSize, pageNum },
+    } = params;
+
+    if (this.moralisService) {
+      try {
+        return await this.moralisService.getNativeCoinTxHistory(params);
+      } catch (e) {
+        console.warn("getNativeCoinTxHistoryByMoralis error: ", e);
+      }
+    }
+
+    if (this.blockbookService) {
+      try {
+        return await this.blockbookService.getNativeCoinTxHistory(params);
+      } catch (e) {
+        console.warn("getNativeCoinTxHistoryByBlockbook error: ", e);
+      }
+    }
+
+    if (this.blockscoutService) {
+      try {
+        return await this.blockscoutService.getNativeCoinTxHistory(params);
+      } catch (e) {
+        console.warn("getNativeCoinTxHistoryByBlockscout error: ", e);
+      }
+    }
+
+    if (this.filfoxService) {
+      try {
+        return await this.filfoxService.getNativeCoinTxHistory(params);
+      } catch (e) {
+        console.warn("getNativeCoinTxHistoryByFilFox error: ", e);
+      }
+    }
+
+    // if (this.routescanService) {
+    //   try {
+    //     return await this.routescanService.getNativeCoinTxHistory(params);
+    //   } catch (e) {
+    //     console.warn("getNativeCoinTxHistoryByRouteScan error: ", e);
+    //   }
+    // }
+
+    return {
+      txs: [],
+      pagination: { pageSize, pageNum, totalCount: 0, endReach: true },
+    };
   }
 }

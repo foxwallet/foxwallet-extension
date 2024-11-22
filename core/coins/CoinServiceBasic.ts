@@ -5,12 +5,14 @@ import {
   type EstimateGasParam,
   type NativeCoinSendTxParams,
   type NativeCoinSendTxRes,
+  type NativeCoinTxHistoryParams,
 } from "core/types/NativeCoinTransaction";
 import {
   type GasFee,
   type GasFeeType,
   type GasGradeData,
 } from "core/types/GasFee";
+import type { TransactionHistoryResp } from "core/types/TransactionHistory";
 
 export abstract class CoinServiceBasic {
   baseConfig: ChainBaseConfig;
@@ -63,5 +65,26 @@ export abstract class CoinServiceBasic {
       "getGasGradeData not implemented for " + this.baseConfig.chainName,
     );
     return undefined;
+  }
+
+  supportNativeCoinTxHistory(): boolean {
+    return false;
+  }
+
+  async getNativeCoinTxHistory(
+    _params: NativeCoinTxHistoryParams,
+  ): Promise<TransactionHistoryResp> {
+    console.error(
+      "getNativeCoinTxHistory not implemented for " + this.baseConfig.chainName,
+    );
+    return {
+      txs: [],
+      pagination: {
+        pageSize: 0,
+        pageNum: 0,
+        totalCount: 0,
+        endReach: true,
+      },
+    };
   }
 }

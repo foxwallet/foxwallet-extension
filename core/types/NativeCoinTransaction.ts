@@ -1,6 +1,13 @@
 import { type CoinType } from "core/types/CoinType";
 import { type GasFee, type SerializeGasFee } from "core/types/GasFee";
 import { type BytesLike } from "ethers";
+import { type TxHistoryPaginationParam } from "core/types/Pagination";
+import {
+  type FilSpecificTxParam,
+  type TxLabel,
+  type ChainSpecificReturn,
+} from "core/types/TransactionHistory";
+import { type TransactionStatus } from "core/types/TransactionStatus";
 
 export type AuthParams = {
   [key: string]: string;
@@ -69,5 +76,49 @@ export type NativeCoinSendTxRes<T extends CoinType> = {
   memo?: string;
   nonce?: number;
   height?: number;
-  // chainSpecificReturn?: ChainSpecificReturn<T>;
+  chainSpecificReturn?: ChainSpecificReturn<T>;
 };
+
+export type NativeCoinTxDetailParams = {
+  txId: string;
+  filter: {
+    address?: string;
+    addressType?: "sender" | "receiver";
+  };
+  auth?: { [key: string]: string };
+};
+
+export type NativeCoinTxDetailRes<T extends CoinType> = {
+  id: string;
+  from: string;
+  to: string;
+  value: bigint;
+  height: number;
+  timestamp: number;
+  fees: bigint;
+  gasFee: GasFee<T>;
+  nonce?: number;
+  // tokenTransfers?: TokenTransferLogInfo[];
+  status?: TransactionStatus;
+  label?: TxLabel;
+
+  confirmations?: number;
+  data?: string;
+  rawTx?: string;
+  filSpecific?: FilSpecificTxParam;
+  memo?: string;
+  // qrc20TokenTransfers?: QRC20Transfer[];
+  inMessageId?: string;
+};
+
+export type NativeCoinTxHistoryParams = {
+  address: string;
+  pagination: TxHistoryPaginationParam;
+  auth?: { [key: string]: string };
+};
+
+export enum SpecificHeightValue {
+  UNCONFIRM = -1,
+  CONFIRM_WITHOUT_HEIGHT = -2,
+  FAILED = -3,
+}
