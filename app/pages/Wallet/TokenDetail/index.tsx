@@ -42,6 +42,7 @@ import { RecordFilter } from "@/scripts/background/servers/IWalletServer";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import {
   ALPHA_TOKEN_PROGRAM_ID,
+  ARCANE_PROGRAM_ID,
   BETA_STAKING_ALEO_TOKEN_ID,
   BETA_STAKING_PROGRAM_ID,
   NATIVE_TOKEN_PROGRAM_ID,
@@ -212,6 +213,16 @@ const TokenDetailScreen = () => {
       case BETA_STAKING_PROGRAM_ID: {
         return records;
       }
+      case ARCANE_PROGRAM_ID: {
+        return records
+          .filter((record) => {
+            return record.parsedContent?.token === tokenInfo.tokenId;
+          })
+          .sort(
+            (record1, record2) =>
+              record2.parsedContent?.amount - record1.parsedContent?.amount,
+          );
+      }
       default: {
         console.error("Unsupport programId " + tokenInfo.programId);
         return [];
@@ -238,6 +249,9 @@ const TokenDetailScreen = () => {
         return tokenRecords[0]?.parsedContent?.amount;
       }
       case BETA_STAKING_PROGRAM_ID: {
+        return tokenRecords[0]?.parsedContent?.amount;
+      }
+      case ARCANE_PROGRAM_ID: {
         return tokenRecords[0]?.parsedContent?.amount;
       }
       default: {
