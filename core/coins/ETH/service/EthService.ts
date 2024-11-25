@@ -596,4 +596,24 @@ export class EthService extends CoinServiceBasic {
       }
     }
   }
+
+  supportSendMaxNative() {
+    const unsupportedChains: InnerChainUniqueId[] = [
+      // InnerChainUniqueId.OPTIMISM,
+      // InnerChainUniqueId.OPBNB,
+      // InnerChainUniqueId.SCROLL,
+      // InnerChainUniqueId.BLAST,
+      // InnerChainUniqueId.MANTA_PACIFIC,
+    ];
+    return !unsupportedChains.some((id) => id === this.config.uniqueId);
+  }
+
+  public validateAddress(address: string): boolean {
+    if (this.config.uniqueId === ETH_CHAIN_CONFIGS.FILECOIN_EVM.uniqueId) {
+      if (address.startsWith(FILECOIN_ADDRESS_PREFIX)) {
+        return validateAddressString(address);
+      }
+    }
+    return ethUtils.isAddress(address);
+  }
 }

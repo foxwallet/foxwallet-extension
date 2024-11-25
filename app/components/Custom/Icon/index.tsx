@@ -82,6 +82,7 @@ import Info from "@/common/assets/image/icon_info.svg";
 import CheckboxSelected from "@/common/assets/image/icon_checkbox_selected.svg";
 import CheckboxUnselected from "@/common/assets/image/icon_checkbox_unselected.svg";
 import SendContact from "@/common/assets/image/icon_send_contact.svg";
+import Switch from "@/common/assets/image/icon_switch.svg";
 
 const ThemeIconFill: (i: any) => ChakraComponent<any, any> = (icon: any) => {
   const ThemeIcon = (props: ChakraComponent<any, any>) => {
@@ -182,3 +183,4 @@ export const IconInfo = ThemeIconStroke(Info);
 export const IconCheckboxSelected = ThemeIconStroke(CheckboxSelected);
 export const IconCheckboxUnselected = ThemeIconStroke(CheckboxUnselected);
 export const IconSendContact = ThemeIconStroke(SendContact);
+export const IconSwitch = ThemeIconStroke(Switch);

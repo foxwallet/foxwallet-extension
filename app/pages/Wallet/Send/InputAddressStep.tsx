@@ -4,29 +4,31 @@ import { useTranslation } from "react-i18next";
 import { Content } from "@/layouts/Content";
 import type React from "react";
 import { useEffect, useMemo, useCallback, useState } from "react";
-import { InnerChainUniqueId } from "core/types/ChainUniqueId";
-import { useCoinBasic } from "@/hooks/useCoinService";
+import {
+  type ChainUniqueId,
+  type InnerChainUniqueId,
+} from "core/types/ChainUniqueId";
+import { useCoinBasic, useCoinService } from "@/hooks/useCoinService";
 import { useDebounce } from "use-debounce";
 import { IconSendContact } from "@/components/Custom/Icon";
 import { useNavigate } from "react-router-dom";
 
 interface InputAddressStepProps {
+  uniqueId: ChainUniqueId;
   onStep2: (toAddr: string) => void;
   toAddr?: string;
 }
 
 export const InputAddressStep = (props: InputAddressStepProps) => {
-  const { onStep2, toAddr } = props;
+  const { uniqueId, onStep2, toAddr } = props;
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const [borderColor, setBorderColor] = useState("gray.100");
+  const [borderColor, setBorderColor] = useState("gray.50");
   const [address, setAddress] = useState(toAddr ?? "");
   const [debounceAddress] = useDebounce(address, 500);
 
-  // 此处多链需要修改
-  const uniqueId = InnerChainUniqueId.ALEO_MAINNET;
-  const coinBasic = useCoinBasic(uniqueId);
+  const { nativeCurrency, chainConfig, coinService } = useCoinService(uniqueId);
 
   const onAddressChange = useCallback(
     (event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -39,13 +41,12 @@ export const InputAddressStep = (props: InputAddressStepProps) => {
 
   const addressValid = useMemo(() => {
     if (debounceAddress) {
-      const valid = coinBasic.isValidAddress(debounceAddress);
-      console.log("valid      " + valid);
+      const valid = coinService.validateAddress(debounceAddress);
+      return true; // for test
       // return valid;
-      return true; // 地雷
     }
     return false;
-  }, [coinBasic, debounceAddress]);
+  }, [coinService, debounceAddress]);
 
   const openContact = useCallback(() => {
     navigate("/contacts");
@@ -109,7 +110,7 @@ export const InputAddressStep = (props: InputAddressStepProps) => {
           {AddressInfo}
         </Flex>
         <Flex direction={"column"}>
-          <Divider h={"1px"} bg={"gray.100"} />
+          <Divider h={"1px"} bg={"gray.50"} />
           <Flex mt={1} alignItems={"center"} justify={"flex-end"} h={"20px"}>
             <Button size={"xxs"} bg={"transparent"} onClick={openContact}>
               <IconSendContact style={{ pointerEvents: "none" }} />

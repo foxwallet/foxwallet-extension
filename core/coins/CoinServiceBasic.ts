@@ -64,4 +64,16 @@ export abstract class CoinServiceBasic {
     );
     return undefined;
   }
+
+  supportSendMaxNative(): boolean {
+    return false;
+  }
+
+  // optional
+  validateAddress(_address: string): boolean {
+    console.error(
+      "validateAddress not implemented for " + this.baseConfig.chainName,
+    );
+    return true;
+  }
 }

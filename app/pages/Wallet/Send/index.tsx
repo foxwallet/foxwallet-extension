@@ -1,17 +1,16 @@
-import { Content } from "@/layouts/Content";
 import { PageWithHeader } from "@/layouts/Page";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import {
-  Button,
-  Input,
-  InputGroup,
-  InputLeftElement,
-  Text,
-  VStack,
-} from "@chakra-ui/react";
-import React, { useMemo, useCallback, useState, useEffect } from "react";
+import React, { useMemo, useState } from "react";
 import { InputAddressStep } from "@/pages/Wallet/Send/InputAddressStep";
+import { SendDataStep } from "@/pages/Wallet/Send/SendDataStep";
+import { AssetType } from "@/common/types/asset";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
+
+export enum AmountType {
+  FIAT,
+  TOKEN,
+}
 
 const SendScreen = () => {
   const { t } = useTranslation();
@@ -19,11 +18,12 @@ const SendScreen = () => {
   const [step, setStep] = useState(1);
   const [toAddress, setToAddress] = useState("");
 
-  const content = useMemo(() => {
+  const sendTokenContent = useMemo(() => {
     switch (step) {
       case 1: {
         return (
           <InputAddressStep
+            uniqueId={InnerChainUniqueId.ETHEREUM} // for test
             onStep2={(toAddr) => {
               setToAddress(toAddr);
               setStep(2);
@@ -33,13 +33,19 @@ const SendScreen = () => {
         );
       }
       case 2: {
-        return <Text>222</Text>;
+        return (
+          <SendDataStep
+            uniqueId={InnerChainUniqueId.ETHEREUM} // for test
+            transferTarget={toAddress}
+            assetType={AssetType.COIN}
+          />
+        );
       }
       default: {
         return null;
       }
     }
-  }, [step]);
+  }, [step, toAddress]);
 
   return (
     <PageWithHeader
@@ -52,7 +58,7 @@ const SendScreen = () => {
         return true;
       }}
     >
-      {content}
+      {sendTokenContent}
     </PageWithHeader>
   );
 };
