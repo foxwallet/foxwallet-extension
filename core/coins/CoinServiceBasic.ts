@@ -1,7 +1,12 @@
 import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
-import { type NativeBalanceRes } from "core/types/Balance";
+import {
+  type NativeBalanceRes,
+  type TokenBalanceParams,
+  type TokenBalanceRes,
+} from "core/types/Balance";
 import { type CoinType } from "core/types";
 import {
+  type AuthParams,
   type EstimateGasParam,
   type NativeCoinSendTxParams,
   type NativeCoinSendTxRes,
@@ -13,6 +18,15 @@ import {
   type GasGradeData,
 } from "core/types/GasFee";
 import type { TransactionHistoryResp } from "core/types/TransactionHistory";
+import { type TokenMetaV2, type TokenV2 } from "core/types/Token";
+import {
+  type TokenTxHistoryParams,
+  type TokenMetaParams,
+  type TokenEstimateGasParams,
+  type TokenSendTxParams,
+  type TokenSendTxRes,
+  type InteractiveTokenParams,
+} from "core/types/TokenTransaction";
 
 export abstract class CoinServiceBasic {
   baseConfig: ChainBaseConfig;
@@ -86,5 +100,71 @@ export abstract class CoinServiceBasic {
         endReach: true,
       },
     };
+  }
+
+  supportToken(): boolean {
+    return false;
+  }
+
+  async getTokenBalance(
+    params: TokenBalanceParams,
+  ): Promise<TokenBalanceRes | undefined> {
+    console.error(
+      "getTokenBalance not implemented for " + this.baseConfig.chainName,
+    );
+    return undefined;
+  }
+
+  async getTokenMeta(
+    _params: TokenMetaParams,
+  ): Promise<TokenMetaV2 | undefined> {
+    console.error(
+      "getTokenMeta not implemented for " + this.baseConfig.chainName,
+    );
+    return undefined;
+  }
+
+  supportTokenTxHistory(): boolean {
+    return false;
+  }
+
+  async getTokenTxHistory(
+    _params: TokenTxHistoryParams,
+  ): Promise<TransactionHistoryResp | undefined> {
+    console.error(
+      "getTokenTxHistory not implemented for " + this.baseConfig.chainName,
+    );
+    return undefined;
+  }
+
+  async getTokenEstimateGasFee(
+    _params: TokenEstimateGasParams<CoinType>,
+  ): Promise<GasFee<CoinType> | undefined> {
+    console.error(
+      "getTokenEstimateGasFee not implemented for " + this.baseConfig.chainName,
+    );
+    return undefined;
+  }
+
+  async sendToken(
+    _params: TokenSendTxParams<CoinType>,
+  ): Promise<TokenSendTxRes<CoinType> | undefined> {
+    console.error("sendToken not implemented for " + this.baseConfig.chainName);
+    return undefined;
+  }
+
+  supportUserInteractiveToken(): boolean {
+    return false;
+  }
+
+  async getUserInteractiveTokens(
+    _params: InteractiveTokenParams,
+    _auth?: AuthParams,
+  ): Promise<TokenV2[]> {
+    console.error(
+      "getUserInteractiveTokens not implemented for " +
+        this.baseConfig.chainName,
+    );
+    return [];
   }
 }

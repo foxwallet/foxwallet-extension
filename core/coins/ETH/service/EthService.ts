@@ -4,7 +4,11 @@ import {
 } from "core/coins/ETH/types/ETHConfig";
 import { CoinServiceBasic } from "core/coins/CoinServiceBasic";
 import { parseEthChainId } from "core/coins/ETH/utils";
-import { type NativeBalanceRes } from "core/types/Balance";
+import {
+  type NativeBalanceRes,
+  type TokenBalanceParams,
+  type TokenBalanceRes,
+} from "core/types/Balance";
 import {
   createEthRpcService,
   type EthRpcService,
@@ -31,7 +35,15 @@ import {
   validateAddressString,
 } from "@glif/filecoin-address";
 import { Address } from "@zondax/izari-tools";
-import { type FilForwarderTxParams } from "core/types/TokenTransaction";
+import {
+  type TokenMetaParams,
+  type FilForwarderTxParams,
+  type TokenTxHistoryParams,
+  type TokenEstimateGasParams,
+  type TokenTransferParams,
+  type TokenSendTxParams,
+  type TokenSendTxRes,
+} from "core/types/TokenTransaction";
 import {
   type ContractInterface,
   type PopulatedTransaction,
@@ -75,6 +87,7 @@ import {
 } from "./instances/blockscout";
 import { FilfoxService } from "core/coins/ETH/service/instances/filfox";
 import { MoralisService } from "core/coins/ETH/service/instances/moralis";
+import { AssetType, type TokenMetaV2 } from "core/types/Token";
 
 export class EthService extends CoinServiceBasic {
   config: ETHConfig;
@@ -697,6 +710,166 @@ export class EthService extends CoinServiceBasic {
     return {
       txs: [],
       pagination: { pageSize, pageNum, totalCount: 0, endReach: true },
+    };
+  }
+
+  supportToken(): boolean {
+    return true;
+  }
+
+  async getTokenBalance(params: TokenBalanceParams): Promise<TokenBalanceRes> {
+    const { address, token } = params;
+    const erc20 = this.getContract(
+      ContractStandard.ERC20,
+      token.contractAddress,
+      this.rpcService,
+    );
+    const balance = await erc20.balanceOf(address);
+    return {
+      ...token,
+      uniqueId: this.config.uniqueId,
+      ownerAddress: address,
+      total: BigNumber.from(balance).toBigInt(),
+    };
+  }
+
+  async getTokenMeta(params: TokenMetaParams): Promise<TokenMetaV2> {
+    const { contractAddress } = params;
+    const erc20 = this.getContract(
+      ContractStandard.ERC20,
+      contractAddress,
+      this.rpcService,
+    );
+    const [symbol, decimals] = await Promise.all([
+      erc20.symbol(),
+      erc20.decimals(),
+    ]);
+    return {
+      type: AssetType.TOKEN,
+      display: symbol,
+      symbol,
+      name: symbol, // 这个name字段无关紧要，用symbol填充可以省一个请求
+      decimals,
+      contractAddress,
+      uniqueId: this.config.uniqueId,
+    };
+  }
+
+  supportTokenTxHistory(): boolean {
+    return (
+      !!this.blockbookService ||
+      !!this.blockscoutService ||
+      !!this.filfoxService ||
+      !!this.moralisService
+    );
+  }
+
+  async getTokenTxHistory(
+    params: TokenTxHistoryParams,
+  ): Promise<TransactionHistoryResp | undefined> {
+    const {
+      pagination: { pageSize, pageNum },
+    } = params;
+    if (!this.supportTokenTxHistory()) {
+      return undefined;
+    }
+    if (this.blockscoutService) {
+      try {
+        return await this.blockscoutService.getTokenTxHistory(params);
+      } catch (e) {
+        console.log("getTokenTxHistoryByBlockscout", e);
+      }
+    }
+    if (this.blockbookService) {
+      try {
+        return await this.blockbookService.getTokenTxHistory(params);
+      } catch (e) {
+        console.log("getTokenTxHistoryByBlockbook", e);
+      }
+    }
+    if (this.filfoxService) {
+      return await this.filfoxService.getTokenTxHistory(params);
+    }
+    // if (this.routescanService) {
+    //   return await this.routescanService.getTokenTxHistory(params);
+    // }
+    if (this.moralisService) {
+      return await this.moralisService.getTokenTxHistory(params);
+    }
+    return {
+      txs: [],
+      pagination: { pageSize, pageNum, totalPage: -1, endReach: true },
+    };
+  }
+
+  async populateERC20TransferTx(
+    params: TokenTransferParams,
+  ): Promise<PopulatedTransaction> {
+    const { from, to, value, tokenAddr } = params;
+    const voidSigner = this.getVoidSigner(from);
+    const erc20 = this.getContract(
+      ContractStandard.ERC20,
+      tokenAddr,
+      voidSigner,
+    );
+    return await erc20.populateTransaction.transfer(to, BigNumber.from(value));
+  }
+
+  async getTokenEstimateGasFee(
+    params: TokenEstimateGasParams<CoinType.ETH>,
+  ): Promise<GasFee<CoinType.ETH> | undefined> {
+    const {
+      tx: { from, to, value, token },
+      option,
+    } = params;
+    const txn = await this.populateERC20TransferTx({
+      from,
+      to,
+      value,
+      tokenAddr: token.contractAddress,
+    });
+    if (!txn.from || !txn.to || !txn.data) {
+      throw new Error("populatedERC20TransferTx failed");
+    }
+    return this.estimateGasFee({
+      tx: {
+        from: txn.from,
+        to: txn.to,
+        value: 0n,
+        data: txn.data,
+      },
+      option,
+    });
+  }
+
+  async sendToken(
+    params: TokenSendTxParams<CoinType.ETH>,
+  ): Promise<TokenSendTxRes<CoinType.ETH>> {
+    const {
+      tx: { from, to, value, token, gasFee, nonce },
+      signer: { privateKey },
+    } = params;
+    if (this.isFilecoinAddress(to)) {
+      throw new Error("Can't transfer token to non f410 address");
+    }
+    const txn = await this.populateERC20TransferTx({
+      from,
+      to,
+      value,
+      tokenAddr: token.contractAddress,
+    });
+    txn.nonce = nonce;
+    const res = await this.sendTransactionRequest(
+      txn,
+      privateKey,
+      from,
+      gasFee,
+    );
+    return {
+      ...res,
+      to,
+      value,
+      token,
     };
   }
 }

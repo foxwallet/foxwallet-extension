@@ -37,7 +37,7 @@ export const useBalance = ({
   const key = `/balance/${uniqueId}/${programId}/${address}/${tokenId}`;
   const fetchBalance = useCallback(async () => {
     if (programId !== NATIVE_TOKEN_PROGRAM_ID && tokenId) {
-      return await coinService.getTokenBalance(address, programId, tokenId);
+      return await coinService.getTokenBalanceOld(address, programId, tokenId);
     }
     return await coinService.getBalance(address);
   }, [coinService, uniqueId, address, tokenId]);

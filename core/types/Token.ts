@@ -45,11 +45,11 @@ export type TokenMarket = TokenMetaV2 & {
 };
 
 export type AddressBalance = {
-  balance?: bigint;
+  total?: bigint;
   privateBalance?: bigint;
   publicBalance?: bigint;
   availableBalance?: bigint;
   ownerAddress: string;
 };
 
-export type TokenV2 = TokenMetaV2 & TokenMarket;
+export type TokenV2 = TokenMetaV2 & TokenMarket & AddressBalance;
