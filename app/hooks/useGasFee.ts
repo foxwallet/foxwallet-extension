@@ -1,37 +1,41 @@
+import { useCoinService } from "@/hooks/useCoinService";
+import { useEffect, useState } from "react";
+import type { GasFee } from "core/types/GasFee";
+import { type CoinType } from "core/types";
 import { type ChainUniqueId } from "core/types/ChainUniqueId";
-import { useCoinService } from "./useCoinService";
-import { useCallback, useMemo } from "react";
-import { type AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
-import useSWR from "swr";
-import { type InnerProgramId } from "core/coins/ALEO/types/ProgramId";
 
-export const useAleoGasFee = (
+export const useGasFee = (
   uniqueId: ChainUniqueId,
-  programId: InnerProgramId,
-  method: AleoTransferMethod,
+  from: string,
+  to: string,
+  value: bigint,
 ) => {
+  const [gasFee, setGasFee] = useState<GasFee<CoinType.ETH>>();
+  const [loadingGasFee, setLoadingGasFee] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
   const { coinService } = useCoinService(uniqueId);
 
-  const key = `/gasFee/${uniqueId}`;
-  const fetchBalance = useCallback(async () => {
-    return coinService.getGasFee(programId, method);
-  }, [coinService, uniqueId, programId, method]);
+  useEffect(() => {
+    const fetchGasFee = async () => {
+      try {
+        setLoadingGasFee(true);
+        const res = (await coinService.estimateGasFee({
+          tx: { from, to, value },
+        })) as GasFee<CoinType.ETH>;
 
-  const {
-    data: gasFee,
-    error,
-    mutate: getGasFee,
-    isLoading: loadingGasFee,
-  } = useSWR(key, fetchBalance);
-
-  const res = useMemo(() => {
-    return {
-      gasFee,
-      error,
-      getGasFee,
-      loadingGasFee,
+        setGasFee(res);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err : new Error("Failed to fetch gas fee"),
+        );
+      } finally {
+        setLoadingGasFee(false);
+      }
     };
-  }, [gasFee, error, getGasFee, loadingGasFee]);
 
-  return res;
+    fetchGasFee();
+  }, [uniqueId, coinService, from, to, value]);
+
+  return { gasFee, loadingGasFee, error };
 };
