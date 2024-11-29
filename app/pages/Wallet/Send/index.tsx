@@ -33,13 +33,7 @@ const SendScreen = () => {
         );
       }
       case 2: {
-        return (
-          <SendDataStep
-            uniqueId={InnerChainUniqueId.ETHEREUM} // for test
-            transferTarget={toAddress}
-            assetType={AssetType.COIN}
-          />
-        );
+        return <SendDataStep toAddress={toAddress} />;
       }
       default: {
         return null;
