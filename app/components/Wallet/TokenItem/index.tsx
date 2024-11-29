@@ -1,6 +1,5 @@
 import { type ChakraProps, Flex, Image, Text } from "@chakra-ui/react";
 import { TokenNum } from "../TokenNum";
-import { useBalance } from "@/hooks/useBalance";
 import { useNavigate } from "react-router-dom";
 import { useCallback } from "react";
 import { usePopupSelector } from "@/hooks/useStore";
@@ -11,6 +10,7 @@ import {
   BETA_STAKING_PROGRAM_ID,
   NATIVE_TOKEN_PROGRAM_ID,
 } from "core/coins/ALEO/constants";
+import { useAleoBalance } from "@/hooks/useAleoBalance";
 
 export const TokenItemWithBalance = ({
   uniqueId,
@@ -28,7 +28,7 @@ export const TokenItemWithBalance = ({
   hover?: boolean;
 }) => {
   const showBalance = usePopupSelector((state) => state.accountV2.showBalance);
-  const { balance } = useBalance({
+  const { balance } = useAleoBalance({
     uniqueId,
     address,
     programId: token.programId,

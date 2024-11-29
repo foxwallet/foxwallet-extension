@@ -19,7 +19,7 @@ export interface Balance {
  * @param refreshInterval the refresh interval, should be greater than SYNS_BLOCK_INTERVAL
  * @returns {Balance} balance
  */
-export const useBalance = ({
+export const useAleoBalance = ({
   uniqueId,
   address,
   programId,

@@ -4,7 +4,7 @@ import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import { WarningArea } from "@/components/Custom/WarningArea";
 import { showSelectFeeTypeDialog } from "@/components/Send/SelectFeeType";
 import { TokenNum } from "@/components/Wallet/TokenNum";
-import { useBalance } from "@/hooks/useBalance";
+import { useAleoBalance } from "@/hooks/useAleoBalance";
 import { useCoinService } from "@/hooks/useCoinService";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { useRecords } from "@/hooks/useRecord";
@@ -65,7 +65,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
 
   const { coinService, nativeCurrency } = useCoinService(uniqueId);
 
-  const { balance, loadingBalance } = useBalance({
+  const { balance, loadingBalance } = useAleoBalance({
     uniqueId,
     programId: NATIVE_TOKEN_PROGRAM_ID,
     address: selectedAccount.account.address,
@@ -73,7 +73,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
   });
 
   const { balance: tokenBalance, loadingBalance: loadingTokenBalance } =
-    useBalance({
+    useAleoBalance({
       uniqueId,
       address: selectedAccount.account.address,
       refreshInterval: 10000,

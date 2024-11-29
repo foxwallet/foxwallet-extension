@@ -3,7 +3,7 @@ import { IconChevronRight } from "@/components/Custom/Icon";
 import { WarningArea } from "@/components/Custom/WarningArea";
 import { showSelectFeeTypeDialog } from "@/components/Send/SelectFeeType";
 import { TokenNum } from "@/components/Wallet/TokenNum";
-import { useBalance } from "@/hooks/useBalance";
+import { useAleoBalance } from "@/hooks/useAleoBalance";
 import { useCoinService } from "@/hooks/useCoinService";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { Content } from "@/layouts/Content";
@@ -41,7 +41,7 @@ export const JoinStep = (props: JoinStepProps) => {
 
   const { nativeCurrency, coinService } = useCoinService(uniqueId);
   const { t } = useTranslation();
-  const { balance, loadingBalance } = useBalance({
+  const { balance, loadingBalance } = useAleoBalance({
     uniqueId,
     programId: NATIVE_TOKEN_PROGRAM_ID,
     address: selectedAccount.account.address,

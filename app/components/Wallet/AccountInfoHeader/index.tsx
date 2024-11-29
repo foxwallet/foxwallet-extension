@@ -23,7 +23,7 @@ import {
 } from "@chakra-ui/react";
 import { TokenNum } from "../TokenNum";
 import { useCoinService } from "@/hooks/useCoinService";
-import { useBalance } from "@/hooks/useBalance";
+import { useAleoBalance } from "@/hooks/useAleoBalance";
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
@@ -74,7 +74,7 @@ export const AccountInfoHeader = () => {
   }, []);
   const uniqueId = availableChainUniqueIds[0];
   const { nativeCurrency, chainConfig, coinService } = useCoinService(uniqueId);
-  const { balance, loadingBalance } = useBalance({
+  const { balance, loadingBalance } = useAleoBalance({
     uniqueId,
     programId: NATIVE_TOKEN_PROGRAM_ID,
     address: selectedAccount.account.address,
@@ -234,9 +234,8 @@ export const AccountInfoHeader = () => {
         title: t("Send:title"),
         icon: <IconSend w={9} h={9} />,
         disabled: sendingAleoTx ?? balance === undefined,
-        onPress: () => {
-          navigate("/send_aleo");
-        },
+        onPress: () => navigate("/send_token"), // for test
+        // onPress: () => navigate("/send_aleo"),
       },
       {
         title: t("JoinSplit:title"),
@@ -265,11 +264,12 @@ export const AccountInfoHeader = () => {
     }
     return initOptions;
   }, [
-    navigate,
     t,
     sendingAleoTx,
     balance,
     chainConfig,
+    navigate,
+    onPressFaucet,
     requestingFaucet,
     faucetStatus,
   ]);

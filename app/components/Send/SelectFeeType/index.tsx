@@ -15,7 +15,7 @@ import { promisifyChooseDialogWrapper } from "../../../common/utils/dialog";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
 import { useMemo } from "react";
 import { AleoFeeMethod } from "core/coins/ALEO/types/FeeMethod";
-import { type Balance } from "@/hooks/useBalance";
+import { type Balance } from "@/hooks/useAleoBalance";
 import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 import { type NativeToken } from "core/types/Token";
 import { TokenNum } from "@/components/Wallet/TokenNum";

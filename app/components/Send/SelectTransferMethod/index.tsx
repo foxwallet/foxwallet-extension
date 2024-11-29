@@ -13,10 +13,10 @@ import {
 } from "@chakra-ui/react";
 import { L1, P3 } from "../../../common/theme/components/text";
 import { BasicModal } from "../../Custom/Modal";
-import { promisifyChooseDialogWrapper } from "../../../common/utils/dialog";
+import { promisifyChooseDialogWrapper } from "@/common/utils/dialog";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
 import { useMemo } from "react";
-import { useBalance } from "@/hooks/useBalance";
+import { useAleoBalance } from "@/hooks/useAleoBalance";
 import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import { TokenNum } from "@/components/Wallet/TokenNum";
 import { useCoinService } from "@/hooks/useCoinService";
@@ -53,7 +53,7 @@ const SelectTransferMethodDrawer = (props: Props) => {
     token,
   } = props;
   const { nativeCurrency } = useCoinService(uniqueId);
-  const { balance, loadingBalance } = useBalance({
+  const { balance, loadingBalance } = useAleoBalance({
     uniqueId,
     address,
     programId: token.programId,

@@ -6,7 +6,7 @@ import {
   IconSendBlack,
 } from "@/components/Custom/Icon";
 import { TokenNum } from "@/components/Wallet/TokenNum";
-import { useBalance } from "@/hooks/useBalance";
+import { useAleoBalance } from "@/hooks/useAleoBalance";
 import { useCoinService } from "@/hooks/useCoinService";
 import { PageWithHeader } from "@/layouts/Page";
 import {
@@ -169,7 +169,7 @@ const TokenDetailScreen = () => {
     }
   }, [nativeToken, token]);
 
-  const { balance, loadingBalance } = useBalance({
+  const { balance, loadingBalance } = useAleoBalance({
     uniqueId,
     programId: tokenInfo.programId,
     address: selectedAccount.account.address,
