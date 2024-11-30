@@ -8,13 +8,20 @@ export const useBalance = (
   address: string,
   token?: TokenV2,
 ) => {
-  const [balance, setBalance] = useState<bigint | null>(null);
+  const [balance, setBalance] = useState<bigint | undefined>(undefined);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const [error, setError] = useState<Error | undefined>(undefined);
 
   const { coinService } = useCoinService(uniqueId);
 
   useEffect(() => {
+    if (!coinService.validateAddress(address)) {
+      setBalance(undefined);
+      setLoading(false);
+      setError(new Error("Data error"));
+      return;
+    }
+
     const fetchBalance = async () => {
       try {
         setLoading(true);
@@ -32,6 +39,8 @@ export const useBalance = (
 
     fetchBalance();
   }, [uniqueId, address, coinService]);
+
+  console.log("      balance " + balance);
 
   return { balance, loadingBalance: loading, error };
 };

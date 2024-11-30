@@ -1,59 +1,109 @@
-import {
-  Text,
-  Flex,
-  Textarea,
-  Divider,
-  Button,
-  VStack,
-  Box,
-  Input,
-  IconButton,
-  keyframes,
-} from "@chakra-ui/react";
+import { Box, Button, Flex, Input, Text } from "@chakra-ui/react";
 import { H6 } from "@/common/theme/components/text";
 import { useTranslation } from "react-i18next";
 import { Content } from "@/layouts/Content";
 import type React from "react";
-import { useEffect, useRef, useMemo, useCallback, useState } from "react";
-import {
-  type ChainUniqueId,
-  type InnerChainUniqueId,
-} from "core/types/ChainUniqueId";
-import { useCoinBasic, useCoinService } from "@/hooks/useCoinService";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import { useDebounce } from "use-debounce";
-import {
-  IconChevronRight,
-  IconLoading,
-  IconSendContact,
-  IconSwitch,
-} from "@/components/Custom/Icon";
-import { useNavigate } from "react-router-dom";
-import { useDataRef } from "@/hooks/useDataRef";
-import { type AssetType } from "@/common/types/asset";
-import { useChainConfig } from "@/hooks/useGroupAccount";
-import { AmountType } from "@/pages/Wallet/Send/index";
-import { useTokenPrice } from "@/hooks/useTokenPrice";
-import { BaseInput } from "@/components/Custom/Input";
+import { IconChevronRight } from "@/components/Custom/Icon";
 import { LoadingView } from "@/components/Custom/Loading";
+import { useBalance } from "@/hooks/useBalance";
+import { useGasFee } from "@/hooks/useGasFee";
 import { ethers } from "ethers";
-import type { GasFee } from "core/types/GasFee";
-import { type CoinType } from "core/types";
+import { GasFeeType } from "core/types/GasFee";
 
 interface SendDataStepProps {
   toAddress: string;
+  uniqueId: ChainUniqueId;
+  onSend: () => void;
 }
 
 export const SendDataStep = (props: SendDataStepProps) => {
-  const { toAddress } = props;
+  const { uniqueId, toAddress, onSend } = props;
+  const fromAddress = "0x180325d018A5ED8144e78eEfdc9Ea893E8BEd50E"; // for test
   const { t } = useTranslation();
   // const navigate = useNavigate();
 
   const [amountStr, setAmountStr] = useState("");
-  const [debounceAmountStr] = useDebounce(amountStr, 500);
+  const [debounceAmountStr] = useDebounce(amountStr.trim(), 500);
 
-  // for test
-  // const walletAddress = "0x180325d018A5ED8144e78eEfdc9Ea893E8BEd50E";
-  // const toAddress = "0x35b011d3a59323a9715edaf7a0dae3e3b93216d4";
+  const {
+    balance,
+    loadingBalance,
+    error: loadBalanceError,
+  } = useBalance(uniqueId, fromAddress);
+
+  const balanceStr = useMemo(() => {
+    if (balance) {
+      return ethers.utils.formatUnits(balance, "ether");
+    }
+    return "";
+  }, [balance]);
+
+  // 输入字符检查
+  const { amountValid, amountBigint, amountValidErrMsg } = useMemo(() => {
+    if (debounceAmountStr) {
+      try {
+        const res = ethers.utils.parseEther(debounceAmountStr);
+        const amountBigint = res.toBigInt();
+        console.log("     amountBigint " + amountBigint);
+        if (balance && amountBigint > balance) {
+          return {
+            amountValid: true,
+            amountBigint,
+            amountValidErrMsg: t("Send:insufficientBalance"),
+          };
+        }
+        return { amountValid: true, amountBigint, amountValidErrMsg: "" };
+      } catch {
+        return {
+          amountValid: false,
+          amountBigint: undefined,
+          amountValidErrMsg: t("Send:invalidAmount"),
+        };
+      }
+    }
+    return {
+      amountValid: false,
+      amountBigint: undefined,
+      amountValidErrMsg: "",
+    };
+  }, [debounceAmountStr, balance, t]);
+  // console.log("      amountBigint  " + amountBigint);
+
+  // gas fee
+  // estimateGas: 241382509200000n
+  // gasLimit: 21000
+  // maxFeePerGas: 11494405200n
+  // maxPriorityFeePerGas: 1097240700n
+  // type: 1
+  const {
+    gasFee,
+    loadingGasFee,
+    error: loadGasFeeError,
+  } = useGasFee(uniqueId, fromAddress, toAddress, amountBigint);
+  console.log("      gasFee");
+  console.log(gasFee);
+
+  const { gasEthStr, gasGweiStr } = useMemo(() => {
+    let gasEthStr = "";
+    let gasGweiStr = "";
+    if (
+      gasFee?.estimateGas &&
+      gasFee?.gasLimit &&
+      gasFee?.type === GasFeeType.EIP1559
+    ) {
+      gasEthStr = ethers.utils.formatUnits(gasFee.estimateGas, "ether");
+      gasGweiStr = ethers.utils.formatUnits(
+        gasFee.estimateGas / BigInt(gasFee.gasLimit),
+        "gwei",
+      );
+    }
+    return { gasEthStr, gasGweiStr };
+  }, [gasFee]);
+  // console.log("      gasEthStr " + gasEthStr);
+  // console.log("      gasGweiStr " + gasGweiStr);
 
   // const { nativeCurrency, chainConfig, coinService } = useCoinService(uniqueId);
 
@@ -89,59 +139,6 @@ export const SendDataStep = (props: SendDataStepProps) => {
   // const { price: assetPrice } = useTokenPrice(uniqueId, asset?.contractAddress);
   // // 法币相对美元汇率
   // const { fiatCurrency, fiatRate } = useExchangeRate();
-
-  // loading gas
-  const [loadingGas, setLoadingGas] = useState(false);
-  const [loadGasFeeFail, setLoadGasFeeFail] = useState(false);
-  const [loadGasFeeErrorMsg, setLoadGasFeeErrorMsg] = useState("");
-
-  // useEffect(() => {
-  //   try {
-  //     const amountWei = ethers.utils.parseEther(debounceAmountStr ?? "");
-  //     const amountBigint = amountWei.toBigInt();
-  //   } catch (err) {
-  //     // console.log(err);
-  //   }
-  // }, [coinService, debounceAmountStr]);
-
-  // useEffect(() => {
-  //   async function fetchBalance() {
-  //     try {
-  //       const fetchedBalance = await coinService.getBalance(walletAddress);
-  //       console.log("balance  ", fetchedBalance);
-  //     } catch (err) {
-  //       console.log(err);
-  //     }
-  //   }
-  //   fetchBalance();
-  // }, [coinService]);
-
-  // useEffect(() => {
-  //   if (debounceAmountStr) {
-  //     onAmount(debounceAmountStr);
-  //   }
-  // }, [debounceAmountStr, onAmount]);
-
-  // useEffect(() => {
-  //   async function estimateGasFee() {
-  //     try {
-  //       console.log("      toAddress " + toAddress);
-  //       const gas = (await coinService.estimateGasFee({
-  //         tx: {
-  //           from: walletAddress,
-  //           to: toAddress,
-  //           value: 10000000000n,
-  //         },
-  //       })) as GasFee<CoinType.ETH>;
-  //       console.log("gas", gas);
-  //     } catch (err) {
-  //       console.log("gas error");
-  //       console.log(err);
-  //     }
-  //   }
-  //
-  //   estimateGasFee();
-  // }, [coinService, toAddress]);
 
   const amountUnit = useMemo(() => {
     if (amountStr) {
@@ -184,16 +181,21 @@ export const SendDataStep = (props: SendDataStepProps) => {
     valueRef.current?.focus();
   }, [valueRef]);
 
+  const onNext = useCallback(() => {}, []);
+
   const BalanceView = useMemo(() => {
     return (
-      <>
-        {/* <LoadingView /> */}
-        <Text mb={"20px"} fontSize={"small"} color={"gray.500"}>
-          {t("Send:available") + ": "}
-        </Text>
-      </>
+      <Flex mb={"20px"}>
+        {loadingBalance ? (
+          <LoadingView />
+        ) : (
+          <Text fontSize={"small"} color={"gray.500"}>
+            {t("Send:available") + ": " + balanceStr + " ETH"}
+          </Text>
+        )}
+      </Flex>
     );
-  }, [t]);
+  }, [balanceStr, loadingBalance, t]);
 
   const ValueView = useMemo(() => {
     return (
@@ -249,11 +251,23 @@ export const SendDataStep = (props: SendDataStepProps) => {
           {/* <Text position={"absolute"} mt={"60px"}> */}
           {/*  {fiatStr} */}
           {/* </Text> */}
+          {amountValidErrMsg && (
+            <Text position={"absolute"} mt={"90px"}>
+              {amountValidErrMsg}
+            </Text>
+          )}
         </Flex>
         {BalanceView}
       </>
     );
-  }, [BalanceView, amountStr, amountUnit, onAmountChange, t]);
+  }, [
+    BalanceView,
+    amountStr,
+    amountUnit,
+    amountValidErrMsg,
+    onAmountChange,
+    t,
+  ]);
 
   const GasFeeView = useMemo(() => {
     return (
@@ -272,7 +286,7 @@ export const SendDataStep = (props: SendDataStepProps) => {
           paddingX={"10px"}
           mb={"10px"}
         >
-          {loadingGas ? (
+          {loadingGasFee ? (
             <LoadingView />
           ) : (
             <Flex
@@ -280,19 +294,22 @@ export const SendDataStep = (props: SendDataStepProps) => {
               w={"full"}
               alignItems={"center"}
               h={"30px"}
-              justifyContent={loadingGas ? "center" : "space-between"}
+              justifyContent={loadingGasFee ? "center" : "space-between"}
             >
-              <Text>333</Text>
-              <Flex justifyContent={"center"} alignItems={"center"}>
-                <Text>222</Text>
-                <IconChevronRight w={4} h={4} ml={"1px"} />
-              </Flex>
+              {/* {!!gasEthStr ?`${gasEthStr} ETH` : "0 ETH"} */}
+              <Text>{gasEthStr ? `${gasEthStr} ETH` : "0 ETH"}</Text>
+              {gasGweiStr && (
+                <Flex justifyContent={"center"} alignItems={"center"}>
+                  <Text>{`${gasGweiStr} Gwei`}</Text>
+                  <IconChevronRight w={4} h={4} ml={"1px"} />
+                </Flex>
+              )}
             </Flex>
           )}
         </Flex>
       </>
     );
-  }, [loadingGas, t]);
+  }, [gasEthStr, gasGweiStr, loadingGasFee, t]);
 
   return (
     <Box overflowY={"auto"} h={"540px"}>
@@ -305,9 +322,14 @@ export const SendDataStep = (props: SendDataStepProps) => {
         <Button
           w={"full"}
           mt={"40px"}
-          onClick={() => {}}
+          onClick={onNext}
           isDisabled={
-            !amountStr || !debounceAmountStr || loadingGas || loadGasFeeFail
+            !amountValid ||
+            !amountStr ||
+            !debounceAmountStr ||
+            loadingGasFee ||
+            loadingGasFee ||
+            !gasFee
           }
         >
           {t("Common:confirm")}

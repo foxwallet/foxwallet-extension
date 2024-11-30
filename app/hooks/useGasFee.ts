@@ -8,15 +8,31 @@ export const useGasFee = (
   uniqueId: ChainUniqueId,
   from: string,
   to: string,
-  value: bigint,
+  value: bigint | undefined,
 ) => {
-  const [gasFee, setGasFee] = useState<GasFee<CoinType.ETH> | null>(null);
+  const [gasFee, setGasFee] = useState<GasFee<CoinType.ETH> | undefined>(
+    undefined,
+  );
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const [error, setError] = useState<Error | undefined>(undefined);
 
   const { coinService } = useCoinService(uniqueId);
 
   useEffect(() => {
+    // console.log("      value " + value);
+
+    if (
+      !value ||
+      value === 0n ||
+      !coinService.validateAddress(from) ||
+      !coinService.validateAddress(to)
+    ) {
+      setGasFee(undefined);
+      setLoading(false);
+      setError(new Error("Data error"));
+      return;
+    }
+
     const fetchGasFee = async () => {
       try {
         setLoading(true);

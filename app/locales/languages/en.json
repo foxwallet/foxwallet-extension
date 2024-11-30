@@ -130,7 +130,8 @@
     "sendingAleoTx": "Sending aleo transaction",
     "insufficientBalance": "Insufficient balance",
     "insufficientFee": "Insufficient balance to pay fee",
-    "value": "Value"
+    "value": "Value",
+    "invalidAmount": "Invalid amount"
   },
   "JoinSplit": {
     "title": "Join&Split",
