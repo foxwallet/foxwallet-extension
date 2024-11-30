@@ -8,8 +8,8 @@ export const useBalance = (
   address: string,
   token?: TokenV2,
 ) => {
-  const [balance, setBalance] = useState<bigint>(0n);
-  const [loadingBalance, setLoadingBalance] = useState(false);
+  const [balance, setBalance] = useState<bigint | null>(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   const { coinService } = useCoinService(uniqueId);
@@ -17,20 +17,21 @@ export const useBalance = (
   useEffect(() => {
     const fetchBalance = async () => {
       try {
-        setLoadingBalance(true);
+        setLoading(true);
         const balanceResult = await coinService.getBalance(address);
+
         setBalance(balanceResult.total);
       } catch (err) {
         setError(
           err instanceof Error ? err : new Error("Failed to fetch balance"),
         );
       } finally {
-        setLoadingBalance(false);
+        setLoading(false);
       }
     };
 
     fetchBalance();
   }, [uniqueId, address, coinService]);
 
-  return { balance, loadingBalance, error };
+  return { balance, loadingBalance: loading, error };
 };

@@ -216,7 +216,8 @@ export class EthService extends CoinServiceBasic {
       "https://gas-api.metaswap.codefi.network/networks/1/suggestedGasFees",
     );
     const response = await request.json();
-    const { low, medium, high } = response.data;
+    const { low, medium, high } = response;
+
     const toSafeGwei = (str: string) => Number(Number(str).toFixed(9));
     return {
       [GasGrade.Fast]: {

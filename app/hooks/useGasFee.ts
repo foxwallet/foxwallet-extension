@@ -10,8 +10,8 @@ export const useGasFee = (
   to: string,
   value: bigint,
 ) => {
-  const [gasFee, setGasFee] = useState<GasFee<CoinType.ETH>>();
-  const [loadingGasFee, setLoadingGasFee] = useState(false);
+  const [gasFee, setGasFee] = useState<GasFee<CoinType.ETH> | null>(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   const { coinService } = useCoinService(uniqueId);
@@ -19,23 +19,23 @@ export const useGasFee = (
   useEffect(() => {
     const fetchGasFee = async () => {
       try {
-        setLoadingGasFee(true);
-        const res = (await coinService.estimateGasFee({
+        setLoading(true);
+        const estimatedGasFee = (await coinService.estimateGasFee({
           tx: { from, to, value },
         })) as GasFee<CoinType.ETH>;
 
-        setGasFee(res);
+        setGasFee(estimatedGasFee);
       } catch (err) {
         setError(
-          err instanceof Error ? err : new Error("Failed to fetch gas fee"),
+          err instanceof Error ? err : new Error("Failed to estimate gas fee"),
         );
       } finally {
-        setLoadingGasFee(false);
+        setLoading(false);
       }
     };
 
     fetchGasFee();
   }, [uniqueId, coinService, from, to, value]);
 
-  return { gasFee, loadingGasFee, error };
+  return { gasFee, loadingGasFee: loading, error };
 };
