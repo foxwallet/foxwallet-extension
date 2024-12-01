@@ -11,12 +11,16 @@ import { LoadingView } from "@/components/Custom/Loading";
 import { useBalance } from "@/hooks/useBalance";
 import { useGasFee } from "@/hooks/useGasFee";
 import { ethers } from "ethers";
-import { GasFeeType } from "core/types/GasFee";
+import { type GasFee, GasFeeType } from "core/types/GasFee";
+import { type CoinType } from "core/types";
 
 interface SendDataStepProps {
   toAddress: string;
   uniqueId: ChainUniqueId;
-  onSend: () => void;
+  onSend: (
+    gasFee: GasFee<CoinType.ETH> | undefined,
+    value: bigint | undefined,
+  ) => void;
 }
 
 export const SendDataStep = (props: SendDataStepProps) => {
@@ -181,7 +185,9 @@ export const SendDataStep = (props: SendDataStepProps) => {
     valueRef.current?.focus();
   }, [valueRef]);
 
-  const onNext = useCallback(() => {}, []);
+  const onNext = useCallback(() => {
+    onSend(gasFee, amountBigint);
+  }, [amountBigint, gasFee, onSend]);
 
   const BalanceView = useMemo(() => {
     return (
@@ -252,7 +258,13 @@ export const SendDataStep = (props: SendDataStepProps) => {
           {/*  {fiatStr} */}
           {/* </Text> */}
           {amountValidErrMsg && (
-            <Text position={"absolute"} mt={"90px"}>
+            <Text
+              position={"absolute"}
+              mt={"90px"}
+              color={"#EF466F"}
+              fontWeight={500}
+              fontSize={14}
+            >
               {amountValidErrMsg}
             </Text>
           )}
@@ -326,7 +338,6 @@ export const SendDataStep = (props: SendDataStepProps) => {
           isDisabled={
             !amountValid ||
             !amountStr ||
-            !debounceAmountStr ||
             loadingGasFee ||
             loadingGasFee ||
             !gasFee
