@@ -1,8 +1,12 @@
 import { type ChainUniqueId } from "core/types/ChainUniqueId";
-import { type AssetType } from "@/common/types/asset";
-import { type BigNumber } from "ethers";
+import { type Currency } from "core/types/Currency";
 
-export interface Currency {
+export enum TokenSecurity {
+  WHITE = "WHITELIST",
+  BLACK = "BLACKLIST",
+}
+
+export interface BaseToken {
   symbol: string;
   decimals: number;
   name?: string;
@@ -20,9 +24,9 @@ export interface NativeTokenWithAddress extends Currency {
   logo?: string;
 }
 
-export enum TokenSecurity {
-  WHITE = "WHITELIST",
-  BLACK = "BLACKLIST",
+export enum AssetType {
+  COIN = "COIN",
+  TOKEN = "TOKEN",
 }
 
 export type TokenMetaV2 = Currency & {
@@ -31,7 +35,6 @@ export type TokenMetaV2 = Currency & {
   contractAddress: string;
   display?: string;
   icon?: string;
-  iconSource?: number | string;
   security?: TokenSecurity;
   uniqueId: ChainUniqueId;
 };
@@ -42,13 +45,11 @@ export type TokenMarket = TokenMetaV2 & {
 };
 
 export type AddressBalance = {
-  balance?: BigNumber;
-  privateBalance?: BigNumber;
-  publicBalance?: BigNumber;
-  availableBalance?: BigNumber;
+  total?: bigint;
+  privateBalance?: bigint;
+  publicBalance?: bigint;
+  availableBalance?: bigint;
   ownerAddress: string;
 };
 
-export type TokenBalance = TokenMetaV2 & AddressBalance;
-
-export type TokenV2 = TokenBalance & TokenMarket;
+export type TokenV2 = TokenMetaV2 & TokenMarket & AddressBalance;

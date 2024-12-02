@@ -1408,7 +1408,7 @@ export class AleoService extends CoinServiceBasic {
   };
 
   // tokens
-  supportToken() {
+  supportToken(): boolean {
     return !!this.config.alphaSwapApi;
   }
 
@@ -1503,7 +1503,8 @@ export class AleoService extends CoinServiceBasic {
     }
   }
 
-  async getTokenBalance(
+  // TODO impl new api
+  async getTokenBalanceOld(
     address: string,
     programId: InnerProgramId,
     tokenId: string,
@@ -1536,7 +1537,7 @@ export class AleoService extends CoinServiceBasic {
     const balances = await Promise.all(
       top10Tokens.map(async (token) => {
         try {
-          const balance = await this.getTokenBalance(
+          const balance = await this.getTokenBalanceOld(
             address,
             ALPHA_TOKEN_PROGRAM_ID,
             token.tokenId,
@@ -1568,7 +1569,7 @@ export class AleoService extends CoinServiceBasic {
       },
     };
     try {
-      const balance = await this.getTokenBalance(
+      const balance = await this.getTokenBalanceOld(
         address,
         stAleoToken.programId,
         stAleoToken.tokenId,
