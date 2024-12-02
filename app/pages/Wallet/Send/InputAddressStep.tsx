@@ -1,14 +1,11 @@
-import { Text, Flex, Textarea, Divider, Button } from "@chakra-ui/react";
+import { Button, Divider, Flex, Text, Textarea } from "@chakra-ui/react";
 import { H6 } from "@/common/theme/components/text";
 import { useTranslation } from "react-i18next";
 import { Content } from "@/layouts/Content";
 import type React from "react";
-import { useEffect, useMemo, useCallback, useState } from "react";
-import {
-  type ChainUniqueId,
-  type InnerChainUniqueId,
-} from "core/types/ChainUniqueId";
-import { useCoinBasic, useCoinService } from "@/hooks/useCoinService";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { type ChainUniqueId } from "core/types/ChainUniqueId";
+import { useCoinService } from "@/hooks/useCoinService";
 import { useDebounce } from "use-debounce";
 import { IconSendContact } from "@/components/Custom/Icon";
 import { useNavigate } from "react-router-dom";
@@ -41,9 +38,7 @@ export const InputAddressStep = (props: InputAddressStepProps) => {
 
   const addressValid = useMemo(() => {
     if (debounceAddress) {
-      const valid = coinService.validateAddress(debounceAddress);
-      return true; // for test
-      // return valid;
+      return coinService.validateAddress(debounceAddress);
     }
     return false;
   }, [coinService, debounceAddress]);
@@ -67,9 +62,9 @@ export const InputAddressStep = (props: InputAddressStepProps) => {
     );
   }, [address, addressValid, debounceAddress, t]);
 
+  // get address from contacts
   useEffect(() => {
     const addr = sessionStorage.getItem("contactAddress");
-    console.log("===> contact address: ", addr);
     if (addr) {
       setAddress(addr);
     }

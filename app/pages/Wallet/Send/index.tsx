@@ -21,9 +21,7 @@ const SendScreen = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
-  const [toAddress, setToAddress] = useState(
-    "0xbA3b212Ef2A2bf9b94955c904D8770bd774c3D2a",
-  );
+  const [toAddress, setToAddress] = useState("");
 
   const myAddress = "0x180325d018A5ED8144e78eEfdc9Ea893E8BEd50E";
   const uniqueId = InnerChainUniqueId.ETHEREUM; // for test
