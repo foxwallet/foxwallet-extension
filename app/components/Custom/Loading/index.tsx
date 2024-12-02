@@ -1,10 +1,11 @@
-import { H1 } from "@/common/theme/components/text";
-import { Box, Flex, keyframes, Spinner } from "@chakra-ui/react";
+import { Box, Flex, keyframes, Spinner, Text } from "@chakra-ui/react";
 import { IconLoading } from "@/components/Custom/Icon";
 import type React from "react";
+import { useTranslation } from "react-i18next";
 
 interface LoadingProps {
   isLoading?: boolean;
+  hint?: string;
   children?: React.ReactNode;
 }
 
@@ -34,7 +35,8 @@ export const LoadingView = () => {
 };
 
 export const LoadingOverlay = (props: LoadingProps) => {
-  const { isLoading = true, children } = props;
+  const { t } = useTranslation();
+  const { isLoading = true, hint = t("Common:pleaseWait"), children } = props;
   return (
     <Box position="relative">
       {isLoading && (
@@ -42,19 +44,22 @@ export const LoadingOverlay = (props: LoadingProps) => {
           position="fixed"
           top="0"
           left="0"
-          width="100%"
-          height="100%"
-          backgroundColor="rgba(0, 0, 0, 0.3)"
-          zIndex="9999"
+          width="full"
+          height="full"
+          backgroundColor="rgba(0, 0, 0, 0.5)"
           display="flex"
           alignItems="center"
           justifyContent="center"
+          flexDirection="column"
         >
-          {/* <Spinner size="xl" color="white" thickness="4px" /> */}
-          <Spinner w={10} h={10} />
+          <Spinner w={10} h={10} color={"white"} thickness="4px" />
+          {children || (
+            <Text color={"white"} mt={"20px"}>
+              {hint}
+            </Text>
+          )}
         </Box>
       )}
-      {children}
     </Box>
   );
 };

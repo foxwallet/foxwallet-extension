@@ -11,6 +11,7 @@ import { CoinType } from "core/types";
 import { useCoinService } from "@/hooks/useCoinService";
 import { useNonce } from "@/hooks/useNonce";
 import { usePrivateKey } from "@/hooks/usePrivateKey";
+import { LoadingOverlay, LoadingScreen } from "@/components/Custom/Loading";
 
 export enum AmountType {
   FIAT,
@@ -29,7 +30,17 @@ const SendScreen = () => {
 
   const { nonce } = useNonce(uniqueId, myAddress);
   const { privateKey } = usePrivateKey(uniqueId, CoinType.ETH);
-  console.log("      privateKey " + privateKey);
+  // console.log("      privateKey " + privateKey);
+  const [isSending, setIsSending] = useState(false);
+
+  // for test
+  const LoadingDelay = useCallback(async () => {
+    return new Promise<void>((resolve) => {
+      setTimeout(() => {
+        resolve();
+      }, 2000);
+    });
+  }, []);
 
   const onSend = useCallback(
     async (
@@ -39,32 +50,36 @@ const SendScreen = () => {
       if (!gasFee || !value || !privateKey) {
         return;
       }
-      try {
-        console.log("     send xxx ");
-        console.log(myAddress);
-        console.log(toAddress);
-        console.log(value);
-        console.log(gasFee);
-        console.log(nonce);
-        console.log(privateKey);
+      setIsSending(true);
 
-        const res = await coinService.sendNativeCoin({
-          tx: {
-            from: myAddress,
-            to: toAddress,
-            value,
-            gasFee,
-            nonce,
-          },
-          signer: { privateKey },
-        });
-        console.log("     66666666 ");
-        console.log(res);
-      } catch (e) {
-        console.log(e);
-      }
+      const sendCoin = async () => {
+        try {
+          const res = await coinService.sendNativeCoin({
+            tx: {
+              from: myAddress,
+              to: toAddress,
+              value,
+              gasFee,
+              nonce,
+            },
+            signer: { privateKey },
+          });
+          console.log("====> send NativeCoin");
+          console.log(res);
+        } catch (e) {
+          console.log(e);
+        }
+      };
+
+      Promise.all([
+        sendCoin(),
+        new Promise((resolve) => setTimeout(resolve, 2000)),
+      ]).then(() => {
+        setIsSending(false);
+        navigate("/");
+      });
     },
-    [coinService, nonce, privateKey, toAddress],
+    [coinService, navigate, nonce, privateKey, toAddress],
   );
 
   const sendTokenContent = useMemo(() => {
@@ -110,7 +125,7 @@ const SendScreen = () => {
       }}
     >
       {sendTokenContent}
-      <LoadingOverlay isLoading={isSending} />
+      <LoadingOverlay isLoading={isSending} hint={t("Send:processing")} />
     </PageWithHeader>
   );
 };

@@ -131,7 +131,8 @@
     "insufficientBalance": "Insufficient balance",
     "insufficientFee": "Insufficient balance to pay fee",
     "value": "Value",
-    "invalidAmount": "Invalid amount"
+    "invalidAmount": "Invalid amount",
+    "processing": "Transaction is processing, please wait."
   },
   "JoinSplit": {
     "title": "Join&Split",
@@ -274,7 +275,8 @@
     "account": "Account",
     "ok": "OK",
     "wrongPassword": "Incorrect password",
-    "noSearchResult": "No search result"
+    "noSearchResult": "No search result",
+    "pleaseWait": "Please wait"
   },
   "Error": {
     "invalidPassword": "Invalid password",
