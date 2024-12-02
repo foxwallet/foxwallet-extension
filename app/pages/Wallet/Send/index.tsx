@@ -110,6 +110,7 @@ const SendScreen = () => {
       }}
     >
       {sendTokenContent}
+      <LoadingOverlay isLoading={isSending} />
     </PageWithHeader>
   );
 };
