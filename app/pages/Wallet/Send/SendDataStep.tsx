@@ -13,6 +13,7 @@ import { useGasFee } from "@/hooks/useGasFee";
 import { ethers } from "ethers";
 import { type GasFee, GasFeeType } from "core/types/GasFee";
 import { type CoinType } from "core/types";
+import { type TokenV2 } from "core/types/Token";
 
 interface SendDataStepProps {
   toAddress: string;
@@ -21,10 +22,11 @@ interface SendDataStepProps {
     gasFee: GasFee<CoinType.ETH> | undefined,
     value: bigint | undefined,
   ) => void;
+  token?: TokenV2;
 }
 
 export const SendDataStep = (props: SendDataStepProps) => {
-  const { uniqueId, toAddress, onSend } = props;
+  const { uniqueId, toAddress, onSend, token } = props;
   const fromAddress = "0x180325d018A5ED8144e78eEfdc9Ea893E8BEd50E"; // for test
   const { t } = useTranslation();
   // const navigate = useNavigate();
@@ -36,7 +38,7 @@ export const SendDataStep = (props: SendDataStepProps) => {
     balance,
     loadingBalance,
     error: loadBalanceError,
-  } = useBalance(uniqueId, fromAddress);
+  } = useBalance(uniqueId, fromAddress, token);
 
   const balanceStr = useMemo(() => {
     if (balance) {
@@ -86,7 +88,13 @@ export const SendDataStep = (props: SendDataStepProps) => {
     gasFee,
     loadingGasFee,
     error: loadGasFeeError,
-  } = useGasFee(uniqueId, fromAddress, toAddress, amountBigint);
+  } = useGasFee<CoinType.ETH>(
+    uniqueId,
+    fromAddress,
+    toAddress,
+    amountBigint,
+    token,
+  );
   console.log("      gasFee");
   console.log(gasFee);
 
@@ -196,7 +204,7 @@ export const SendDataStep = (props: SendDataStepProps) => {
           <LoadingView />
         ) : (
           <Text fontSize={"small"} color={"gray.500"}>
-            {t("Send:available") + ": " + balanceStr + " ETH"}
+            {`${t("Send:available")}: ${balanceStr} ETH`}
           </Text>
         )}
       </Flex>

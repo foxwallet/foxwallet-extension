@@ -12,6 +12,7 @@ import { useCoinService } from "@/hooks/useCoinService";
 import { useNonce } from "@/hooks/useNonce";
 import { usePrivateKey } from "@/hooks/usePrivateKey";
 import { LoadingOverlay, LoadingScreen } from "@/components/Custom/Loading";
+import type { TokenV2 } from "core/types/Token";
 
 export enum AmountType {
   FIAT,
@@ -32,6 +33,19 @@ const SendScreen = () => {
   const { privateKey } = usePrivateKey(uniqueId, CoinType.ETH);
   // console.log("      privateKey " + privateKey);
   const [isSending, setIsSending] = useState(false);
+
+  // for test
+  const testToken: TokenV2 = useMemo(() => {
+    return {
+      symbol: "ZKB",
+      decimals: 18,
+      name: "ZKBase",
+      type: AssetType.TOKEN,
+      contractAddress: "0xBBBbbBBB46A1dA0F0C3F64522c275BAA4C332636",
+      uniqueId: InnerChainUniqueId.ETHEREUM,
+      ownerAddress: "0x180325d018A5ED8144e78eEfdc9Ea893E8BEd50E",
+    };
+  }, []);
 
   const onSend = useCallback(
     async (
@@ -62,15 +76,35 @@ const SendScreen = () => {
         }
       };
 
+      const sendToken = async () => {
+        try {
+          const res = await coinService.sendToken({
+            tx: {
+              from: myAddress,
+              to: toAddress,
+              value,
+              token: testToken,
+              gasFee,
+              nonce,
+            },
+            signer: { privateKey },
+          });
+          console.log("====> send token");
+          console.log(res);
+        } catch (e) {
+          console.log(e);
+        }
+      };
+
       Promise.all([
-        sendCoin(),
+        testToken ? sendToken() : sendCoin(),
         new Promise((resolve) => setTimeout(resolve, 2000)),
       ]).then(() => {
         setIsSending(false);
         navigate("/");
       });
     },
-    [coinService, navigate, nonce, privateKey, toAddress],
+    [coinService, navigate, nonce, privateKey, toAddress, testToken],
   );
 
   const sendTokenContent = useMemo(() => {
@@ -95,6 +129,7 @@ const SendScreen = () => {
             onSend={(gasFee, value) => {
               onSend(gasFee, value);
             }}
+            token={testToken}
           />
         );
       }
@@ -102,7 +137,7 @@ const SendScreen = () => {
         return null;
       }
     }
-  }, [onSend, step, toAddress, uniqueId]);
+  }, [onSend, step, testToken, toAddress, uniqueId]);
 
   return (
     <PageWithHeader
