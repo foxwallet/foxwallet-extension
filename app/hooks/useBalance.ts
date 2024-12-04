@@ -25,9 +25,17 @@ export const useBalance = (
     const fetchBalance = async () => {
       try {
         setLoading(true);
-        const balanceResult = await coinService.getBalance(address);
 
-        setBalance(balanceResult.total);
+        if (token) {
+          const res = await coinService.getTokenBalance({
+            address,
+            token,
+          });
+          setBalance(res ? res.total : undefined);
+        } else {
+          const balanceResult = await coinService.getBalance(address);
+          setBalance(balanceResult.total);
+        }
       } catch (err) {
         setError(
           err instanceof Error ? err : new Error("Failed to fetch balance"),
@@ -38,7 +46,7 @@ export const useBalance = (
     };
 
     fetchBalance();
-  }, [uniqueId, address, coinService]);
+  }, [token, uniqueId, address, coinService]);
 
   console.log("      balance " + balance);
 
