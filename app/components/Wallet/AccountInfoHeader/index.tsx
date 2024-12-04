@@ -57,6 +57,7 @@ import { NATIVE_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { useChainMode } from "@/hooks/useChainMode";
 import { type AleoService } from "core/coins/ALEO/service/AleoService";
+import { ChainAssembleMode } from "core/types/ChainUniqueId";
 
 const rotateAnimation = keyframes`
   from { transform: rotate(0deg) }
@@ -68,10 +69,13 @@ export const AccountInfoHeader = () => {
   const { groupAccount, getMatchAccountsWithUniqueId } = useGroupAccount();
   const { chainMode, availableChainUniqueIds } = useChainMode();
 
+  console.log("      groupAccount ");
+  console.log(groupAccount);
+
   // TODO: 根据 chainMode 获取  asset
   const selectedAccount = useMemo(() => {
     return getMatchAccountsWithUniqueId(availableChainUniqueIds[0])[0];
-  }, []);
+  }, [availableChainUniqueIds, getMatchAccountsWithUniqueId]);
   const uniqueId = availableChainUniqueIds[0];
   const { nativeCurrency, chainConfig, coinService } = useCoinService(uniqueId);
   const { balance, loadingBalance } = useAleoBalance({
@@ -212,12 +216,16 @@ export const AccountInfoHeader = () => {
       setRequestingFaucet(false);
     }
   }, [
-    chainConfig,
+    requestingFaucet,
+    chainConfig.innerFaucet,
+    chainConfig.faucetApi,
     getFaucetStatus,
+    selectedAccount.account.address,
+    selectedAccount.account.accountId,
+    selectedAccount.wallet.walletId,
+    uniqueId,
     coinService,
     popupServerClient,
-    selectedAccount,
-    requestingFaucet,
     t,
   ]);
 
@@ -234,7 +242,13 @@ export const AccountInfoHeader = () => {
         title: t("Send:title"),
         icon: <IconSend w={9} h={9} />,
         disabled: sendingAleoTx ?? balance === undefined,
-        onPress: () => navigate("/send_token"), // for test
+        onPress: () => {
+          if (chainMode.mode === ChainAssembleMode.ALL) {
+            navigate("/send_token");
+          } else {
+            navigate("/send_token");
+          }
+        },
         // onPress: () => navigate("/send_aleo"),
       },
       {
@@ -264,6 +278,7 @@ export const AccountInfoHeader = () => {
     }
     return initOptions;
   }, [
+    chainMode,
     t,
     sendingAleoTx,
     balance,
@@ -280,7 +295,7 @@ export const AccountInfoHeader = () => {
         navigate("/manage_wallet");
       },
     });
-  }, [showWalletsDrawer, navigate]);
+  }, [navigate]);
 
   const onCopyAddress = useCallback(() => {
     onCopy();

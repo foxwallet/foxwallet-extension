@@ -7,7 +7,6 @@ import {
   Input,
   InputGroup,
   InputLeftElement,
-  Text,
   VStack,
 } from "@chakra-ui/react";
 import { IconEmptyTxPlaceholder, IconSearch } from "@/components/Custom/Icon";
@@ -52,6 +51,18 @@ const ContactsScreen = () => {
             onClick={() => navigate(`/add_or_edit_contact/add`)}
           >
             {t("Contacts:addContact")}
+          </Button>
+          <Button
+            w={"full"}
+            onClick={() => {
+              sessionStorage.setItem(
+                "contactAddress",
+                "0xbA3b212Ef2A2bf9b94955c904D8770bd774c3D2a",
+              );
+              navigate(-1);
+            }}
+          >
+            xxx
           </Button>
         </VStack>
       </Content>

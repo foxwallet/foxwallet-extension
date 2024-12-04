@@ -33,15 +33,6 @@ const SendScreen = () => {
   // console.log("      privateKey " + privateKey);
   const [isSending, setIsSending] = useState(false);
 
-  // for test
-  const LoadingDelay = useCallback(async () => {
-    return new Promise<void>((resolve) => {
-      setTimeout(() => {
-        resolve();
-      }, 2000);
-    });
-  }, []);
-
   const onSend = useCallback(
     async (
       gasFee: GasFee<CoinType.ETH> | undefined,
@@ -50,8 +41,8 @@ const SendScreen = () => {
       if (!gasFee || !value || !privateKey) {
         return;
       }
-      setIsSending(true);
 
+      setIsSending(true);
       const sendCoin = async () => {
         try {
           const res = await coinService.sendNativeCoin({
