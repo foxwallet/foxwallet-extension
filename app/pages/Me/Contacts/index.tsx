@@ -62,7 +62,7 @@ const ContactsScreen = () => {
               navigate(-1);
             }}
           >
-            xxx
+            test address
           </Button>
         </VStack>
       </Content>

@@ -11,7 +11,7 @@ import { CoinType } from "core/types";
 import { useCoinService } from "@/hooks/useCoinService";
 import { useNonce } from "@/hooks/useNonce";
 import { usePrivateKey } from "@/hooks/usePrivateKey";
-import { LoadingOverlay, LoadingScreen } from "@/components/Custom/Loading";
+import { LoadingOverlay } from "@/components/Custom/Loading";
 import type { TokenV2 } from "core/types/Token";
 
 export enum AmountType {
@@ -57,6 +57,7 @@ const SendScreen = () => {
       }
 
       setIsSending(true);
+
       const sendCoin = async () => {
         try {
           const res = await coinService.sendNativeCoin({
@@ -107,7 +108,7 @@ const SendScreen = () => {
     [coinService, navigate, nonce, privateKey, toAddress, testToken],
   );
 
-  const sendTokenContent = useMemo(() => {
+  const sendContent = useMemo(() => {
     switch (step) {
       case 1: {
         return (
@@ -150,7 +151,7 @@ const SendScreen = () => {
         return true;
       }}
     >
-      {sendTokenContent}
+      {sendContent}
       <LoadingOverlay isLoading={isSending} hint={t("Send:processing")} />
     </PageWithHeader>
   );

@@ -327,22 +327,22 @@ export const AccountInfoHeader = () => {
         borderBottomWidth={1}
         borderColor={borderColor}
       >
+        {/* account and lock */}
         <Flex justify={"space-between"} align={"center"}>
+          <Flex w={5}></Flex>
           <Flex
             cursor={"pointer"}
             onClick={onChangeWallet}
             direction={"row"}
             align={"center"}
+            bg={"#EBECEB"}
+            minH={"24px"}
+            pl={2}
+            borderRadius={"5px"}
           >
-            <IconLogo w={8} h={8} mr={1} />
-            <Flex direction={"column"} align={"flex-start"}>
-              <Text fontSize={12} lineHeight={4} fontWeight={500}>
-                {selectedWallet?.walletName}
-              </Text>
-              <Text fontSize={10} color={"#777E90"} fontWeight={500}>
-                {selectedAccount.account.accountName}
-              </Text>
-            </Flex>
+            <Text fontSize={12} lineHeight={4} fontWeight={500}>
+              {selectedAccount.account.accountName}
+            </Text>
             <IconArrowRight w={18} h={18} />
           </Flex>
           <Flex
@@ -355,23 +355,28 @@ export const AccountInfoHeader = () => {
             <IconLock w={5} h={5} />
           </Flex>
         </Flex>
-        <Flex mt={6} direction={"row"} align={"center"}>
-          <Box maxW={128} noOfLines={1} fontSize={11} color={"#777E90"}>
-            <MiddleEllipsisText
-              text={selectedAccount.account.address}
-              width={128}
-            />
-          </Box>
-          <Hover onClick={onCopyAddress}>
-            <IconCopy w={3} h={3} />
-          </Hover>
-        </Flex>
+        {/* address */}
         <Flex
+          mt={2}
           direction={"row"}
           align={"center"}
-          justify={"space-between"}
-          mt={2}
+          justifyContent={"center"}
+          // bg={"yellow"}
         >
+          <Hover onClick={onCopyAddress} bg={"#f9f9f9"} borderRadius={"5px"}>
+            <Flex dir={"row"} align={"center"} justify={"center"} marginX={1}>
+              <Box maxW={128} noOfLines={1} fontSize={11} color={"#777E90"}>
+                <MiddleEllipsisText
+                  text={selectedAccount.account.address}
+                  width={128}
+                />
+              </Box>
+              <IconCopy w={3} h={3} />
+            </Flex>
+          </Hover>
+        </Flex>
+        {/* value */}
+        <Flex direction={"row"} align={"center"} justify={"center"} mt={2}>
           <Flex align={"center"}>
             <Box fontSize={24} fontWeight={600}>
               {showBalance ? (
@@ -398,6 +403,7 @@ export const AccountInfoHeader = () => {
           </Flex>
           <RescanButton paused={!!sendingAleoTx} />
         </Flex>
+        {/* Action Item */}
         <Flex direction={"row"} justify={"space-around"} mt={6}>
           {options.map(renderActionItem)}
         </Flex>
