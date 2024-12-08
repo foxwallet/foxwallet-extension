@@ -1,4 +1,5 @@
 import {
+  IconAleo,
   IconArrowRight,
   IconCopy,
   IconEyeClose,
@@ -20,6 +21,7 @@ import {
   keyframes,
   useClipboard,
   useColorModeValue,
+  Grid,
 } from "@chakra-ui/react";
 import { TokenNum } from "../TokenNum";
 import { useCoinService } from "@/hooks/useCoinService";
@@ -327,9 +329,29 @@ export const AccountInfoHeader = () => {
         borderBottomWidth={1}
         borderColor={borderColor}
       >
-        {/* account and lock */}
-        <Flex justify={"space-between"} align={"center"}>
-          <Flex w={5}></Flex>
+        {/* network, account and lock */}
+        <Flex justify={"space-between"} align={"center"} position={"relative"}>
+          <Flex
+            justify={"center"}
+            align={"center"}
+            py={"3px"}
+            pl={"3px"}
+            pr={"4px"}
+            h={26}
+            borderRadius={13}
+            borderWidth={"1px"}
+            onClick={() => {}}
+          >
+            <IconLogo w={5} h={5} />
+            <Text ml={"5px"} fontSize={"9px"}>
+              Ethereum
+            </Text>
+            <IconArrowRight
+              w={4}
+              h={4}
+              style={{ transform: "rotate(90deg)" }}
+            />
+          </Flex>
           <Flex
             cursor={"pointer"}
             onClick={onChangeWallet}
@@ -339,8 +361,17 @@ export const AccountInfoHeader = () => {
             minH={"24px"}
             pl={2}
             borderRadius={"5px"}
+            position={"absolute"}
+            left={"50%"}
+            transform={"translateX(-50%)"}
           >
-            <Text fontSize={12} lineHeight={4} fontWeight={500}>
+            <Text
+              fontSize={12}
+              lineHeight={4}
+              fontWeight={500}
+              maxW={100}
+              noOfLines={1}
+            >
               {selectedAccount.account.accountName}
             </Text>
             <IconArrowRight w={18} h={18} />
