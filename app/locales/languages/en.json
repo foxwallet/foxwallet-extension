@@ -190,7 +190,8 @@
   },
   "Networks": {
     "title": "Networks",
-    "searchHint": "Search networks"
+    "searchHint": "Search networks",
+    "manageNetworks": "Manage Networks"
   },
   "Contacts": {
     "title": "Contacts",

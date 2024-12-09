@@ -11,6 +11,7 @@ import {
   IconLogo,
   IconReceive,
   IconSend,
+  IconSettings,
 } from "@/components/Custom/Icon";
 import {
   Box,
@@ -26,6 +27,7 @@ import {
 import { TokenNum } from "../TokenNum";
 import { useCoinService } from "@/hooks/useCoinService";
 import { useAleoBalance } from "@/hooks/useAleoBalance";
+import type React from "react";
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
@@ -60,11 +62,48 @@ import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { useChainMode } from "@/hooks/useChainMode";
 import { type AleoService } from "core/coins/ALEO/service/AleoService";
 import { ChainAssembleMode } from "core/types/ChainUniqueId";
+import { showChangeNetworkDrawer } from "@/components/Wallet/ChangeNetworkDrawer";
+import { type OneMatchAccount } from "@/scripts/background/store/vault/types/keyring";
 
 const rotateAnimation = keyframes`
   from { transform: rotate(0deg) }
   to { transform: rotate(360deg) }
 `;
+
+export const AccountTitle = ({
+  onChangeWallet,
+  selectedAccount,
+}: {
+  onChangeWallet: React.MouseEventHandler<HTMLDivElement>;
+  selectedAccount: OneMatchAccount;
+}) => {
+  return (
+    <Flex
+      cursor={"pointer"}
+      onClick={onChangeWallet}
+      flexDirection={"row"}
+      align={"center"}
+      bg={"#EBECEB"}
+      minH={"24px"}
+      pl={2}
+      borderRadius={"5px"}
+      position={"absolute"}
+      left={"50%"}
+      transform={"translateX(-50%)"}
+    >
+      <Text
+        fontSize={12}
+        lineHeight={4}
+        fontWeight={500}
+        maxW={100}
+        noOfLines={1}
+      >
+        {selectedAccount.account.accountName}
+      </Text>
+      <IconArrowRight w={18} h={18} />
+    </Flex>
+  );
+};
 
 export const AccountInfoHeader = () => {
   const navigate = useNavigate();
@@ -319,6 +358,20 @@ export const AccountInfoHeader = () => {
   );
   const { borderColor, selectedBorderColor } = useThemeStyle();
 
+  const onChangeNetwork = useCallback(async () => {
+    const { data } = await showChangeNetworkDrawer({
+      title: (
+        <AccountTitle
+          onChangeWallet={() => {}}
+          selectedAccount={selectedAccount}
+        />
+      ),
+      onNetworks: () => {
+        navigate("/networks");
+      },
+    });
+  }, [navigate, selectedAccount]);
+
   return (
     <>
       <Box
@@ -340,7 +393,8 @@ export const AccountInfoHeader = () => {
             h={26}
             borderRadius={13}
             borderWidth={"1px"}
-            onClick={() => {}}
+            cursor={"pointer"}
+            onClick={onChangeNetwork}
           >
             <IconLogo w={5} h={5} />
             <Text ml={"5px"} fontSize={"9px"}>
@@ -353,30 +407,6 @@ export const AccountInfoHeader = () => {
             />
           </Flex>
           <Flex
-            cursor={"pointer"}
-            onClick={onChangeWallet}
-            direction={"row"}
-            align={"center"}
-            bg={"#EBECEB"}
-            minH={"24px"}
-            pl={2}
-            borderRadius={"5px"}
-            position={"absolute"}
-            left={"50%"}
-            transform={"translateX(-50%)"}
-          >
-            <Text
-              fontSize={12}
-              lineHeight={4}
-              fontWeight={500}
-              maxW={100}
-              noOfLines={1}
-            >
-              {selectedAccount.account.accountName}
-            </Text>
-            <IconArrowRight w={18} h={18} />
-          </Flex>
-          <Flex
             align={"center"}
             justify={"center"}
             borderColor={selectedBorderColor}
@@ -385,6 +415,10 @@ export const AccountInfoHeader = () => {
           >
             <IconLock w={5} h={5} />
           </Flex>
+          <AccountTitle
+            onChangeWallet={onChangeWallet}
+            selectedAccount={selectedAccount}
+          />
         </Flex>
         {/* address */}
         <Flex

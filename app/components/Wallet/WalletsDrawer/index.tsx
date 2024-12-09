@@ -118,12 +118,12 @@ const WalletsDrawer = (props: Props) => {
       }
       body={
         <Flex flexDirection={"column"} px={1.5}>
-          <Flex align={"center"} justify={"flex-start"}>
-            <IconAleo />
-            <Text ml={1} fontSize={14} fontWeight={500}>
-              ALEO
-            </Text>
-          </Flex>
+          {/* <Flex align={"center"} justify={"flex-start"}> */}
+          {/*  <IconAleo /> */}
+          {/*  <Text ml={1} fontSize={14} fontWeight={500}> */}
+          {/*    ALEO */}
+          {/*  </Text> */}
+          {/* </Flex> */}
           <Flex direction={"column"} maxH={190} overflowY="auto">
             {groupAccountsInWallet.map(renderAccountItem)}
           </Flex>
