@@ -23,17 +23,19 @@ import {
   IconSettings,
 } from "@/components/Custom/Icon";
 import { useDebounce } from "use-debounce";
+import { HeaderMiddleView } from "@/components/Wallet/AccountInfoHeader";
 
 interface Props {
   isOpen: boolean;
   onCancel: () => void;
   onConfirm: () => void;
-  title: React.ReactNode;
+  title: string;
   onNetworks: () => void;
+  onWallet: () => void;
 }
 
 const ChangeNetworkDrawer = (props: Props) => {
-  const { isOpen, onCancel, onConfirm, title, onNetworks } = props;
+  const { isOpen, onCancel, onConfirm, title, onNetworks, onWallet } = props;
   const { t } = useTranslation();
   const [searchStr, setSearchStr] = useState("");
   const [debounceSearchStr] = useDebounce(searchStr, 500);
@@ -50,6 +52,11 @@ const ChangeNetworkDrawer = (props: Props) => {
     onCancel?.();
     onNetworks?.();
   }, [onCancel, onNetworks]);
+
+  const onManageWallet = useCallback(() => {
+    onCancel?.();
+    onWallet();
+  }, [onCancel, onWallet]);
 
   const data = [1, 2, 3, 4, 5];
 
@@ -81,7 +88,7 @@ const ChangeNetworkDrawer = (props: Props) => {
               {t("Networks:title")}
             </Text>
           </Flex>
-          {title}
+          <HeaderMiddleView onClick={onManageWallet} title={title} />
           <IconCloseLine w={6} h={6} cursor={"pointer"} onClick={onCancel} />
         </Flex>
       }

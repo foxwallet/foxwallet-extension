@@ -70,17 +70,17 @@ const rotateAnimation = keyframes`
   to { transform: rotate(360deg) }
 `;
 
-export const AccountTitle = ({
-  onChangeWallet,
-  selectedAccount,
+export const HeaderMiddleView = ({
+  onClick,
+  title,
 }: {
-  onChangeWallet: React.MouseEventHandler<HTMLDivElement>;
-  selectedAccount: OneMatchAccount;
+  onClick: () => void;
+  title: string;
 }) => {
   return (
     <Flex
       cursor={"pointer"}
-      onClick={onChangeWallet}
+      onClick={onClick}
       flexDirection={"row"}
       align={"center"}
       bg={"#EBECEB"}
@@ -98,7 +98,7 @@ export const AccountTitle = ({
         maxW={100}
         noOfLines={1}
       >
-        {selectedAccount.account.accountName}
+        {title}
       </Text>
       <IconArrowRight w={18} h={18} />
     </Flex>
@@ -360,12 +360,10 @@ export const AccountInfoHeader = () => {
 
   const onChangeNetwork = useCallback(async () => {
     const { data } = await showChangeNetworkDrawer({
-      title: (
-        <AccountTitle
-          onChangeWallet={() => {}}
-          selectedAccount={selectedAccount}
-        />
-      ),
+      title: selectedAccount.wallet.walletName,
+      onWallet: () => {
+        navigate("/manage_wallet");
+      },
       onNetworks: () => {
         navigate("/networks");
       },
@@ -415,9 +413,9 @@ export const AccountInfoHeader = () => {
           >
             <IconLock w={5} h={5} />
           </Flex>
-          <AccountTitle
-            onChangeWallet={onChangeWallet}
-            selectedAccount={selectedAccount}
+          <HeaderMiddleView
+            onClick={onChangeWallet}
+            title={selectedAccount.account.accountName}
           />
         </Flex>
         {/* address */}
