@@ -71,7 +71,6 @@ export function BottomUpDrawer(props: BottomUpDrawerProps) {
               justifyContent={"space-between"}
               alignItems={"center"}
               mb={4}
-              bg={"red"}
             >
               {!!title && <H6>{title}</H6>}
               <IconCloseLine w={6} h={6} cursor={"pointer"} onClick={onClose} />

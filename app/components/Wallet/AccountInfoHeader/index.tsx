@@ -73,9 +73,11 @@ const rotateAnimation = keyframes`
 export const HeaderMiddleView = ({
   onClick,
   title,
+  showArrow = true,
 }: {
   onClick: () => void;
   title: string;
+  showArrow?: boolean;
 }) => {
   return (
     <Flex
@@ -85,6 +87,7 @@ export const HeaderMiddleView = ({
       align={"center"}
       bg={"#EBECEB"}
       minH={"24px"}
+      pr={showArrow ? 0 : 2}
       pl={2}
       borderRadius={"5px"}
       position={"absolute"}
@@ -100,7 +103,7 @@ export const HeaderMiddleView = ({
       >
         {title}
       </Text>
-      <IconArrowRight w={18} h={18} />
+      {showArrow && <IconArrowRight w={18} h={18} />}
     </Flex>
   );
 };
@@ -112,6 +115,8 @@ export const AccountInfoHeader = () => {
 
   console.log("      groupAccount ");
   console.log(groupAccount);
+  console.log("      availableChainUniqueIds ");
+  console.log(availableChainUniqueIds);
 
   // TODO: 根据 chainMode 获取  asset
   const selectedAccount = useMemo(() => {
@@ -415,7 +420,8 @@ export const AccountInfoHeader = () => {
           </Flex>
           <HeaderMiddleView
             onClick={onChangeWallet}
-            title={selectedAccount.account.accountName}
+            title={groupAccount.group.groupName}
+            showArrow={false}
           />
         </Flex>
         {/* address */}
