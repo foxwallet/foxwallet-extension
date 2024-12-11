@@ -40,7 +40,8 @@
       "dupAccountName": "Duplicate account name",
       "delete": "Delete wallet",
       "deleteRemind": "Please ensure the wallet is properly backed up as it can only be restored using the seed phrase or private key."
-    }
+    },
+    "allNetworks": "ALL"
   },
   "Onboard": {
     "Home": {

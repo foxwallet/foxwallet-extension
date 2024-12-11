@@ -33,7 +33,7 @@ export const useChainMode = () => {
 
   const chainModeName = useMemo(() => {
     return chainMode.mode === ChainAssembleMode.ALL
-      ? t("Wallet:all_networks")
+      ? t("Wallet:allNetworks")
       : availableChains[0].chainName;
   }, [availableChains, chainMode.mode, t]);
 

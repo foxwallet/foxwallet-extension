@@ -70,7 +70,7 @@ export const ALEO_CHAIN_CONFIGS: { [key in string]: AleoConfig } = {
     uniqueId: InnerChainUniqueId.ALEO_MAINNET,
     logo: AleoLogo,
     chainId: "mainnet",
-    chainName: "Aleo",
+    chainName: "Aleo Mainnet",
     rpcList: ReserveChainConfigs[InnerChainUniqueId.ALEO_MAINNET].rpcList,
     syncApiList:
       ReserveChainConfigs[InnerChainUniqueId.ALEO_MAINNET].syncApiList,

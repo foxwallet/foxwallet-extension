@@ -1,44 +1,70 @@
 import {
   Box,
-  Button,
   Flex,
   Input,
   InputGroup,
   InputLeftElement,
-  List,
   Text,
   VStack,
 } from "@chakra-ui/react";
 import { promisifyChooseDialogWrapper } from "@/common/utils/dialog";
-import { useCurrWallet, useWallets } from "@/hooks/useWallets";
 import type React from "react";
 import { useCallback, useMemo, useState } from "react";
 import { BottomUpDrawer } from "@/components/Custom/BottomUpDrawer";
-import { BaseInput } from "@/components/Custom/Input";
 import { useTranslation } from "react-i18next";
-import { WarningArea } from "@/components/Custom/WarningArea";
 import {
+  IconAleo,
+  IconAllNetworks,
   IconCloseLine,
   IconSearch,
   IconSettings,
 } from "@/components/Custom/Icon";
 import { useDebounce } from "use-debounce";
 import { HeaderMiddleView } from "@/components/Wallet/AccountInfoHeader";
+import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
+import {
+  ChainAssembleMode,
+  type ChainDisplayMode,
+  type ChainUniqueId,
+} from "core/types/ChainUniqueId";
+import { getCurrLanguage, SupportLanguages } from "@/locales/i18";
+import { shallowEqual } from "react-redux";
+import { NetworkItem } from "@/components/Wallet/NetworkItem";
+
+export type SingleChainDisplayData = {
+  mode: ChainAssembleMode.SINGLE;
+  uniqueId: ChainUniqueId;
+  popular?: boolean;
+} & ChainBaseConfig;
+
+export type ChainDisplayData =
+  | { mode: ChainAssembleMode.ALL }
+  | SingleChainDisplayData;
 
 interface Props {
   isOpen: boolean;
   onCancel: () => void;
   onConfirm: () => void;
   title: string;
+  availableChains: ChainBaseConfig[];
   onNetworks: () => void;
   onWallet: () => void;
 }
 
 const ChangeNetworkDrawer = (props: Props) => {
-  const { isOpen, onCancel, onConfirm, title, onNetworks, onWallet } = props;
+  const {
+    isOpen,
+    onCancel,
+    onConfirm,
+    title,
+    availableChains,
+    onNetworks,
+    onWallet,
+  } = props;
   const { t } = useTranslation();
   const [searchStr, setSearchStr] = useState("");
   const [debounceSearchStr] = useDebounce(searchStr, 500);
+  const language = getCurrLanguage();
 
   const onKeywordChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,7 +84,36 @@ const ChangeNetworkDrawer = (props: Props) => {
     onWallet();
   }, [onCancel, onWallet]);
 
-  const data = [1, 2, 3, 4, 5];
+  const displayList: ChainDisplayData[] = useMemo(() => {
+    const chains = availableChains.map((item) => ({
+      mode: ChainAssembleMode.SINGLE,
+      ...item,
+    }));
+    return [{ mode: ChainAssembleMode.ALL }, ...chains];
+  }, [availableChains]);
+
+  const renderNetworks = useMemo(() => {
+    return (
+      <Box overflowY="auto">
+        <VStack spacing={"10px"}>
+          {displayList.map((item, index) => {
+            const key =
+              item.mode === ChainAssembleMode.ALL
+                ? "ChainAssembleMode.ALL"
+                : item.uniqueId;
+            return (
+              <NetworkItem
+                item={item}
+                onSelectTab={() => {}}
+                isSelected={true}
+                key={key}
+              />
+            );
+          })}
+        </VStack>
+      </Box>
+    );
+  }, [displayList]);
 
   return (
     <BottomUpDrawer
@@ -93,12 +148,12 @@ const ChangeNetworkDrawer = (props: Props) => {
         </Flex>
       }
       body={
-        <Flex flexDirection={"column"} h={450} bg={"yellow"}>
+        <Flex flexDirection={"column"} h={450}>
           <InputGroup flexDir={"column"} position={"relative"} pb={4}>
             <InputLeftElement
               position={"absolute"}
-              top={"calc(50% - 13px)"}
-              ml={3}
+              top={"calc(50% - 20px)"}
+              ml={2}
             >
               <IconSearch w={"26px"} h={"26px"} />
             </InputLeftElement>
@@ -112,24 +167,9 @@ const ChangeNetworkDrawer = (props: Props) => {
               py={2}
             />
           </InputGroup>
-          <Box overflowY="auto">
-            <VStack spacing={2}>
-              {data.map((item, index) => (
-                <Text key={index} w="full" h={100} bg={"blue"}>
-                  {item}
-                </Text>
-              ))}
-            </VStack>
-          </Box>
+          {renderNetworks}
         </Flex>
       }
-      // footer={
-      //   <Flex justify={"space-between"} flex={1}>
-      //     <Button flex={1} onClick={onConfirm}>
-      //       {t("Common:confirm")}
-      //     </Button>
-      //   </Flex>
-      // }
     />
   );
 };
