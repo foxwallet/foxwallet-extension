@@ -46,6 +46,7 @@ interface Props {
   onCancel: () => void;
   onConfirm: () => void;
   title: string;
+  chainMode: ChainDisplayMode;
   availableChains: ChainBaseConfig[];
   onNetworks: () => void;
   onWallet: () => void;
@@ -57,6 +58,7 @@ const ChangeNetworkDrawer = (props: Props) => {
     onCancel,
     onConfirm,
     title,
+    chainMode,
     availableChains,
     onNetworks,
     onWallet,
@@ -92,6 +94,8 @@ const ChangeNetworkDrawer = (props: Props) => {
     return [{ mode: ChainAssembleMode.ALL }, ...chains];
   }, [availableChains]);
 
+  const onSelectNetwork = useCallback((item: ChainDisplayData) => {}, []);
+
   const renderNetworks = useMemo(() => {
     return (
       <Box overflowY="auto">
@@ -101,11 +105,20 @@ const ChangeNetworkDrawer = (props: Props) => {
               item.mode === ChainAssembleMode.ALL
                 ? "ChainAssembleMode.ALL"
                 : item.uniqueId;
+
+            const isSelected =
+              chainMode.mode === ChainAssembleMode.SINGLE
+                ? item.mode === ChainAssembleMode.ALL
+                  ? false
+                  : item.uniqueId === chainMode.uniqueId
+                : item.mode === ChainAssembleMode.ALL;
             return (
               <NetworkItem
                 item={item}
-                onSelectTab={() => {}}
-                isSelected={true}
+                onSelectNetwork={(item: ChainDisplayData) => {
+                  onSelectNetwork(item);
+                }}
+                isSelected={isSelected}
                 key={key}
               />
             );
@@ -113,7 +126,7 @@ const ChangeNetworkDrawer = (props: Props) => {
         </VStack>
       </Box>
     );
-  }, [displayList]);
+  }, [chainMode, displayList, onSelectNetwork]);
 
   return (
     <BottomUpDrawer
