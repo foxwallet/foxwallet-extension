@@ -1,5 +1,4 @@
 import {
-  IconAleo,
   IconArrowRight,
   IconCopy,
   IconEyeClose,
@@ -11,18 +10,16 @@ import {
   IconLogo,
   IconReceive,
   IconSend,
-  IconSettings,
 } from "@/components/Custom/Icon";
 import {
   Box,
   Flex,
   type FlexProps,
+  keyframes,
   Spinner,
   Text,
-  keyframes,
   useClipboard,
   useColorModeValue,
-  Grid,
 } from "@chakra-ui/react";
 import { TokenNum } from "../TokenNum";
 import { useCoinService } from "@/hooks/useCoinService";
@@ -49,7 +46,7 @@ import {
 import { useFaucetStatus } from "@/hooks/useFaucetStatus";
 import { FaucetStatus } from "core/coins/ALEO/types/Faucet";
 import { showFaucetClaimedDialog } from "../FaucetClaimedDialog";
-import { SupportLanguages, getCurrLanguage } from "@/locales/i18";
+import { getCurrLanguage, SupportLanguages } from "@/locales/i18";
 import { ExplorerLanguages } from "core/types/ExplorerLanguages";
 import { chainUniqueIdToCoinType } from "core/helper/CoinType";
 import { showSignMessageDialog } from "../SignMessageDrawer";
@@ -61,9 +58,12 @@ import { NATIVE_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { useChainMode } from "@/hooks/useChainMode";
 import { type AleoService } from "core/coins/ALEO/service/AleoService";
-import { ChainAssembleMode } from "core/types/ChainUniqueId";
+import {
+  ChainAssembleMode,
+  type ChainDisplayMode,
+  InnerChainUniqueId,
+} from "core/types/ChainUniqueId";
 import { showChangeNetworkDrawer } from "@/components/Wallet/ChangeNetworkDrawer";
-import { type OneMatchAccount } from "@/scripts/background/store/vault/types/keyring";
 
 const rotateAnimation = keyframes`
   from { transform: rotate(0deg) }
@@ -111,17 +111,25 @@ export const HeaderMiddleView = ({
 export const AccountInfoHeader = () => {
   const navigate = useNavigate();
   const { groupAccount, getMatchAccountsWithUniqueId } = useGroupAccount();
-  const { chainMode, availableChainUniqueIds } = useChainMode();
+  const {
+    chainMode,
+    chainModeName,
+    availableChainUniqueIds,
+    availableChains,
+    availableAccounts,
+    getSelectedAccountWithChain,
+  } = useChainMode();
 
-  console.log("      groupAccount ");
-  console.log(groupAccount);
-  console.log("      availableChainUniqueIds ");
-  console.log(availableChainUniqueIds);
+  // debugger;
 
   // TODO: 根据 chainMode 获取  asset
   const selectedAccount = useMemo(() => {
-    return getMatchAccountsWithUniqueId(availableChainUniqueIds[0])[0];
-  }, [availableChainUniqueIds, getMatchAccountsWithUniqueId]);
+    if (chainMode.mode === ChainAssembleMode.ALL) {
+      return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_MAINNET)[0];
+    } else {
+      return getMatchAccountsWithUniqueId(chainMode.uniqueId)[0];
+    }
+  }, [chainMode, getMatchAccountsWithUniqueId]);
   const uniqueId = availableChainUniqueIds[0];
   const { nativeCurrency, chainConfig, coinService } = useCoinService(uniqueId);
   const { balance, loadingBalance } = useAleoBalance({
@@ -348,6 +356,42 @@ export const AccountInfoHeader = () => {
     showToast();
   }, [showToast, onCopy]);
 
+  const copyAddress = useCallback(async () => {
+    try {
+      if (availableAccounts.length === 0) {
+        throw new Error("Can't match account " + chainMode.mode);
+      }
+      if (availableChains.length === 0) {
+        throw new Error(
+          "Can't match uniqueId " +
+            chainMode.mode +
+            (chainMode.mode === ChainAssembleMode.SINGLE && chainMode.uniqueId),
+        );
+      }
+      if (availableAccounts.length === 1 && availableChains.length === 1) {
+        onCopy();
+        showToast();
+      }
+      // const account = await showCopyAddressDrawer({
+      //   accounts: availableAccounts,
+      //   chainConfigs: availableChains,
+      // });
+      // Clipboard.setString(account.account.account.address);
+      // global.$toast({
+      //   content: t("Contact:copy_success"),
+      //   icon: "success",
+      // });
+    } catch (err) {
+      console.log("copyAddress err ", err);
+    }
+  }, [
+    availableAccounts.length,
+    availableChains.length,
+    chainMode,
+    onCopy,
+    showToast,
+  ]);
+
   const renderActionItem = useCallback(
     (item: ActionButtonProps, index: number) => {
       return (
@@ -364,16 +408,29 @@ export const AccountInfoHeader = () => {
   const { borderColor, selectedBorderColor } = useThemeStyle();
 
   const onChangeNetwork = useCallback(async () => {
-    const { data } = await showChangeNetworkDrawer({
+    await showChangeNetworkDrawer({
       title: selectedAccount.wallet.walletName,
+      chainMode,
       onWallet: () => {
         navigate("/manage_wallet");
       },
       onNetworks: () => {
         navigate("/networks");
       },
+      onSelectNetwork: (data: ChainDisplayMode) => {
+        dispatch.wallet.selectChain({
+          walletId: groupAccount.wallet.walletId,
+          selectedChain: data,
+        });
+      },
     });
-  }, [navigate, selectedAccount]);
+  }, [
+    chainMode,
+    dispatch.wallet,
+    groupAccount.wallet.walletId,
+    navigate,
+    selectedAccount.wallet.walletName,
+  ]);
 
   return (
     <>
@@ -401,7 +458,7 @@ export const AccountInfoHeader = () => {
           >
             <IconLogo w={5} h={5} />
             <Text ml={"5px"} fontSize={"9px"}>
-              Ethereum
+              {chainModeName}
             </Text>
             <IconArrowRight
               w={4}
@@ -424,26 +481,27 @@ export const AccountInfoHeader = () => {
             showArrow={false}
           />
         </Flex>
-        {/* address */}
-        <Flex
-          mt={2}
-          direction={"row"}
-          align={"center"}
-          justifyContent={"center"}
-          // bg={"yellow"}
-        >
-          <Hover onClick={onCopyAddress} bg={"#f9f9f9"} borderRadius={"5px"}>
-            <Flex dir={"row"} align={"center"} justify={"center"} marginX={1}>
-              <Box maxW={128} noOfLines={1} fontSize={11} color={"#777E90"}>
-                <MiddleEllipsisText
-                  text={selectedAccount.account.address}
-                  width={128}
-                />
-              </Box>
-              <IconCopy w={3} h={3} />
-            </Flex>
-          </Hover>
-        </Flex>
+        {/* copy address */}
+        {chainMode.mode === ChainAssembleMode.SINGLE && (
+          <Flex
+            mt={2}
+            direction={"row"}
+            align={"center"}
+            justifyContent={"center"}
+          >
+            <Hover onClick={onCopyAddress} bg={"#f9f9f9"} borderRadius={"5px"}>
+              <Flex dir={"row"} align={"center"} justify={"center"} marginX={1}>
+                <Box maxW={128} noOfLines={1} fontSize={11} color={"#777E90"}>
+                  <MiddleEllipsisText
+                    text={selectedAccount.account.address}
+                    width={128}
+                  />
+                </Box>
+                <IconCopy w={3} h={3} />
+              </Flex>
+            </Hover>
+          </Flex>
+        )}
         {/* value */}
         <Flex direction={"row"} align={"center"} justify={"center"} mt={2}>
           <Flex align={"center"}>

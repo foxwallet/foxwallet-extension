@@ -28,8 +28,8 @@ import {
   type ChainUniqueId,
 } from "core/types/ChainUniqueId";
 import { getCurrLanguage, SupportLanguages } from "@/locales/i18";
-import { shallowEqual } from "react-redux";
 import { NetworkItem } from "@/components/Wallet/NetworkItem";
+import { useGroupAccountChainList } from "@/hooks/useChainList";
 
 export type SingleChainDisplayData = {
   mode: ChainAssembleMode.SINGLE;
@@ -47,9 +47,9 @@ interface Props {
   onConfirm: () => void;
   title: string;
   chainMode: ChainDisplayMode;
-  availableChains: ChainBaseConfig[];
   onNetworks: () => void;
   onWallet: () => void;
+  onSelectNetwork: (data: ChainDisplayMode) => void;
 }
 
 const ChangeNetworkDrawer = (props: Props) => {
@@ -59,14 +59,14 @@ const ChangeNetworkDrawer = (props: Props) => {
     onConfirm,
     title,
     chainMode,
-    availableChains,
     onNetworks,
     onWallet,
+    onSelectNetwork,
   } = props;
   const { t } = useTranslation();
   const [searchStr, setSearchStr] = useState("");
   const [debounceSearchStr] = useDebounce(searchStr, 500);
-  const language = getCurrLanguage();
+  const chains = useGroupAccountChainList(true);
 
   const onKeywordChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -87,14 +87,22 @@ const ChangeNetworkDrawer = (props: Props) => {
   }, [onCancel, onWallet]);
 
   const displayList: ChainDisplayData[] = useMemo(() => {
-    const chains = availableChains.map((item) => ({
+    const res = chains.map((item) => ({
       mode: ChainAssembleMode.SINGLE,
       ...item,
     }));
-    return [{ mode: ChainAssembleMode.ALL }, ...chains];
-  }, [availableChains]);
+    return [{ mode: ChainAssembleMode.ALL }, ...res];
+  }, [chains]);
 
-  const onSelectNetwork = useCallback((item: ChainDisplayData) => {}, []);
+  const onSelect = useCallback(
+    (data: ChainDisplayMode) => {
+      onCancel?.();
+      setTimeout(() => {
+        onSelectNetwork(data);
+      }, 100);
+    },
+    [onCancel, onSelectNetwork],
+  );
 
   const renderNetworks = useMemo(() => {
     return (
@@ -115,9 +123,7 @@ const ChangeNetworkDrawer = (props: Props) => {
             return (
               <NetworkItem
                 item={item}
-                onSelectNetwork={(item: ChainDisplayData) => {
-                  onSelectNetwork(item);
-                }}
+                onSelectNetwork={onSelect}
                 isSelected={isSelected}
                 key={key}
               />
@@ -126,7 +132,7 @@ const ChangeNetworkDrawer = (props: Props) => {
         </VStack>
       </Box>
     );
-  }, [chainMode, displayList, onSelectNetwork]);
+  }, [chainMode, displayList, onSelect]);
 
   return (
     <BottomUpDrawer

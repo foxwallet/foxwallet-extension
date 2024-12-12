@@ -92,7 +92,7 @@ export const useChainConfig = (uniqueId: ChainUniqueId) => {
       // supportAccountActivate: coinService.supportAccountActivate(),
       // supportPaymentSwitch: coinService.supportPaymentSwitch(),
     };
-  }, [coinService, chainConfig.coinType]);
+  }, [coinService]);
 
   return {
     chainConfig,

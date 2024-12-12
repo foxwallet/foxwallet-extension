@@ -1,5 +1,8 @@
-import React from "react";
-import { ChainAssembleMode } from "core/types/ChainUniqueId";
+import React, { useCallback } from "react";
+import {
+  ChainAssembleMode,
+  type ChainDisplayMode,
+} from "core/types/ChainUniqueId";
 import { getCurrLanguage, SupportLanguages } from "@/locales/i18";
 import { useTranslation } from "react-i18next";
 import { Flex, Image, Text } from "@chakra-ui/react";
@@ -16,7 +19,7 @@ export const NetworkItem = ({
 }: {
   item: ChainDisplayData;
   isSelected: boolean;
-  onSelectNetwork: (item: ChainDisplayData) => void;
+  onSelectNetwork: (data: ChainDisplayMode) => void;
 }) => {
   const language = getCurrLanguage();
   const { t } = useTranslation();
@@ -30,6 +33,14 @@ export const NetworkItem = ({
     chainName = t("Wallet:allNetworks");
   }
 
+  const onSelect = useCallback(() => {
+    onSelectNetwork(
+      item.mode === ChainAssembleMode.ALL
+        ? { mode: ChainAssembleMode.ALL }
+        : { mode: ChainAssembleMode.SINGLE, uniqueId: item.uniqueId },
+    );
+  }, [item, onSelectNetwork]);
+
   return (
     <Flex
       cursor={"pointer"}
@@ -38,9 +49,7 @@ export const NetworkItem = ({
       w={"full"}
       h={"44px"}
       pl={2}
-      onClick={() => {
-        onSelectNetwork(item);
-      }}
+      onClick={onSelect}
     >
       <Flex justify={"center"} alignItems="center">
         {item.mode === ChainAssembleMode.ALL ? (
