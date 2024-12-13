@@ -66,7 +66,7 @@ const ChangeNetworkDrawer = (props: Props) => {
   const { t } = useTranslation();
   const [searchStr, setSearchStr] = useState("");
   const [debounceSearchStr] = useDebounce(searchStr, 500);
-  const chains = useGroupAccountChainList(true);
+  const chains = useGroupAccountChainList();
 
   const onKeywordChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {

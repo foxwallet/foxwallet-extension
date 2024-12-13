@@ -2,8 +2,10 @@ import { Content } from "@/layouts/Content";
 import { PageWithHeader } from "@/layouts/Page";
 import { useTranslation } from "react-i18next";
 import {
+  Box,
   Button,
   Flex,
+  Image,
   Input,
   InputGroup,
   InputLeftElement,
@@ -23,6 +25,80 @@ import { useMemo, useCallback, useState } from "react";
 import { useDebounce } from "use-debounce";
 import { EmptyView } from "@/components/Custom/EmptyView";
 import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
+import { useSelector } from "react-redux";
+import { type RootState } from "@/store/store";
+import { getChainConfigsByFilter } from "@/hooks/useGroupAccount";
+import { isEqual } from "lodash";
+import { currSelectedChainsSelector } from "@/store/selectors/account";
+import { getCurrLanguage, SupportLanguages } from "@/locales/i18";
+
+export type NetworkListItemProps = {
+  item: ChainBaseConfig;
+  isSelected: boolean;
+  onPressItem: (item: ChainBaseConfig, isSelected: boolean) => void;
+};
+
+export const NetworkListItem = (props: NetworkListItemProps) => {
+  const { item, isSelected, onPressItem } = props;
+  const titleColor = useColorModeValue("black", "white");
+  const language = getCurrLanguage();
+
+  const remark =
+    item.chainRemark?.[language] ?? item.chainRemark?.[SupportLanguages.EN];
+  const chainName = remark ? `${item.chainName} - ${remark}` : item.chainName;
+
+  const onSelect = useCallback(() => {}, []);
+
+  const onInfo = useCallback(() => {}, []);
+
+  return (
+    <Flex
+      alignItems={"center"}
+      justify={"space-between"}
+      // bg={"aqua"}
+      w={"full"}
+      minH={"44px"}
+    >
+      <Flex
+        cursor={"pointer"}
+        justify={"start"}
+        alignItems={"center"}
+        // bg={"yellow"}
+        h={"full"}
+        w={"full"}
+        onClick={onSelect}
+      >
+        {isSelected ? (
+          <IconCheckboxSelected ml={1} />
+        ) : (
+          <IconCheckboxUnselected ml={1} />
+        )}
+        <Image
+          src={item.logo}
+          w={"24px"}
+          h={"24px"}
+          borderRadius={"50px"}
+          ml={2}
+        />
+        <Text ml={2} fontSize={13} color={titleColor} align={"start"}>
+          {chainName}
+        </Text>
+      </Flex>
+      <Flex
+        cursor={"pointer"}
+        // bg={"red"}
+        mr={1}
+        w={8}
+        h={"full"}
+        justify={"center"}
+        alignItems={"center"}
+        onClick={onInfo}
+      >
+        <IconInfo />
+      </Flex>
+    </Flex>
+  );
+};
 
 const NetworksScreen = () => {
   const { t } = useTranslation();
@@ -30,8 +106,22 @@ const NetworksScreen = () => {
   const [debounceAddress] = useDebounce(searchStr, 500);
   const titleColor = useColorModeValue("black", "white");
 
-  const chainConfig: ChainBaseConfig[] = []; // all networks
-  const searchRes = [1, 2, 3];
+  const searchRes: ChainBaseConfig[] = [];
+
+  const chainConfigs = useSelector((state: RootState) => {
+    return getChainConfigsByFilter({
+      state,
+      filter: (_item) => {
+        return true;
+      },
+    });
+  }, isEqual);
+
+  const selectedUniqueIds = useSelector((state: RootState) => {
+    return currSelectedChainsSelector(state);
+  }, isEqual);
+  console.log("      selectedUniqueIds");
+  console.log({ ...selectedUniqueIds });
 
   const onInputChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,38 +132,28 @@ const NetworksScreen = () => {
   );
 
   const dataList = useMemo(() => {
-    return debounceAddress ? searchRes : chainConfig;
-  }, [chainConfig, debounceAddress, searchRes]);
+    return debounceAddress ? searchRes : chainConfigs;
+  }, [chainConfigs, debounceAddress, searchRes]);
 
   const showEmpty = useMemo(() => {
     return debounceAddress && searchRes.length === 0;
   }, [debounceAddress, searchRes.length]);
 
-  const renderNetworkItem = useCallback(() => {
-    return (
-      <Flex
-        alignItems={"center"}
-        justify={"space-between"}
-        bg={"aqua"}
-        w={"full"}
-        minH={"44px"}
-      >
-        <Flex>
-          <IconCheckboxUnselected ml={1} />
-          <Text
-            ml={2}
-            fontSize={13}
-            fontWeight={"bold"}
-            color={titleColor}
-            align={"start"}
-          >
-            3332
-          </Text>
-        </Flex>
-        <IconInfo mr={1} />
-      </Flex>
-    );
-  }, [titleColor]);
+  const renderNetworkItem = useCallback(
+    (item: ChainBaseConfig) => {
+      const isSelected = !!selectedUniqueIds?.some(
+        (id) => id === item.uniqueId,
+      );
+      return (
+        <NetworkListItem
+          item={item}
+          isSelected={isSelected}
+          onPressItem={(item, isSelected) => {}}
+        />
+      );
+    },
+    [selectedUniqueIds],
+  );
 
   return (
     <PageWithHeader title={t("Networks:title")}>
@@ -95,7 +175,13 @@ const NetworksScreen = () => {
         {showEmpty ? (
           <EmptyView searching={false} text={t("Common:noSearchResult")} />
         ) : (
-          <VStack spacing={3}>{dataList.map(renderNetworkItem)}</VStack>
+          <Box overflowY="auto" maxHeight={"calc(100vh - 120px)"}>
+            <VStack spacing={"10px"}>
+              {dataList.map((item) => {
+                return renderNetworkItem(item);
+              })}
+            </VStack>
+          </Box>
         )}
       </Content>
     </PageWithHeader>

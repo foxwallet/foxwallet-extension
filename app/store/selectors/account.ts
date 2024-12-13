@@ -11,6 +11,7 @@ import {
 } from "core/types/ChainUniqueId";
 import { uniq } from "lodash";
 import { matchAccountsWithUnqiueId } from "../accountV2";
+import { fallbackToEmptyArray } from "@/store/selectors/utils";
 
 const createAppSelector = createSelector.withTypes<RootState>();
 
@@ -29,6 +30,10 @@ export const walletChainMapSelector = (state: RootState) => {
 
 export const chainConfigItemsSelector = (state: RootState) => {
   return state.multiChain.chainConfigItems;
+};
+
+export const groupAccountMetaSelector = (state: RootState) => {
+  return state.wallet.selectedAccountMeta!;
 };
 
 export const chainModeSelector = createAppSelector(
@@ -148,5 +153,20 @@ export const currChainConfigsSelector = createAppSelector(
       )?.[0];
       return mergeLocalChainConfig(uniqueId, config);
     });
+  },
+);
+
+/**
+ * 当前钱包选择了哪些 uniqueIds
+ */
+export const currSelectedChainsSelector = createAppSelector(
+  [selectedGroupAccountSelector, walletChainMapSelector],
+  (groupAccount, walletChainMap) => {
+    if (!groupAccount) {
+      throw new Error("groupAccount is null");
+    }
+    return fallbackToEmptyArray(
+      walletChainMap[groupAccount.wallet.walletId]?.userSelectedChains,
+    );
   },
 );

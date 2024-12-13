@@ -6,9 +6,11 @@ import { matchAccountsWithUnqiueId } from "@/store/accountV2";
 import { type OneMatchAccount } from "@/scripts/background/store/vault/types/keyring";
 import { isEqual } from "lodash";
 import { useSelector } from "react-redux";
-import { type RootState } from "@/store/store";
+import { type RootState, store } from "@/store/store";
 import { getChainConfig } from "@/services/coin/CoinService";
 import { coinServiceEntry } from "core/coins/CoinServiceEntry";
+import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
+import { getInnerChainConfigByFilter } from "core/helper/ChainConfig";
 
 export const useGroupAccount = () => {
   const groupAccount = usePopupSelector(
@@ -66,10 +68,10 @@ export const useChainConfig = (uniqueId: ChainUniqueId) => {
       // supportNameService: coinService.supportNameService(),
       supportSendMaxNative: coinService.supportSendMaxNative(),
       // supportNativeCoinTxDetail: coinService.supportNativeCoinTxDetail(),
-      // supportNativeCoinTxHistory: coinService.supportNativeCoinTxHistory(),
+      supportNativeCoinTxHistory: coinService.supportNativeCoinTxHistory(),
       supportNonce: coinService.supportNonce(),
       // supportResyncNFT: coinService.supportResyncNFT(),
-      // supportToken: coinService.supportToken(),
+      supportToken: coinService.supportToken(),
       // supportTokenAccount: coinService.supportTokenAccount(),
       // supportTokenAccountAutoCreate:
       //   coinService.supportTokenAccountAutoCreate(),
@@ -77,8 +79,8 @@ export const useChainConfig = (uniqueId: ChainUniqueId) => {
       // supportTokenList: coinService.supportTokenList(),
       // supportTokenRegister: coinService.supportTokenRegister(),
       // supportTokenTxDetail: coinService.supportTokenTxDetail(),
-      // supportTokenTxHistory: coinService.supportTokenTxHistory(),
-      // supportUserInteractiveToken: coinService.supportUserInteractiveToken(),
+      supportTokenTxHistory: coinService.supportTokenTxHistory(),
+      supportUserInteractiveToken: coinService.supportUserInteractiveToken(),
       // supportAddressTransform: coinService.supportAddressTransform(),
       supportGasGrade: coinService.supportGasGrade(),
       // supportEstimateWithoutTarget: coinService.supportEstimateWithoutTarget(),
@@ -99,4 +101,36 @@ export const useChainConfig = (uniqueId: ChainUniqueId) => {
     coinService,
     ...supportFlags,
   };
+};
+
+export const getChainConfigsByFilter = ({
+  state,
+  filter,
+}: {
+  state?: RootState;
+  filter: (config: ChainBaseConfig) => boolean;
+}) => {
+  let currState = state;
+  if (!currState) {
+    currState = store.getState();
+  }
+  const configs = currState.multiChain.chainConfigItems?.filter(filter);
+  const innerConfigs = getInnerChainConfigByFilter({ filter });
+  const finalConfigs: ChainBaseConfig[] = [...configs];
+  for (const config of innerConfigs) {
+    const customConfigIndex = finalConfigs.findIndex(
+      (item) => item.uniqueId === config.uniqueId,
+    );
+    if (customConfigIndex >= 0) {
+      finalConfigs[customConfigIndex] = {
+        ...config,
+        rpcList: finalConfigs[customConfigIndex].rpcList,
+        chainName: finalConfigs[customConfigIndex].chainName,
+        nativeCurrency: finalConfigs[customConfigIndex].nativeCurrency,
+      };
+    } else {
+      finalConfigs.push(config);
+    }
+  }
+  return finalConfigs;
 };

@@ -18,7 +18,14 @@ export type ChainDisplayMap = {
   [walletId: string]: ChainDisplayMode | undefined;
 };
 
+export type GroupAccountMatchingMeta = {
+  walletType: WalletType;
+  walletId: string;
+  groupId: string;
+};
+
 type WalletModel = {
+  selectedAccountMeta?: GroupAccountMatchingMeta;
   selectedChain?: ChainDisplayMap;
 };
 

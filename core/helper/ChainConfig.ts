@@ -1,7 +1,7 @@
 import { CoinType } from "core/types";
 import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
 import { type ChainUniqueId } from "core/types/ChainUniqueId";
-import { chainUniqueIdToCoinType } from "./CoinType";
+import { chainUniqueIdToCoinType, INNER_CHAIN_CONFIG } from "./CoinType";
 import { INNER_ALEO_CONFIG } from "core/coins/ALEO/config/chains";
 import { INNER_ETH_CONFIG } from "core/coins/ETH/config/chains";
 
@@ -24,4 +24,12 @@ export const getInnerChainConfig = ({
     default:
       throw new Error(`Unsupported coin type ${coinType}`);
   }
+};
+
+export const getInnerChainConfigByFilter = ({
+  filter,
+}: {
+  filter: (config: ChainBaseConfig) => boolean;
+}): ChainBaseConfig[] => {
+  return INNER_CHAIN_CONFIG.filter(filter);
 };
