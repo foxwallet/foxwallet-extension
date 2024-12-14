@@ -49,7 +49,7 @@ export function MessageToast(props: MessageToastProps & ToastProps) {
           <Flex bgColor={"red.50"} px={4} py={3} borderRadius={"lg"}>
             {messageNode ?? (
               <Text color={"red.500"} {...messageStyle}>
-                {message.length > 30 ? message.slice(0, 30) + "..." : message}
+                {message.length > 200 ? message.slice(0, 200) + "..." : message}
               </Text>
             )}
           </Flex>
@@ -76,7 +76,7 @@ function MessageToastWrapper(
       clearTimeout(timer);
       props.onDismiss();
     };
-  }, [onOpen, duration, onClose]);
+  }, [onOpen, duration, onClose, props]);
 
   return <MessageToast {...props} isOpen={isOpen} onClose={onClose} />;
 }
