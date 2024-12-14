@@ -31,6 +31,7 @@ import { getChainConfigsByFilter } from "@/hooks/useGroupAccount";
 import { isEqual } from "lodash";
 import { currSelectedChainsSelector } from "@/store/selectors/account";
 import { getCurrLanguage, SupportLanguages } from "@/locales/i18";
+import { useNavigate } from "react-router-dom";
 
 export type NetworkListItemProps = {
   item: ChainBaseConfig;
@@ -42,6 +43,7 @@ export const NetworkListItem = (props: NetworkListItemProps) => {
   const { item, isSelected, onPressItem } = props;
   const titleColor = useColorModeValue("black", "white");
   const language = getCurrLanguage();
+  const navigate = useNavigate();
 
   const remark =
     item.chainRemark?.[language] ?? item.chainRemark?.[SupportLanguages.EN];
@@ -49,7 +51,9 @@ export const NetworkListItem = (props: NetworkListItemProps) => {
 
   const onSelect = useCallback(() => {}, []);
 
-  const onInfo = useCallback(() => {}, []);
+  const onInfo = useCallback(() => {
+    navigate(`/network_detail/${item.uniqueId}`);
+  }, [item.uniqueId, navigate]);
 
   return (
     <Flex

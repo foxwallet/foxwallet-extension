@@ -7,7 +7,7 @@ import { BaseInput, BaseInputGroup } from "@/components/Custom/Input";
 import type React from "react";
 import { useMemo, useEffect, useCallback, useState } from "react";
 import { useDebounce } from "use-debounce";
-import { useCoinBasic } from "@/hooks/useCoinService";
+import { useCoinBasic, useCoinService } from "@/hooks/useCoinService";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { IconChevronRight } from "@/components/Custom/Icon";
 import { showSelectNetworkDrawer } from "@/components/Me/SelectNetworkDrawer";
@@ -21,7 +21,7 @@ const AddOrEditContactScreen = () => {
 
   // 此处多链需要修改
   const uniqueId = InnerChainUniqueId.ALEO_MAINNET;
-  const coinBasic = useCoinBasic(uniqueId);
+  const { coinService } = useCoinService(uniqueId);
 
   const [contactName, setContactName] = useState("");
   const [address, setAddress] = useState("");
@@ -45,12 +45,12 @@ const AddOrEditContactScreen = () => {
 
   const addressValid = useMemo(() => {
     if (debounceAddress) {
-      const valid = coinBasic.isValidAddress(debounceAddress);
+      const valid = coinService.validateAddress(debounceAddress);
       console.log("valid      " + valid);
       return valid;
     }
     return true;
-  }, [coinBasic, debounceAddress]);
+  }, [coinService, debounceAddress]);
 
   const onSelectNetwork = useCallback(async () => {
     const { data } = await showSelectNetworkDrawer({});

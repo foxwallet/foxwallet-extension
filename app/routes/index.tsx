@@ -3,6 +3,7 @@ import { Navigate, Outlet, type RouteObject } from "react-router-dom";
 import { CheckOnboard } from "@/components/Onboard/CheckOnboard";
 import { CheckAuth } from "@/components/Onboard/CheckAuth";
 import { CheckBrowserVersion } from "@/components/Onboard/CheckBrowserVersion";
+import NetworkDetailScreen from "@/pages/Me/NetworkDetail";
 
 // WalletTab
 const MainPage = lazy(async () => await import("../pages/Main"));
@@ -64,6 +65,9 @@ const AddOrEditContact = lazy(
   async () => await import("../pages/Me/AddOrEditContact"),
 );
 const SendToken = lazy(async () => await import("../pages/Wallet/Send"));
+const NetworkDetail = lazy(
+  async () => await import("../pages/Me/NetworkDetail"),
+);
 
 // Onboard
 const OnboardHome = lazy(
@@ -225,6 +229,10 @@ export const routesConfig: RouteObject[] = [
       {
         path: "send_token",
         element: <SendToken />,
+      },
+      {
+        path: "network_detail/:uniqueId",
+        element: <NetworkDetail />,
       },
     ],
   },
