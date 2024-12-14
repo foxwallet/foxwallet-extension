@@ -1,6 +1,7 @@
 import { CoinType } from "core/types";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { type AccountOption } from "core/types/CoinBasic";
+import { INNER_CHAIN_CONFIG } from "core/helper/CoinType";
 
 export const DEFAULT_CHAIN_UNIQUE_ID: {
   [key in CoinType]: InnerChainUniqueId;
@@ -9,7 +10,9 @@ export const DEFAULT_CHAIN_UNIQUE_ID: {
   [CoinType.ETH]: InnerChainUniqueId.ETHEREUM,
 };
 
-export const DEFAULT_USER_SELECTED_CHAINS = [InnerChainUniqueId.ALEO_MAINNET];
+export const DEFAULT_USER_SELECTED_CHAINS = Object.values(INNER_CHAIN_CONFIG)
+  .filter((item) => item.autoAdd)
+  .map((item) => item.uniqueId);
 
 export const getDefaultChainUniqueId = (
   coinType: CoinType,

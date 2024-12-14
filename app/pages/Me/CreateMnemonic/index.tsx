@@ -34,8 +34,10 @@ const CreateMnemonicScreen = () => {
     });
     await dispatch.accountV2.resyncAllWalletsToStore();
 
+    dispatch.multiChain.addHdWalletChainItem({ walletId });
+
     setMnemonic(wallet.mnemonic ?? "");
-  }, [dispatch.accountV2]);
+  }, [dispatch, popupServerClient]);
 
   // const regenerateWallet = useCallback(async () => {
   // const walletId = walletIdRef.current;
@@ -84,7 +86,7 @@ const CreateMnemonicScreen = () => {
           />
         );
     }
-  }, [step, mnemonic, createWallet]);
+  }, [step, mnemonic, createWallet, dispatch, navigate]);
 
   return (
     <PageWithHeader

@@ -11,6 +11,7 @@ import {
 } from "core/types/ChainUniqueId";
 import { type AccountOption } from "core/types/CoinBasic";
 import { DEFAULT_ETH_ACCOUNT_OPTION } from "core/coins/ETH/config/derivation";
+import { INNER_ETH_CONFIG } from "core/coins/ETH/config/chains";
 
 export const chainUniqueIdToCoinType = (uniqueId: ChainUniqueId): CoinType => {
   switch (uniqueId) {
@@ -51,4 +52,7 @@ export const chainUniqueIdToAccountOptions = (
   }
 };
 
-export const INNER_CHAIN_CONFIG: ChainBaseConfig[] = [...INNER_ALEO_CONFIG];
+export const INNER_CHAIN_CONFIG: ChainBaseConfig[] = [
+  ...INNER_ALEO_CONFIG,
+  ...INNER_ETH_CONFIG,
+];

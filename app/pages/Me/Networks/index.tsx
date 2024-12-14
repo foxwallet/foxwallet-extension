@@ -21,17 +21,34 @@ import {
   IconSearch,
 } from "@/components/Custom/Icon";
 import type React from "react";
-import { useMemo, useCallback, useState } from "react";
+import { useRef, useMemo, useCallback, useState } from "react";
 import { useDebounce } from "use-debounce";
 import { EmptyView } from "@/components/Custom/EmptyView";
 import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
 import { useSelector } from "react-redux";
-import { type RootState } from "@/store/store";
-import { getChainConfigsByFilter } from "@/hooks/useGroupAccount";
+import { type RootState, store } from "@/store/store";
+import {
+  getChainConfigsByFilter,
+  useGroupAccount,
+} from "@/hooks/useGroupAccount";
 import { isEqual } from "lodash";
-import { currSelectedChainsSelector } from "@/store/selectors/account";
+import {
+  currSelectedChainsSelector,
+  walletByIdSelector,
+} from "@/store/selectors/account";
 import { getCurrLanguage, SupportLanguages } from "@/locales/i18";
 import { useNavigate } from "react-router-dom";
+import { ETH_CHAIN_CONFIGS } from "core/coins/ETH/config/chains";
+import { WalletType } from "@/scripts/background/store/vault/types/keyring";
+import { getDefaultChainUniqueId } from "core/constants/chain";
+import { type AccountOption } from "core/types/CoinBasic";
+import { type CoinType } from "core/types";
+import { usePopupDispatch } from "@/hooks/useStore";
+import { showNavigateToWalletManageDialog } from "@/components/Me/NavigateToWalletManageDialog";
+import { showErrorToast } from "@/components/Custom/ErrorToast";
+import { chainUniqueIdToAccountOptions } from "core/helper/CoinType";
+import { useCurrWallet } from "@/hooks/useWallets";
+import sleep from "sleep-promise";
 
 export type NetworkListItemProps = {
   item: ChainBaseConfig;
@@ -49,7 +66,9 @@ export const NetworkListItem = (props: NetworkListItemProps) => {
     item.chainRemark?.[language] ?? item.chainRemark?.[SupportLanguages.EN];
   const chainName = remark ? `${item.chainName} - ${remark}` : item.chainName;
 
-  const onSelect = useCallback(() => {}, []);
+  const onSelect = useCallback(async () => {
+    onPressItem(item, isSelected);
+  }, [isSelected, item, onPressItem]);
 
   const onInfo = useCallback(() => {
     navigate(`/network_detail/${item.uniqueId}`);
@@ -106,11 +125,15 @@ export const NetworkListItem = (props: NetworkListItemProps) => {
 
 const NetworksScreen = () => {
   const { t } = useTranslation();
+  const { groupAccount, getMatchAccountsWithUniqueId } = useGroupAccount();
+  const dispatch = usePopupDispatch();
   const [searchStr, setSearchStr] = useState("");
   const [debounceAddress] = useDebounce(searchStr, 500);
   const titleColor = useColorModeValue("black", "white");
+  const navigate = useNavigate();
+  const { selectedWallet: wallet } = useCurrWallet();
 
-  const searchRes: ChainBaseConfig[] = [];
+  const searchRes: ChainBaseConfig[] = useMemo(() => [], []);
 
   const chainConfigs = useSelector((state: RootState) => {
     return getChainConfigsByFilter({
@@ -120,6 +143,39 @@ const NetworksScreen = () => {
       },
     });
   }, isEqual);
+
+  const reserveUniqueId = useMemo(() => {
+    if (groupAccount.wallet.walletType === WalletType.HD) {
+      return ETH_CHAIN_CONFIGS.MAIN_NET.uniqueId; // eth 作为保留链
+    }
+    const account = groupAccount.group.accounts[0];
+    return getDefaultChainUniqueId(account.coinType, account.option);
+  }, [groupAccount]);
+
+  const [isAddingAccount, setIsAddingAccount] = useState(false);
+  const addingAccountRef = useRef(false);
+
+  const disableSwitchNetworkWithOptionFilter = useCallback(
+    (item: ChainBaseConfig) => {
+      if (!item.chainOptionFilter) return false;
+      const accounts = groupAccount.group.accounts;
+      for (const filterKey in item.chainOptionFilter) {
+        if (
+          accounts.every(
+            (account) =>
+              account.option?.[filterKey as keyof AccountOption[CoinType]] !==
+              item.chainOptionFilter![
+                filterKey as keyof AccountOption[CoinType]
+              ],
+          )
+        ) {
+          return true;
+        }
+      }
+      return false;
+    },
+    [groupAccount.group.accounts],
+  );
 
   const selectedUniqueIds = useSelector((state: RootState) => {
     return currSelectedChainsSelector(state);
@@ -143,6 +199,52 @@ const NetworksScreen = () => {
     return debounceAddress && searchRes.length === 0;
   }, [debounceAddress, searchRes.length]);
 
+  const onPressItem = useCallback(
+    async (item: ChainBaseConfig, isSelected: boolean) => {
+      if (
+        groupAccount.wallet.walletType === WalletType.SIMPLE &&
+        (groupAccount.group.accounts[0].coinType !== item.coinType ||
+          disableSwitchNetworkWithOptionFilter(item))
+      ) {
+        const { confirmed } = await showNavigateToWalletManageDialog();
+        if (confirmed) {
+          navigate("/manage_wallet");
+        }
+      }
+
+      if (isSelected) {
+        if (reserveUniqueId === item.uniqueId) {
+          await showErrorToast({ message: t("Networks:defaultChainRemind") });
+          return;
+        }
+        dispatch.multiChain.removeUserSelectedChain({
+          walletId: groupAccount.wallet.walletId,
+          uniqueId: item.uniqueId,
+        });
+      } else {
+        if (groupAccount.wallet.walletType === WalletType.HD && wallet) {
+          if (addingAccountRef.current) {
+            return;
+          }
+        }
+        dispatch.multiChain.addUserSelectedChain({
+          walletId: groupAccount.wallet.walletId,
+          uniqueId: item.uniqueId,
+          select: true,
+        });
+      }
+    },
+    [
+      disableSwitchNetworkWithOptionFilter,
+      dispatch.multiChain,
+      groupAccount,
+      navigate,
+      reserveUniqueId,
+      t,
+      wallet,
+    ],
+  );
+
   const renderNetworkItem = useCallback(
     (item: ChainBaseConfig) => {
       const isSelected = !!selectedUniqueIds?.some(
@@ -152,11 +254,11 @@ const NetworksScreen = () => {
         <NetworkListItem
           item={item}
           isSelected={isSelected}
-          onPressItem={(item, isSelected) => {}}
+          onPressItem={onPressItem}
         />
       );
     },
-    [selectedUniqueIds],
+    [onPressItem, selectedUniqueIds],
   );
 
   return (

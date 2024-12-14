@@ -68,6 +68,7 @@ export const ALEO_CHAIN_CONFIGS: { [key in string]: AleoConfig } = {
   MAINNET: {
     coinType: CoinType.ALEO,
     uniqueId: InnerChainUniqueId.ALEO_MAINNET,
+    autoAdd: true,
     logo: AleoLogo,
     chainId: "mainnet",
     chainName: "Aleo Mainnet",

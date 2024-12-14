@@ -52,7 +52,7 @@ const ImportMnemonicScreen = () => {
                     walletId: wallet.walletId,
                     backupedMnemonic: true,
                   });
-
+                  dispatch.multiChain.addHdWalletChainItem({ walletId });
                   await sleep(500);
                   navigate("/");
                 } catch (err) {
@@ -67,7 +67,7 @@ const ImportMnemonicScreen = () => {
           />
         );
     }
-  }, [step, popupServerClient, dispatch.accountV2]);
+  }, [step, popupServerClient, dispatch, navigate]);
 
   return (
     <PageWithHeader

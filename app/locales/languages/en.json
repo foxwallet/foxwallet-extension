@@ -198,7 +198,9 @@
     "networkNameHint": "Input network name",
     "symbol": "Currency symbol",
     "rpc": "RPC URL",
-    "rpcHint": "Input RPC URL"
+    "rpcHint": "Input RPC URL",
+    "manageWallet": "Manage Wallet",
+    "defaultChainRemind": "Default chain can't be unselected"
   },
   "Contacts": {
     "title": "Contacts",
