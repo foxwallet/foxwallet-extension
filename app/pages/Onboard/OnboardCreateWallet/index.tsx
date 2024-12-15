@@ -33,8 +33,11 @@ function OnboardCreateWalletScreen() {
       revealMnemonic: true,
     });
     await dispatch.accountV2.resyncAllWalletsToStore();
+
+    dispatch.multiChain.addHdWalletChainItem({ walletId });
+
     setMnemonic(wallet.mnemonic ?? "");
-  }, [dispatch.accountV2]);
+  }, [dispatch, popupServerClient]);
 
   // const regenerateWallet = useCallback(async () => {
   //   const walletId = walletIdRef.current;
@@ -84,7 +87,14 @@ function OnboardCreateWalletScreen() {
           />
         );
     }
-  }, [step, mnemonic, createWallet, dispatch.accountV2]);
+  }, [
+    step,
+    mnemonic,
+    createWallet,
+    popupServerClient,
+    dispatch.accountV2,
+    navigate,
+  ]);
 
   const { t } = useTranslation();
   const CreateWalletSteps = useMemo(

@@ -56,6 +56,7 @@ export default function OnboardImportWallet() {
                     walletId: wallet.walletId,
                     backupedMnemonic: true,
                   });
+                  dispatch.multiChain.addHdWalletChainItem({ walletId });
                   await sleep(500);
                   navigate("/");
                 } catch (err) {
@@ -70,7 +71,7 @@ export default function OnboardImportWallet() {
           />
         );
     }
-  }, [step, popupServerClient, dispatch.accountV2]);
+  }, [step, popupServerClient, dispatch, navigate]);
 
   return (
     <PageWithHeader
