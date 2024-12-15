@@ -299,13 +299,19 @@ export const AccountInfoHeader = () => {
         onPress: () => {
           if (chainMode.mode === ChainAssembleMode.ALL) {
             navigate("/send_token");
-          } else {
+          } else if (chainMode.uniqueId !== InnerChainUniqueId.ALEO_MAINNET) {
             navigate("/send_token");
+          } else {
+            navigate("/send_aleo");
           }
         },
-        // onPress: () => navigate("/send_aleo"),
       },
-      {
+    ];
+    if (
+      chainMode.mode === ChainAssembleMode.SINGLE &&
+      chainMode.uniqueId === InnerChainUniqueId.ALEO_MAINNET
+    ) {
+      initOptions.push({
         title: t("JoinSplit:title"),
         icon: <IconJoinSplit w={9} h={9} />,
         disabled: sendingAleoTx ?? balance === undefined,
@@ -319,8 +325,8 @@ export const AccountInfoHeader = () => {
             }
           }
         },
-      },
-    ];
+      });
+    }
     if (chainConfig.testnet) {
       return initOptions.concat({
         title: t("Faucet:title"),
