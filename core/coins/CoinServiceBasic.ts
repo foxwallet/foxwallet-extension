@@ -26,6 +26,7 @@ import {
   type TokenSendTxRes,
   type InteractiveTokenParams,
 } from "core/types/TokenTransaction";
+import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
 
 export abstract class CoinServiceBasic {
   baseConfig: ChainBaseConfig;

@@ -43,6 +43,7 @@ import {
   type TokenTransferParams,
   type TokenSendTxParams,
   type TokenSendTxRes,
+  type InteractiveTokenParams,
 } from "core/types/TokenTransaction";
 import {
   type ContractInterface,
@@ -87,7 +88,7 @@ import {
 } from "./instances/blockscout";
 import { FilfoxService } from "core/coins/ETH/service/instances/filfox";
 import { MoralisService } from "core/coins/ETH/service/instances/moralis";
-import { AssetType, type TokenMetaV2 } from "core/types/Token";
+import { AssetType, type TokenMetaV2, type TokenV2 } from "core/types/Token";
 
 export class EthService extends CoinServiceBasic {
   config: ETHConfig;
@@ -891,5 +892,47 @@ export class EthService extends CoinServiceBasic {
       value,
       token,
     };
+  }
+
+  supportUserInteractiveToken(): boolean {
+    return (
+      !!this.blockbookService ||
+      !!this.blockscoutService ||
+      !!this.filfoxService ||
+      !!this.moralisService
+    );
+  }
+
+  async getUserInteractiveTokens(
+    params: InteractiveTokenParams,
+  ): Promise<TokenV2[]> {
+    if (!this.supportUserInteractiveToken()) {
+      return super.getUserInteractiveTokens(params);
+    }
+    if (this.moralisService) {
+      try {
+        return await this.moralisService.getUserInteractiveTokens(params);
+      } catch (e) {
+        console.warn("getUserInteractiveTokensByMoralis", e);
+      }
+    }
+    if (this.blockscoutService) {
+      try {
+        return await this.blockscoutService.getUserInteractiveTokens(params);
+      } catch (e) {
+        console.warn("getUserInteractiveTokensByBlockscout", e);
+      }
+    }
+    if (this.blockbookService) {
+      try {
+        return await this.blockbookService.getUserInteractiveTokens(params);
+      } catch (e) {
+        console.warn("getUserInteractiveTokensByBlockbook", e);
+      }
+    }
+    if (this.filfoxService) {
+      return await this.filfoxService.getUserInteractiveTokens(params);
+    }
+    return [];
   }
 }

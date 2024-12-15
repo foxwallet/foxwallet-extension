@@ -37,3 +37,4 @@ export const CHROME_MIN_VERSION = "120";
 export const SEARCH_ITEM_NUM = 10;
 
 export const POLL_ALL_TOKEN_PRICE_INTERVAL = 5 * 60 * 1000;
+export const HTTP_REQUEST_TIMEOUT = 5000;

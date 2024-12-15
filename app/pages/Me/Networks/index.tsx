@@ -180,8 +180,6 @@ const NetworksScreen = () => {
   const selectedUniqueIds = useSelector((state: RootState) => {
     return currSelectedChainsSelector(state);
   }, isEqual);
-  console.log("      selectedUniqueIds");
-  console.log({ ...selectedUniqueIds });
 
   const onInputChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {

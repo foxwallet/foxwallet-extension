@@ -1,7 +1,10 @@
 import { createSelector } from "reselect";
 import { type RootState } from "../store";
 import { DEFAULT_CHAIN_DISPLAY_MODE } from "../wallet";
-import { type DisplayWallet } from "@/scripts/background/store/vault/types/keyring";
+import {
+  type DisplayWallet,
+  OneMatchAccount,
+} from "@/scripts/background/store/vault/types/keyring";
 import { INNER_CHAIN_CONFIG } from "core/helper/CoinType";
 import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
 import { mergeLocalChainConfig } from "@/services/coin/CoinService";
