@@ -13,8 +13,6 @@ import { useCallback, useMemo, useState } from "react";
 import { BottomUpDrawer } from "@/components/Custom/BottomUpDrawer";
 import { useTranslation } from "react-i18next";
 import {
-  IconAleo,
-  IconAllNetworks,
   IconCloseLine,
   IconSearch,
   IconSettings,
@@ -27,9 +25,8 @@ import {
   type ChainDisplayMode,
   type ChainUniqueId,
 } from "core/types/ChainUniqueId";
-import { getCurrLanguage, SupportLanguages } from "@/locales/i18";
 import { NetworkItem } from "@/components/Wallet/NetworkItem";
-import { useGroupAccountChainList } from "@/hooks/useChainList";
+import { useUserSelectedChains } from "@/hooks/useUserSelectedChains";
 
 export type SingleChainDisplayData = {
   mode: ChainAssembleMode.SINGLE;
@@ -66,7 +63,7 @@ const ChangeNetworkDrawer = (props: Props) => {
   const { t } = useTranslation();
   const [searchStr, setSearchStr] = useState("");
   const [debounceSearchStr] = useDebounce(searchStr, 500);
-  const chains = useGroupAccountChainList();
+  const { selectedChains: displayList } = useUserSelectedChains();
 
   const onKeywordChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -85,14 +82,6 @@ const ChangeNetworkDrawer = (props: Props) => {
     onCancel?.();
     onWallet();
   }, [onCancel, onWallet]);
-
-  const displayList: ChainDisplayData[] = useMemo(() => {
-    const res = chains.map((item) => ({
-      mode: ChainAssembleMode.SINGLE,
-      ...item,
-    }));
-    return [{ mode: ChainAssembleMode.ALL }, ...res];
-  }, [chains]);
 
   const onSelect = useCallback(
     (data: ChainDisplayMode) => {

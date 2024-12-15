@@ -4,16 +4,12 @@ import {
   Input,
   InputGroup,
   InputLeftElement,
-  Text,
 } from "@chakra-ui/react";
 import { promisifyChooseDialogWrapper } from "@/common/utils/dialog";
-import { useCurrWallet, useWallets } from "@/hooks/useWallets";
 import type React from "react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import { BottomUpDrawer } from "@/components/Custom/BottomUpDrawer";
-import { BaseInput } from "@/components/Custom/Input";
 import { useTranslation } from "react-i18next";
-import { WarningArea } from "@/components/Custom/WarningArea";
 import { IconSearch } from "@/components/Custom/Icon";
 import { useDebounce } from "use-debounce";
 
