@@ -25,6 +25,7 @@ import {
 } from "core/types/TokenTransaction";
 import { AssetType, type TokenV2 } from "core/types/Token";
 import sleep from "sleep-promise";
+import camelcaseKeys from "camelcase-keys";
 
 const maxLoop = 10;
 
@@ -125,10 +126,20 @@ export class BlockscoutApiV2 {
     let tokenBalances: TokenBalanceV2[] = [];
     let loop = 0;
     do {
-      const snakeRes = await this.reqInstance.get(
-        `/addresses/${address}/tokens?type=ERC-20&${nextPageParams}`, // 只需要 ERC-20
-      );
-      // @ts-expect-error camelcaseKeys type
+      let snakeRes = {};
+      try {
+        snakeRes = await this.reqInstance.get(
+          `/addresses/${address}/tokens?type=ERC-20&${nextPageParams}`, // 只需要 ERC-20
+        );
+      } catch (e) {
+        const msg = (e as Error).message;
+        if (
+          msg !== "No tokens found" &&
+          msg !== "Request failed with status code 404"
+        ) {
+          throw e;
+        }
+      }
       const res: TokenBalanceResp = camelcaseKeys(snakeRes, {
         deep: true,
       });
