@@ -1,5 +1,6 @@
 import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import { type Currency } from "core/types/Currency";
+import type { InnerProgramId } from "core/coins/ALEO/types/ProgramId";
 
 export enum TokenSecurity {
   WHITE = "WHITELIST",
@@ -37,6 +38,10 @@ export type TokenMetaV2 = Currency & {
   icon?: string;
   security?: TokenSecurity;
   uniqueId: ChainUniqueId;
+  // 以下 aleo
+  tokenId?: string;
+  official?: boolean;
+  programId?: InnerProgramId;
 };
 
 export type TokenMarket = TokenMetaV2 & {

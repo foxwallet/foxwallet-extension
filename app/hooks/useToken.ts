@@ -47,13 +47,13 @@ export const useInteractiveTokens = (
 
   const key = `/interactive_token/${uniqueId}`;
   const fetchTokens = useCallback(async () => {
-    return await coinService.getInteractiveTokens(address);
+    return await coinService.getUserInteractiveTokens({ address });
   }, [coinService, address]);
 
   const {
     data: interactiveTokens,
     error,
-    mutate: getInteractiveTokens,
+    mutate: getUserInteractiveTokens,
     isLoading: loadingInteractiveTokens,
   } = useSWR(key, fetchTokens, {
     revalidateIfStale: autoRequest,
@@ -66,13 +66,13 @@ export const useInteractiveTokens = (
     return {
       interactiveTokens,
       error,
-      getInteractiveTokens,
+      getUserInteractiveTokens,
       loadingInteractiveTokens,
     };
   }, [
     interactiveTokens,
     error,
-    getInteractiveTokens,
+    getUserInteractiveTokens,
     loadingInteractiveTokens,
   ]);
 
@@ -92,7 +92,7 @@ export const useTokenInfo = (
       return ALEO_NATIVE_TOKEN;
     }
     return await coinService.getTokenInfo(programId, tokenId);
-  }, [coinService, tokenId]);
+  }, [coinService, programId, tokenId]);
 
   const {
     data: tokenInfo,

@@ -11,7 +11,7 @@ import {
   type InputItem,
   RecordFilter,
 } from "@/scripts/background/servers/IWalletServer";
-import { groupBy, isEmpty, uniqBy } from "lodash";
+import { groupBy, uniqBy } from "lodash";
 import { type AleoRpcService, createAleoRpcService } from "./instances/rpc";
 import { type AleoCreditMethod } from "../types/TransferMethod";
 import {
@@ -23,7 +23,6 @@ import { type AleoGasFee } from "core/types/GasFee";
 import {
   ALPHA_TOKEN_PROGRAM_ID,
   BETA_STAKING_PROGRAM_ID,
-  FAILED_TX_REMOVE_TIME,
   LOCAL_TX_EXPIRE_TIME,
   NATIVE_TOKEN_PROGRAM_ID,
   NATIVE_TOKEN_TOKEN_ID,
@@ -38,13 +37,13 @@ import {
 } from "../types/History";
 import { Mutex } from "async-mutex";
 import {
-  Program,
-  ViewKey,
+  Address,
   Future,
-  RecordCiphertext,
   hashBHP256,
   Plaintext,
-  Address,
+  Program,
+  RecordCiphertext,
+  ViewKey,
 } from "aleo_wasm";
 import { type AleoApiService, createAleoApiService } from "./instances/sync";
 import { type AleoSyncAccount } from "../types/AleoSyncAccount";
@@ -62,10 +61,12 @@ import {
 import { type Token, type TokenWithBalance } from "../types/Token";
 import { type InnerProgramId } from "../types/ProgramId";
 import { BETA_STAKING_ALEO_TOKEN } from "../config/chains";
-import { Transition } from "../types/AleoTransition";
 import { isNotEmpty } from "core/utils/is";
 import { AleoStorage } from "@/scripts/background/store/aleo/AleoStorage";
 import { CoinServiceBasic } from "core/coins/CoinServiceBasic";
+import { AssetType, type TokenV2 } from "core/types/Token";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
+import type { InteractiveTokenParams } from "core/types/TokenTransaction";
 
 const CREDITS_MAPPING_NAME = "account";
 
@@ -1531,7 +1532,10 @@ export class AleoService extends CoinServiceBasic {
     return searchStAleo ? [BETA_STAKING_ALEO_TOKEN, ...tokens] : tokens;
   }
 
-  async getInteractiveTokens(address: string): Promise<TokenWithBalance[]> {
+  async getUserInteractiveTokens(
+    params: InteractiveTokenParams,
+  ): Promise<TokenV2[]> {
+    const { address } = params;
     const tokens = await this.getAllTokens();
     const top10Tokens = tokens.slice(0, 10);
     const balances = await Promise.all(
@@ -1547,7 +1551,7 @@ export class AleoService extends CoinServiceBasic {
             balance,
           };
         } catch (err) {
-          console.error("===> getInteractiveTokens error: ", err);
+          console.error("===> getUserInteractiveTokens error: ", err);
           return {
             ...token,
             balance: {
@@ -1578,9 +1582,38 @@ export class AleoService extends CoinServiceBasic {
         ...balance,
       };
     } catch (err) {
-      console.error("===> getInteractiveTokens stAleo error: ", err);
+      console.error("===> getUserInteractiveTokens stAleo error: ", err);
     }
-    return [stAleoToken, ...non0Tokens];
+    const temp: TokenWithBalance[] = [stAleoToken, ...non0Tokens];
+    const res: TokenV2[] = temp.map((item) => {
+      const {
+        tokenId,
+        name,
+        symbol,
+        decimals,
+        logo,
+        official,
+        programId,
+        balance,
+      } = item;
+      return {
+        symbol,
+        decimals,
+        name,
+        type: AssetType.TOKEN,
+        uniqueId: InnerChainUniqueId.ALEO_MAINNET,
+        icon: logo,
+        official,
+        programId,
+        tokenId,
+        total: balance.total,
+        privateBalance: balance.privateBalance,
+        publicBalance: balance.publicBalance,
+        ownerAddress: address,
+        contractAddress: "",
+      };
+    });
+    return res;
   }
 
   async getTokenInfoOnChain(

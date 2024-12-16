@@ -5,9 +5,10 @@ import {
   type InnerChainUniqueId,
 } from "core/types/ChainUniqueId";
 import { type Token } from "core/coins/ALEO/types/Token";
+import { type TokenV2 } from "core/types/Token";
 
 export type TokenMap = {
-  [address: string]: Token[] | undefined;
+  [address: string]: TokenV2[] | undefined;
 };
 
 export type UserTokensMap = {
@@ -37,7 +38,7 @@ export const tokens = createModel<RootModel>()({
       payload: {
         uniqueId: ChainUniqueId;
         address: string;
-        tokens: Token[];
+        tokens: TokenV2[];
       },
     ) {
       const { uniqueId, address, tokens: addressTokens } = payload;
@@ -60,14 +61,14 @@ export const tokens = createModel<RootModel>()({
       payload: {
         uniqueId: ChainUniqueId;
         address: string;
-        token: Token;
+        token: TokenV2;
       },
     ) {
       const { uniqueId, address, token } = payload;
       const allChainTokens = state.userTokens;
       const userTokens = allChainTokens[uniqueId] ?? {};
       const addressTokens = userTokens[address] ?? [];
-      const exist = addressTokens.some((item: Token) => {
+      const exist = addressTokens.some((item: TokenV2) => {
         return item.tokenId === token.tokenId;
       });
       if (exist) {
@@ -90,14 +91,14 @@ export const tokens = createModel<RootModel>()({
       payload: {
         uniqueId: ChainUniqueId;
         address: string;
-        token: Token;
+        token: TokenV2;
       },
     ) {
       const { uniqueId, address, token } = payload;
       const allChainTokens = state.userTokens;
       const userTokens = allChainTokens[uniqueId] ?? {};
       const addressTokens = userTokens[address] ?? [];
-      const newTokens = addressTokens.filter((item: Token) => {
+      const newTokens = addressTokens.filter((item: TokenV2) => {
         return item.tokenId !== token.tokenId;
       });
       return {
