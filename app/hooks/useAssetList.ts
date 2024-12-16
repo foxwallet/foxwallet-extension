@@ -16,11 +16,17 @@ export const useAssetList = (uniqueId: ChainUniqueId, address: string) => {
 
   const { groupAccount, getMatchAccountsWithUniqueId } = useGroupAccount();
 
-  const inited = usePopupSelector((state) => {
-    console.log("      state.tokens");
-    console.log({ ...state.tokens });
-    return state.tokens.hasInitTokensByInteractiveTokens[uniqueId]?.[address];
+  const needUpdate = usePopupSelector((state) => {
+    const lastUpdateTimestamp =
+      state.tokens?.lastUpdateTimestamp[uniqueId]?.[address];
+
+    if (!lastUpdateTimestamp) {
+      return true;
+    }
+    const now = Date.now();
+    return Math.abs(now - lastUpdateTimestamp) > 1 * 60 * 1000;
   });
+
   const userTokens = usePopupSelector((state) => {
     return state.tokens.userTokens[uniqueId]?.[address] ?? [];
   }, isEqual);
@@ -28,27 +34,36 @@ export const useAssetList = (uniqueId: ChainUniqueId, address: string) => {
   const { loadingInteractiveTokens, getUserInteractiveTokens } =
     useInteractiveTokens(uniqueId, address, false);
 
+  console.log("      555 userTokens");
+  console.log({ ...userTokens });
+
   useEffect(() => {
-    console.log("      inited " + inited);
-    if (!inited) {
+    if (needUpdate) {
       const initTokens = async () => {
         const tokens = await getUserInteractiveTokens();
+
         if (tokens) {
-          dispatch.tokens.initAddressTokens({
+          dispatch.tokens.updateAddressTokens({
             uniqueId,
             address,
             tokens,
           });
-          dispatch.tokens.changeHasInitTokensByInteractiveTokensState({
+          dispatch.tokens.updateTimestamp({
             uniqueId,
             address,
-            newInitState: true,
+            newUpdateTimestamp: Date.now(),
           });
         }
       };
       void initTokens();
     }
-  }, [inited, getUserInteractiveTokens, dispatch.tokens, uniqueId, address]);
+  }, [
+    getUserInteractiveTokens,
+    dispatch.tokens,
+    uniqueId,
+    address,
+    needUpdate,
+  ]);
 
   const assets = useMemo(() => {
     return [ALEO_NATIVE_TOKEN, ...userTokens];

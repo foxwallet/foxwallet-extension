@@ -15,25 +15,25 @@ export type UserTokensMap = {
   [uniqueId in InnerChainUniqueId]?: TokenMap;
 };
 
-export type HasInitTokensByInteractiveTokens = {
-  [uniqueId in ChainUniqueId]?: { [address: string]: boolean | undefined };
+export type LastUpdateTimestamp = {
+  [uniqueId in ChainUniqueId]?: { [address: string]: number | undefined };
 };
 
 export type TokenMaps = {
   userTokens: UserTokensMap;
-  hasInitTokensByInteractiveTokens: HasInitTokensByInteractiveTokens;
+  lastUpdateTimestamp: LastUpdateTimestamp;
 };
 
 const defaultTokenMaps: TokenMaps = {
   userTokens: {},
-  hasInitTokensByInteractiveTokens: {},
+  lastUpdateTimestamp: {},
 };
 
 export const tokens = createModel<RootModel>()({
   name: "tokens",
   state: defaultTokenMaps,
   reducers: {
-    initAddressTokens(
+    updateAddressTokens(
       state,
       payload: {
         uniqueId: ChainUniqueId;
@@ -43,13 +43,13 @@ export const tokens = createModel<RootModel>()({
     ) {
       const { uniqueId, address, tokens: addressTokens } = payload;
       const allChainTokens = state.userTokens;
-      const userTokens = allChainTokens[uniqueId] ?? {};
+      const oldUniqueIdUserTokens = allChainTokens[uniqueId] ?? {};
       return {
         ...state,
         userTokens: {
           ...allChainTokens,
           [uniqueId]: {
-            ...userTokens,
+            ...oldUniqueIdUserTokens,
             [address]: [...addressTokens],
           },
         },
@@ -66,9 +66,9 @@ export const tokens = createModel<RootModel>()({
     ) {
       const { uniqueId, address, token } = payload;
       const allChainTokens = state.userTokens;
-      const userTokens = allChainTokens[uniqueId] ?? {};
-      const addressTokens = userTokens[address] ?? [];
-      const exist = addressTokens.some((item: TokenV2) => {
+      const oldUniqueIdUserTokens = allChainTokens[uniqueId] ?? {};
+      const oldAddressTokens = oldUniqueIdUserTokens[address] ?? [];
+      const exist = oldAddressTokens.some((item: TokenV2) => {
         return item.tokenId === token.tokenId;
       });
       if (exist) {
@@ -79,8 +79,8 @@ export const tokens = createModel<RootModel>()({
         userTokens: {
           ...allChainTokens,
           [uniqueId]: {
-            ...userTokens,
-            [address]: [...addressTokens, { ...token }],
+            ...oldUniqueIdUserTokens,
+            [address]: [...oldAddressTokens, { ...token }],
           },
         },
       };
@@ -96,9 +96,9 @@ export const tokens = createModel<RootModel>()({
     ) {
       const { uniqueId, address, token } = payload;
       const allChainTokens = state.userTokens;
-      const userTokens = allChainTokens[uniqueId] ?? {};
-      const addressTokens = userTokens[address] ?? [];
-      const newTokens = addressTokens.filter((item: TokenV2) => {
+      const oldUniqueIdUserTokens = allChainTokens[uniqueId] ?? {};
+      const oldAddressTokens = oldUniqueIdUserTokens[address] ?? [];
+      const newTokens = oldAddressTokens.filter((item: TokenV2) => {
         return item.tokenId !== token.tokenId;
       });
       return {
@@ -106,32 +106,32 @@ export const tokens = createModel<RootModel>()({
         userTokens: {
           ...allChainTokens,
           [uniqueId]: {
-            ...userTokens,
+            ...oldUniqueIdUserTokens,
             [address]: newTokens,
           },
         },
       };
     },
 
-    changeHasInitTokensByInteractiveTokensState(
+    updateTimestamp(
       state,
       payload: {
         uniqueId: ChainUniqueId;
         address: string;
-        newInitState: boolean;
+        newUpdateTimestamp: number;
       },
     ) {
-      const { uniqueId, address, newInitState } = payload;
-      const { hasInitTokensByInteractiveTokens } = state;
-      const addressInitState =
-        hasInitTokensByInteractiveTokens?.[uniqueId] ?? {};
+      const { uniqueId, address, newUpdateTimestamp } = payload;
+      const { lastUpdateTimestamp } = state;
+      const oldAddressUpdateTimestamp = lastUpdateTimestamp?.[uniqueId] ?? {};
+
       return {
         ...state,
-        hasInitTokensByInteractiveTokens: {
-          ...hasInitTokensByInteractiveTokens,
+        lastUpdateTimestamp: {
+          ...lastUpdateTimestamp,
           [uniqueId]: {
-            ...addressInitState,
-            [address]: newInitState,
+            ...oldAddressUpdateTimestamp,
+            [address]: newUpdateTimestamp,
           },
         },
       };
