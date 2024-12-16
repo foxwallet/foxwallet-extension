@@ -1,11 +1,14 @@
 import {
-  type TransactionRes,
-  type TransactionHistoryRes,
-  type TransactionTokenRes,
   type TokenRes,
+  type TransactionHistoryRes,
+  type TransactionRes,
+  type TransactionTokenRes,
 } from "./blockbook.di";
 import { createRequestInstance } from "@/common/utils/request";
-import { type ChainUniqueId } from "core/types/ChainUniqueId";
+import {
+  type ChainUniqueId,
+  InnerChainUniqueId,
+} from "core/types/ChainUniqueId";
 import { type AxiosInstance } from "axios";
 import { type NativeCoinTxHistoryParams } from "core/types/NativeCoinTransaction";
 import {
@@ -17,8 +20,8 @@ import { TransactionStatus } from "core/types/TransactionStatus";
 import { getTxLabelEVM, toChecksumAddress } from "../../utils";
 import { BigNumber } from "ethers";
 import {
-  type TokenTxHistoryParams,
   type InteractiveTokenParams,
+  type TokenTxHistoryParams,
 } from "core/types/TokenTransaction";
 import { AssetType, type TokenV2 } from "core/types/Token";
 
@@ -63,9 +66,10 @@ export class BlockbookApi {
       throw new Error("Network Error");
     }
     if (res.tokens) {
+      const type = this.uniqueId === InnerChainUniqueId.BNB ? "BEP20" : "ERC20";
       return res.tokens.filter((item) => {
         return (
-          item.type === "ERC20" &&
+          item.type === type &&
           item.decimals &&
           item.symbol &&
           item.contract &&

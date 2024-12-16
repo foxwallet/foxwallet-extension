@@ -112,6 +112,8 @@ export type UserInteractiveTokenItem = {
   decimals?: number;
   balance?: string;
   possibleSpam?: boolean;
+  verifiedContract?: boolean;
+  securityScore?: number | null;
 };
 
 export type NFTCollectionsReq = {

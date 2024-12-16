@@ -16,10 +16,8 @@ import {
   type UserInteractiveTokensReq,
   type UserInteractiveTokenRes,
 } from "../api/moralis.di";
-import { walletApiRequest } from "@/common/utils/request";
 import camelcaseKeys from "camelcase-keys";
 import { AssetType, type TokenV2 } from "core/types/Token";
-import { type NFTStandard } from "core/types/NFT";
 
 type NFTsAsset = {
   amount: string;
@@ -232,18 +230,42 @@ export class MoralisService {
       tokens.length,
     );
 
-    return tokens.map((token) => {
-      const { balance, tokenAddress, decimals, name, symbol } = token;
-      return {
-        type: AssetType.TOKEN,
-        uniqueId: this.uniqueId,
-        ownerAddress: address,
-        symbol: symbol ?? "",
+    const res: TokenV2[] = [];
+    tokens.forEach((token) => {
+      const {
+        balance,
+        tokenAddress,
+        decimals,
         name,
-        contractAddress: tokenAddress,
-        decimals: Number(decimals ?? 18),
-        balance: BigNumber.from(balance),
-      };
+        symbol,
+        logo,
+        thumbnail,
+        verifiedContract,
+        possibleSpam,
+        securityScore,
+      } = token;
+      if (
+        // !securityScore
+        verifiedContract &&
+        !possibleSpam
+        // !name?.includes(".com") &&
+        // !symbol?.includes(".com") &&
+        // !name?.includes("https://") &&
+        // !symbol?.includes("https://"
+      ) {
+        res.push({
+          type: AssetType.TOKEN,
+          uniqueId: this.uniqueId,
+          ownerAddress: address,
+          symbol: symbol ?? "",
+          name,
+          contractAddress: tokenAddress,
+          decimals: Number(decimals ?? 18),
+          total: BigInt(balance ?? ""),
+          icon: logo ?? thumbnail ?? "",
+        });
+      }
     });
+    return res;
   }
 }
