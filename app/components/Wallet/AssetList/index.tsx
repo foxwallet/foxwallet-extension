@@ -7,6 +7,7 @@ import { TokenItemWithBalance } from "../TokenItem";
 import { serializeToken } from "@/common/utils/string";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { useChainMode } from "@/hooks/useChainMode";
+import { type TokenV2 } from "core/types/Token";
 
 export const AssetList = () => {
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ export const AssetList = () => {
   const { assets } = useAssetList(uniqueId, selectedAccount.account.address);
 
   const onTokenDetail = useCallback(
-    (token: Token) => {
+    (token: TokenV2) => {
       // need to be modified when adapt for multi-chain
       navigate(
         `/token_detail/${uniqueId}/${

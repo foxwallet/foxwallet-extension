@@ -13,6 +13,7 @@ import {
 import { useAleoBalance } from "@/hooks/useAleoBalance";
 import { type TokenV2 } from "core/types/Token";
 import { IconTokenPlaceHolder } from "@/components/Custom/Icon";
+import { useBalance } from "@/hooks/useBalance";
 
 export const TokenItemWithBalance = ({
   uniqueId,
@@ -30,13 +31,8 @@ export const TokenItemWithBalance = ({
   hover?: boolean;
 }) => {
   const showBalance = usePopupSelector((state) => state.accountV2.showBalance);
-  const { balance } = useAleoBalance({
-    uniqueId,
-    address,
-    programId: token.programId ?? NATIVE_TOKEN_PROGRAM_ID,
-    tokenId: token.tokenId,
-    refreshInterval: 4000,
-  });
+
+  const { balance } = useBalance({ uniqueId, address, token });
 
   const onTokenDetail = useCallback(() => {
     onClick(token);

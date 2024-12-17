@@ -21,7 +21,7 @@ export const useAssetList = (uniqueId: ChainUniqueId, address: string) => {
       return true;
     }
     const now = Date.now();
-    return Math.abs(now - lastUpdateTimestamp) > 5 * 60 * 1000; // 频控5分钟
+    return Math.abs(now - lastUpdateTimestamp) > 1 * 60 * 1000; // 频控5分钟
   });
 
   const userTokens = usePopupSelector((state) => {
@@ -38,8 +38,6 @@ export const useAssetList = (uniqueId: ChainUniqueId, address: string) => {
     if (needUpdate) {
       const updateTokens = async () => {
         const tokens = await getUserInteractiveTokens();
-        console.log("      ");
-        console.log({ ...tokens });
 
         if (tokens) {
           dispatch.tokens.updateAddressTokens({

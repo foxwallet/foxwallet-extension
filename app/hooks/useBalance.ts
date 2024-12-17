@@ -1,19 +1,49 @@
 import { type ChainUniqueId } from "core/types/ChainUniqueId";
-import { type TokenV2 } from "core/types/Token";
+import { AssetType, type TokenV2 } from "core/types/Token";
 import { useCoinService } from "@/hooks/useCoinService";
-import { useEffect, useState } from "react";
+import { useCallback, useMemo } from "react";
+import useSWR from "swr";
 
-export const useBalance = (
-  uniqueId: ChainUniqueId,
-  address: string,
-  token?: TokenV2,
-) => {
-  const [balance, setBalance] = useState<bigint | undefined>(undefined);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | undefined>(undefined);
+export type BalanceReq = {
+  uniqueId: ChainUniqueId;
+  address: string;
+  token?: TokenV2;
+  refreshInterval?: number;
+};
 
+export const useBalance = (params: BalanceReq) => {
+  const { uniqueId, address, token, refreshInterval = 4000 } = params;
   const { coinService } = useCoinService(uniqueId);
 
+  const key = `/balance/${[
+    uniqueId,
+    address,
+    token?.name,
+    token?.symbol,
+    token?.contractAddress,
+    token?.tokenId,
+    token?.programId,
+  ]
+    .filter((item) => !!item)
+    .join("/")}`;
+
+  const fetchBalance = useCallback(async () => {
+    if (token?.type === AssetType.TOKEN) {
+      return await coinService.getTokenBalance({ address, token });
+    }
+    return await coinService.getBalance(address);
+  }, [address, coinService, token]);
+
+  const {
+    data: balance,
+    error,
+    mutate: getBalance,
+    isLoading: loadingBalance,
+  } = useSWR(key, fetchBalance, {
+    refreshInterval,
+  });
+
+  /*
   useEffect(() => {
     if (!coinService.validateAddress(address)) {
       setBalance(undefined);
@@ -47,8 +77,16 @@ export const useBalance = (
 
     fetchBalance();
   }, [token, uniqueId, address, coinService]);
+  */
 
-  console.log("      balance " + balance);
+  const res = useMemo(() => {
+    return {
+      balance,
+      error,
+      getBalance,
+      loadingBalance,
+    };
+  }, [balance, error, getBalance, loadingBalance]);
 
-  return { balance, loadingBalance: loading, error };
+  return res;
 };
