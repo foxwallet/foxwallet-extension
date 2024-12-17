@@ -168,6 +168,7 @@ export class BlockscoutApiV2 {
         balance: BigNumber.from(value || "0"),
         type: AssetType.TOKEN,
         uniqueId: this.uniqueId,
+        icon: token.iconUrl,
       };
     });
   }
