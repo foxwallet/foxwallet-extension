@@ -16,7 +16,9 @@ export const useBalance = (params: BalanceReq) => {
   const { coinService } = useCoinService(uniqueId);
 
   const isAddressValid = useMemo(() => {
-    return coinService.validateAddress(address);
+    // todo
+    // return coinService.validateAddress(address);
+    return true;
   }, [address, coinService]);
 
   const key = useMemo(() => {
@@ -87,6 +89,7 @@ export const useBalance = (params: BalanceReq) => {
     fetchBalance();
   }, [token, uniqueId, address, coinService]);
   */
+  // console.log("      balance", address, isAddressValid, { ...balance });
 
   const res = useMemo(() => {
     if (!isAddressValid) {
