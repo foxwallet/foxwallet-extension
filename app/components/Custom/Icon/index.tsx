@@ -84,6 +84,7 @@ import CheckboxUnselected from "@/common/assets/image/icon_checkbox_unselected.s
 import SendContact from "@/common/assets/image/icon_send_contact.svg";
 import Switch from "@/common/assets/image/icon_switch.svg";
 import AllNetworks from "@/common/assets/image/icon_all_networks.svg";
+import TokenPlaceHolder from "@/common/assets/image/icon_token_placeholder.svg";
 
 const ThemeIconFill: (i: any) => ChakraComponent<any, any> = (icon: any) => {
   const ThemeIcon = (props: ChakraComponent<any, any>) => {
@@ -186,3 +187,4 @@ export const IconCheckboxUnselected = chakra(CheckboxUnselected);
 export const IconSendContact = ThemeIconStroke(SendContact);
 export const IconSwitch = ThemeIconStroke(Switch);
 export const IconAllNetworks = ThemeIconFill(AllNetworks);
+export const IconTokenPlaceHolder = chakra(TokenPlaceHolder);

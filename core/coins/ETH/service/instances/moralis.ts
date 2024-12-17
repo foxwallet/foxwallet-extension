@@ -253,7 +253,7 @@ export class MoralisService {
           contractAddress: tokenAddress,
           decimals: Number(decimals ?? 18),
           total: BigInt(balance ?? ""),
-          icon: logo ?? thumbnail ?? "",
+          icon: logo ?? thumbnail,
         });
       }
     });

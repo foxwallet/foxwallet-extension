@@ -12,6 +12,7 @@ import {
 } from "core/coins/ALEO/constants";
 import { useAleoBalance } from "@/hooks/useAleoBalance";
 import { type TokenV2 } from "core/types/Token";
+import { IconTokenPlaceHolder } from "@/components/Custom/Icon";
 
 export const TokenItemWithBalance = ({
   uniqueId,
@@ -54,7 +55,11 @@ export const TokenItemWithBalance = ({
     >
       <Flex align={"center"}>
         {leftElement}
-        <Image src={token.icon} w={8} h={8} borderRadius={16} />
+        {token.icon ? (
+          <Image src={token.icon} w={8} h={8} borderRadius={16} />
+        ) : (
+          <IconTokenPlaceHolder w={8} h={8} />
+        )}
         <Flex flexDir={"column"} ml={2.5}>
           <Text fontSize={13} fontWeight={600}>
             {token.symbol}
@@ -87,8 +92,8 @@ export const TokenItem = ({
   hideId,
   style,
 }: {
-  token: Token;
-  onClick: (token: Token) => void;
+  token: TokenV2;
+  onClick: (token: TokenV2) => void;
   hover?: boolean;
   hideId?: boolean;
   style?: ChakraProps;
@@ -110,7 +115,11 @@ export const TokenItem = ({
       {...style}
     >
       <Flex align={"center"}>
-        <Image src={token.logo} w={8} h={8} borderRadius={16} />
+        {token.icon ? (
+          <Image src={token.icon} w={8} h={8} borderRadius={16} />
+        ) : (
+          <IconTokenPlaceHolder w={8} h={8} />
+        )}{" "}
         <Flex flexDir={"column"} ml={2.5}>
           <Text fontSize={13} fontWeight={600}>
             {token.symbol}
