@@ -286,7 +286,8 @@
     "ok": "OK",
     "wrongPassword": "Incorrect password",
     "noSearchResult": "No search result",
-    "pleaseWait": "Please wait"
+    "pleaseWait": "Please wait",
+    "copy": "Copy"
   },
   "Error": {
     "invalidPassword": "Invalid password",

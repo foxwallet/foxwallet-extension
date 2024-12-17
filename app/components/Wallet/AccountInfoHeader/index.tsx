@@ -65,6 +65,7 @@ import {
 } from "core/types/ChainUniqueId";
 import { showChangeNetworkDrawer } from "@/components/Wallet/ChangeNetworkDrawer";
 import { useBalance } from "@/hooks/useBalance";
+import { ActionPanel } from "@/components/Wallet/ActionPanel";
 
 const rotateAnimation = keyframes`
   from { transform: rotate(0deg) }
@@ -121,6 +122,10 @@ export const AccountInfoHeader = () => {
     getSelectedAccountWithChain,
   } = useChainMode();
 
+  const isAllMode = useMemo(() => {
+    return chainMode.mode === ChainAssembleMode.ALL;
+  }, [chainMode.mode]);
+
   // debugger;
 
   // TODO: 根据 chainMode 获取  asset
@@ -146,215 +151,18 @@ export const AccountInfoHeader = () => {
   });
 
   const { selectedWallet } = useCurrWallet();
-  const { popupServerClient } = useClient();
   const { t } = useTranslation();
   const showBalance = usePopupSelector((state) => state.accountV2.showBalance);
   const dispatch = usePopupDispatch();
   const { showToast } = useCopyToast();
-  const { onCopy } = useClipboard(selectedAccount.account.address);
+  // todo
+  // const { onCopy } = useClipboard(selectedAccount.account.address);
+  const { onCopy } = useClipboard("");
+
   const { sendingAleoTx } = useIsSendingAleoTx(uniqueId);
   const { lock } = useAuth();
-  const [requestingFaucet, setRequestingFaucet] = useState(false);
-  const { faucetStatus, getFaucetStatus } = useFaucetStatus(
-    uniqueId,
-    selectedAccount,
-  );
-  useTxsNotification(uniqueId, selectedAccount.account.address, 5000);
-  const onPressFaucet = useCallback(async () => {
-    if (requestingFaucet) return;
-    setRequestingFaucet(true);
-    try {
-      if (chainConfig.innerFaucet) {
-        const status = await getFaucetStatus();
-        switch (status?.status) {
-          case FaucetStatus.UNREADY: {
-            if (chainConfig.faucetApi) {
-              void Browser.tabs.create({ url: chainConfig.faucetApi });
-            }
-            break;
-          }
-          case FaucetStatus.EMPTY: {
-            const address = selectedAccount.account.address;
-            const coinType = chainUniqueIdToCoinType(uniqueId);
-            const { rawMessage, displayMessage } = await (
-              coinService as AleoService
-            ).faucetMessage(address);
-            const { confirmed } = await showSignMessageDialog({
-              address,
-              message: displayMessage,
-            });
-            if (confirmed) {
-              const signature = await popupServerClient.signMessage({
-                walletId: selectedAccount.wallet.walletId,
-                accountId: selectedAccount.account.accountId,
-                coinType,
-                message: stringToHex(rawMessage),
-              });
-              const res = await (coinService as AleoService).requestFaucet({
-                address,
-                message: rawMessage,
-                signature,
-              });
-              if (!res) {
-                throw new Error("Request faucet failed");
-              }
-              await getFaucetStatus();
-            }
-            break;
-          }
-          case FaucetStatus.PENDING: {
-            break;
-          }
-          case FaucetStatus.DONE: {
-            const { confirmed } = await showFaucetClaimedDialog({
-              content: status.txId ? t("Faucet:claimed") : t("Faucet:wait"),
-              onChain: !!status.txId,
-            });
-            if (confirmed && status.txId) {
-              const lang =
-                getCurrLanguage() === SupportLanguages.ZH
-                  ? ExplorerLanguages.ZH
-                  : ExplorerLanguages.EN;
-              const url = (coinService as AleoService).getTxDetailUrl(
-                status.txId,
-                lang,
-              );
-              if (url) {
-                void Browser.tabs.create({ url });
-              }
-            }
-            break;
-          }
-        }
-        // if (status?.status === FaucetStatus.DONE) {
-        //   const { confirmed } = await showFaucetClaimedDialog({
-        //     content: status.txId ? t("Faucet:claimed") : t("Faucet:wait"),
-        //     onChain: !!status.txId,
-        //   });
-        //   if (confirmed && status.txId) {
-        //     const lang =
-        //       getCurrLanguage() === SupportLanguages.ZH
-        //         ? ExplorerLanguages.ZH
-        //         : ExplorerLanguages.EN;
-        //     const url = coinService.getTxDetailUrl(status.txId, lang);
-        //     if (url) {
-        //       Browser.tabs.create({ url });
-        //     }
-        //   }
-        //   return;
-        // }
-        // const address = selectedAccount.address;
-        // const coinType = chainUniqueIdToCoinType(uniqueId);
-        // const { rawMessage, displayMessage } =
-        //   await coinService.faucetMessage(address);
-        // const { confirmed } = await showSignMessageDialog({
-        //   address: address,
-        //   message: displayMessage,
-        // });
-        // if (confirmed) {
-        //   const signature = await popupServerClient.signMessage({
-        //     walletId: selectedAccount.walletId,
-        //     accountId: selectedAccount.accountId,
-        //     coinType,
-        //     message: stringToHex(rawMessage),
-        //   });
-        //   const res = await coinService.requestFaucet({
-        //     address,
-        //     message: rawMessage,
-        //     signature,
-        //   });
-        //   if (!res) {
-        //     throw new Error("Request faucet failed");
-        //   }
-        //   await getFaucetStatus();
-        // }
-      } else if (chainConfig.faucetApi) {
-        void Browser.tabs.create({ url: chainConfig.faucetApi });
-      }
-    } catch (err) {
-      void showErrorToast({ message: (err as Error).message });
-    } finally {
-      setRequestingFaucet(false);
-    }
-  }, [
-    requestingFaucet,
-    chainConfig.innerFaucet,
-    chainConfig.faucetApi,
-    getFaucetStatus,
-    selectedAccount.account.address,
-    selectedAccount.account.accountId,
-    selectedAccount.wallet.walletId,
-    uniqueId,
-    coinService,
-    popupServerClient,
-    t,
-  ]);
-
-  const options: ActionButtonProps[] = useMemo(() => {
-    const initOptions: ActionButtonProps[] = [
-      {
-        title: t("Receive:title"),
-        icon: <IconReceive w={9} h={9} />,
-        onPress: () => {
-          navigate("/receive");
-        },
-      },
-      {
-        title: t("Send:title"),
-        icon: <IconSend w={9} h={9} />,
-        disabled: sendingAleoTx ?? balance === undefined,
-        onPress: () => {
-          if (chainMode.mode === ChainAssembleMode.ALL) {
-            navigate("/send_token");
-          } else if (chainMode.uniqueId !== InnerChainUniqueId.ALEO_MAINNET) {
-            navigate("/send_token");
-          } else {
-            navigate("/send_aleo");
-          }
-        },
-      },
-    ];
-    if (
-      chainMode.mode === ChainAssembleMode.SINGLE &&
-      chainMode.uniqueId === InnerChainUniqueId.ALEO_MAINNET
-    ) {
-      initOptions.push({
-        title: t("JoinSplit:title"),
-        icon: <IconJoinSplit w={9} h={9} />,
-        disabled: sendingAleoTx ?? balance === undefined,
-        onPress: async () => {
-          const { confirmed, data } = await showSelectJoinSplitDialog();
-          if (confirmed && data) {
-            if (data === SelectJoinSplitOption.SPLIT) {
-              navigate("/split");
-            } else {
-              navigate("/join");
-            }
-          }
-        },
-      });
-    }
-    if (chainConfig.testnet) {
-      return initOptions.concat({
-        title: t("Faucet:title"),
-        icon: <IconFaucet w={9} h={9} />,
-        onPress: onPressFaucet,
-        isLoading:
-          requestingFaucet || faucetStatus?.status === FaucetStatus.PENDING,
-      });
-    }
-    return initOptions;
-  }, [
-    chainMode,
-    t,
-    sendingAleoTx,
-    balance,
-    chainConfig,
-    navigate,
-    onPressFaucet,
-    requestingFaucet,
-    faucetStatus,
-  ]);
+  // todo
+  // useTxsNotification(uniqueId, selectedAccount.account.address, 5000);
 
   const onChangeWallet = useCallback(() => {
     void showWalletsDrawer({
@@ -405,15 +213,6 @@ export const AccountInfoHeader = () => {
     showToast,
   ]);
 
-  const renderActionItem = useCallback(
-    (item: ActionButtonProps, index: number) => {
-      return (
-        <ActionButton key={`${item.title}${index}`} {...item} maxW={"20%"} />
-      );
-    },
-    [],
-  );
-
   const bgGradient = useColorModeValue(
     "linear(to-br, #ECFFF2, #FFFFFF, #ECFFF2)",
     "linear(to-br, #14321A, #000000, #14321A)",
@@ -422,7 +221,7 @@ export const AccountInfoHeader = () => {
 
   const onChangeNetwork = useCallback(async () => {
     await showChangeNetworkDrawer({
-      title: selectedAccount.wallet.walletName,
+      title: groupAccount.wallet.walletName,
       chainMode,
       onWallet: () => {
         navigate("/manage_wallet");
@@ -437,13 +236,14 @@ export const AccountInfoHeader = () => {
         });
       },
     });
-  }, [
-    chainMode,
-    dispatch.wallet,
-    groupAccount.wallet.walletId,
-    navigate,
-    selectedAccount.wallet.walletName,
-  ]);
+  }, [chainMode, dispatch.wallet, groupAccount.wallet, navigate]);
+
+  const copyAddressHint: string = useMemo(() => {
+    if (availableAccounts.length === 1) {
+      return availableAccounts[0].account.address;
+    }
+    return t("Common:copy");
+  }, [availableAccounts, t]);
 
   return (
     <>
@@ -505,10 +305,7 @@ export const AccountInfoHeader = () => {
             <Hover onClick={onCopyAddress} bg={"#f9f9f9"} borderRadius={"5px"}>
               <Flex dir={"row"} align={"center"} justify={"center"} marginX={1}>
                 <Box maxW={128} noOfLines={1} fontSize={11} color={"#777E90"}>
-                  <MiddleEllipsisText
-                    text={selectedAccount.account.address}
-                    width={128}
-                  />
+                  <MiddleEllipsisText text={copyAddressHint} width={128} />
                 </Box>
                 <IconCopy w={3} h={3} />
               </Flex>
@@ -544,9 +341,7 @@ export const AccountInfoHeader = () => {
           <RescanButton paused={!!sendingAleoTx} />
         </Flex>
         {/* Action Item */}
-        <Flex direction={"row"} justify={"space-around"} mt={6}>
-          {options.map(renderActionItem)}
-        </Flex>
+        <ActionPanel chainMode={chainMode} />
       </Box>
       {!!sendingAleoTx && (
         <Flex
@@ -574,61 +369,5 @@ export const AccountInfoHeader = () => {
         </Flex>
       )}
     </>
-  );
-};
-
-interface ActionButtonProps {
-  title: string;
-  icon: any;
-  disabled?: boolean;
-  isLoading?: boolean;
-  onPress: () => void | Promise<void>;
-}
-const ActionButton = ({
-  title,
-  icon,
-  isLoading = false,
-  disabled = false,
-  onPress,
-  ...rest
-}: ActionButtonProps & FlexProps) => {
-  const unableToClick = disabled || isLoading;
-  return (
-    <Flex
-      cursor={unableToClick ? "not-allowed" : "pointer"}
-      onClick={!unableToClick ? onPress : undefined}
-      align={"center"}
-      direction={"column"}
-      {...rest}
-      position={"relative"}
-    >
-      {unableToClick && (
-        <Box
-          position={"absolute"}
-          w={"100%"}
-          h={"100%"}
-          bgColor={"rgb(255, 255, 255, 0.5)"}
-          zIndex={1}
-          borderRadius={"lg"}
-        ></Box>
-      )}
-      {isLoading ? (
-        <Flex
-          justify={"center"}
-          align={"center"}
-          bgColor={"black"}
-          w={9}
-          h={9}
-          borderRadius={18}
-        >
-          <Spinner w={5} h={5} color={"green.500"} />
-        </Flex>
-      ) : (
-        icon
-      )}
-      <Text mt={1} fontSize={12} fontWeight={500} color={"black"}>
-        {title}
-      </Text>
-    </Flex>
   );
 };
