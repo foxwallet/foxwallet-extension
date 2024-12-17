@@ -242,17 +242,8 @@ export class MoralisService {
         thumbnail,
         verifiedContract,
         possibleSpam,
-        securityScore,
       } = token;
-      if (
-        // !securityScore
-        verifiedContract &&
-        !possibleSpam
-        // !name?.includes(".com") &&
-        // !symbol?.includes(".com") &&
-        // !name?.includes("https://") &&
-        // !symbol?.includes("https://"
-      ) {
+      if (verifiedContract && !possibleSpam) {
         res.push({
           type: AssetType.TOKEN,
           uniqueId: this.uniqueId,

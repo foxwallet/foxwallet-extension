@@ -1,20 +1,17 @@
-import { type ChainUniqueId } from "core/types/ChainUniqueId";
-import { useCoinService } from "./useCoinService";
-import { useCallback, useEffect, useMemo } from "react";
+import {
+  type ChainUniqueId,
+  InnerChainUniqueId,
+} from "core/types/ChainUniqueId";
+import { useEffect, useMemo } from "react";
 import { usePopupDispatch, usePopupSelector } from "./useStore";
 import { useInteractiveTokens } from "./useToken";
 import { isEqual } from "lodash";
 import { ALEO_NATIVE_TOKEN } from "core/coins/ALEO/config/chains";
-import { useGroupAccount } from "@/hooks/useGroupAccount";
-import { type Token } from "core/coins/ALEO/types/Token";
-import { TokenV2 } from "core/types/Token";
+import { AssetType, type TokenV2 } from "core/types/Token";
+import { useCoinService } from "@/hooks/useCoinService";
 
 export const useAssetList = (uniqueId: ChainUniqueId, address: string) => {
-  console.log("      11111111");
-  console.log(uniqueId);
-  console.log(address);
-
-  const { groupAccount, getMatchAccountsWithUniqueId } = useGroupAccount();
+  const { nativeCurrency, chainConfig } = useCoinService(uniqueId);
 
   const needUpdate = usePopupSelector((state) => {
     const lastUpdateTimestamp =
@@ -24,23 +21,25 @@ export const useAssetList = (uniqueId: ChainUniqueId, address: string) => {
       return true;
     }
     const now = Date.now();
-    return Math.abs(now - lastUpdateTimestamp) > 1 * 60 * 1000;
+    return Math.abs(now - lastUpdateTimestamp) > 5 * 60 * 1000; // 频控5分钟
   });
 
   const userTokens = usePopupSelector((state) => {
     return state.tokens.userTokens[uniqueId]?.[address] ?? [];
   }, isEqual);
   const dispatch = usePopupDispatch();
-  const { loadingInteractiveTokens, getUserInteractiveTokens } =
-    useInteractiveTokens(uniqueId, address, false);
-
-  console.log("      555 userTokens");
-  console.log({ ...userTokens });
+  const { getUserInteractiveTokens } = useInteractiveTokens(
+    uniqueId,
+    address,
+    false,
+  );
 
   useEffect(() => {
     if (needUpdate) {
-      const initTokens = async () => {
+      const updateTokens = async () => {
         const tokens = await getUserInteractiveTokens();
+        console.log("      ");
+        console.log({ ...tokens });
 
         if (tokens) {
           dispatch.tokens.updateAddressTokens({
@@ -55,7 +54,7 @@ export const useAssetList = (uniqueId: ChainUniqueId, address: string) => {
           });
         }
       };
-      void initTokens();
+      void updateTokens();
     }
   }, [
     getUserInteractiveTokens,
@@ -65,10 +64,25 @@ export const useAssetList = (uniqueId: ChainUniqueId, address: string) => {
     needUpdate,
   ]);
 
+  const nativeToken = useMemo(() => {
+    const coin: TokenV2 = {
+      contractAddress: "",
+      decimals: nativeCurrency.decimals,
+      ownerAddress: address,
+      symbol: nativeCurrency.symbol,
+      type: AssetType.COIN,
+      uniqueId,
+      icon: chainConfig.logo,
+    };
+    return uniqueId === InnerChainUniqueId.ALEO_MAINNET
+      ? { ...ALEO_NATIVE_TOKEN, ...coin }
+      : coin;
+  }, [address, chainConfig, nativeCurrency, uniqueId]);
+
   const assets = useMemo(() => {
-    return [ALEO_NATIVE_TOKEN, ...userTokens];
-  }, [userTokens]);
+    return [nativeToken, ...userTokens];
+  }, [userTokens, nativeToken]);
 
   // debugger;
-  return { assets, nativeToken: ALEO_NATIVE_TOKEN };
+  return { assets, nativeToken };
 };

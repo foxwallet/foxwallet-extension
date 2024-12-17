@@ -11,6 +11,7 @@ import {
   NATIVE_TOKEN_PROGRAM_ID,
 } from "core/coins/ALEO/constants";
 import { useAleoBalance } from "@/hooks/useAleoBalance";
+import { type TokenV2 } from "core/types/Token";
 
 export const TokenItemWithBalance = ({
   uniqueId,
@@ -22,8 +23,8 @@ export const TokenItemWithBalance = ({
 }: {
   uniqueId: ChainUniqueId;
   address: string;
-  token: Token;
-  onClick: (token: Token) => void;
+  token: TokenV2;
+  onClick: (token: TokenV2) => void;
   leftElement?: React.ReactNode;
   hover?: boolean;
 }) => {
@@ -31,7 +32,7 @@ export const TokenItemWithBalance = ({
   const { balance } = useAleoBalance({
     uniqueId,
     address,
-    programId: token.programId,
+    programId: token.programId ?? NATIVE_TOKEN_PROGRAM_ID,
     tokenId: token.tokenId,
     refreshInterval: 4000,
   });
@@ -53,7 +54,7 @@ export const TokenItemWithBalance = ({
     >
       <Flex align={"center"}>
         {leftElement}
-        <Image src={token.logo} w={8} h={8} borderRadius={16} />
+        <Image src={token.icon} w={8} h={8} borderRadius={16} />
         <Flex flexDir={"column"} ml={2.5}>
           <Text fontSize={13} fontWeight={600}>
             {token.symbol}
