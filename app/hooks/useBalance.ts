@@ -15,31 +15,40 @@ export const useBalance = (params: BalanceReq) => {
   const { uniqueId, address, token, refreshInterval = 4000 } = params;
   const { coinService } = useCoinService(uniqueId);
 
-  const key = `/balance/${[
-    uniqueId,
-    address,
-    token?.name,
-    token?.symbol,
-    token?.contractAddress,
-    token?.tokenId,
-    token?.programId,
-  ]
-    .filter((item) => !!item)
-    .join("/")}`;
+  const isAddressValid = useMemo(() => {
+    return coinService.validateAddress(address);
+  }, [address, coinService]);
+
+  const key = useMemo(() => {
+    return `/balance/${[
+      uniqueId,
+      address,
+      token?.name,
+      token?.symbol,
+      token?.contractAddress,
+      token?.tokenId,
+      token?.programId,
+    ]
+      .filter((item) => !!item)
+      .join("/")}`;
+  }, [address, token, uniqueId]);
 
   const fetchBalance = useCallback(async () => {
+    if (!isAddressValid) {
+      return undefined;
+    }
     if (token?.type === AssetType.TOKEN) {
       return await coinService.getTokenBalance({ address, token });
     }
     return await coinService.getBalance(address);
-  }, [address, coinService, token]);
+  }, [address, coinService, isAddressValid, token]);
 
   const {
     data: balance,
     error,
     mutate: getBalance,
     isLoading: loadingBalance,
-  } = useSWR(key, fetchBalance, {
+  } = useSWR(isAddressValid ? key : null, fetchBalance, {
     refreshInterval,
   });
 
@@ -80,13 +89,21 @@ export const useBalance = (params: BalanceReq) => {
   */
 
   const res = useMemo(() => {
+    if (!isAddressValid) {
+      return {
+        balance: undefined,
+        error: new Error("Data error"),
+        getBalance: undefined,
+        loadingBalance: false,
+      };
+    }
     return {
       balance,
       error,
       getBalance,
       loadingBalance,
     };
-  }, [balance, error, getBalance, loadingBalance]);
+  }, [balance, error, getBalance, isAddressValid, loadingBalance]);
 
   return res;
 };
