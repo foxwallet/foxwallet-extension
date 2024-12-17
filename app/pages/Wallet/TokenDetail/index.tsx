@@ -49,6 +49,8 @@ import {
 } from "core/coins/ALEO/constants";
 import { serializeToken } from "@/common/utils/string";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
+import { useBalance } from "@/hooks/useBalance";
+import { AssetType } from "core/types/Token";
 
 interface TokenTxHistoryItemProps {
   item: AleoHistoryItem;
@@ -169,11 +171,27 @@ const TokenDetailScreen = () => {
     }
   }, [nativeToken, token]);
 
-  const { balance, loadingBalance } = useAleoBalance({
+  // const { balance, loadingBalance } = useAleoBalance({
+  //   uniqueId,
+  //   programId: tokenInfo.programId,
+  //   address: selectedAccount.account.address,
+  //   tokenId: tokenInfo.tokenId,
+  // });
+
+  const { balance, loadingBalance } = useBalance({
     uniqueId,
-    programId: tokenInfo.programId,
     address: selectedAccount.account.address,
-    tokenId: tokenInfo.tokenId,
+    refreshInterval: 10000,
+    token: {
+      type: AssetType.TOKEN,
+      contractAddress: "",
+      uniqueId,
+      programId: tokenInfo.programId,
+      tokenId: tokenInfo.tokenId,
+      symbol: "",
+      decimals: 0,
+      ownerAddress: selectedAccount.account.address,
+    },
   });
 
   const { history, getMore, loading, loadingLocalTxs, loadingOnChainHistory } =

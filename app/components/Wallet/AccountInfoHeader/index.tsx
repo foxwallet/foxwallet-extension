@@ -64,6 +64,7 @@ import {
   InnerChainUniqueId,
 } from "core/types/ChainUniqueId";
 import { showChangeNetworkDrawer } from "@/components/Wallet/ChangeNetworkDrawer";
+import { useBalance } from "@/hooks/useBalance";
 
 const rotateAnimation = keyframes`
   from { transform: rotate(0deg) }
@@ -132,12 +133,18 @@ export const AccountInfoHeader = () => {
   }, [chainMode, getMatchAccountsWithUniqueId]);
   const uniqueId = availableChainUniqueIds[0];
   const { nativeCurrency, chainConfig, coinService } = useCoinService(uniqueId);
-  const { balance, loadingBalance } = useAleoBalance({
+  // const { balance, loadingBalance } = useAleoBalance({
+  //   uniqueId,
+  //   programId: NATIVE_TOKEN_PROGRAM_ID,
+  //   address: selectedAccount.account.address,
+  //   refreshInterval: 4000,
+  // });
+  const { balance, loadingBalance } = useBalance({
     uniqueId,
-    programId: NATIVE_TOKEN_PROGRAM_ID,
     address: selectedAccount.account.address,
     refreshInterval: 4000,
   });
+
   const { selectedWallet } = useCurrWallet();
   const { popupServerClient } = useClient();
   const { t } = useTranslation();

@@ -31,6 +31,8 @@ import {
   NATIVE_TOKEN_PROGRAM_ID,
   NATIVE_TOKEN_TOKEN_ID,
 } from "core/coins/ALEO/constants";
+import { useBalance } from "@/hooks/useBalance";
+import { AssetType } from "core/types/Token";
 
 interface Props {
   isOpen: boolean;
@@ -53,13 +55,30 @@ const SelectTransferMethodDrawer = (props: Props) => {
     token,
   } = props;
   const { nativeCurrency } = useCoinService(uniqueId);
-  const { balance, loadingBalance } = useAleoBalance({
+  // const { balance, loadingBalance } = useAleoBalance({
+  //   uniqueId,
+  //   address,
+  //   programId: token.programId,
+  //   tokenId: token.tokenId,
+  //   refreshInterval: 10000,
+  // });
+
+  const { balance, loadingBalance } = useBalance({
     uniqueId,
     address,
-    programId: token.programId,
-    tokenId: token.tokenId,
     refreshInterval: 10000,
+    token: {
+      type: AssetType.TOKEN,
+      contractAddress: "",
+      uniqueId,
+      programId: token.programId,
+      tokenId: token.tokenId,
+      symbol: "",
+      decimals: 0,
+      ownerAddress: address,
+    },
   });
+
   const { records, loading: loadingRecords } = useRecords({
     uniqueId,
     address,

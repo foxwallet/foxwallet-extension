@@ -19,6 +19,7 @@ import { ChainUniqueId, InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { type AleoGasFee } from "core/types/GasFee";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useBalance } from "@/hooks/useBalance";
 
 export interface JoinStepProps {
   selectedRecords: RecordDetailWithSpent[];
@@ -41,9 +42,14 @@ export const JoinStep = (props: JoinStepProps) => {
 
   const { nativeCurrency, coinService } = useCoinService(uniqueId);
   const { t } = useTranslation();
-  const { balance, loadingBalance } = useAleoBalance({
+  // const { balance, loadingBalance } = useAleoBalance({
+  //   uniqueId,
+  //   programId: NATIVE_TOKEN_PROGRAM_ID,
+  //   address: selectedAccount.account.address,
+  // });
+
+  const { balance, loadingBalance } = useBalance({
     uniqueId,
-    programId: NATIVE_TOKEN_PROGRAM_ID,
     address: selectedAccount.account.address,
   });
 

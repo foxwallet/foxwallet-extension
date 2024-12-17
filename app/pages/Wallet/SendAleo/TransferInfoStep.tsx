@@ -41,6 +41,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDebounce } from "use-debounce";
+import { useBalance } from "@/hooks/useBalance";
+import { AssetType } from "core/types/Token";
 
 interface TransferInfoStepProps {
   receiverAddress: string;
@@ -135,12 +137,28 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
     }
   }, [records, tokenInfo]);
 
-  const { balance, loadingBalance } = useAleoBalance({
+  // const { balance, loadingBalance } = useAleoBalance({
+  //   uniqueId,
+  //   programId: tokenInfo.programId,
+  //   address: selectedAccount.account.address,
+  //   tokenId: tokenInfo.tokenId,
+  //   refreshInterval: 10000,
+  // });
+
+  const { balance, loadingBalance } = useBalance({
     uniqueId,
-    programId: tokenInfo.programId,
     address: selectedAccount.account.address,
-    tokenId: tokenInfo.tokenId,
     refreshInterval: 10000,
+    token: {
+      type: AssetType.TOKEN,
+      contractAddress: "",
+      uniqueId,
+      programId: tokenInfo.programId,
+      tokenId: tokenInfo.tokenId,
+      symbol: "",
+      decimals: 0,
+      ownerAddress: selectedAccount.account.address,
+    },
   });
 
   // Receiver

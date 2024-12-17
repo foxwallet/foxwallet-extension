@@ -32,6 +32,7 @@ import { AleoGasFee } from "core/types/GasFee";
 import { parseUnits } from "ethers/lib/utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useBalance } from "@/hooks/useBalance";
 
 export interface SplitStepProps {
   selectedRecords: RecordDetailWithSpent[];
@@ -50,9 +51,14 @@ export const SplitStep = (props: SplitStepProps) => {
 
   const { nativeCurrency, coinService } = useCoinService(uniqueId);
   const { t } = useTranslation();
-  const { balance, loadingBalance } = useAleoBalance({
+  // const { balance, loadingBalance } = useAleoBalance({
+  //   uniqueId,
+  //   programId: NATIVE_TOKEN_PROGRAM_ID,
+  //   address: selectedAccount.account.address,
+  // });
+
+  const { balance, loadingBalance } = useBalance({
     uniqueId,
-    programId: NATIVE_TOKEN_PROGRAM_ID,
     address: selectedAccount.account.address,
   });
 

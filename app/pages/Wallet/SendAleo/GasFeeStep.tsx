@@ -22,6 +22,8 @@ import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { type AleoGasFee } from "core/types/GasFee";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useBalance } from "@/hooks/useBalance";
+import { AssetType } from "core/types/Token";
 
 interface GasFeeProps {
   receiverAddress: string;
@@ -63,22 +65,54 @@ export const GasFeeStep = (props: GasFeeProps) => {
   }, [getMatchAccountsWithUniqueId]);
   const uniqueId = InnerChainUniqueId.ALEO_MAINNET;
 
-  const { coinService, nativeCurrency } = useCoinService(uniqueId);
+  const { coinService, nativeCurrency, chainConfig } = useCoinService(uniqueId);
 
-  const { balance, loadingBalance } = useAleoBalance({
+  // const { balance, loadingBalance } = useAleoBalance({
+  //   uniqueId,
+  //   programId: NATIVE_TOKEN_PROGRAM_ID,
+  //   address: selectedAccount.account.address,
+  //   refreshInterval: 10000,
+  // });
+
+  const { balance, loadingBalance } = useBalance({
     uniqueId,
-    programId: NATIVE_TOKEN_PROGRAM_ID,
     address: selectedAccount.account.address,
     refreshInterval: 10000,
+    token: {
+      type: AssetType.COIN,
+      contractAddress: "",
+      uniqueId,
+      programId: NATIVE_TOKEN_PROGRAM_ID,
+      symbol: chainConfig.nativeCurrency.symbol,
+      decimals: chainConfig.nativeCurrency.decimals,
+      ownerAddress: selectedAccount.account.address,
+    },
   });
 
+  // const { balance: tokenBalance, loadingBalance: loadingTokenBalance } =
+  //   useAleoBalance({
+  //     uniqueId,
+  //     address: selectedAccount.account.address,
+  //     refreshInterval: 10000,
+  //     tokenId: token.tokenId,
+  //     programId: token.programId,
+  //   });
+
   const { balance: tokenBalance, loadingBalance: loadingTokenBalance } =
-    useAleoBalance({
+    useBalance({
       uniqueId,
       address: selectedAccount.account.address,
       refreshInterval: 10000,
-      tokenId: token.tokenId,
-      programId: token.programId,
+      token: {
+        type: AssetType.TOKEN,
+        contractAddress: "",
+        uniqueId,
+        programId: token.programId,
+        tokenId: token.tokenId,
+        symbol: "",
+        decimals: 0,
+        ownerAddress: selectedAccount.account.address,
+      },
     });
 
   const { records, loading: loadingRecords } = useRecords({
@@ -259,7 +293,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
         title: t("Send:privateToPublic"),
       },
     };
-  }, []);
+  }, [t]);
 
   const amountValid = useMemo(() => {
     if (loadingBalance || !balance) {
