@@ -19,7 +19,7 @@ interface Props {
   onConfirm: () => void;
 }
 
-const SelectNetworkDrawer = (props: Props) => {
+const SelectContactNetworkDrawer = (props: Props) => {
   const { isOpen, onCancel, onConfirm } = props;
   const { t } = useTranslation();
   const [searchStr, setSearchStr] = useState("");
@@ -70,6 +70,6 @@ const SelectNetworkDrawer = (props: Props) => {
     />
   );
 };
-
-export const showSelectNetworkDrawer =
-  promisifyChooseDialogWrapper(SelectNetworkDrawer);
+export const showSelectContactNetworkDrawer = promisifyChooseDialogWrapper(
+  SelectContactNetworkDrawer,
+);

@@ -10,7 +10,7 @@ import { useDebounce } from "use-debounce";
 import { useCoinBasic, useCoinService } from "@/hooks/useCoinService";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { IconChevronRight } from "@/components/Custom/Icon";
-import { showSelectNetworkDrawer } from "@/components/Me/SelectNetworkDrawer";
+import { showSelectContactNetworkDrawer } from "@/components/Me/SelectContactNetworkDrawer";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
 
 const AddOrEditContactScreen = () => {
@@ -53,7 +53,7 @@ const AddOrEditContactScreen = () => {
   }, [coinService, debounceAddress]);
 
   const onSelectNetwork = useCallback(async () => {
-    const { data } = await showSelectNetworkDrawer({});
+    const { data } = await showSelectContactNetworkDrawer({});
   }, []);
 
   const canSubmit = useMemo(() => {
