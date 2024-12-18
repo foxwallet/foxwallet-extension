@@ -201,7 +201,8 @@
     "rpcHint": "Input RPC URL",
     "manageWallet": "Manage Wallet",
     "defaultChainRemind": "Default chain can't be unselected",
-    "selectNetwork": "Select Network"
+    "selectNetwork": "Select Network",
+    "selectToken": "Select Token"
   },
   "Contacts": {
     "title": "Contacts",

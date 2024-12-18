@@ -25,6 +25,9 @@ const AddToken = lazy(async () => await import("../pages/Wallet/AddToken"));
 const SelectToken = lazy(
   async () => await import("../pages/Wallet/SelectToken"),
 );
+const SelectTokenV2 = lazy(
+  async () => await import("../pages/Wallet/SelectTokenV2"),
+);
 
 // SettingTab
 const ManageWallet = lazy(async () => await import("../pages/Me/ManageWallet"));
@@ -68,7 +71,9 @@ const SendToken = lazy(async () => await import("../pages/Wallet/Send"));
 const NetworkDetail = lazy(
   async () => await import("../pages/Me/NetworkDetail"),
 );
-
+const SelectNetwork = lazy(
+  async () => await import("../pages/Wallet/SelectNetwork"),
+);
 // Onboard
 const OnboardHome = lazy(
   async () => await import("../pages/Onboard/OnboardHome"),
@@ -233,6 +238,14 @@ export const routesConfig: RouteObject[] = [
       {
         path: "network_detail/:uniqueId",
         element: <NetworkDetail />,
+      },
+      {
+        path: "select_network/:action",
+        element: <SelectNetwork />,
+      },
+      {
+        path: "select_token_v2/:uniqueId/:action",
+        element: <SelectTokenV2 />,
       },
     ],
   },

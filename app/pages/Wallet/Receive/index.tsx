@@ -26,6 +26,7 @@ import { useLocationParams } from "@/hooks/useLocationParams";
 import { useAssetList } from "@/hooks/useAssetList";
 import { useChainMode } from "@/hooks/useChainMode";
 import { type TokenV2 } from "core/types/Token";
+import { useCoinService } from "@/hooks/useCoinService";
 
 const QRCode = chakra(QRCodeSVG);
 
@@ -44,6 +45,7 @@ function ReceiveScreen() {
     return paramAddress ?? availableAccounts[0].account.address;
   }, [availableAccounts, paramAddress]);
 
+  const { chainConfig } = useCoinService(uniqueId);
   const token = useLocationParams("token");
   const { nativeToken } = useAssetList(uniqueId, address);
   const tokenInfo = useMemo(() => {
@@ -75,7 +77,7 @@ function ReceiveScreen() {
           {tokenInfo.icon ? (
             <Image src={tokenInfo?.icon} w={10} h={10} borderRadius={20} />
           ) : (
-            <IconTokenPlaceHolder />
+            <IconTokenPlaceHolder w={10} h={10} />
           )}
           <Text fontWeight={500} fontSize={14}>
             {t("Receive:scanToTransfer")}
@@ -90,7 +92,7 @@ function ReceiveScreen() {
             <IconWarning mr={1} />
             <Text color={"#EF466F"} fontWeight={500} fontSize={14}>
               {t("Receive:onlyTips", {
-                symbol: tokenInfo.symbol,
+                symbol: chainConfig.chainName,
               })}
             </Text>
           </Flex>

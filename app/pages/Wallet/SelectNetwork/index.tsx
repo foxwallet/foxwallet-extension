@@ -13,10 +13,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { IconSearch } from "@/components/Custom/Icon";
 import { useDebounce } from "use-debounce";
-import {
-  ChainAssembleMode,
-  InnerChainUniqueId,
-} from "core/types/ChainUniqueId";
+import { ChainAssembleMode } from "core/types/ChainUniqueId";
 import { useUserSelectedChains } from "@/hooks/useUserSelectedChains";
 import { type SingleChainDisplayData } from "@/components/Wallet/ChangeNetworkDrawer";
 import { Content } from "@/layouts/Content";
@@ -24,6 +21,7 @@ import { PageWithHeader } from "@/layouts/Page";
 import type { ChainBaseConfig } from "core/types/ChainBaseConfig";
 import { getCurrLanguage, SupportLanguages } from "@/locales/i18";
 import { useNavigate, useParams } from "react-router-dom";
+import { uniqueId } from "lodash";
 
 export enum NextAction {
   Receive = "receive",
@@ -31,8 +29,8 @@ export enum NextAction {
 }
 
 type NetworkItemProps = {
-  config: ChainBaseConfig;
-  onSelect: () => void;
+  config: SingleChainDisplayData;
+  onSelect: (item: SingleChainDisplayData) => void;
 };
 
 const NetworkItem = (prop: NetworkItemProps) => {
@@ -52,7 +50,9 @@ const NetworkItem = (prop: NetworkItemProps) => {
       justify={"start"}
       alignItems={"center"}
       minH={"44px"}
-      onClick={onSelect}
+      onClick={() => {
+        onSelect(config);
+      }}
     >
       <Flex justify={"start"} alignItems={"center"} h={"full"} w={"full"}>
         <Image
@@ -97,9 +97,12 @@ const SelectNetworkScreen = () => {
     [],
   );
 
-  const onSelect = useCallback(() => {
-    navigate(`/select_token/${action}`);
-  }, [action, navigate]);
+  const onSelect = useCallback(
+    (item: SingleChainDisplayData) => {
+      navigate(`/select_token_v2/${item.uniqueId}/${action}`);
+    },
+    [action, navigate],
+  );
 
   const renderNetworks = useMemo(() => {
     return (
@@ -132,16 +135,7 @@ const SelectNetworkScreen = () => {
           py={2}
         />
       </InputGroup>
-      <Content>
-        {renderNetworks}
-        {/* <Box overflowY="auto" maxHeight={"calc(100vh - 120px)"}> */}
-        {/*  <VStack spacing={"10px"}> */}
-        {/*    {displayList.map((item) => { */}
-        {/*      return renderNetworkItem(item); */}
-        {/*    })} */}
-        {/*  </VStack> */}
-        {/* </Box> */}
-      </Content>
+      <Content>{renderNetworks}</Content>
     </PageWithHeader>
   );
 };
