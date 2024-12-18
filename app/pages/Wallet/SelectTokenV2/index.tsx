@@ -25,45 +25,7 @@ import { type TokenV2 } from "core/types/Token";
 import { useAssetList } from "@/hooks/useAssetList";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { serializeToken } from "@/common/utils/string";
-
-type TokenItemProps = {
-  token: TokenV2;
-  onSelect: (token: TokenV2) => void;
-};
-
-const TokenItem = (prop: TokenItemProps) => {
-  const { token, onSelect } = prop;
-
-  return (
-    <Flex
-      cursor={"pointer"}
-      w={"full"}
-      justify={"start"}
-      alignItems={"center"}
-      minH={"44px"}
-      onClick={() => {
-        onSelect(token);
-      }}
-    >
-      <Flex justify={"start"} alignItems={"center"} h={"full"} w={"full"}>
-        {token.icon ? (
-          <Image
-            src={token.icon}
-            w={"24px"}
-            h={"24px"}
-            borderRadius={"50px"}
-            ml={2}
-          />
-        ) : (
-          <IconTokenPlaceHolder ml={2} />
-        )}
-        <Text ml={3} fontSize={13} align={"start"}>
-          {token.symbol}
-        </Text>
-      </Flex>
-    </Flex>
-  );
-};
+import { TokenItemWithBalance } from "@/components/Wallet/TokenItem";
 
 const SelectTokenScreenV2 = () => {
   const {
@@ -102,6 +64,16 @@ const SelectTokenScreenV2 = () => {
             selectedAccount.account.address
           }?token=${serializeToken(token)}`,
         );
+      } else if (action === NextAction.Send) {
+        if (uniqueId !== InnerChainUniqueId.ALEO_MAINNET) {
+          navigate(
+            `/send_token/${uniqueId}/${
+              selectedAccount.account.address
+            }/?token=${serializeToken(token)}`,
+          );
+        } else {
+          navigate(`/send_aleo`);
+        }
       }
     },
     [action, navigate, selectedAccount.account.address, uniqueId],
@@ -112,13 +84,24 @@ const SelectTokenScreenV2 = () => {
       <Box overflowY="auto">
         <VStack spacing={"10px"}>
           {assets.map((item, index) => {
-            const key = item.uniqueId;
-            return <TokenItem token={item} onSelect={onSelect} key={key} />;
+            const { symbol, name, contractAddress, tokenId } = item;
+            const key = `${symbol}${name}${contractAddress}${tokenId}`;
+            // return <TokenItem token={item} onSelect={onSelect} key={key} />;
+            return (
+              <TokenItemWithBalance
+                key={key}
+                uniqueId={uniqueId}
+                address={selectedAccount.account.address}
+                token={item}
+                onClick={onSelect}
+                hover
+              />
+            );
           })}
         </VStack>
       </Box>
     );
-  }, [assets, onSelect]);
+  }, [assets, onSelect, selectedAccount.account.address, uniqueId]);
 
   return (
     <PageWithHeader title={t("Networks:selectToken")}>

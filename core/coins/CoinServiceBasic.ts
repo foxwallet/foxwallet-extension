@@ -179,4 +179,8 @@ export abstract class CoinServiceBasic {
     );
     return [];
   }
+
+  gasUnit(): string {
+    return "";
+  }
 }

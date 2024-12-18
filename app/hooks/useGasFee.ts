@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import type { GasFee } from "core/types/GasFee";
 import { type CoinType } from "core/types";
 import { type ChainUniqueId } from "core/types/ChainUniqueId";
-import { type TokenV2 } from "core/types/Token";
+import { AssetType, type TokenV2 } from "core/types/Token";
 import { type EstimateGasExtraOption } from "core/types/NativeCoinTransaction";
 
 export const useGasFee = <T extends CoinType>(
@@ -37,7 +37,7 @@ export const useGasFee = <T extends CoinType>(
       try {
         setLoading(true);
 
-        if (token) {
+        if (token?.type === AssetType.TOKEN) {
           const res = (await coinService.getTokenEstimateGasFee({
             tx: { from, to, value, token },
             option,

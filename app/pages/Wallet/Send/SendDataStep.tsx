@@ -10,12 +10,16 @@ import { IconChevronRight } from "@/components/Custom/Icon";
 import { LoadingView } from "@/components/Custom/Loading";
 import { useBalance } from "@/hooks/useBalance";
 import { useGasFee } from "@/hooks/useGasFee";
-import { ethers } from "ethers";
+import { BigNumber, ethers, utils } from "ethers";
 import { type GasFee, GasFeeType } from "core/types/GasFee";
 import { type CoinType } from "core/types";
 import { type TokenV2 } from "core/types/Token";
+import { useCoinService } from "@/hooks/useCoinService";
+import { useChainConfig } from "@/hooks/useGroupAccount";
+import { formatGasStr } from "core/utils/num";
 
 interface SendDataStepProps {
+  fromAddress: string;
   toAddress: string;
   uniqueId: ChainUniqueId;
   onSend: (
@@ -26,26 +30,37 @@ interface SendDataStepProps {
 }
 
 export const SendDataStep = (props: SendDataStepProps) => {
-  const { uniqueId, toAddress, onSend, token } = props;
-  const fromAddress = "0x180325d018A5ED8144e78eEfdc9Ea893E8BEd50E"; // for test
+  const { uniqueId, toAddress, onSend, token, fromAddress } = props;
   const { t } = useTranslation();
-  // const navigate = useNavigate();
+  const { nativeCurrency, chainConfig, coinService } = useCoinService(uniqueId);
 
   const [amountStr, setAmountStr] = useState("");
   const [debounceAmountStr] = useDebounce(amountStr.trim(), 500);
 
-  const {
-    balance,
-    loadingBalance,
-    error: loadBalanceError,
-  } = useBalance(uniqueId, fromAddress, token);
+  // const {
+  //   balance,
+  //   loadingBalance,
+  //   error: loadBalanceError,
+  // } = useBalance(uniqueId, fromAddress, token);
+
+  const { balance, loadingBalance } = useBalance({
+    address: fromAddress,
+    uniqueId,
+    token,
+  });
+
+  const { supportCustomGasFee } = useChainConfig(uniqueId);
 
   const balanceStr = useMemo(() => {
     if (balance) {
-      return ethers.utils.formatUnits(balance, "ether");
+      return ethers.utils.formatUnits(balance.total, "ether");
     }
     return "";
   }, [balance]);
+
+  const symbol = useMemo(() => {
+    return token?.symbol ?? chainConfig.nativeCurrency.symbol;
+  }, [chainConfig.nativeCurrency.symbol, token]);
 
   // 输入字符检查
   const { amountValid, amountBigint, amountValidErrMsg } = useMemo(() => {
@@ -54,7 +69,7 @@ export const SendDataStep = (props: SendDataStepProps) => {
         const res = ethers.utils.parseEther(debounceAmountStr);
         const amountBigint = res.toBigInt();
         console.log("     amountBigint " + amountBigint);
-        if (balance && amountBigint > balance) {
+        if (balance && amountBigint > balance.total) {
           return {
             amountValid: true,
             amountBigint,
@@ -98,22 +113,43 @@ export const SendDataStep = (props: SendDataStepProps) => {
   console.log("      gasFee");
   console.log(gasFee);
 
-  const { gasEthStr, gasGweiStr } = useMemo(() => {
-    let gasEthStr = "";
-    let gasGweiStr = "";
-    if (
-      gasFee?.estimateGas &&
-      gasFee?.gasLimit &&
-      gasFee?.type === GasFeeType.EIP1559
-    ) {
-      gasEthStr = ethers.utils.formatUnits(gasFee.estimateGas, "ether");
-      gasGweiStr = ethers.utils.formatUnits(
-        gasFee.estimateGas / BigInt(gasFee.gasLimit),
-        "gwei",
-      );
+  const { gasSymbol, gasDecimals } = useMemo(() => {
+    return {
+      gasSymbol: chainConfig.nativeCurrency.symbol,
+      gasDecimals: Number(chainConfig.nativeCurrency.decimals),
+    };
+  }, [chainConfig]);
+
+  const gasValue = useMemo(() => {
+    if (!gasFee) {
+      return 0n;
     }
-    return { gasEthStr, gasGweiStr };
+    switch (gasFee.type) {
+      case GasFeeType.EIP1559:
+        return gasFee.maxFeePerGas * BigInt(gasFee.gasLimit);
+      case GasFeeType.LEGACY:
+        return gasFee.gasPrice * BigInt(gasFee.gasLimit);
+      default:
+        return 0n;
+    }
   }, [gasFee]);
+
+  // const { gasEthStr, gasGweiStr } = useMemo(() => {
+  //   let gasEthStr = "";
+  //   let gasGweiStr = "";
+  //   if (
+  //     gasFee?.estimateGas &&
+  //     gasFee?.gasLimit &&
+  //     gasFee?.type === GasFeeType.EIP1559
+  //   ) {
+  //     gasEthStr = ethers.utils.formatUnits(gasFee.estimateGas, "ether");
+  //     gasGweiStr = ethers.utils.formatUnits(
+  //       gasFee.estimateGas / BigInt(gasFee.gasLimit),
+  //       "gwei",
+  //     );
+  //   }
+  //   return { gasEthStr, gasGweiStr };
+  // }, [gasFee]);
   // console.log("      gasEthStr " + gasEthStr);
   // console.log("      gasGweiStr " + gasGweiStr);
 
@@ -154,16 +190,16 @@ export const SendDataStep = (props: SendDataStepProps) => {
 
   const amountUnit = useMemo(() => {
     if (amountStr) {
-      return <Text ml={1}>ETH</Text>;
+      return <Text ml={1}>{symbol}</Text>;
     } else {
       return (
         <Flex>
           <Text textColor={"gray.500"}>0</Text>
-          <Text ml={1}>ETH</Text>
+          <Text ml={1}>{symbol}</Text>
         </Flex>
       );
     }
-  }, [amountStr]);
+  }, [symbol, amountStr]);
 
   const onAmountChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -172,6 +208,38 @@ export const SendDataStep = (props: SendDataStepProps) => {
     },
     [setAmountStr],
   );
+
+  const gasUnit = useMemo(() => {
+    return coinService.gasUnit();
+  }, [coinService]);
+
+  const networkFeeStr = useMemo(() => {
+    const data = gasFee;
+    if (!data || !supportCustomGasFee) {
+      return "";
+    }
+    let networkFee = "";
+    switch (data.type) {
+      case GasFeeType.EIP1559:
+        networkFee = utils.formatUnits(data.maxFeePerGas, "gwei");
+        break;
+      case GasFeeType.LEGACY:
+        networkFee = utils.formatUnits(data.gasPrice, "gwei");
+        break;
+      // case GasFeeType.UTXO:
+      //   networkFee = data.feeRate ? `${data.feeRate}` : "--";
+      //   break;
+      default:
+        break;
+    }
+    if (!networkFee) {
+      return "";
+    }
+    return `${networkFee} ${gasUnit}`;
+  }, [gasFee, gasUnit, supportCustomGasFee]);
+
+  console.log("      networkFeeStr");
+  console.log(networkFeeStr);
 
   // const fiatStr = useMemo(() => {
   //   if (!amountStr) {
@@ -204,12 +272,12 @@ export const SendDataStep = (props: SendDataStepProps) => {
           <LoadingView />
         ) : (
           <Text fontSize={"small"} color={"gray.500"}>
-            {`${t("Send:available")}: ${balanceStr} ETH`}
+            {`${t("Send:available")}: ${balanceStr} ${symbol}`}
           </Text>
         )}
       </Flex>
     );
-  }, [balanceStr, loadingBalance, t]);
+  }, [symbol, balanceStr, loadingBalance, t]);
 
   const ValueView = useMemo(() => {
     return (
@@ -316,11 +384,16 @@ export const SendDataStep = (props: SendDataStepProps) => {
               h={"30px"}
               justifyContent={loadingGasFee ? "center" : "space-between"}
             >
-              {/* {!!gasEthStr ?`${gasEthStr} ETH` : "0 ETH"} */}
-              <Text>{gasEthStr ? `${gasEthStr} ETH` : "0 ETH"}</Text>
-              {gasGweiStr && (
+              <Text>
+                {formatGasStr(
+                  gasSymbol,
+                  BigNumber.from(gasValue.toString()),
+                  gasDecimals,
+                )}
+              </Text>
+              {gasFee && (
                 <Flex justifyContent={"center"} alignItems={"center"}>
-                  <Text>{`${gasGweiStr} Gwei`}</Text>
+                  <Text>{networkFeeStr}</Text>
                   <IconChevronRight w={4} h={4} ml={"1px"} />
                 </Flex>
               )}
@@ -329,7 +402,15 @@ export const SendDataStep = (props: SendDataStepProps) => {
         </Flex>
       </>
     );
-  }, [gasEthStr, gasGweiStr, loadingGasFee, t]);
+  }, [
+    t,
+    loadingGasFee,
+    gasSymbol,
+    gasValue,
+    gasDecimals,
+    gasFee,
+    networkFeeStr,
+  ]);
 
   return (
     <Box overflowY={"auto"} h={"540px"}>

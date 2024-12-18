@@ -25,7 +25,7 @@ export const InputAddressStep = (props: InputAddressStepProps) => {
   const [address, setAddress] = useState(toAddr ?? "");
   const [debounceAddress] = useDebounce(address, 500);
 
-  const { nativeCurrency, chainConfig, coinService } = useCoinService(uniqueId);
+  const { coinService } = useCoinService(uniqueId);
 
   const onAddressChange = useCallback(
     (event: React.ChangeEvent<HTMLTextAreaElement>) => {

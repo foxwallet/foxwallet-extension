@@ -1,18 +1,20 @@
 import { PageWithHeader } from "@/layouts/Page";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import React, { useCallback, useMemo, useState } from "react";
 import { InputAddressStep } from "@/pages/Wallet/Send/InputAddressStep";
 import { SendDataStep } from "@/pages/Wallet/Send/SendDataStep";
-import { AssetType } from "@/common/types/asset";
-import { InnerChainUniqueId } from "core/types/ChainUniqueId";
+import { type InnerChainUniqueId } from "core/types/ChainUniqueId";
 import type { GasFee } from "core/types/GasFee";
 import { CoinType } from "core/types";
 import { useCoinService } from "@/hooks/useCoinService";
 import { useNonce } from "@/hooks/useNonce";
 import { usePrivateKey } from "@/hooks/usePrivateKey";
 import { LoadingOverlay } from "@/components/Custom/Loading";
-import type { TokenV2 } from "core/types/Token";
+import { AssetType, type TokenV2 } from "core/types/Token";
+import { useLocationParams } from "@/hooks/useLocationParams";
+import { useChainMode } from "@/hooks/useChainMode";
+import { useAssetList } from "@/hooks/useAssetList";
 
 export enum AmountType {
   FIAT,
@@ -25,27 +27,50 @@ const SendScreen = () => {
   const [step, setStep] = useState(1);
   const [toAddress, setToAddress] = useState("");
 
-  const myAddress = "0x180325d018A5ED8144e78eEfdc9Ea893E8BEd50E";
-  const uniqueId = InnerChainUniqueId.ETHEREUM; // for test
+  const { uniqueId: paramUniqueId, address: paramAddress } = useParams<{
+    uniqueId: InnerChainUniqueId;
+    address: string;
+  }>();
+  const { availableChainUniqueIds, availableAccounts } = useChainMode();
+
+  const uniqueId = useMemo(() => {
+    return paramUniqueId ?? availableChainUniqueIds[0];
+  }, [availableChainUniqueIds, paramUniqueId]);
+  const fromAddress = useMemo(() => {
+    return paramAddress ?? availableAccounts[0].account.address;
+  }, [availableAccounts, paramAddress]);
+
+  const token = useLocationParams("token");
+  const { nativeToken } = useAssetList(uniqueId, fromAddress);
+  const tokenInfo = useMemo(() => {
+    try {
+      if (!token) {
+        return nativeToken;
+      }
+      return JSON.parse(token) as TokenV2;
+    } catch (err) {
+      return nativeToken;
+    }
+  }, [nativeToken, token]);
+
   const { coinService } = useCoinService(uniqueId);
 
-  const { nonce } = useNonce(uniqueId, myAddress);
+  const { nonce } = useNonce(uniqueId, fromAddress);
   const { privateKey } = usePrivateKey(uniqueId, CoinType.ETH);
-  // console.log("      privateKey " + privateKey);
   const [isSending, setIsSending] = useState(false);
 
   // for test
-  const testToken: TokenV2 = useMemo(() => {
-    return {
-      symbol: "ZKB",
-      decimals: 18,
-      name: "ZKBase",
-      type: AssetType.TOKEN,
-      contractAddress: "0xBBBbbBBB46A1dA0F0C3F64522c275BAA4C332636",
-      uniqueId: InnerChainUniqueId.ETHEREUM,
-      ownerAddress: "0x180325d018A5ED8144e78eEfdc9Ea893E8BEd50E",
-    };
-  }, []);
+  // const testToken: TokenV2 = useMemo(() => {
+  //   return {
+  //     symbol: "ZKB",
+  //     decimals: 18,
+  //     name: "ZKBase",
+  //     type: AssetType.TOKEN,
+  //     contractAddress: "0xBBBbbBBB46A1dA0F0C3F64522c275BAA4C332636",
+  //     uniqueId: InnerChainUniqueId.ETHEREUM,
+  //     ownerAddress: "0x180325d018A5ED8144e78eEfdc9Ea893E8BEd50E",
+  //   };
+  // }, []);
 
   const onSend = useCallback(
     async (
@@ -62,7 +87,7 @@ const SendScreen = () => {
         try {
           const res = await coinService.sendNativeCoin({
             tx: {
-              from: myAddress,
+              from: fromAddress,
               to: toAddress,
               value,
               gasFee,
@@ -81,10 +106,10 @@ const SendScreen = () => {
         try {
           const res = await coinService.sendToken({
             tx: {
-              from: myAddress,
+              from: fromAddress,
               to: toAddress,
               value,
-              token: testToken,
+              token: tokenInfo,
               gasFee,
               nonce,
             },
@@ -98,14 +123,22 @@ const SendScreen = () => {
       };
 
       Promise.all([
-        testToken ? sendToken() : sendCoin(),
+        tokenInfo.type === AssetType.TOKEN ? sendToken() : sendCoin(),
         new Promise((resolve) => setTimeout(resolve, 2000)),
       ]).then(() => {
         setIsSending(false);
         navigate("/");
       });
     },
-    [coinService, navigate, nonce, privateKey, toAddress, testToken],
+    [
+      coinService,
+      fromAddress,
+      navigate,
+      nonce,
+      privateKey,
+      toAddress,
+      tokenInfo,
+    ],
   );
 
   const sendContent = useMemo(() => {
@@ -125,12 +158,13 @@ const SendScreen = () => {
       case 2: {
         return (
           <SendDataStep
+            fromAddress={fromAddress}
             toAddress={toAddress}
             uniqueId={uniqueId}
             onSend={(gasFee, value) => {
               onSend(gasFee, value);
             }}
-            token={testToken}
+            token={tokenInfo}
           />
         );
       }
@@ -138,7 +172,7 @@ const SendScreen = () => {
         return null;
       }
     }
-  }, [onSend, step, testToken, toAddress, uniqueId]);
+  }, [fromAddress, onSend, step, tokenInfo, toAddress, uniqueId]);
 
   return (
     <PageWithHeader

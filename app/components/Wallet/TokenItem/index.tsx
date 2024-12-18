@@ -48,6 +48,7 @@ export const TokenItemWithBalance = ({
       flex={1}
       _hover={{ bg: hover ? "gray.50" : undefined }}
       cursor={"pointer"}
+      w={"full"}
     >
       <Flex align={"center"}>
         {leftElement}

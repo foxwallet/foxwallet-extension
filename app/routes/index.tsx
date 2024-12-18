@@ -232,7 +232,7 @@ export const routesConfig: RouteObject[] = [
         element: <AddOrEditContact />,
       },
       {
-        path: "send_token",
+        path: "send_token/:uniqueId/:address",
         element: <SendToken />,
       },
       {

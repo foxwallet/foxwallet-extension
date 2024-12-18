@@ -935,4 +935,8 @@ export class EthService extends CoinServiceBasic {
     }
     return [];
   }
+
+  gasUnit(): string {
+    return "Gwei";
+  }
 }

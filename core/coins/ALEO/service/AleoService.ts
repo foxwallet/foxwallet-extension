@@ -1819,4 +1819,8 @@ export class AleoService extends CoinServiceBasic {
 
     return historyList;
   }
+
+  gasUnit(): string {
+    return "ALEO";
+  }
 }
