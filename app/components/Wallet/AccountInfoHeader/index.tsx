@@ -15,6 +15,7 @@ import {
   Box,
   Flex,
   type FlexProps,
+  Image,
   keyframes,
   Spinner,
   Text,
@@ -57,7 +58,6 @@ import { useTxsNotification } from "@/hooks/useTxHistory";
 import { NATIVE_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { useChainMode } from "@/hooks/useChainMode";
-import { type AleoService } from "core/coins/ALEO/service/AleoService";
 import {
   ChainAssembleMode,
   type ChainDisplayMode,
@@ -66,49 +66,12 @@ import {
 import { showChangeNetworkDrawer } from "@/components/Wallet/ChangeNetworkDrawer";
 import { useBalance } from "@/hooks/useBalance";
 import { ActionPanel } from "@/components/Wallet/ActionPanel";
+import { HeaderMiddleView } from "@/components/Wallet/HeaderMiddleView";
 
 const rotateAnimation = keyframes`
   from { transform: rotate(0deg) }
   to { transform: rotate(360deg) }
 `;
-
-export const HeaderMiddleView = ({
-  onClick,
-  title,
-  showArrow = true,
-}: {
-  onClick: () => void;
-  title: string;
-  showArrow?: boolean;
-}) => {
-  return (
-    <Flex
-      cursor={"pointer"}
-      onClick={onClick}
-      flexDirection={"row"}
-      align={"center"}
-      bg={"#EBECEB"}
-      minH={"24px"}
-      pr={showArrow ? 0 : 2}
-      pl={2}
-      borderRadius={"5px"}
-      position={"absolute"}
-      left={"50%"}
-      transform={"translateX(-50%)"}
-    >
-      <Text
-        fontSize={12}
-        lineHeight={4}
-        fontWeight={500}
-        maxW={100}
-        noOfLines={1}
-      >
-        {title}
-      </Text>
-      {showArrow && <IconArrowRight w={18} h={18} />}
-    </Flex>
-  );
-};
 
 export const AccountInfoHeader = () => {
   const navigate = useNavigate();
@@ -138,17 +101,6 @@ export const AccountInfoHeader = () => {
   }, [chainMode, getMatchAccountsWithUniqueId]);
   const uniqueId = availableChainUniqueIds[0];
   const { nativeCurrency, chainConfig, coinService } = useCoinService(uniqueId);
-  // const { balance, loadingBalance } = useAleoBalance({
-  //   uniqueId,
-  //   programId: NATIVE_TOKEN_PROGRAM_ID,
-  //   address: selectedAccount.account.address,
-  //   refreshInterval: 4000,
-  // });
-  const { balance, loadingBalance } = useBalance({
-    uniqueId,
-    address: selectedAccount.account.address,
-    refreshInterval: 4000,
-  });
 
   const { selectedWallet } = useCurrWallet();
   const { t } = useTranslation();
@@ -175,7 +127,7 @@ export const AccountInfoHeader = () => {
   const onCopyAddress = useCallback(() => {
     onCopy();
     showToast();
-  }, [showToast, onCopy]);
+  }, [onCopy, showToast]);
 
   const copyAddress = useCallback(async () => {
     try {
@@ -269,7 +221,17 @@ export const AccountInfoHeader = () => {
             cursor={"pointer"}
             onClick={onChangeNetwork}
           >
-            <IconLogo w={5} h={5} />
+            {isAllMode ? (
+              <IconLogo w={5} h={5} />
+            ) : (
+              <Image
+                src={availableChains[0].logo}
+                w={5}
+                h={5}
+                borderRadius={10}
+              />
+            )}
+
             <Text ml={"5px"} fontSize={"9px"}>
               {chainModeName}
             </Text>
@@ -292,10 +254,14 @@ export const AccountInfoHeader = () => {
             onClick={onChangeWallet}
             title={groupAccount.group.groupName}
             showArrow={false}
+            showCopy={isAllMode}
+            onCopy={() => {
+              console.log("    343434  ");
+            }}
           />
         </Flex>
         {/* copy address */}
-        {chainMode.mode === ChainAssembleMode.SINGLE && (
+        {!isAllMode && (
           <Flex
             mt={2}
             direction={"row"}
@@ -307,7 +273,7 @@ export const AccountInfoHeader = () => {
                 <Box maxW={128} noOfLines={1} fontSize={11} color={"#777E90"}>
                   <MiddleEllipsisText text={copyAddressHint} width={128} />
                 </Box>
-                <IconCopy w={3} h={3} />
+                <IconCopy w={3} h={3} ml={1} />
               </Flex>
             </Hover>
           </Flex>
@@ -318,7 +284,7 @@ export const AccountInfoHeader = () => {
             <Box fontSize={24} fontWeight={600}>
               {showBalance ? (
                 <TokenNum
-                  amount={balance?.total}
+                  amount={123123123123n}
                   decimals={nativeCurrency.decimals}
                   symbol={nativeCurrency.symbol}
                 />

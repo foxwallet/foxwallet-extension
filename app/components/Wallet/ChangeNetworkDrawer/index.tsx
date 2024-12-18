@@ -18,7 +18,6 @@ import {
   IconSettings,
 } from "@/components/Custom/Icon";
 import { useDebounce } from "use-debounce";
-import { HeaderMiddleView } from "@/components/Wallet/AccountInfoHeader";
 import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
 import {
   ChainAssembleMode,
@@ -27,6 +26,7 @@ import {
 } from "core/types/ChainUniqueId";
 import { NetworkItem } from "@/components/Wallet/NetworkItem";
 import { useUserSelectedChains } from "@/hooks/useUserSelectedChains";
+import { HeaderMiddleView } from "@/components/Wallet/HeaderMiddleView";
 
 export type SingleChainDisplayData = {
   mode: ChainAssembleMode.SINGLE;
