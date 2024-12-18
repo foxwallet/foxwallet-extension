@@ -162,7 +162,7 @@
   "Receive": {
     "title": "Receive",
     "scanToTransfer": "Scan to transfer",
-    "onlyTips": "Only support ALEO related assets",
+    "onlyTips": "Only support {{symbol}} related assets",
     "walletAddr": "Wallet Address"
   },
   "TokenDetail": {

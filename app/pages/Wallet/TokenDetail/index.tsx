@@ -270,12 +270,13 @@ const TokenDetailScreen = () => {
   }, [tokenInfo, tokenRecords]);
 
   const onReceive = useCallback(() => {
-    navigate(`/receive`);
-  }, [navigate]);
+    // todo add token info
+    navigate(`/receive/${uniqueId}/${selectedAccount.account.address}`);
+  }, [navigate, selectedAccount.account.address, uniqueId]);
 
   const onSend = useCallback(() => {
     navigate(`/send_aleo?token=${serializeToken(tokenInfo)}`);
-  }, [navigate]);
+  }, [navigate, tokenInfo]);
 
   const renderTxHistoryItem = useCallback(
     (item: AleoHistoryItem, index: number) => {

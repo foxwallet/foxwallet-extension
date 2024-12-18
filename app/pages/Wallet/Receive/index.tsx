@@ -6,32 +6,58 @@ import {
   chakra,
   useClipboard,
   useColorModeValue,
+  Image,
 } from "@chakra-ui/react";
 import { QRCodeSVG } from "qrcode.react";
 import WALLET_LOGO from "@/common/assets/image/logo.png";
 import { Content } from "@/layouts/Content";
-import { HeaderLeftIconType } from "@/components/Custom/Header";
-import { IconAleo, IconCopyBlack, IconWarning } from "@/components/Custom/Icon";
+import {
+  IconCopyBlack,
+  IconTokenPlaceHolder,
+  IconWarning,
+} from "@/components/Custom/Icon";
 import { useCallback, useMemo } from "react";
 import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
 import { useTranslation } from "react-i18next";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
-import { useGroupAccount } from "@/hooks/useGroupAccount";
-import { InnerChainUniqueId } from "core/types/ChainUniqueId";
+import { type InnerChainUniqueId } from "core/types/ChainUniqueId";
+import { useParams } from "react-router-dom";
+import { useLocationParams } from "@/hooks/useLocationParams";
+import { useAssetList } from "@/hooks/useAssetList";
+import { useChainMode } from "@/hooks/useChainMode";
+import { type TokenV2 } from "core/types/Token";
 
 const QRCode = chakra(QRCodeSVG);
 
 function ReceiveScreen() {
+  const { uniqueId: paramUniqueId, address: paramAddress } = useParams<{
+    uniqueId: InnerChainUniqueId;
+    address: string;
+  }>();
+  const { availableChainUniqueIds, availableAccounts } = useChainMode();
   const { t } = useTranslation();
 
-  const { getMatchAccountsWithUniqueId } = useGroupAccount();
-  // TODO: get uniqueId from chain mode or page params
-  const selectedAccount = useMemo(() => {
-    return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_MAINNET)[0];
-  }, [getMatchAccountsWithUniqueId]);
-  const uniqueId = InnerChainUniqueId.ALEO_MAINNET;
+  const uniqueId = useMemo(() => {
+    return paramUniqueId ?? availableChainUniqueIds[0];
+  }, [availableChainUniqueIds, paramUniqueId]);
+  const address = useMemo(() => {
+    return paramAddress ?? availableAccounts[0].account.address;
+  }, [availableAccounts, paramAddress]);
 
-  const { onCopy } = useClipboard(selectedAccount.account.address);
+  const token = useLocationParams("token");
+  const { nativeToken } = useAssetList(uniqueId, address);
+  const tokenInfo = useMemo(() => {
+    try {
+      if (!token) {
+        return nativeToken;
+      }
+      return JSON.parse(token) as TokenV2;
+    } catch (err) {
+      return nativeToken;
+    }
+  }, [nativeToken, token]);
+
+  const { onCopy } = useClipboard(address);
   const { showToast } = useCopyToast();
 
   const handleCopy = useCallback(() => {
@@ -46,7 +72,11 @@ function ReceiveScreen() {
     <PageWithHeader enableBack title={t("Receive:title")}>
       <Content>
         <VStack>
-          <IconAleo h={10} w={10} />
+          {tokenInfo.icon ? (
+            <Image src={tokenInfo?.icon} w={10} h={10} borderRadius={20} />
+          ) : (
+            <IconTokenPlaceHolder />
+          )}
           <Text fontWeight={500} fontSize={14}>
             {t("Receive:scanToTransfer")}
           </Text>
@@ -59,12 +89,14 @@ function ReceiveScreen() {
           >
             <IconWarning mr={1} />
             <Text color={"#EF466F"} fontWeight={500} fontSize={14}>
-              {t("Receive:onlyTips")}
+              {t("Receive:onlyTips", {
+                symbol: tokenInfo.symbol,
+              })}
             </Text>
           </Flex>
         </VStack>
         <QRCode
-          value={selectedAccount.account.address}
+          value={address ?? ""}
           mt={4}
           h={200}
           w={200}
@@ -88,7 +120,7 @@ function ReceiveScreen() {
           p={2.5}
         >
           <Text noOfLines={3} maxW={274} fontSize={12} fontWeight={500}>
-            {selectedAccount.account.address}
+            {address ?? ""}
           </Text>
           <Flex
             h={6}

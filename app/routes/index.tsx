@@ -115,7 +115,7 @@ export const routesConfig: RouteObject[] = [
         element: <Split />,
       },
       {
-        path: "receive",
+        path: "receive/:uniqueId/:address",
         element: <Receive />,
       },
       {
