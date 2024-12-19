@@ -23,7 +23,7 @@ interface SendDataStepProps {
   toAddress: string;
   uniqueId: ChainUniqueId;
   onSend: (
-    gasFee: GasFee<CoinType.ETH> | undefined,
+    gasFee: GasFee<CoinType> | undefined,
     value: bigint | undefined,
   ) => void;
   token?: TokenV2;
@@ -33,15 +33,28 @@ export const SendDataStep = (props: SendDataStepProps) => {
   const { uniqueId, toAddress, onSend, token, fromAddress } = props;
   const { t } = useTranslation();
   const { nativeCurrency, chainConfig, coinService } = useCoinService(uniqueId);
+  const { supportCustomGasFee } = useChainConfig(uniqueId);
 
   const [amountStr, setAmountStr] = useState("");
   const [debounceAmountStr] = useDebounce(amountStr.trim(), 500);
 
-  // const {
-  //   balance,
-  //   loadingBalance,
-  //   error: loadBalanceError,
-  // } = useBalance(uniqueId, fromAddress, token);
+  const onAmountChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const value = event.target.value.trim();
+      setAmountStr(value);
+    },
+    [setAmountStr],
+  );
+
+  const { symbol, decimals, coinType, gasSymbol, gasDecimals } = useMemo(() => {
+    return {
+      symbol: token?.symbol ?? nativeCurrency.symbol,
+      decimals: token?.decimals ?? nativeCurrency.decimals,
+      coinType: chainConfig.coinType,
+      gasSymbol: nativeCurrency.symbol,
+      gasDecimals: nativeCurrency.decimals,
+    };
+  }, [chainConfig, nativeCurrency, token]);
 
   const { balance, loadingBalance } = useBalance({
     address: fromAddress,
@@ -49,29 +62,22 @@ export const SendDataStep = (props: SendDataStepProps) => {
     token,
   });
 
-  const { supportCustomGasFee } = useChainConfig(uniqueId);
-
   const balanceStr = useMemo(() => {
     if (balance) {
-      return ethers.utils.formatUnits(balance.total, "ether");
+      return ethers.utils.formatUnits(balance.total, decimals);
     }
     return "";
-  }, [balance]);
-
-  const symbol = useMemo(() => {
-    return token?.symbol ?? chainConfig.nativeCurrency.symbol;
-  }, [chainConfig.nativeCurrency.symbol, token]);
+  }, [balance, decimals]);
 
   // 输入字符检查
   const { amountValid, amountBigint, amountValidErrMsg } = useMemo(() => {
     if (debounceAmountStr) {
       try {
-        const res = ethers.utils.parseEther(debounceAmountStr);
+        const res = ethers.utils.parseUnits(debounceAmountStr, decimals);
         const amountBigint = res.toBigInt();
-        console.log("     amountBigint " + amountBigint);
         if (balance && amountBigint > balance.total) {
           return {
-            amountValid: true,
+            amountValid: false,
             amountBigint,
             amountValidErrMsg: t("Send:insufficientBalance"),
           };
@@ -90,10 +96,15 @@ export const SendDataStep = (props: SendDataStepProps) => {
       amountBigint: undefined,
       amountValidErrMsg: "",
     };
-  }, [debounceAmountStr, balance, t]);
-  // console.log("      amountBigint  " + amountBigint);
+  }, [debounceAmountStr, decimals, balance, t]);
+  console.log(
+    "      amountBigint",
+    amountValid,
+    amountBigint,
+    amountValidErrMsg,
+  );
 
-  // gas fee
+  // gas fee sample
   // estimateGas: 241382509200000n
   // gasLimit: 21000
   // maxFeePerGas: 11494405200n
@@ -103,22 +114,14 @@ export const SendDataStep = (props: SendDataStepProps) => {
     gasFee,
     loadingGasFee,
     error: loadGasFeeError,
-  } = useGasFee<CoinType.ETH>(
+  } = useGasFee<typeof coinType>(
     uniqueId,
     fromAddress,
     toAddress,
     amountBigint,
     token,
   );
-  console.log("      gasFee");
-  console.log(gasFee);
-
-  const { gasSymbol, gasDecimals } = useMemo(() => {
-    return {
-      gasSymbol: chainConfig.nativeCurrency.symbol,
-      gasDecimals: Number(chainConfig.nativeCurrency.decimals),
-    };
-  }, [chainConfig]);
+  console.log("      gasFee", gasFee);
 
   const gasValue = useMemo(() => {
     if (!gasFee) {
@@ -152,8 +155,6 @@ export const SendDataStep = (props: SendDataStepProps) => {
   // }, [gasFee]);
   // console.log("      gasEthStr " + gasEthStr);
   // console.log("      gasGweiStr " + gasGweiStr);
-
-  // const { nativeCurrency, chainConfig, coinService } = useCoinService(uniqueId);
 
   // const [valueMode, setValueMode] = useState(false);
 
@@ -200,14 +201,6 @@ export const SendDataStep = (props: SendDataStepProps) => {
       );
     }
   }, [symbol, amountStr]);
-
-  const onAmountChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      const value = event.target.value.trim();
-      setAmountStr(value);
-    },
-    [setAmountStr],
-  );
 
   const gasUnit = useMemo(() => {
     return coinService.gasUnit();
@@ -299,7 +292,6 @@ export const SendDataStep = (props: SendDataStepProps) => {
           mb={"5px"}
         >
           <Flex
-            // bg={"green"}
             w={"full"}
             justifyContent={"center"}
             alignItems={"center"}
@@ -307,7 +299,6 @@ export const SendDataStep = (props: SendDataStepProps) => {
           >
             <Input
               ref={valueRef}
-              // bg={"yellow"}
               size={"sm"}
               _focus={{ borderColor: "white" }}
               borderColor={"white"}
@@ -378,7 +369,6 @@ export const SendDataStep = (props: SendDataStepProps) => {
             <LoadingView />
           ) : (
             <Flex
-              // bg={"green"}
               w={"full"}
               alignItems={"center"}
               h={"30px"}

@@ -89,7 +89,8 @@ const MultiChainActionPanel = () => {
         title: t("Receive:title"),
         icon: <IconReceive w={9} h={9} />,
         onPress: () => {
-          navigate("/receive");
+          // navigate("/receive");
+          navigate("/select_network/receive");
         },
       },
       {
@@ -97,7 +98,8 @@ const MultiChainActionPanel = () => {
         icon: <IconSend w={9} h={9} />,
         disabled: false,
         onPress: () => {
-          navigate("/send_token");
+          // navigate("/send_token");
+          // navigate("/select_network/send");
         },
       },
     ];
@@ -138,7 +140,8 @@ const SingleChainActionPanel = ({ uniqueId }: { uniqueId: ChainUniqueId }) => {
         title: t("Receive:title"),
         icon: <IconReceive w={9} h={9} />,
         onPress: () => {
-          navigate("/receive");
+          // todo
+          navigate(`/select_token_v2/${uniqueId}/receive`);
         },
       },
       {
@@ -146,11 +149,13 @@ const SingleChainActionPanel = ({ uniqueId }: { uniqueId: ChainUniqueId }) => {
         icon: <IconSend w={9} h={9} />,
         disabled: sendingAleoTx ?? balance === undefined,
         onPress: () => {
-          if (uniqueId !== InnerChainUniqueId.ALEO_MAINNET) {
-            navigate("/send_token");
-          } else {
-            navigate("/send_aleo");
-          }
+          navigate(`/select_token_v2/${uniqueId}/send`);
+
+          // if (uniqueId !== InnerChainUniqueId.ALEO_MAINNET) {
+          //   navigate("/send_token");
+          // } else {
+          //   navigate("/send_aleo");
+          // }
         },
       },
     ];

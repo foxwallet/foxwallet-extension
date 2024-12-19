@@ -73,10 +73,7 @@ const SendScreen = () => {
   // }, []);
 
   const onSend = useCallback(
-    async (
-      gasFee: GasFee<CoinType.ETH> | undefined,
-      value: bigint | undefined,
-    ) => {
+    async (gasFee: GasFee<CoinType> | undefined, value: bigint | undefined) => {
       if (!gasFee || !value || !privateKey) {
         return;
       }
