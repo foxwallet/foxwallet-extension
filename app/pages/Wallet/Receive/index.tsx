@@ -20,44 +20,23 @@ import { useCallback, useMemo } from "react";
 import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
 import { useTranslation } from "react-i18next";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
-import { type InnerChainUniqueId } from "core/types/ChainUniqueId";
-import { useParams } from "react-router-dom";
-import { useLocationParams } from "@/hooks/useLocationParams";
-import { useAssetList } from "@/hooks/useAssetList";
-import { useChainMode } from "@/hooks/useChainMode";
-import { type TokenV2 } from "core/types/Token";
 import { useCoinService } from "@/hooks/useCoinService";
+import { useSafeParams } from "@/hooks/useSafeParams";
+import { useSafeTokenInfo } from "@/hooks/useSafeTokenInfo";
 
 const QRCode = chakra(QRCodeSVG);
 
 function ReceiveScreen() {
-  const { uniqueId: paramUniqueId, address: paramAddress } = useParams<{
-    uniqueId: InnerChainUniqueId;
-    address: string;
-  }>();
-  const { availableChainUniqueIds, availableAccounts } = useChainMode();
   const { t } = useTranslation();
 
-  const uniqueId = useMemo(() => {
-    return paramUniqueId ?? availableChainUniqueIds[0];
-  }, [availableChainUniqueIds, paramUniqueId]);
-  const address = useMemo(() => {
-    return paramAddress ?? availableAccounts[0].account.address;
-  }, [availableAccounts, paramAddress]);
+  const { uniqueId, address } = useSafeParams();
+  // console.log("      params ", uniqueId, address);
 
   const { chainConfig } = useCoinService(uniqueId);
-  const token = useLocationParams("token");
-  const { nativeToken } = useAssetList(uniqueId, address);
-  const tokenInfo = useMemo(() => {
-    try {
-      if (!token) {
-        return nativeToken;
-      }
-      return JSON.parse(token) as TokenV2;
-    } catch (err) {
-      return nativeToken;
-    }
-  }, [nativeToken, token]);
+
+  const { tokenInfo } = useSafeTokenInfo(uniqueId, address);
+  // console.log("      tokenInfo");
+  // console.log({ ...tokenInfo });
 
   const { onCopy } = useClipboard(address);
   const { showToast } = useCopyToast();
@@ -80,7 +59,7 @@ function ReceiveScreen() {
             <IconTokenPlaceHolder w={10} h={10} />
           )}
           <Text fontWeight={500} fontSize={14}>
-            {t("Receive:scanToTransfer")}
+            {`${t("Receive:scanToTransfer")} ${tokenInfo.symbol}`}
           </Text>
           <Flex
             bg={"rgba(239, 70, 111, 0.08)"}

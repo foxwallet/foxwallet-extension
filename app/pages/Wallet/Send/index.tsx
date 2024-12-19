@@ -33,12 +33,12 @@ const SendScreen = () => {
   }>();
   const { availableChainUniqueIds, availableAccounts } = useChainMode();
 
-  const uniqueId = useMemo(() => {
-    return paramUniqueId ?? availableChainUniqueIds[0];
-  }, [availableChainUniqueIds, paramUniqueId]);
-  const fromAddress = useMemo(() => {
-    return paramAddress ?? availableAccounts[0].account.address;
-  }, [availableAccounts, paramAddress]);
+  const { uniqueId, address: fromAddress } = useMemo(() => {
+    return {
+      uniqueId: paramUniqueId ?? availableChainUniqueIds[0],
+      address: paramAddress ?? availableAccounts[0].account.address,
+    };
+  }, [availableAccounts, availableChainUniqueIds, paramAddress, paramUniqueId]);
 
   const token = useLocationParams("token");
   const { nativeToken } = useAssetList(uniqueId, fromAddress);
@@ -173,7 +173,7 @@ const SendScreen = () => {
 
   return (
     <PageWithHeader
-      title={t("Send:title")}
+      title={`${t("Send:title")} ${tokenInfo.symbol}`}
       onBack={() => {
         if (step > 1) {
           setStep(1);

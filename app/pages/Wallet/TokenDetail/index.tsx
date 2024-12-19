@@ -6,7 +6,6 @@ import {
   IconSendBlack,
 } from "@/components/Custom/Icon";
 import { TokenNum } from "@/components/Wallet/TokenNum";
-import { useAleoBalance } from "@/hooks/useAleoBalance";
 import { useCoinService } from "@/hooks/useCoinService";
 import { PageWithHeader } from "@/layouts/Page";
 import {
@@ -27,7 +26,7 @@ import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import type React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import browser from "webextension-polyfill";
 import { useTxHistory } from "@/hooks/useTxHistory";
@@ -35,9 +34,6 @@ import { useIsSendingAleoTx } from "@/hooks/useSendingTxStatus";
 import { useRecords } from "@/hooks/useRecord";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
 import { useBottomReach } from "@/hooks/useBottomReach";
-import { useLocationParams } from "@/hooks/useLocationParams";
-import { useAssetList } from "@/hooks/useAssetList";
-import { type Token } from "core/coins/ALEO/types/Token";
 import { RecordFilter } from "@/scripts/background/servers/IWalletServer";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import {
@@ -48,14 +44,15 @@ import {
   NATIVE_TOKEN_TOKEN_ID,
 } from "core/coins/ALEO/constants";
 import { serializeToken } from "@/common/utils/string";
-import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { useBalance } from "@/hooks/useBalance";
-import { AssetType } from "core/types/Token";
+import { AssetType, type TokenV2 } from "core/types/Token";
+import { useSafeParams } from "@/hooks/useSafeParams";
+import { useSafeTokenInfo } from "@/hooks/useSafeTokenInfo";
 
 interface TokenTxHistoryItemProps {
   item: AleoHistoryItem;
   uniqueId: InnerChainUniqueId;
-  token: Token;
+  token: TokenV2;
 }
 
 const TokenTxHistoryItem: React.FC<TokenTxHistoryItemProps> = ({
@@ -141,78 +138,46 @@ const TokenTxHistoryItem: React.FC<TokenTxHistoryItemProps> = ({
 const TokenDetailScreen = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { uniqueId, address } = useSafeParams();
+  console.log("      params ", uniqueId, address);
 
-  const { getMatchAccountsWithUniqueId } = useGroupAccount();
-  // TODO: get uniqueId from chain mode or page params
-  const selectedAccount = useMemo(() => {
-    return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_MAINNET)[0];
-  }, [getMatchAccountsWithUniqueId]);
+  const { tokenInfo } = useSafeTokenInfo(uniqueId, address);
+  console.log("      tokenInfo");
+  console.log({ ...tokenInfo });
 
-  const {
-    uniqueId = InnerChainUniqueId.ALEO_MAINNET,
-    address = selectedAccount.account.address,
-  } = useParams<{
-    uniqueId: InnerChainUniqueId;
-    address: string;
-  }>();
+  const { chainConfig } = useCoinService(uniqueId);
 
-  const token = useLocationParams("token");
-
-  const { nativeToken } = useAssetList(uniqueId, address);
-
-  const tokenInfo = useMemo(() => {
-    try {
-      if (!token) {
-        return nativeToken;
-      }
-      return JSON.parse(token) as Token;
-    } catch (err) {
-      return nativeToken;
-    }
-  }, [nativeToken, token]);
-
-  // const { balance, loadingBalance } = useAleoBalance({
-  //   uniqueId,
-  //   programId: tokenInfo.programId,
-  //   address: selectedAccount.account.address,
-  //   tokenId: tokenInfo.tokenId,
-  // });
+  const isAleo = useMemo(() => {
+    return uniqueId === InnerChainUniqueId.ALEO_MAINNET;
+  }, [uniqueId]);
 
   const { balance, loadingBalance } = useBalance({
     uniqueId,
-    address: selectedAccount.account.address,
+    address,
     refreshInterval: 10000,
-    token: {
-      type: AssetType.TOKEN,
-      contractAddress: "",
-      uniqueId,
-      programId: tokenInfo.programId,
-      tokenId: tokenInfo.tokenId,
-      symbol: "",
-      decimals: 0,
-      ownerAddress: selectedAccount.account.address,
-    },
+    token: tokenInfo,
   });
 
   const { history, getMore, loading, loadingLocalTxs, loadingOnChainHistory } =
     useTxHistory({
       uniqueId,
-      address: selectedAccount.account.address,
+      address,
       token: tokenInfo,
       refreshInterval: 4000,
     });
   const listRef = useRef<HTMLDivElement | null>(null);
   const reachBottom = useBottomReach(listRef);
+
   useEffect(() => {
     if (reachBottom) {
       getMore();
     }
-  }, [reachBottom]);
+  }, [getMore, reachBottom]);
 
   const { sendingAleoTx } = useIsSendingAleoTx(uniqueId);
   const { records, loading: loadingRecords } = useRecords({
     uniqueId,
-    address: selectedAccount.account.address,
+    address,
     recordFilter: RecordFilter.UNSPENT,
     programId: tokenInfo.programId,
   });
@@ -240,7 +205,7 @@ const TokenDetailScreen = () => {
         return [];
       }
     }
-  }, [records, token]);
+  }, [records, tokenInfo]);
 
   const recordStr = useMemo(() => {
     if (!tokenRecords) {
@@ -250,7 +215,7 @@ const TokenDetailScreen = () => {
       return t("Send:noRecordExist");
     }
     return t("Send:recordStatistics", { COUNT: tokenRecords.length });
-  }, [tokenRecords]);
+  }, [t, tokenRecords]);
 
   const recordAmount = useMemo(() => {
     switch (tokenInfo.programId) {
@@ -270,13 +235,20 @@ const TokenDetailScreen = () => {
   }, [tokenInfo, tokenRecords]);
 
   const onReceive = useCallback(() => {
-    // todo add token info
-    navigate(`/receive/${uniqueId}/${selectedAccount.account.address}`);
-  }, [navigate, selectedAccount.account.address, uniqueId]);
+    navigate(
+      `/receive/${uniqueId}/${address}?token=${serializeToken(tokenInfo)}`,
+    );
+  }, [navigate, uniqueId, address, tokenInfo]);
 
   const onSend = useCallback(() => {
-    navigate(`/send_aleo?token=${serializeToken(tokenInfo)}`);
-  }, [navigate, tokenInfo]);
+    isAleo
+      ? navigate(`/send_aleo?token=${serializeToken(tokenInfo)}`)
+      : navigate(
+          `/send_token/${uniqueId}/${address}/?token=${serializeToken(
+            tokenInfo,
+          )}`,
+        );
+  }, [address, isAleo, navigate, tokenInfo, uniqueId]);
 
   const renderTxHistoryItem = useCallback(
     (item: AleoHistoryItem, index: number) => {
@@ -296,74 +268,86 @@ const TokenDetailScreen = () => {
     <PageWithHeader title={t("TokenDetail:title")}>
       <Flex direction={"column"} px={5} py={2.5}>
         <Flex align={"center"}>
-          <Image src={tokenInfo.logo} mr={2.5} w={6} h={6} borderRadius={12} />
+          <Image src={tokenInfo.icon} mr={2.5} w={6} h={6} borderRadius={12} />
           <Flex direction={"column"}>
             <Text fontSize={13} fontWeight={"bold"}>
               {tokenInfo.symbol}
             </Text>
-            <Flex>
-              <Text color={"#777E90"} fontSize={10} mr={2}>
-                {tokenInfo.programId}
-              </Text>
-              {tokenInfo.tokenId !== NATIVE_TOKEN_TOKEN_ID &&
-                tokenInfo.tokenId !== BETA_STAKING_ALEO_TOKEN_ID && (
-                  <MiddleEllipsisText
-                    text={tokenInfo.tokenId}
-                    width={150}
-                    style={{ color: "#777E90", fontSize: 10 }}
-                  />
-                )}
-            </Flex>
-          </Flex>
-        </Flex>
-        <Divider orientation="horizontal" h={"1px"} my={2.5} />
-        <Flex align={"center"} justify={"space-between"}>
-          <Flex align={"center"}>
-            <Flex flexDir={"column"} pt={2} fontSize={"smaller"}>
+            {isAleo ? (
               <Flex>
-                <Text>{t("Send:publicBalance")}:&nbsp;</Text>
-                {loadingBalance ? (
-                  <Spinner w={2} h={2} />
-                ) : (
-                  <TokenNum
-                    amount={balance?.publicBalance}
-                    decimals={tokenInfo.decimals}
-                    symbol={tokenInfo.symbol}
-                  />
-                )}
-              </Flex>
-              <Flex mt={2}>
-                <Text>{t("Send:privateRecord")}:&nbsp;</Text>
-                <Flex flexDir={"column"}>
-                  {loadingBalance ? (
-                    <Spinner w={2} h={2} />
-                  ) : (
-                    <TokenNum
-                      amount={balance?.privateBalance}
-                      decimals={tokenInfo.decimals}
-                      symbol={tokenInfo.symbol}
+                <Text color={"#777E90"} fontSize={10} mr={2}>
+                  {tokenInfo.programId}
+                </Text>
+                {tokenInfo.tokenId !== NATIVE_TOKEN_TOKEN_ID &&
+                  tokenInfo.tokenId !== BETA_STAKING_ALEO_TOKEN_ID && (
+                    <MiddleEllipsisText
+                      text={"tokenInfo.tokenId"}
+                      width={150}
+                      style={{ color: "#777E90", fontSize: 10 }}
                     />
                   )}
-                  {!!recordStr && !!tokenRecords[0] && (
-                    <Flex>
-                      (<Text>{recordStr}</Text>&nbsp;
+              </Flex>
+            ) : (
+              <Text color={"#777E90"} fontSize={10} mr={2}>
+                {chainConfig.chainName}
+              </Text>
+            )}
+          </Flex>
+        </Flex>
+        {/* aleo balance only */}
+        {isAleo ? (
+          <Box>
+            <Divider orientation="horizontal" h={"1px"} my={2.5} />
+            <Flex align={"center"} justify={"space-between"}>
+              <Flex align={"center"}>
+                <Flex flexDir={"column"} pt={2} fontSize={"smaller"}>
+                  <Flex>
+                    <Text>{t("Send:publicBalance")}:&nbsp;</Text>
+                    {loadingBalance ? (
+                      <Spinner w={2} h={2} />
+                    ) : (
                       <TokenNum
-                        amount={recordAmount}
+                        amount={balance?.publicBalance}
                         decimals={tokenInfo.decimals}
                         symbol={tokenInfo.symbol}
                       />
-                      )
+                    )}
+                  </Flex>
+                  <Flex mt={2}>
+                    <Text>{t("Send:privateRecord")}:&nbsp;</Text>
+                    <Flex flexDir={"column"}>
+                      {loadingBalance ? (
+                        <Spinner w={2} h={2} />
+                      ) : (
+                        <TokenNum
+                          amount={balance?.privateBalance}
+                          decimals={tokenInfo.decimals}
+                          symbol={tokenInfo.symbol}
+                        />
+                      )}
+                      {!!recordStr && !!tokenRecords[0] && (
+                        <Flex>
+                          (<Text>{recordStr}</Text>&nbsp;
+                          <TokenNum
+                            amount={recordAmount}
+                            decimals={tokenInfo.decimals}
+                            symbol={tokenInfo.symbol}
+                          />
+                          )
+                        </Flex>
+                      )}
                     </Flex>
-                  )}
+                  </Flex>
                 </Flex>
               </Flex>
+              {/* todo: cash value */}
+              {/* <Text color={"#777E90"} fontSize={10}> */}
+              {/*  $123,234 */}
+              {/* </Text> */}
             </Flex>
-          </Flex>
-          {/* todo: cash value */}
-          {/* <Text color={"#777E90"} fontSize={10}>
-            $123,234
-          </Text> */}
-        </Flex>
+          </Box>
+        ) : null}
+        {/* send and receive */}
         <Flex justify={"space-between"} flex={1} mt={2.5}>
           <Button flex={1} onClick={onReceive}>
             {t("Receive:title")}
@@ -380,6 +364,7 @@ const TokenDetailScreen = () => {
           </Button>
         </Flex>
       </Flex>
+      {/* Transaction Records */}
       <Divider orientation="horizontal" h={"1px"} />
       <Flex direction={"column"} px={5} py={2.5}>
         <Text fontWeight={"bold"}>{t("TokenDetail:tx_records")}</Text>
