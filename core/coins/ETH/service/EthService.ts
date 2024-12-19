@@ -5,9 +5,9 @@ import {
 import { CoinServiceBasic } from "core/coins/CoinServiceBasic";
 import { parseEthChainId } from "core/coins/ETH/utils";
 import {
+  type BalanceResp,
   type NativeBalanceRes,
   type TokenBalanceParams,
-  type TokenBalanceRes,
 } from "core/types/Balance";
 import {
   createEthRpcService,
@@ -738,7 +738,7 @@ export class EthService extends CoinServiceBasic {
     return true;
   }
 
-  async getTokenBalance(params: TokenBalanceParams): Promise<TokenBalanceRes> {
+  async getTokenBalance(params: TokenBalanceParams): Promise<BalanceResp> {
     const { address, token } = params;
     const erc20 = this.getContract(
       ContractStandard.ERC20,
@@ -747,9 +747,6 @@ export class EthService extends CoinServiceBasic {
     );
     const balance = await erc20.balanceOf(address);
     return {
-      ...token,
-      uniqueId: this.config.uniqueId,
-      ownerAddress: address,
       total: BigNumber.from(balance).toBigInt(),
     };
   }
