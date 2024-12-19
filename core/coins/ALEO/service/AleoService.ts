@@ -66,6 +66,7 @@ import { Transition } from "../types/AleoTransition";
 import { isNotEmpty } from "core/utils/is";
 import { AleoStorage } from "@/scripts/background/store/aleo/AleoStorage";
 import { CoinServiceBasic } from "core/coins/CoinServiceBasic";
+import { type BalanceResp, type TokenBalanceParams } from "core/types/Balance";
 
 const CREDITS_MAPPING_NAME = "account";
 
@@ -1517,6 +1518,40 @@ export class AleoService extends CoinServiceBasic {
       privateBalance,
       publicBalance,
       total: privateBalance + publicBalance,
+    };
+  }
+
+  private getContractAddress = (
+    programId: InnerProgramId | string,
+    tokenId: string,
+  ) => {
+    return `${programId}-${tokenId}`;
+  };
+
+  private parseContractAddress = (tokenId: string) => {
+    const [programId, tokenIdStr] = tokenId.split("-");
+    return { programId, tokenId: tokenIdStr };
+  };
+
+  async getTokenBalance(
+    params: TokenBalanceParams,
+  ): Promise<BalanceResp | undefined> {
+    const { address, token } = params;
+    const { programId, tokenId } = this.parseContractAddress(
+      token.contractAddress,
+    );
+    const [publicBalance, privateBalance] = await Promise.all([
+      this.getTokenPublicBalance(address, programId as InnerProgramId, tokenId),
+      this.getTokenPrivateBalance(
+        address,
+        programId as InnerProgramId,
+        tokenId,
+      ),
+    ]);
+    return {
+      total: publicBalance + privateBalance,
+      publicBalance,
+      privateBalance,
     };
   }
 

@@ -1,8 +1,8 @@
 import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
 import {
+  type BalanceResp,
   type NativeBalanceRes,
   type TokenBalanceParams,
-  type TokenBalanceRes,
 } from "core/types/Balance";
 import { type CoinType } from "core/types";
 import {
@@ -108,7 +108,7 @@ export abstract class CoinServiceBasic {
 
   async getTokenBalance(
     params: TokenBalanceParams,
-  ): Promise<TokenBalanceRes | undefined> {
+  ): Promise<BalanceResp | undefined> {
     console.error(
       "getTokenBalance not implemented for " + this.baseConfig.chainName,
     );

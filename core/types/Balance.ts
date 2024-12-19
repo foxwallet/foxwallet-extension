@@ -9,10 +9,10 @@ export type NativeBalanceRes = {
 
 export type TokenBalanceParams = {
   address: string;
-  token: TokenMetaV2;
+  token: Pick<TokenMetaV2, "contractAddress">;
 };
 
-export type TokenBalanceRes = TokenV2 & {
+export type BalanceResp = {
   total: bigint;
   publicBalance?: bigint;
   privateBalance?: bigint;
