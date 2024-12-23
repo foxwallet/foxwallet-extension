@@ -54,43 +54,6 @@ export const useBalance = (params: BalanceReq) => {
     refreshInterval,
   });
 
-  /*
-  useEffect(() => {
-    if (!coinService.validateAddress(address)) {
-      setBalance(undefined);
-      setLoading(false);
-      setError(new Error("Data error"));
-      return;
-    }
-
-    const fetchBalance = async () => {
-      try {
-        setLoading(true);
-
-        if (token) {
-          const res = await coinService.getTokenBalance({
-            address,
-            token,
-          });
-          setBalance(res ? res.total : undefined);
-        } else {
-          const balanceResult = await coinService.getBalance(address);
-          setBalance(balanceResult.total);
-        }
-      } catch (err) {
-        setError(
-          err instanceof Error ? err : new Error("Failed to fetch balance"),
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBalance();
-  }, [token, uniqueId, address, coinService]);
-  */
-  // console.log("      balance", address, isAddressValid, { ...balance });
-
   const res = useMemo(() => {
     if (!isAddressValid) {
       return {

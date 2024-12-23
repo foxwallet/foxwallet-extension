@@ -1,6 +1,7 @@
 import {
   IconAleo,
   IconChevronRight,
+  IconCopyBlack,
   IconEmptyTxPlaceholder,
   IconReceiveBlack,
   IconSendBlack,
@@ -16,6 +17,7 @@ import {
   Image,
   Spinner,
   Text,
+  useClipboard,
   VStack,
 } from "@chakra-ui/react";
 import {
@@ -48,6 +50,8 @@ import { useBalance } from "@/hooks/useBalance";
 import { AssetType, type TokenV2 } from "core/types/Token";
 import { useSafeParams } from "@/hooks/useSafeParams";
 import { useSafeTokenInfo } from "@/hooks/useSafeTokenInfo";
+import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
+import { ethers } from "ethers";
 
 interface TokenTxHistoryItemProps {
   item: AleoHistoryItem;
@@ -145,11 +149,21 @@ const TokenDetailScreen = () => {
   console.log("      tokenInfo");
   console.log({ ...tokenInfo });
 
-  const { chainConfig } = useCoinService(uniqueId);
+  const { chainConfig, nativeCurrency } = useCoinService(uniqueId);
 
   const isAleo = useMemo(() => {
     return uniqueId === InnerChainUniqueId.ALEO_MAINNET;
   }, [uniqueId]);
+
+  const { symbol, decimals } = useMemo(() => {
+    return {
+      symbol: tokenInfo?.symbol ?? nativeCurrency.symbol,
+      decimals: tokenInfo?.decimals ?? nativeCurrency.decimals,
+    };
+  }, [nativeCurrency, tokenInfo]);
+
+  const { onCopy } = useClipboard(address);
+  const { showToast } = useCopyToast();
 
   const { balance, loadingBalance } = useBalance({
     uniqueId,
@@ -264,6 +278,19 @@ const TokenDetailScreen = () => {
     [uniqueId, tokenInfo],
   );
 
+  const onCopyAddress = useCallback(() => {
+    onCopy();
+    showToast();
+  }, [onCopy, showToast]);
+
+  const balanceStr = useMemo(() => {
+    if (balance) {
+      const num = ethers.utils.formatUnits(balance.total, decimals);
+      return `${num} ${symbol}`;
+    }
+    return "";
+  }, [balance, decimals, symbol]);
+
   return (
     <PageWithHeader title={t("TokenDetail:title")}>
       <Flex direction={"column"} px={5} py={2.5}>
@@ -294,10 +321,24 @@ const TokenDetailScreen = () => {
             )}
           </Flex>
         </Flex>
-        {/* aleo balance only */}
+        <Divider orientation="horizontal" h={"1px"} my={2.5} />
+        {/* my address */}
+        <Flex
+          alignItems={"center"}
+          fontSize={"smaller"}
+          cursor={"pointer"}
+          onClick={onCopyAddress}
+          h={"25px"}
+        >
+          <Flex flexDirection={"row"}>
+            <Text noOfLines={1}>{t("TokenDetail:myAddress")}:&nbsp;</Text>
+            <MiddleEllipsisText text={address} width={200} />
+          </Flex>
+          <IconCopyBlack ml={1} w={3} h={3} />
+        </Flex>
+        {/*  balance */}
         {isAleo ? (
           <Box>
-            <Divider orientation="horizontal" h={"1px"} my={2.5} />
             <Flex align={"center"} justify={"space-between"}>
               <Flex align={"center"}>
                 <Flex flexDir={"column"} pt={2} fontSize={"smaller"}>
@@ -346,7 +387,12 @@ const TokenDetailScreen = () => {
               {/* </Text> */}
             </Flex>
           </Box>
-        ) : null}
+        ) : (
+          <Flex fontSize={"smaller"}>
+            <Text>{t("TokenDetail:balance")}:&nbsp;</Text>
+            <Text>{balanceStr}</Text>
+          </Flex>
+        )}
         {/* send and receive */}
         <Flex justify={"space-between"} flex={1} mt={2.5}>
           <Button flex={1} onClick={onReceive}>

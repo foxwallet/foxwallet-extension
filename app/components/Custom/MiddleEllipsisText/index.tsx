@@ -127,7 +127,11 @@ function MiddleEllipsisText(props: TruncateProps) {
   return (
     <div
       ref={containerRef}
-      style={{ width: width || "100%", whiteSpace: "nowrap", ...style }}
+      style={{
+        width: width || "100%",
+        whiteSpace: "nowrap",
+        ...style,
+      }}
     >
       {truncated ? calculatedText : calculatedText}
     </div>

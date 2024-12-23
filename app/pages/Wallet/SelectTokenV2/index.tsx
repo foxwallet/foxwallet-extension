@@ -105,7 +105,7 @@ const SelectTokenScreenV2 = () => {
 
   return (
     <PageWithHeader title={t("Networks:selectToken")}>
-      <InputGroup flexDir={"column"} px={5} position={"relative"}>
+      <InputGroup flexDir={"column"} px={5} position={"relative"} mb={3}>
         <InputLeftElement position={"absolute"} top={"calc(50% - 13px)"} ml={8}>
           <IconSearch w={"26px"} h={"26px"} />
         </InputLeftElement>
@@ -119,7 +119,7 @@ const SelectTokenScreenV2 = () => {
           py={2}
         />
       </InputGroup>
-      <Content>{renderTokens}</Content>
+      {renderTokens}
     </PageWithHeader>
   );
 };
