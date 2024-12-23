@@ -42,6 +42,7 @@
     "@rematch/persist": "^2.1.2",
     "@rematch/select": "^3.1.2",
     "@types/node": "^20.5.9",
+    "@types/valid-url": "^1.0.7",
     "@zondax/izari-tools": "^0.4.0",
     "@zxcvbn-ts/core": "^3.0.3",
     "@zxcvbn-ts/language-common": "^3.0.3",
@@ -90,6 +91,7 @@
     "snakecase-keys": "^8.0.1",
     "swr": "^2.2.2",
     "use-debounce": "^9.0.4",
+    "valid-url": "^1.0.9",
     "webextension-polyfill": "^0.10.0"
   },
   "devDependencies": {
