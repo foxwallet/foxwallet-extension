@@ -8,7 +8,7 @@ export const useIsSendingAleoTx = (uniqueId: ChainUniqueId) => {
   const key = `/sending_tx/${uniqueId}`;
   const fetchStatus = useCallback(async () => {
     return await popupServerClient.isSendingAleoTransaction();
-  }, [popupServerClient, uniqueId]);
+  }, [popupServerClient]);
 
   const {
     data: sendingAleoTx,

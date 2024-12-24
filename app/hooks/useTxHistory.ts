@@ -20,6 +20,8 @@ import {
   BETA_STAKING_PROGRAM_ID,
   NATIVE_TOKEN_TOKEN_ID,
 } from "core/coins/ALEO/constants";
+import { type TokenV2 } from "core/types/Token";
+import { type AleoService } from "core/coins/ALEO/service/AleoService";
 
 const NotificationExpiredTime = 1000 * 60 * 60 * 5;
 
@@ -94,7 +96,7 @@ export const useTxsNotification = (
   }, [newSettledTxs, showToast, coinService]);
 };
 
-export const useTxHistory = ({
+export const useAleoTxHistory = ({
   uniqueId,
   address,
   token,
@@ -102,14 +104,14 @@ export const useTxHistory = ({
 }: {
   uniqueId: ChainUniqueId;
   address: string;
-  token: Token;
+  token: TokenV2;
   refreshInterval?: number;
 }) => {
   const { coinService } = useCoinService(uniqueId);
 
   const localTxKey = `/localTxs/${uniqueId}/${address}/${token.tokenId}`;
   const getLocalTxs = useCallback(async () => {
-    const res = await coinService.getLocalTxHistory(
+    const res = await (coinService as AleoService).getLocalTxHistory(
       address,
       token.tokenId !== NATIVE_TOKEN_TOKEN_ID ? token.programId : undefined,
       token.tokenId,
@@ -124,7 +126,7 @@ export const useTxHistory = ({
 
   const privateTxsKey = `/privateTxs/${uniqueId}/${address}/${token.tokenId}`;
   const getPrivateTxs = useCallback(async () => {
-    const res = await coinService.getPrivateTxHistory(
+    const res = await (coinService as AleoService).getPrivateTxHistory(
       address,
       token.tokenId !== NATIVE_TOKEN_TOKEN_ID ? token.programId : undefined,
       token.tokenId,
@@ -144,18 +146,19 @@ export const useTxHistory = ({
       token.programId === ALPHA_TOKEN_PROGRAM_ID ||
       token.programId === BETA_STAKING_PROGRAM_ID
     ) {
-      return await coinService.getTokenOnChainHistory({
+      return await (coinService as AleoService).getTokenOnChainHistory({
         address,
         pagination,
         token,
       });
     }
-    const res = await coinService.getOnChainHistory({
+    const res = await (coinService as AleoService).getOnChainHistory({
       address,
       pagination,
     });
     return res;
-  }, [coinService, address, pagination]);
+  }, [token, coinService, address, pagination]);
+
   const [onChainHistory, setOnChainHistory] = useState<
     AleoOnChainHistoryItem[]
   >([]);
@@ -240,7 +243,7 @@ export const useTxHistory = ({
       }
       return prev;
     });
-  }, [localTxs, onChainHistory]);
+  }, [localTxs, onChainHistory, privateTxs]);
 
   return {
     loading:

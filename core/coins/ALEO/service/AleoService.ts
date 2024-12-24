@@ -1789,8 +1789,11 @@ export class AleoService extends CoinServiceBasic {
   }: {
     address: string;
     pagination: Pagination;
-    token: Token;
+    token: TokenV2;
   }): Promise<AleoOnChainHistoryItem[]> {
+    if (!token?.programId) {
+      return [];
+    }
     const syncBlocksResult = await this.debounceSyncBlocks(address);
     const account = await this.aleoStorage.getAccountInfo(address);
     let privateHistory: AleoOnChainHistoryItem[] = [];

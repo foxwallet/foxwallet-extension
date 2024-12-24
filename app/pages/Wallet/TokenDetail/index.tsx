@@ -173,7 +173,7 @@ const TokenDetailScreen = () => {
   });
 
   const { history, getMore, loading, loadingLocalTxs, loadingOnChainHistory } =
-    useTxHistory({
+    useAleoTxHistory({
       uniqueId,
       address,
       token: tokenInfo,
