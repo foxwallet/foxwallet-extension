@@ -67,6 +67,8 @@ import { showChangeNetworkDrawer } from "@/components/Wallet/ChangeNetworkDrawer
 import { useBalance } from "@/hooks/useBalance";
 import { ActionPanel } from "@/components/Wallet/ActionPanel";
 import { HeaderMiddleView } from "@/components/Wallet/HeaderMiddleView";
+import { showCopyAddressDrawer } from "@/components/Wallet/CopyAddressDrawer";
+import type { OneMatchAccount } from "@/scripts/background/store/vault/types/keyring";
 
 const rotateAnimation = keyframes`
   from { transform: rotate(0deg) }
@@ -89,8 +91,6 @@ export const AccountInfoHeader = () => {
     return chainMode.mode === ChainAssembleMode.ALL;
   }, [chainMode.mode]);
 
-  // debugger;
-
   // TODO: 根据 chainMode 获取  asset
   const selectedAccount = useMemo(() => {
     if (chainMode.mode === ChainAssembleMode.ALL) {
@@ -107,9 +107,6 @@ export const AccountInfoHeader = () => {
   const showBalance = usePopupSelector((state) => state.accountV2.showBalance);
   const dispatch = usePopupDispatch();
   const { showToast } = useCopyToast();
-  // todo
-  // const { onCopy } = useClipboard(selectedAccount.account.address);
-  const { onCopy } = useClipboard("");
 
   const { sendingAleoTx } = useIsSendingAleoTx(uniqueId);
   const { lock } = useAuth();
@@ -124,46 +121,34 @@ export const AccountInfoHeader = () => {
     });
   }, [navigate]);
 
-  const onCopyAddress = useCallback(() => {
-    onCopy();
-    showToast();
-  }, [onCopy, showToast]);
-
   const copyAddress = useCallback(async () => {
-    try {
-      if (availableAccounts.length === 0) {
-        throw new Error("Can't match account " + chainMode.mode);
+    // debugger;
+    if (isAllMode) {
+      await showCopyAddressDrawer();
+    } else {
+      try {
+        if (availableAccounts.length === 0) {
+          throw new Error("Can't match account " + chainMode.mode);
+        }
+        if (availableChains.length === 0) {
+          throw new Error(
+            "Can't match uniqueId " +
+              chainMode.mode +
+              (chainMode.mode === ChainAssembleMode.SINGLE &&
+                chainMode.uniqueId),
+          );
+        }
+        if (availableAccounts.length === 1 && availableChains.length === 1) {
+          await navigator.clipboard.writeText(
+            availableAccounts[0].account.address,
+          );
+          showToast();
+        }
+      } catch (err) {
+        console.log("copyAddress err ", err);
       }
-      if (availableChains.length === 0) {
-        throw new Error(
-          "Can't match uniqueId " +
-            chainMode.mode +
-            (chainMode.mode === ChainAssembleMode.SINGLE && chainMode.uniqueId),
-        );
-      }
-      if (availableAccounts.length === 1 && availableChains.length === 1) {
-        onCopy();
-        showToast();
-      }
-      // const account = await showCopyAddressDrawer({
-      //   accounts: availableAccounts,
-      //   chainConfigs: availableChains,
-      // });
-      // Clipboard.setString(account.account.account.address);
-      // global.$toast({
-      //   content: t("Contact:copy_success"),
-      //   icon: "success",
-      // });
-    } catch (err) {
-      console.log("copyAddress err ", err);
     }
-  }, [
-    availableAccounts.length,
-    availableChains.length,
-    chainMode,
-    onCopy,
-    showToast,
-  ]);
+  }, [availableAccounts, availableChains, chainMode, isAllMode, showToast]);
 
   const bgGradient = useColorModeValue(
     "linear(to-br, #ECFFF2, #FFFFFF, #ECFFF2)",
@@ -171,7 +156,7 @@ export const AccountInfoHeader = () => {
   );
   const { borderColor, selectedBorderColor } = useThemeStyle();
 
-  const onChangeNetwork = useCallback(async () => {
+  const changeNetwork = useCallback(async () => {
     await showChangeNetworkDrawer({
       title: groupAccount.wallet.walletName,
       chainMode,
@@ -219,7 +204,7 @@ export const AccountInfoHeader = () => {
             borderRadius={13}
             borderWidth={"1px"}
             cursor={"pointer"}
-            onClick={onChangeNetwork}
+            onClick={changeNetwork}
           >
             {isAllMode ? (
               <IconLogo w={5} h={5} />
@@ -250,14 +235,13 @@ export const AccountInfoHeader = () => {
           >
             <IconLock w={5} h={5} />
           </Flex>
+          {/* account */}
           <HeaderMiddleView
             onClick={onChangeWallet}
             title={groupAccount.group.groupName}
             showArrow={false}
             showCopy={isAllMode}
-            onCopy={() => {
-              console.log("    343434  ");
-            }}
+            onCopy={copyAddress}
           />
         </Flex>
         {/* copy address */}
@@ -268,7 +252,7 @@ export const AccountInfoHeader = () => {
             align={"center"}
             justifyContent={"center"}
           >
-            <Hover onClick={onCopyAddress} bg={"#f9f9f9"} borderRadius={"5px"}>
+            <Hover onClick={copyAddress} bg={"#f9f9f9"} borderRadius={"5px"}>
               <Flex dir={"row"} align={"center"} justify={"center"} marginX={1}>
                 <Box maxW={128} noOfLines={1} fontSize={11} color={"#777E90"}>
                   <MiddleEllipsisText text={copyAddressHint} width={128} />
