@@ -31,7 +31,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import browser from "webextension-polyfill";
-import { useTxHistory } from "@/hooks/useTxHistory";
+import { useAleoTxHistory, useTxHistory } from "@/hooks/useTxHistory";
 import { useIsSendingAleoTx } from "@/hooks/useSendingTxStatus";
 import { useRecords } from "@/hooks/useRecord";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
@@ -52,14 +52,15 @@ import { useSafeParams } from "@/hooks/useSafeParams";
 import { useSafeTokenInfo } from "@/hooks/useSafeTokenInfo";
 import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
 import { ethers } from "ethers";
+import { type TransactionHistoryItem } from "core/types/TransactionHistory";
 
-interface TokenTxHistoryItemProps {
+interface AleoTokenTxHistoryItemProps {
   item: AleoHistoryItem;
   uniqueId: InnerChainUniqueId;
   token: TokenV2;
 }
 
-const TokenTxHistoryItem: React.FC<TokenTxHistoryItemProps> = ({
+const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
   uniqueId,
   item,
   token,
@@ -79,11 +80,11 @@ const TokenTxHistoryItem: React.FC<TokenTxHistoryItemProps> = ({
     }
     const url = coinService.getTxDetailUrl(item.txId);
     void browser.tabs.create({ url });
-  }, [item.txId]);
+  }, [coinService, item.txId]);
 
   const txLabel = useMemo(
     () => `${item.functionName.split("_").join(" ")}`,
-    [],
+    [item.functionName],
   );
   const amount = useMemo(() => BigInt(item.amount || 0n), [item.amount]);
 
@@ -139,11 +140,103 @@ const TokenTxHistoryItem: React.FC<TokenTxHistoryItemProps> = ({
   );
 };
 
+interface TokenTxHistoryItemProps {
+  item: TransactionHistoryItem;
+  uniqueId: InnerChainUniqueId;
+  token: TokenV2;
+  address: string;
+}
+
+const TokenTxHistoryItem: React.FC<TokenTxHistoryItemProps> = ({
+  uniqueId,
+  item,
+  token,
+  address,
+}) => {
+  const { t } = useTranslation();
+  const { coinService } = useCoinService(uniqueId);
+
+  const timeOfItem = dayjs(item.timestamp);
+  const isCurrentYear = dayjs().year() === timeOfItem.year();
+  const timeStr = timeOfItem.format(
+    isCurrentYear ? "MM-DD LT" : "YYYY-MM-DD LT",
+  );
+
+  const onClick = useCallback(() => {
+    if (!item.id) {
+      return;
+    }
+    const url = coinService.getTxDetailUrl(item.id);
+    void browser.tabs.create({ url });
+  }, [coinService, item.id]);
+
+  const txLabel = useMemo(() => {
+    if (item.label) {
+      return t(`TokenDetail:${item.label}`);
+    } else {
+      if (item.from === address) {
+        return t("TokenDetail:send");
+      } else if (item.to === address) {
+        return t("TokenDetail:receive");
+      }
+    }
+    return "";
+  }, [address, item, t]);
+  const amount = useMemo(() => item.value || 0n, [item]);
+
+  const { borderColor } = useThemeStyle();
+
+  return (
+    <Flex
+      align={"center"}
+      justify={"space-between"}
+      borderColor={borderColor}
+      borderBottomWidth={"1px"}
+      py={2.5}
+      mt={2.5}
+      as={"button"}
+      onClick={onClick}
+    >
+      <Flex align={"center"}>
+        <Box bg={"#E6E8EC"} p={1} borderRadius={"50px"}>
+          {item.to === address ? <IconReceiveBlack /> : <IconSendBlack />}
+        </Box>
+        <Flex direction={"column"} ml={2.5} alignItems={"flex-start"}>
+          <Flex align={"center"}>
+            <Flex fontWeight={"bold"} fontSize={12}>
+              <Text maxWidth={150} textOverflow={"ellipsis"} textAlign={"left"}>
+                {txLabel}
+              </Text>
+            </Flex>
+            {!!item.value && (
+              <Box fontWeight={"bold"} fontSize={12} ml={1}>
+                <TokenNum
+                  amount={amount}
+                  decimals={token.decimals}
+                  symbol={token.symbol}
+                />
+              </Box>
+            )}
+          </Flex>
+          <Flex color={"gray.500"} fontSize={10} align={"center"}>
+            <Text mr={2}>{item.status}</Text>
+            <Text>{timeStr}</Text>
+          </Flex>
+        </Flex>
+      </Flex>
+      <Flex alignItems={"center"}>
+        <Text fontSize={10}>{t("TokenDetail:jump_explorer")}</Text>
+        <IconChevronRight />
+      </Flex>
+    </Flex>
+  );
+};
+
 const TokenDetailScreen = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { uniqueId, address } = useSafeParams();
-  console.log("      params ", uniqueId, address);
+  // console.log("      params ", uniqueId, address);
 
   const { tokenInfo } = useSafeTokenInfo(uniqueId, address);
   console.log("      tokenInfo");
@@ -172,15 +265,50 @@ const TokenDetailScreen = () => {
     token: tokenInfo,
   });
 
-  const { history, getMore, loading, loadingLocalTxs, loadingOnChainHistory } =
-    useAleoTxHistory({
-      uniqueId,
-      address,
-      token: tokenInfo,
-      refreshInterval: 4000,
-    });
+  const {
+    history: aleoHistory,
+    getMore: aleoGetMore,
+    loading: aleoLoading,
+    loadingLocalTxs,
+    loadingOnChainHistory,
+  } = useAleoTxHistory({
+    uniqueId,
+    address,
+    token: tokenInfo,
+    refreshInterval: 4000,
+  });
   const listRef = useRef<HTMLDivElement | null>(null);
   const reachBottom = useBottomReach(listRef);
+
+  const {
+    history: evmHistory,
+    getMore: evmGetMore,
+    loading: evmLoading,
+    error: evmError,
+  } = useTxHistory({
+    uniqueId,
+    address,
+    token: tokenInfo,
+    refreshInterval: 4000,
+  });
+
+  const { history, loading, getMore } = useMemo(() => {
+    return {
+      history: isAleo ? aleoHistory : evmHistory,
+      getMore: isAleo ? aleoGetMore : evmGetMore,
+      loading: isAleo ? aleoLoading : evmLoading,
+    };
+  }, [
+    aleoGetMore,
+    aleoHistory,
+    aleoLoading,
+    evmGetMore,
+    evmHistory,
+    evmLoading,
+    isAleo,
+  ]);
+  console.log("      history");
+  console.log({ ...history });
 
   useEffect(() => {
     if (reachBottom) {
@@ -264,10 +392,10 @@ const TokenDetailScreen = () => {
         );
   }, [address, isAleo, navigate, tokenInfo, uniqueId]);
 
-  const renderTxHistoryItem = useCallback(
+  const renderAleoTxHistoryItem = useCallback(
     (item: AleoHistoryItem, index: number) => {
       return (
-        <TokenTxHistoryItem
+        <AleoTxHistoryItem
           key={`${item.txId}${index}`}
           item={item}
           uniqueId={uniqueId}
@@ -277,6 +405,28 @@ const TokenDetailScreen = () => {
     },
     [uniqueId, tokenInfo],
   );
+
+  const renderTxHistoryItem = useCallback(
+    (item: TransactionHistoryItem, index: number) => {
+      return (
+        <TokenTxHistoryItem
+          key={`${item.id}${index}`}
+          item={item}
+          uniqueId={uniqueId}
+          token={tokenInfo}
+          address={address}
+        />
+      );
+    },
+    [address, tokenInfo, uniqueId],
+  );
+
+  const renderTxHistory = useMemo(() => {
+    if (isAleo) {
+      (history as AleoHistoryItem[])?.map(renderAleoTxHistoryItem);
+    }
+    return (history as TransactionHistoryItem[])?.map(renderTxHistoryItem);
+  }, [history, isAleo, renderTxHistoryItem, renderAleoTxHistoryItem]);
 
   const onCopyAddress = useCallback(() => {
     onCopy();
@@ -343,7 +493,7 @@ const TokenDetailScreen = () => {
               <Flex align={"center"}>
                 <Flex flexDir={"column"} pt={2} fontSize={"smaller"}>
                   <Flex>
-                    <Text>{t("Send:publicBalance")}:&nbsp;</Text>
+                    <Text>{t("TokenDetail:public")}:&nbsp;</Text>
                     {loadingBalance ? (
                       <Spinner w={2} h={2} />
                     ) : (
@@ -355,13 +505,27 @@ const TokenDetailScreen = () => {
                     )}
                   </Flex>
                   <Flex mt={2}>
-                    <Text>{t("Send:privateRecord")}:&nbsp;</Text>
+                    <Text>{t("TokenDetail:private")}:&nbsp;</Text>
                     <Flex flexDir={"column"}>
                       {loadingBalance ? (
                         <Spinner w={2} h={2} />
                       ) : (
                         <TokenNum
                           amount={balance?.privateBalance}
+                          decimals={tokenInfo.decimals}
+                          symbol={tokenInfo.symbol}
+                        />
+                      )}
+                    </Flex>
+                  </Flex>
+                  <Flex mt={2}>
+                    <Text>{t("TokenDetail:total")}:&nbsp;</Text>
+                    <Flex flexDir={"column"}>
+                      {loadingBalance ? (
+                        <Spinner w={2} h={2} />
+                      ) : (
+                        <TokenNum
+                          amount={balance?.total}
                           decimals={tokenInfo.decimals}
                           symbol={tokenInfo.symbol}
                         />
@@ -414,15 +578,14 @@ const TokenDetailScreen = () => {
       <Divider orientation="horizontal" h={"1px"} />
       <Flex direction={"column"} px={5} py={2.5}>
         <Text fontWeight={"bold"}>{t("TokenDetail:tx_records")}</Text>
-        {loading && history.length === 0 ? (
+        {loading ? (
           <Spinner w={6} h={6} alignSelf={"center"} mt={10} />
         ) : history.length > 0 ? (
           <Flex ref={listRef} direction={"column"} maxH={310} overflowY="auto">
             {loadingLocalTxs && (
               <Spinner w={6} h={6} alignSelf={"center"} mt={10} />
             )}
-            {history?.map(renderTxHistoryItem)}
-
+            {renderTxHistory}
             {loadingOnChainHistory && (
               <Flex mt={6} mb={4} alignSelf={"center"}>
                 <Spinner w={10} h={10} />

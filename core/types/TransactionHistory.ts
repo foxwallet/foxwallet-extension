@@ -74,11 +74,13 @@ export type TransactionHistoryItem = {
   inMessageId?: string;
 };
 
+export type ExtraTxHistoryPaginationParam = TxHistoryPaginationParam & {
+  endReach: boolean;
+  totalPage?: number;
+  totalCount?: number;
+};
+
 export type TransactionHistoryResp = {
   txs: TransactionHistoryItem[];
-  pagination: TxHistoryPaginationParam & {
-    endReach: boolean;
-    totalPage?: number;
-    totalCount?: number;
-  };
+  pagination: ExtraTxHistoryPaginationParam;
 };

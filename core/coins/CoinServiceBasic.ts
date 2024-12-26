@@ -27,6 +27,8 @@ import {
   type InteractiveTokenParams,
 } from "core/types/TokenTransaction";
 import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
+import { ExplorerLanguages } from "core/types/ExplorerLanguages";
+import { simpleConcatUrl } from "@/common/utils/url";
 
 export abstract class CoinServiceBasic {
   baseConfig: ChainBaseConfig;
@@ -182,5 +184,16 @@ export abstract class CoinServiceBasic {
 
   gasUnit(): string {
     return "";
+  }
+
+  getTxDetailUrl(txId: string, lang?: ExplorerLanguages): string | undefined {
+    if (!this.baseConfig.explorerUrls || !this.baseConfig.explorerPaths?.tx) {
+      return undefined;
+    }
+    const baseUrl =
+      this.baseConfig.explorerUrls[lang ?? ExplorerLanguages.EN] ??
+      this.baseConfig.explorerUrls[ExplorerLanguages.EN];
+    const path = this.baseConfig.explorerPaths.tx.replace("{txid}", txId);
+    return simpleConcatUrl(baseUrl, path);
   }
 }
