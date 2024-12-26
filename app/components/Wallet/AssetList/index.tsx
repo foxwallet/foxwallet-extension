@@ -32,7 +32,7 @@ export const AssetList = () => {
     >
       {groupAssets.map((token) => (
         <TokenItemWithBalance
-          key={`${token.contractAddress}-${token.symbol}-${token.type}`}
+          key={`${token.contractAddress}-${token.symbol}-${token.type}-${token.uniqueId}`}
           uniqueId={token.uniqueId}
           address={token.ownerAddress}
           token={token}
