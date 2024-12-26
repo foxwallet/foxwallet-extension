@@ -1,35 +1,26 @@
 import { Flex, Image, TabPanel, Text } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
-import { useCallback, useMemo } from "react";
-import { useAssetList } from "@/hooks/useAssetList";
-import { type Token } from "core/coins/ALEO/types/Token";
+import { useCallback } from "react";
 import { TokenItemWithBalance } from "../TokenItem";
 import { serializeToken } from "@/common/utils/string";
-import { useGroupAccount } from "@/hooks/useGroupAccount";
-import { useChainMode } from "@/hooks/useChainMode";
 import { type TokenV2 } from "core/types/Token";
+import { useGroupAccountAssets } from "@/hooks/useGroupAccountAssets";
 
 export const AssetList = () => {
   const navigate = useNavigate();
-  const { groupAccount, getMatchAccountsWithUniqueId } = useGroupAccount();
-  const { availableChainUniqueIds } = useChainMode();
-  const uniqueId = availableChainUniqueIds[0];
-  const selectedAccount = useMemo(() => {
-    return getMatchAccountsWithUniqueId(uniqueId)[0];
-  }, [uniqueId, getMatchAccountsWithUniqueId]);
 
-  const { assets } = useAssetList(uniqueId, selectedAccount.account.address);
+  const { assets: groupAssets } = useGroupAccountAssets();
+  // console.log("      group assets", { ...groupAssets });
 
   const onTokenDetail = useCallback(
     (token: TokenV2) => {
-      // need to be modified when adapt for multi-chain
       navigate(
-        `/token_detail/${uniqueId}/${
-          selectedAccount.account.address
+        `/token_detail/${token.uniqueId}/${
+          token.ownerAddress
         }?token=${serializeToken(token)}`,
       );
     },
-    [navigate, uniqueId, selectedAccount],
+    [navigate],
   );
 
   return (
@@ -39,11 +30,11 @@ export const AssetList = () => {
       overflowY={"auto"}
       marginBottom={"60px"}
     >
-      {assets.map((token) => (
+      {groupAssets.map((token) => (
         <TokenItemWithBalance
-          key={token.tokenId}
-          uniqueId={uniqueId}
-          address={selectedAccount.account.address}
+          key={`${token.contractAddress}-${token.symbol}-${token.type}`}
+          uniqueId={token.uniqueId}
+          address={token.ownerAddress}
           token={token}
           onClick={onTokenDetail}
           hover

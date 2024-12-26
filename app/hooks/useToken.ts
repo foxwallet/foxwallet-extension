@@ -5,6 +5,9 @@ import useSWR from "swr";
 import { NATIVE_TOKEN_TOKEN_ID } from "core/coins/ALEO/constants";
 import { ALEO_NATIVE_TOKEN } from "core/coins/ALEO/config/chains";
 import { type InnerProgramId } from "core/coins/ALEO/types/ProgramId";
+import { coinServiceEntry } from "core/coins/CoinServiceEntry";
+
+export type AssetIdentifier = { uniqueId: ChainUniqueId; address: string };
 
 export const useTokens = (uniqueId: ChainUniqueId, keyword?: string) => {
   const { coinService } = useCoinService(uniqueId);
@@ -47,8 +50,9 @@ export const useInteractiveTokens = (
 
   const key = `/interactive_token/${uniqueId}`;
   const fetchTokens = useCallback(async () => {
-    return await coinService.getUserInteractiveTokens({ address });
-  }, [coinService, address]);
+    const tokens = await coinService.getUserInteractiveTokens({ address });
+    return { address, uniqueId, tokens };
+  }, [coinService, address, uniqueId]);
 
   const {
     data: interactiveTokens,
@@ -74,6 +78,62 @@ export const useInteractiveTokens = (
     error,
     getUserInteractiveTokens,
     loadingInteractiveTokens,
+  ]);
+
+  return res;
+};
+
+export const useGroupInteractiveTokens = (
+  data: AssetIdentifier[],
+  autoRequest: boolean = true,
+) => {
+  const fetchTokens = useCallback(async () => {
+    const promises = data.map(async (item) => {
+      const { uniqueId, address } = item;
+      const coinService = coinServiceEntry.getInstance(uniqueId);
+      const res = await coinService.getUserInteractiveTokens({ address });
+      return { address, uniqueId, tokens: res };
+    });
+    const results = await Promise.allSettled(promises);
+    const validResults = results.filter((r) => r.status === "fulfilled");
+    // console.log("      validResults", validResults);
+
+    return validResults;
+  }, [data]);
+
+  const key = useMemo(() => {
+    const sortedData = [...data].sort(
+      (a, b) =>
+        a.uniqueId.localeCompare(b.uniqueId) ||
+        a.address.localeCompare(b.address),
+    );
+    return `/group_interactive_tokens/${JSON.stringify(sortedData)}`;
+  }, [data]);
+
+  const {
+    data: groupInteractiveTokens,
+    error,
+    mutate: getGroupInteractiveTokens,
+    isLoading: loadingGroupInteractiveTokens,
+  } = useSWR(key, fetchTokens, {
+    revalidateIfStale: autoRequest,
+    revalidateOnFocus: autoRequest,
+    revalidateOnMount: autoRequest,
+    revalidateOnReconnect: autoRequest,
+  });
+
+  const res = useMemo(() => {
+    return {
+      groupInteractiveTokens,
+      error,
+      getGroupInteractiveTokens,
+      loadingGroupInteractiveTokens,
+    };
+  }, [
+    groupInteractiveTokens,
+    error,
+    getGroupInteractiveTokens,
+    loadingGroupInteractiveTokens,
   ]);
 
   return res;

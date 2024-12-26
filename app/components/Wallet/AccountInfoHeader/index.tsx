@@ -3,30 +3,22 @@ import {
   IconCopy,
   IconEyeClose,
   IconEyeOn,
-  IconFaucet,
-  IconJoinSplit,
   IconLoading,
   IconLock,
   IconLogo,
-  IconReceive,
-  IconSend,
 } from "@/components/Custom/Icon";
 import {
   Box,
   Flex,
-  type FlexProps,
   Image,
   keyframes,
-  Spinner,
   Text,
-  useClipboard,
   useColorModeValue,
 } from "@chakra-ui/react";
 import { TokenNum } from "../TokenNum";
 import { useCoinService } from "@/hooks/useCoinService";
-import { useAleoBalance } from "@/hooks/useAleoBalance";
 import type React from "react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
@@ -39,36 +31,16 @@ import { useIsSendingAleoTx } from "@/hooks/useSendingTxStatus";
 import Hover from "@/components/Custom/Hover";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
 import { useAuth } from "@/hooks/useAuth";
-import Browser from "webextension-polyfill";
-import {
-  SelectJoinSplitOption,
-  showSelectJoinSplitDialog,
-} from "@/components/Send/SelectJoinSplit";
-import { useFaucetStatus } from "@/hooks/useFaucetStatus";
-import { FaucetStatus } from "core/coins/ALEO/types/Faucet";
-import { showFaucetClaimedDialog } from "../FaucetClaimedDialog";
-import { getCurrLanguage, SupportLanguages } from "@/locales/i18";
-import { ExplorerLanguages } from "core/types/ExplorerLanguages";
-import { chainUniqueIdToCoinType } from "core/helper/CoinType";
-import { showSignMessageDialog } from "../SignMessageDrawer";
-import { useClient } from "@/hooks/useClient";
-import { showErrorToast } from "@/components/Custom/ErrorToast";
-import { stringToHex } from "@/common/utils/hex";
-import { useTxsNotification } from "@/hooks/useTxHistory";
-import { NATIVE_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { useChainMode } from "@/hooks/useChainMode";
 import {
   ChainAssembleMode,
   type ChainDisplayMode,
-  InnerChainUniqueId,
 } from "core/types/ChainUniqueId";
 import { showChangeNetworkDrawer } from "@/components/Wallet/ChangeNetworkDrawer";
-import { useBalance } from "@/hooks/useBalance";
 import { ActionPanel } from "@/components/Wallet/ActionPanel";
 import { HeaderMiddleView } from "@/components/Wallet/HeaderMiddleView";
 import { showCopyAddressDrawer } from "@/components/Wallet/CopyAddressDrawer";
-import type { OneMatchAccount } from "@/scripts/background/store/vault/types/keyring";
 
 const rotateAnimation = keyframes`
   from { transform: rotate(0deg) }
@@ -84,21 +56,12 @@ export const AccountInfoHeader = () => {
     availableChainUniqueIds,
     availableChains,
     availableAccounts,
-    getSelectedAccountWithChain,
   } = useChainMode();
 
   const isAllMode = useMemo(() => {
     return chainMode.mode === ChainAssembleMode.ALL;
   }, [chainMode.mode]);
 
-  // TODO: 根据 chainMode 获取  asset
-  const selectedAccount = useMemo(() => {
-    if (chainMode.mode === ChainAssembleMode.ALL) {
-      return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_MAINNET)[0];
-    } else {
-      return getMatchAccountsWithUniqueId(chainMode.uniqueId)[0];
-    }
-  }, [chainMode, getMatchAccountsWithUniqueId]);
   const uniqueId = availableChainUniqueIds[0];
   const { nativeCurrency, chainConfig, coinService } = useCoinService(uniqueId);
 
@@ -107,6 +70,8 @@ export const AccountInfoHeader = () => {
   const showBalance = usePopupSelector((state) => state.accountV2.showBalance);
   const dispatch = usePopupDispatch();
   const { showToast } = useCopyToast();
+
+  // debugger;
 
   const { sendingAleoTx } = useIsSendingAleoTx(uniqueId);
   const { lock } = useAuth();
@@ -122,7 +87,6 @@ export const AccountInfoHeader = () => {
   }, [navigate]);
 
   const copyAddress = useCallback(async () => {
-    // debugger;
     if (isAllMode) {
       await showCopyAddressDrawer();
     } else {
@@ -263,33 +227,36 @@ export const AccountInfoHeader = () => {
           </Flex>
         )}
         {/* value */}
-        <Flex direction={"row"} align={"center"} justify={"center"} mt={2}>
-          <Flex align={"center"}>
-            <Box fontSize={24} fontWeight={600}>
-              {showBalance ? (
-                <TokenNum
-                  amount={123123123123n}
-                  decimals={nativeCurrency.decimals}
-                  symbol={nativeCurrency.symbol}
-                />
-              ) : (
-                "*****"
-              )}
-            </Box>
-            <Box
-              cursor={"pointer"}
-              ml={1}
-              onClick={() => dispatch.accountV2.changeBalanceState()}
-            >
-              {showBalance ? (
-                <IconEyeOn w={4} h={4} />
-              ) : (
-                <IconEyeClose w={4} h={4} />
-              )}
-            </Box>
+        {!isAllMode && (
+          <Flex direction={"row"} align={"center"} justify={"center"} mt={2}>
+            <Flex align={"center"}>
+              <Box fontSize={24} fontWeight={600}>
+                {showBalance ? (
+                  <TokenNum
+                    amount={123123123123n}
+                    decimals={nativeCurrency.decimals}
+                    symbol={nativeCurrency.symbol}
+                  />
+                ) : (
+                  "*****"
+                )}
+              </Box>
+              <Box
+                cursor={"pointer"}
+                ml={1}
+                onClick={() => dispatch.accountV2.changeBalanceState()}
+              >
+                {showBalance ? (
+                  <IconEyeOn w={4} h={4} />
+                ) : (
+                  <IconEyeClose w={4} h={4} />
+                )}
+              </Box>
+            </Flex>
+            <RescanButton paused={!!sendingAleoTx} />
           </Flex>
-          <RescanButton paused={!!sendingAleoTx} />
-        </Flex>
+        )}
+
         {/* Action Item */}
         <ActionPanel chainMode={chainMode} />
       </Box>

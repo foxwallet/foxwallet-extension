@@ -31,19 +31,18 @@ export const useAssetList = (uniqueId: ChainUniqueId, address: string) => {
   const { getUserInteractiveTokens } = useInteractiveTokens(
     uniqueId,
     address,
-    false,
+    true,
   );
 
   useEffect(() => {
     if (needUpdate) {
       const updateTokens = async () => {
-        const tokens = await getUserInteractiveTokens();
-
-        if (tokens) {
+        const res = await getUserInteractiveTokens();
+        if (res?.tokens) {
           dispatch.tokens.updateAddressTokens({
             uniqueId,
             address,
-            tokens,
+            tokens: res.tokens,
           });
           dispatch.tokens.updateTimestamp({
             uniqueId,
