@@ -227,7 +227,7 @@ export class MoralisService {
     console.log(
       "===> moralis getUserInteractiveTokens ",
       this.uniqueId,
-      tokens.length,
+      tokens,
     );
 
     const res: TokenV2[] = [];
