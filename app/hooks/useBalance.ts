@@ -1,8 +1,12 @@
-import { type ChainUniqueId } from "core/types/ChainUniqueId";
+import {
+  type ChainUniqueId,
+  InnerChainUniqueId,
+} from "core/types/ChainUniqueId";
 import { AssetType, type TokenV2 } from "core/types/Token";
 import { useCoinService } from "@/hooks/useCoinService";
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
+import type { AleoService } from "core/coins/ALEO/service/AleoService";
 
 export type BalanceReq = {
   uniqueId: ChainUniqueId;
@@ -40,6 +44,17 @@ export const useBalance = (params: BalanceReq) => {
       return undefined;
     }
     if (token?.type === AssetType.TOKEN) {
+      if (
+        token?.uniqueId === InnerChainUniqueId.ALEO_MAINNET &&
+        token?.programId &&
+        token?.tokenId
+      ) {
+        return await (coinService as AleoService).getTokenBalanceOld(
+          address,
+          token.programId,
+          token.tokenId,
+        );
+      }
       return await coinService.getTokenBalance({ address, token });
     }
     return await coinService.getBalance(address);
