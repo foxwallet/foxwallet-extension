@@ -16,7 +16,6 @@ import { BasicModal } from "../../Custom/Modal";
 import { promisifyChooseDialogWrapper } from "@/common/utils/dialog";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
 import { useMemo } from "react";
-import { useAleoBalance } from "@/hooks/useAleoBalance";
 import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import { TokenNum } from "@/components/Wallet/TokenNum";
 import { useCoinService } from "@/hooks/useCoinService";

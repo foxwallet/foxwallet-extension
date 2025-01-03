@@ -10,7 +10,6 @@ import {
   BETA_STAKING_PROGRAM_ID,
   NATIVE_TOKEN_PROGRAM_ID,
 } from "core/coins/ALEO/constants";
-import { useAleoBalance } from "@/hooks/useAleoBalance";
 import { type TokenV2 } from "core/types/Token";
 import { IconTokenPlaceHolder } from "@/components/Custom/Icon";
 import { useBalance } from "@/hooks/useBalance";

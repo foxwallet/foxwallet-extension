@@ -4,7 +4,6 @@ import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import { WarningArea } from "@/components/Custom/WarningArea";
 import { showSelectFeeTypeDialog } from "@/components/Send/SelectFeeType";
 import { TokenNum } from "@/components/Wallet/TokenNum";
-import { useAleoBalance } from "@/hooks/useAleoBalance";
 import { useCoinService } from "@/hooks/useCoinService";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { useRecords } from "@/hooks/useRecord";

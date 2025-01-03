@@ -5,6 +5,7 @@ import { useCallback, useMemo } from "react";
 import { useCoinService } from "./useCoinService";
 import { NATIVE_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
 import { type InnerProgramId } from "core/coins/ALEO/types/ProgramId";
+import { type AleoService } from "core/coins/ALEO/service/AleoService";
 
 export interface Balance {
   privateBalance: bigint;
@@ -37,10 +38,14 @@ export const useAleoBalance = ({
   const key = `/balance/${uniqueId}/${programId}/${address}/${tokenId}`;
   const fetchBalance = useCallback(async () => {
     if (programId !== NATIVE_TOKEN_PROGRAM_ID && tokenId) {
-      return await coinService.getTokenBalance(address, programId, tokenId);
+      return await (coinService as AleoService).getTokenBalanceOld(
+        address,
+        programId,
+        tokenId,
+      );
     }
     return await coinService.getBalance(address);
-  }, [coinService, uniqueId, address, tokenId]);
+  }, [programId, tokenId, coinService, address]);
 
   const {
     data: balance,

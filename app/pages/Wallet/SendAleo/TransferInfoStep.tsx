@@ -12,7 +12,6 @@ import { showSelectTransferMethodDialog } from "@/components/Send/SelectTransfer
 import { TokenItem } from "@/components/Wallet/TokenItem";
 import { TokenNum } from "@/components/Wallet/TokenNum";
 import { useAssetList } from "@/hooks/useAssetList";
-import { useAleoBalance } from "@/hooks/useAleoBalance";
 import { useCoinBasic, useCoinService } from "@/hooks/useCoinService";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { useLocationParams } from "@/hooks/useLocationParams";
