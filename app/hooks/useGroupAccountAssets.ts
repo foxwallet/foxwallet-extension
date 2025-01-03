@@ -36,7 +36,7 @@ export const useGroupAccountAssets = () => {
         uniqueId,
         needUpdate:
           !lastUpdateTimestamp ||
-          Math.abs(now - lastUpdateTimestamp) > 5 * 1000,
+          Math.abs(now - lastUpdateTimestamp) > 5 * 60 * 1000,
       };
     });
     return res;

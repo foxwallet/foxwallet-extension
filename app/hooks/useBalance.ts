@@ -6,7 +6,6 @@ import { AssetType, type TokenV2 } from "core/types/Token";
 import { useCoinService } from "@/hooks/useCoinService";
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
-import type { AleoService } from "core/coins/ALEO/service/AleoService";
 
 export type BalanceReq = {
   uniqueId: ChainUniqueId;
@@ -44,21 +43,18 @@ export const useBalance = (params: BalanceReq) => {
       return undefined;
     }
     if (token?.type === AssetType.TOKEN) {
-      if (
-        token?.uniqueId === InnerChainUniqueId.ALEO_MAINNET &&
-        token?.programId &&
-        token?.tokenId
-      ) {
-        return await (coinService as AleoService).getTokenBalanceOld(
-          address,
-          token.programId,
-          token.tokenId,
-        );
-      }
-      return await coinService.getTokenBalance({ address, token });
+      const token2 = {
+        contractAddress:
+          uniqueId === InnerChainUniqueId.ALEO_MAINNET &&
+          token?.programId &&
+          token?.tokenId
+            ? `${token.programId}-${token.tokenId}`
+            : token.contractAddress,
+      };
+      return await coinService.getTokenBalance({ address, token: token2 });
     }
     return await coinService.getBalance(address);
-  }, [address, coinService, isAddressValid, token]);
+  }, [address, coinService, isAddressValid, token, uniqueId]);
 
   const {
     data: balance,
