@@ -156,7 +156,7 @@ export class BlockscoutApi {
     if (!interactiveTokens) {
       return [];
     }
-    return interactiveTokens.map((token) => {
+    const res = interactiveTokens.map((token) => {
       const {
         balance, // bn
         contractAddress,
@@ -175,6 +175,12 @@ export class BlockscoutApi {
         uniqueId: this.uniqueId,
       };
     });
+    console.log(
+      "===> blockscout getUserInteractiveTokens V1",
+      this.uniqueId,
+      res,
+    );
+    return res;
   }
 
   async getTokenTransactionHistory(

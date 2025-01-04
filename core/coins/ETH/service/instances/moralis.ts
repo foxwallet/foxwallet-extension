@@ -224,12 +224,6 @@ export class MoralisService {
     const tokens: UserInteractiveTokenRes =
       camelcaseKeys(tokensRes ?? [], { deep: true }) ?? [];
 
-    console.log(
-      "===> moralis getUserInteractiveTokens ",
-      this.uniqueId,
-      tokens.length,
-    );
-
     const res: TokenV2[] = [];
     tokens.forEach((token) => {
       const {
@@ -257,6 +251,8 @@ export class MoralisService {
         });
       }
     });
+    console.log("===> moralis getUserInteractiveTokens ", this.uniqueId, res);
+
     return res;
   }
 }

@@ -183,7 +183,7 @@ export class BlockbookApi {
     const tokens = await this.queryUserInteractiveTokens(address);
 
     if (tokens && tokens.length > 0) {
-      return tokens.map((item) => {
+      const res = tokens.map((item) => {
         const { symbol, contract, decimals, balance, name } = item;
         return {
           ownerAddress: address,
@@ -196,6 +196,13 @@ export class BlockbookApi {
           uniqueId: this.uniqueId,
         };
       });
+      console.log(
+        "===> blockbook getUserInteractiveTokens ",
+        this.uniqueId,
+        res,
+      );
+
+      return res;
     }
     return [];
   }

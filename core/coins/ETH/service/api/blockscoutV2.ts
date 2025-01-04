@@ -154,7 +154,7 @@ export class BlockscoutApiV2 {
     if (!tokenBalances) {
       return [];
     }
-    return tokenBalances.map((tokenBalance) => {
+    const res = tokenBalances.map((tokenBalance) => {
       const {
         value, // bn
         token,
@@ -171,6 +171,13 @@ export class BlockscoutApiV2 {
         icon: token.iconUrl,
       };
     });
+    console.log(
+      "===> blockscout getUserInteractiveTokens V2",
+      this.uniqueId,
+      res,
+    );
+
+    return res;
   }
 
   async getTokenTransactionHistory(
