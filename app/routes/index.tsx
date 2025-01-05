@@ -208,7 +208,7 @@ export const routesConfig: RouteObject[] = [
         element: <ChangePassword />,
       },
       {
-        path: "add_token",
+        path: "add_token/:uniqueId",
         element: <AddToken />,
       },
       {

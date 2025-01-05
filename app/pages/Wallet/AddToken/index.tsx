@@ -4,10 +4,14 @@ import {
   IconSearch,
 } from "@/components/Custom/Icon";
 import { TokenItem, TokenItemWithBalance } from "@/components/Wallet/TokenItem";
-import { useChainMode } from "@/hooks/useChainMode";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
-import { useTokens } from "@/hooks/useToken";
+import {
+  useAllTokens,
+  useAllWhiteTokens,
+  useRecommendTokens,
+  useTokens,
+} from "@/hooks/useToken";
 import { PageWithHeader } from "@/layouts/Page";
 import {
   Divider,
@@ -17,46 +21,88 @@ import {
   InputLeftElement,
   Spinner,
 } from "@chakra-ui/react";
-import { BETA_STAKING_PROGRAM_ID } from "core/coins/ALEO/constants";
+import {
+  BETA_STAKING_ALEO_TOKEN_ID,
+  BETA_STAKING_PROGRAM_ID,
+} from "core/coins/ALEO/constants";
 import { type Token } from "core/coins/ALEO/types/Token";
 import { isEqual } from "lodash";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useSafeParams } from "@/hooks/useSafeParams";
+import { type TokenV2 } from "core/types/Token";
+import { useGroupAccountAssets } from "@/hooks/useGroupAccountAssets";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 
 function AddToken() {
   const { t } = useTranslation();
-  // TODO: get uniqueId from nav param
+  const { uniqueId } = useSafeParams();
   const { getMatchAccountsWithUniqueId } = useGroupAccount();
-  const { availableChainUniqueIds } = useChainMode();
-  const uniqueId = availableChainUniqueIds[0];
   const selectedAccount = useMemo(() => {
     return getMatchAccountsWithUniqueId(uniqueId)[0];
   }, [getMatchAccountsWithUniqueId, uniqueId]);
-
   const [keyword, setKeyword] = useState("");
+
+  const recommendTokens = useRecommendTokens(uniqueId); // 推荐 数量适中
+  console.log("      recommendTokens", recommendTokens);
+
+  const rawAllTokens = useAllTokens(uniqueId); // 所有 数量很多
+  console.log("      rawAllTokens", rawAllTokens);
+
+  // const whiteListTokens = useAllWhiteTokens(uniqueId); // 白名单 数量较多
+  // console.log("      whiteListTokens", whiteListTokens);
+  //
+  // const { assets: addressTokens } = useGroupAccountAssets();
+  // console.log("      addressTokens", addressTokens);
+  //
   const { tokens, loadingTokens, getTokens } = useTokens(uniqueId, keyword);
   const userTokens = usePopupSelector(
     (state) =>
       state.tokens.userTokens?.[uniqueId]?.[selectedAccount?.account.address],
     isEqual,
   );
+  console.log("      userTokens", userTokens);
   const dispatch = usePopupDispatch();
 
-  const [selectedTokens, unselectedTokens] = useMemo(() => {
-    const useTokenIds = new Set(
-      userTokens?.map((token) => token.tokenId) ?? [],
-    );
-    const _selectedTokens: Token[] = [];
-    const _unselectedTokens: Token[] = [];
-    tokens?.forEach((token) => {
-      if (useTokenIds.has(token.tokenId)) {
-        _selectedTokens.push(token);
+  const targetTokens = useMemo(() => {
+    return keyword ? rawAllTokens : recommendTokens;
+  }, [keyword, rawAllTokens, recommendTokens]);
+
+  const { selectedTokens, unselectedTokens } = useMemo(() => {
+    const selected: TokenV2[] = [];
+    let unselected: TokenV2[] = [];
+    if (userTokens && userTokens.length > 0) {
+      let contractAddressSet: Set<string>;
+      if (uniqueId === InnerChainUniqueId.ALEO_MAINNET) {
+        contractAddressSet = new Set(
+          userTokens.map((token) => {
+            if (token.contractAddress) {
+              return token.contractAddress.toLowerCase();
+            } else if (token.tokenId === BETA_STAKING_ALEO_TOKEN_ID) {
+              return `${token.programId}-stAleo`.toLowerCase();
+            } else {
+              return `${token.programId}-${token.tokenId}`.toLowerCase();
+            }
+          }) ?? [],
+        );
       } else {
-        _unselectedTokens.push(token);
+        contractAddressSet = new Set(
+          userTokens.map((token) => token.contractAddress.toLowerCase()) ?? [],
+        );
       }
-    });
-    return [_selectedTokens, _unselectedTokens];
-  }, [tokens, userTokens]);
+      // debugger;
+      targetTokens.forEach((t) => {
+        if (contractAddressSet.has(t.contractAddress.toLowerCase())) {
+          selected.push(t);
+        } else {
+          unselected.push(t);
+        }
+      });
+    } else {
+      unselected = targetTokens;
+    }
+    return { selectedTokens: selected, unselectedTokens: unselected };
+  }, [targetTokens, uniqueId, userTokens]);
 
   const onKeywordChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,7 +113,7 @@ function AddToken() {
   );
 
   const selectToken = useCallback(
-    (token: Token) => {
+    (token: TokenV2) => {
       dispatch.tokens.selectToken({
         uniqueId,
         address: selectedAccount.account.address,
@@ -78,7 +124,7 @@ function AddToken() {
   );
 
   const unselectToken = useCallback(
-    (token: Token) => {
+    (token: TokenV2) => {
       dispatch.tokens.unselectToken({
         uniqueId,
         address: selectedAccount.account.address,

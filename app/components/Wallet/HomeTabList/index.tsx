@@ -15,9 +15,16 @@ import {
 } from "@chakra-ui/react";
 import { AssetList } from "../AssetList";
 import { useTranslation } from "react-i18next";
-import { useState, forwardRef, type PropsWithChildren } from "react";
+import {
+  useState,
+  forwardRef,
+  type PropsWithChildren,
+  useCallback,
+} from "react";
 import { IconAddCircle } from "@/components/Custom/Icon";
 import { useNavigate } from "react-router-dom";
+import { useChainMode } from "@/hooks/useChainMode";
+import { ChainAssembleMode } from "core/types/ChainUniqueId";
 
 const CustomTab = forwardRef(
   (props: PropsWithChildren & ButtonProps, ref: any) => {
@@ -43,7 +50,17 @@ CustomTab.displayName = "CustomTab";
 export const HomeTabList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { chainMode, availableChainUniqueIds } = useChainMode();
+
   const [tabIndex, setTabIndex] = useState(0);
+
+  const onAddToken = useCallback(() => {
+    if (chainMode.mode === ChainAssembleMode.SINGLE) {
+      const uniqueId = availableChainUniqueIds[0];
+      navigate(`/add_token/${uniqueId}`);
+    } else {
+    }
+  }, [availableChainUniqueIds, chainMode.mode, navigate]);
 
   return (
     <Tabs
@@ -69,9 +86,7 @@ export const HomeTabList = () => {
             colorScheme="whiteAlpha"
             bg={"white"}
             size={"xs"}
-            onClick={() => {
-              navigate("/add_token");
-            }}
+            onClick={onAddToken}
           />
         </Flex>
       </Flex>
