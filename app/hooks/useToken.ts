@@ -1,8 +1,14 @@
-import { type ChainUniqueId } from "core/types/ChainUniqueId";
+import {
+  type ChainUniqueId,
+  InnerChainUniqueId,
+} from "core/types/ChainUniqueId";
 import { useCoinService } from "./useCoinService";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
-import { NATIVE_TOKEN_TOKEN_ID } from "core/coins/ALEO/constants";
+import {
+  BETA_STAKING_ALEO_TOKEN_ID,
+  NATIVE_TOKEN_TOKEN_ID,
+} from "core/coins/ALEO/constants";
 import { ALEO_NATIVE_TOKEN } from "core/coins/ALEO/config/chains";
 import { type InnerProgramId } from "core/coins/ALEO/types/ProgramId";
 import { coinServiceEntry } from "core/coins/CoinServiceEntry";
@@ -95,6 +101,48 @@ export const useInteractiveTokens = (
   return res;
 };
 
+export const selectedAndUnselectedTokens = (
+  uniqueId: ChainUniqueId,
+  targetTokens: TokenV2[], // 需要分类的tokens, 最后的数量 selected + unselected = target
+  standardTokens?: TokenV2[], // 评判标准
+) => {
+  const selected: TokenV2[] = [];
+  let unselected: TokenV2[] = [];
+
+  if (standardTokens && standardTokens.length > 0) {
+    let contractAddressSet: Set<string>;
+    if (uniqueId === InnerChainUniqueId.ALEO_MAINNET) {
+      contractAddressSet = new Set(
+        standardTokens.map((token) => {
+          if (token.contractAddress) {
+            return token.contractAddress.toLowerCase();
+          } else if (token.tokenId === BETA_STAKING_ALEO_TOKEN_ID) {
+            return `${token.programId}-stAleo`.toLowerCase();
+          } else {
+            return `${token.programId}-${token.tokenId}`.toLowerCase();
+          }
+        }) ?? [],
+      );
+    } else {
+      contractAddressSet = new Set(
+        standardTokens.map((token) => token.contractAddress.toLowerCase()) ??
+          [],
+      );
+    }
+    // debugger;
+    targetTokens.forEach((t) => {
+      if (contractAddressSet.has(t.contractAddress.toLowerCase())) {
+        selected.push(t);
+      } else {
+        unselected.push(t);
+      }
+    });
+  } else {
+    unselected = targetTokens;
+  }
+  return { selectedTokens: selected, unselectedTokens: unselected };
+};
+
 export const useGroupInteractiveTokens = (
   data: AssetIdentifier[],
   autoRequest: boolean = true,
@@ -104,7 +152,23 @@ export const useGroupInteractiveTokens = (
     const promises = itemsToUpdate.map(async (item) => {
       const { uniqueId, address } = item;
       const coinService = coinServiceEntry.getInstance(uniqueId);
-      const tokens = await coinService.getUserInteractiveTokens({ address });
+      // const tokens = await coinService.getUserInteractiveTokens({ address });
+      // return { address, uniqueId, tokens };
+      const userInteractiveTokens = await coinService.getUserInteractiveTokens({
+        address,
+      });
+
+      const allTokens = await getAllTokensWithCache(uniqueId);
+      const whiteTokens = allTokens.filter(
+        (it) => it?.security === TokenSecurity.WHITE,
+      );
+      const { selectedTokens: tokens } = selectedAndUnselectedTokens(
+        uniqueId,
+        userInteractiveTokens,
+        whiteTokens,
+      );
+      // console.log("      userInteractiveTokens", userInteractiveTokens);
+      // console.log("      selectedTokens", selectedTokens);
       return { address, uniqueId, tokens };
     });
     const results = await Promise.allSettled(promises);

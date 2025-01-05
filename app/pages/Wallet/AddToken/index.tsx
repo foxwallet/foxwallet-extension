@@ -7,6 +7,7 @@ import { TokenItem, TokenItemWithBalance } from "@/components/Wallet/TokenItem";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
 import {
+  selectedAndUnselectedTokens,
   useAllTokens,
   useAllWhiteTokens,
   useRecommendTokens,
@@ -69,40 +70,44 @@ function AddToken() {
   }, [keyword, rawAllTokens, recommendTokens]);
 
   const { selectedTokens, unselectedTokens } = useMemo(() => {
-    const selected: TokenV2[] = [];
-    let unselected: TokenV2[] = [];
-    if (userTokens && userTokens.length > 0) {
-      let contractAddressSet: Set<string>;
-      if (uniqueId === InnerChainUniqueId.ALEO_MAINNET) {
-        contractAddressSet = new Set(
-          userTokens.map((token) => {
-            if (token.contractAddress) {
-              return token.contractAddress.toLowerCase();
-            } else if (token.tokenId === BETA_STAKING_ALEO_TOKEN_ID) {
-              return `${token.programId}-stAleo`.toLowerCase();
-            } else {
-              return `${token.programId}-${token.tokenId}`.toLowerCase();
-            }
-          }) ?? [],
-        );
-      } else {
-        contractAddressSet = new Set(
-          userTokens.map((token) => token.contractAddress.toLowerCase()) ?? [],
-        );
-      }
-      // debugger;
-      targetTokens.forEach((t) => {
-        if (contractAddressSet.has(t.contractAddress.toLowerCase())) {
-          selected.push(t);
-        } else {
-          unselected.push(t);
-        }
-      });
-    } else {
-      unselected = targetTokens;
-    }
-    return { selectedTokens: selected, unselectedTokens: unselected };
+    return selectedAndUnselectedTokens(uniqueId, targetTokens, userTokens);
   }, [targetTokens, uniqueId, userTokens]);
+
+  // const { selectedTokens, unselectedTokens } = useMemo(() => {
+  //   const selected: TokenV2[] = [];
+  //   let unselected: TokenV2[] = [];
+  //   if (userTokens && userTokens.length > 0) {
+  //     let contractAddressSet: Set<string>;
+  //     if (uniqueId === InnerChainUniqueId.ALEO_MAINNET) {
+  //       contractAddressSet = new Set(
+  //         userTokens.map((token) => {
+  //           if (token.contractAddress) {
+  //             return token.contractAddress.toLowerCase();
+  //           } else if (token.tokenId === BETA_STAKING_ALEO_TOKEN_ID) {
+  //             return `${token.programId}-stAleo`.toLowerCase();
+  //           } else {
+  //             return `${token.programId}-${token.tokenId}`.toLowerCase();
+  //           }
+  //         }) ?? [],
+  //       );
+  //     } else {
+  //       contractAddressSet = new Set(
+  //         userTokens.map((token) => token.contractAddress.toLowerCase()) ?? [],
+  //       );
+  //     }
+  //     // debugger;
+  //     targetTokens.forEach((t) => {
+  //       if (contractAddressSet.has(t.contractAddress.toLowerCase())) {
+  //         selected.push(t);
+  //       } else {
+  //         unselected.push(t);
+  //       }
+  //     });
+  //   } else {
+  //     unselected = targetTokens;
+  //   }
+  //   return { selectedTokens: selected, unselectedTokens: unselected };
+  // }, [targetTokens, uniqueId, userTokens]);
 
   const onKeywordChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
