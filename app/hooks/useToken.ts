@@ -152,11 +152,11 @@ export const useGroupInteractiveTokens = (
     const promises = itemsToUpdate.map(async (item) => {
       const { uniqueId, address } = item;
       const coinService = coinServiceEntry.getInstance(uniqueId);
-      // const tokens = await coinService.getUserInteractiveTokens({ address });
-      // return { address, uniqueId, tokens };
+
       const userInteractiveTokens = await coinService.getUserInteractiveTokens({
         address,
       });
+      // console.log("      userInteractiveTokens", userInteractiveTokens);
 
       const allTokens = await getAllTokensWithCache(uniqueId);
       const whiteTokens = allTokens.filter(
@@ -167,7 +167,6 @@ export const useGroupInteractiveTokens = (
         userInteractiveTokens,
         whiteTokens,
       );
-      // console.log("      userInteractiveTokens", userInteractiveTokens);
       // console.log("      selectedTokens", selectedTokens);
       return { address, uniqueId, tokens };
     });
@@ -178,7 +177,7 @@ export const useGroupInteractiveTokens = (
           result.status === "fulfilled",
       )
       .map((result) => result.value);
-    console.log("      validResults", validResults);
+    // console.log("      validResults", validResults);
 
     return validResults;
   }, [data]);

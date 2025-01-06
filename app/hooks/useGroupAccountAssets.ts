@@ -42,13 +42,6 @@ export const useGroupAccountAssets = () => {
     true,
   );
 
-  // const needUpdate = useMemo(() => {
-  //   const ret = needUpdateMap.find((item) => {
-  //     return item.needUpdate;
-  //   });
-  //   return !!ret;
-  // }, [needUpdateMap]);
-
   // 获取用户的代币数据
   const userTokensMap = usePopupSelector((state) => {
     const res = assetIdentifiers.map((item) => {
@@ -62,94 +55,6 @@ export const useGroupAccountAssets = () => {
     });
     return res;
   }, isEqual);
-
-  // useEffect(() => {
-  //   const promises = memoNeedUpdateMap.filter(async (item) => {
-  //     const { uniqueId, address, needUpdate } = item;
-  //     if (needUpdate) {
-  //       console.log(
-  //         "      updating UserInteractiveTokens ",
-  //         uniqueId,
-  //         address,
-  //         needUpdate,
-  //       );
-  //
-  //       const coinService = coinServiceEntry.getInstance(uniqueId);
-  //       const tokens = await coinService.getUserInteractiveTokens({
-  //         address,
-  //       });
-  //       dispatch.tokens.updateTimestamp({
-  //         uniqueId,
-  //         address,
-  //         newUpdateTimestamp: Date.now(),
-  //       });
-  //       // todo
-  //       if (tokens) {
-  //         dispatch.tokens.updateAddressTokens({
-  //           uniqueId,
-  //           address,
-  //           tokens,
-  //         });
-  //       }
-  //     }
-  //   });
-  //   void Promise.allSettled(promises);
-  // }, [dispatch, memoNeedUpdateMap]);
-
-  // useEffect(() => {
-  //   const updateTokens = async (item: {
-  //     address: string;
-  //     uniqueId: InnerChainUniqueId;
-  //     needUpdate: boolean;
-  //   }) => {
-  //     const { uniqueId, address } = item;
-  //     console.log("Updating UserInteractiveTokens", uniqueId, address);
-  //
-  //     const coinService = coinServiceEntry.getInstance(uniqueId);
-  //     const tokens = await coinService.getUserInteractiveTokens({ address });
-  //
-  //     dispatch.tokens.updateTimestamp({
-  //       uniqueId,
-  //       address,
-  //       newUpdateTimestamp: Date.now(),
-  //     });
-  //     if (tokens && tokens.length > 0) {
-  //       dispatch.tokens.updateAddressTokens({
-  //         uniqueId,
-  //         address,
-  //         tokens,
-  //       });
-  //     }
-  //   };
-  //
-  //   const promises = needUpdateMap
-  //     .filter((item) => item.needUpdate)
-  //     .map(async (item) => updateTokens(item));
-  //
-  //   void Promise.allSettled(promises);
-  // }, [dispatch, needUpdateMap]);
-
-  // useEffect(() => {
-  //   const updateTokens = async () => {
-  //     const res = await getGroupInteractiveTokens();
-  //     if (res && res.length > 0) {
-  //       res.forEach((result) => {
-  //         const { uniqueId, address, tokens } = result.value;
-  //         dispatch.tokens.updateAddressTokens({
-  //           uniqueId,
-  //           address,
-  //           tokens,
-  //         });
-  //         dispatch.tokens.updateTimestamp({
-  //           uniqueId,
-  //           address,
-  //           newUpdateTimestamp: Date.now(),
-  //         });
-  //       });
-  //     }
-  //   };
-  //   void updateTokens();
-  // }, [dispatch.tokens, getGroupInteractiveTokens]);
 
   useEffect(() => {
     const updateTokens = async () => {
@@ -173,7 +78,6 @@ export const useGroupAccountAssets = () => {
         console.log("Failed to update tokens:", error);
       }
     };
-
     void updateTokens();
   }, [dispatch.tokens, getGroupInteractiveTokens]);
 
