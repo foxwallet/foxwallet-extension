@@ -230,7 +230,8 @@
   },
   "SelectToken": {
     "title": "Select Token",
-    "searchToken": "Search token"
+    "searchToken": "Search token",
+    "searchHint": "Search tokens"
   },
   "Me": {
     "title": "Me"
