@@ -20,8 +20,8 @@ export const useAssetList = (uniqueId: ChainUniqueId, address: string) => {
     if (!lastUpdateTimestamp) {
       return true;
     }
-    const now = Date.now();
-    return Math.abs(now - lastUpdateTimestamp) > 1 * 60 * 1000; // 频控5分钟
+    // const now = Date.now();
+    // return Math.abs(now - lastUpdateTimestamp) > 1 * 60 * 1000; // 频控5分钟
   });
 
   const userTokens = usePopupSelector((state) => {

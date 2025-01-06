@@ -18,13 +18,13 @@ import { PageWithHeader } from "@/layouts/Page";
 import { useNavigate, useParams } from "react-router-dom";
 import { NextAction } from "@/pages/Wallet/SelectNetwork";
 import { type TokenV2 } from "core/types/Token";
-import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { serializeToken } from "@/common/utils/string";
 import { TokenItemWithBalance } from "@/components/Wallet/TokenItem";
 import { usePopupSelector } from "@/hooks/useStore";
 import { isEqual } from "lodash";
 import { useSafeParams } from "@/hooks/useSafeParams";
 import { useAllTokens, useRecommendTokens } from "@/hooks/useToken";
+import { useAssetList } from "@/hooks/useAssetList";
 
 const SelectTokenScreenV2 = () => {
   const { action = NextAction.Receive } = useParams<{
@@ -33,17 +33,12 @@ const SelectTokenScreenV2 = () => {
   }>();
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { uniqueId } = useSafeParams();
+  const { uniqueId, address } = useSafeParams();
 
   const [searchStr, setSearchStr] = useState("");
   const [debounceSearchStr] = useDebounce(searchStr, 500);
 
-  const { getMatchAccountsWithUniqueId } = useGroupAccount();
-
-  const selectedAccount = useMemo(() => {
-    return getMatchAccountsWithUniqueId(uniqueId)[0];
-  }, [getMatchAccountsWithUniqueId, uniqueId]);
-
+  const { nativeToken } = useAssetList(uniqueId, address);
   const recommendTokens = useRecommendTokens(uniqueId); // 推荐 数量适中
   // console.log("      recommendTokens", recommendTokens);
   //
@@ -57,18 +52,17 @@ const SelectTokenScreenV2 = () => {
   // console.log("      addressTokens", addressTokens);
 
   const userTokens = usePopupSelector(
-    (state) =>
-      state.tokens.userTokens?.[uniqueId]?.[selectedAccount?.account.address],
+    (state) => state.tokens.userTokens?.[uniqueId]?.[address],
     isEqual,
   );
 
   const assets = useMemo(() => {
     if (action === NextAction.Send) {
-      return userTokens ?? [];
+      return [nativeToken, ...(userTokens ?? [])];
     } else {
-      return recommendTokens;
+      return [nativeToken, ...recommendTokens];
     }
-  }, [action, recommendTokens, userTokens]);
+  }, [action, nativeToken, recommendTokens, userTokens]);
 
   const onKeywordChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -82,23 +76,21 @@ const SelectTokenScreenV2 = () => {
     (token: TokenV2) => {
       if (action === NextAction.Receive) {
         navigate(
-          `/receive/${uniqueId}/${
-            selectedAccount.account.address
-          }?token=${serializeToken(token)}`,
+          `/receive/${uniqueId}/${address}?token=${serializeToken(token)}`,
         );
       } else if (action === NextAction.Send) {
         if (uniqueId !== InnerChainUniqueId.ALEO_MAINNET) {
           navigate(
-            `/send_token/${uniqueId}/${
-              selectedAccount.account.address
-            }/?token=${serializeToken(token)}`,
+            `/send_token/${uniqueId}/${address}/?token=${serializeToken(
+              token,
+            )}`,
           );
         } else {
           navigate(`/send_aleo`);
         }
       }
     },
-    [action, navigate, selectedAccount.account.address, uniqueId],
+    [action, navigate, address, uniqueId],
   );
 
   const renderTokens = useMemo(() => {
@@ -113,7 +105,7 @@ const SelectTokenScreenV2 = () => {
               <TokenItemWithBalance
                 key={key}
                 uniqueId={uniqueId}
-                address={selectedAccount.account.address}
+                address={address}
                 token={item}
                 onClick={onSelect}
                 hover
@@ -123,7 +115,7 @@ const SelectTokenScreenV2 = () => {
         </VStack>
       </Box>
     );
-  }, [assets, onSelect, selectedAccount.account.address, uniqueId]);
+  }, [assets, onSelect, address, uniqueId]);
 
   return (
     <PageWithHeader title={t("Networks:selectToken")}>
