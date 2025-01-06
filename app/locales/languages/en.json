@@ -279,7 +279,7 @@
   },
   "ManageToken": {
     "title": "Manage Token",
-    "searchHint": "Search token(ID, Name, Symbol)"
+    "searchHint": "Search token(Symbol, Address)"
   },
   "Common": {
     "confirm": "Confirm",

@@ -9,9 +9,7 @@ import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
 import {
   matchedAndUnMatchedTokens,
   useAllTokens,
-  useAllWhiteTokens,
   useRecommendTokens,
-  useTokens,
 } from "@/hooks/useToken";
 import { PageWithHeader } from "@/layouts/Page";
 import {
@@ -20,21 +18,16 @@ import {
   Input,
   InputGroup,
   InputLeftElement,
-  Spinner,
 } from "@chakra-ui/react";
-import {
-  BETA_STAKING_ALEO_TOKEN_ID,
-  BETA_STAKING_PROGRAM_ID,
-} from "core/coins/ALEO/constants";
-import { type Token } from "core/coins/ALEO/types/Token";
+import { BETA_STAKING_PROGRAM_ID } from "core/coins/ALEO/constants";
 import { isEqual } from "lodash";
 import type React from "react";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSafeParams } from "@/hooks/useSafeParams";
 import { type TokenV2 } from "core/types/Token";
-import { useGroupAccountAssets } from "@/hooks/useGroupAccountAssets";
-import { InnerChainUniqueId } from "core/types/ChainUniqueId";
+import { LoadingView } from "@/components/Custom/Loading";
+import { useSearchTokens } from "@/hooks/useSearchTokens";
 
 function AddToken() {
   const { t } = useTranslation();
@@ -43,21 +36,20 @@ function AddToken() {
   const selectedAccount = useMemo(() => {
     return getMatchAccountsWithUniqueId(uniqueId)[0];
   }, [getMatchAccountsWithUniqueId, uniqueId]);
-  const [keyword, setKeyword] = useState("");
+  const [searchText, setSearchText] = useState("");
 
   const recommendTokens = useRecommendTokens(uniqueId); // 推荐 数量适中
-  console.log("      recommendTokens", recommendTokens);
+  // console.log("      recommendTokens", recommendTokens);
 
   const rawAllTokens = useAllTokens(uniqueId); // 所有 数量很多
-  console.log("      rawAllTokens", rawAllTokens);
+  // console.log("      rawAllTokens", rawAllTokens);
 
-  // const whiteListTokens = useAllWhiteTokens(uniqueId); // 白名单 数量较多
-  // console.log("      whiteListTokens", whiteListTokens);
-  //
-  // const { assets: addressTokens } = useGroupAccountAssets();
-  // console.log("      addressTokens", addressTokens);
-  //
-  const { tokens, loadingTokens, getTokens } = useTokens(uniqueId, keyword);
+  const {
+    searchRes,
+    searching: loading,
+    delaySearchStr,
+  } = useSearchTokens(searchText, rawAllTokens);
+
   const userTokens = usePopupSelector(
     (state) =>
       state.tokens.userTokens?.[uniqueId]?.[selectedAccount?.account.address],
@@ -66,25 +58,28 @@ function AddToken() {
   console.log("      userTokens", userTokens);
   const dispatch = usePopupDispatch();
 
+  // 需要区分用户已添加/没有添加的数据
   const targetTokens = useMemo(() => {
-    return keyword ? rawAllTokens : recommendTokens;
-  }, [keyword, rawAllTokens, recommendTokens]);
+    return searchText ? [...searchRes] : recommendTokens;
+  }, [searchText, searchRes, recommendTokens]);
 
-  const { unMatchedTokens } = useMemo(() => {
+  // 区分结果
+  const { matchedTokens, unMatchedTokens } = useMemo(() => {
     return matchedAndUnMatchedTokens(uniqueId, targetTokens, userTokens);
   }, [targetTokens, uniqueId, userTokens]);
 
+  // 页面显示的数据
   const { selectedTokens, unselectedTokens } = useMemo(() => {
     return {
-      selectedTokens: userTokens ?? [],
+      selectedTokens: searchText ? matchedTokens : userTokens ?? [],
       unselectedTokens: unMatchedTokens ?? [],
     };
-  }, [unMatchedTokens, userTokens]);
+  }, [matchedTokens, searchText, unMatchedTokens, userTokens]);
 
   const onKeywordChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const value = event.target.value.trim();
-      setKeyword(value);
+      setSearchText(value);
     },
     [],
   );
@@ -120,16 +115,16 @@ function AddToken() {
         <Input
           alignSelf={"stretch"}
           bg={"gray.50"}
-          value={keyword}
+          value={searchText}
           onChange={onKeywordChange}
           placeholder={t("ManageToken:searchHint")}
           pl={10}
           py={2}
         />
       </InputGroup>
-      {loadingTokens && <Spinner w={6} h={6} alignSelf={"center"} mt={10} />}
-      <Flex flexDir={"column"} maxH={"500px"} overflowY={"auto"} mt={"10px"}>
-        {/* 已经添加的token */}
+      {loading && <LoadingView w={12} h={12} alignSelf={"center"} mt={2} />}
+      <Flex flexDir={"column"} maxH={"500px"} overflowY={"auto"} mt={"6px"}>
+        {/* added tokens */}
         {selectedTokens.length > 0 && (
           <>
             {selectedTokens.map((token) => {
@@ -166,8 +161,8 @@ function AddToken() {
             </Flex>
           </>
         )}
-        {/* 没有添加的token */}
-        {!loadingTokens &&
+        {/* not added tokens */}
+        {!loading &&
           unselectedTokens.length > 0 &&
           unselectedTokens.map((token) => {
             return (
