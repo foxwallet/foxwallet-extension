@@ -43,15 +43,23 @@ export const useBalance = (params: BalanceReq) => {
       return undefined;
     }
     if (token?.type === AssetType.TOKEN) {
-      const token2 = {
-        contractAddress:
+      if (token?.contractAddress) {
+        return await coinService.getTokenBalance({
+          address,
+          token: { contractAddress: token.contractAddress },
+        });
+      } else {
+        if (
           uniqueId === InnerChainUniqueId.ALEO_MAINNET &&
           token?.programId &&
           token?.tokenId
-            ? `${token.programId}-${token.tokenId}`
-            : token.contractAddress,
-      };
-      return await coinService.getTokenBalance({ address, token: token2 });
+        ) {
+          return await coinService.getTokenBalance({
+            address,
+            token: { contractAddress: `${token.programId}-${token.tokenId}` },
+          });
+        }
+      }
     }
     return await coinService.getBalance(address);
   }, [address, coinService, isAddressValid, token, uniqueId]);
