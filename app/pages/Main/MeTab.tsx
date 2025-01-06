@@ -126,10 +126,7 @@ export const MeTab = () => {
               fontWeight={500}
               noOfLines={1}
             >
-              <MiddleEllipsisText
-                text={groupAccount?.group.groupName}
-                width={150}
-              />
+              <Text maxW={270}>{groupAccount?.group.groupName}</Text>
             </Box>
           </Flex>
         </Flex>
