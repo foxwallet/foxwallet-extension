@@ -181,12 +181,12 @@ const WalletDetailScreen = () => {
   const onBackupMnemonic = useCallback(async () => {
     const { confirmed } = await showPasswordVerifyDrawer();
     confirmed && navigate(`/backup_mnemonic/${walletId}`);
-  }, [navigate, showPasswordVerifyDrawer]);
+  }, [navigate, walletId]);
 
   const onExportSeedPhrase = useCallback(async () => {
     const { confirmed } = await showPasswordVerifyDrawer();
     confirmed && navigate(`/export_seed_phrase/${walletId}`);
-  }, [navigate, showPasswordVerifyDrawer]);
+  }, [navigate, walletId]);
 
   const onDeleteWallet = useCallback(async () => {
     try {
@@ -200,7 +200,7 @@ const WalletDetailScreen = () => {
     } catch (e) {
       console.warn("delete wallet error ", e);
     }
-  }, [deleteWallet, walletInfo?.walletId, navigate]);
+  }, [walletInfo, deleteWallet, navigate]);
 
   const onWalletMoreAction = useCallback(() => {
     void showWalletOptionDrawer({
@@ -221,13 +221,7 @@ const WalletDetailScreen = () => {
         }
       },
     });
-  }, [
-    showWalletOptionDrawer,
-    walletInfo,
-    onBackupMnemonic,
-    onDeleteWallet,
-    onExportSeedPhrase,
-  ]);
+  }, [walletInfo, onBackupMnemonic, onDeleteWallet, onExportSeedPhrase]);
 
   const renderAccountItem = useCallback(
     (account: OneMatchGroupAccount, index: number) => {
