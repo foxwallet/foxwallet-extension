@@ -26,8 +26,7 @@ export const useGroupAccountAssets = () => {
       const now = Date.now();
       const lastUpdateTimestamp =
         state.tokens?.lastUpdateTimestamp[uniqueId]?.[address];
-      const needUpdate =
-        !lastUpdateTimestamp || Math.abs(now - lastUpdateTimestamp) > 10 * 1000;
+      const needUpdate = !lastUpdateTimestamp;
       return {
         address,
         uniqueId,

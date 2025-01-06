@@ -64,7 +64,9 @@ export const tokens = createModel<RootModel>()({
         token: TokenV2;
       },
     ) {
-      const { uniqueId, address, token } = payload;
+      const { uniqueId, address, token: paramToken } = payload;
+      const token = { ...paramToken, ownerAddress: address };
+
       const allChainTokens = state.userTokens;
       const oldUniqueIdUserTokens = allChainTokens[uniqueId] ?? {};
       const oldAddressTokens = oldUniqueIdUserTokens[address] ?? [];
