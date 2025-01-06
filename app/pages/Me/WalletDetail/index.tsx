@@ -251,12 +251,6 @@ const WalletDetailScreen = () => {
       }
     >
       <Flex direction={"column"} flex={1} px={5} pb={4} pt={2.5}>
-        <Flex align={"center"} justify={"flex-start"}>
-          <IconAleo />
-          <Text ml={1} fontSize={14} fontWeight={500}>
-            ALEO
-          </Text>
-        </Flex>
         <Flex direction={"column"} maxH={435} overflowY="auto">
           {accountList.map(renderAccountItem)}
         </Flex>
