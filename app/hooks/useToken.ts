@@ -101,13 +101,13 @@ export const useInteractiveTokens = (
   return res;
 };
 
-export const selectedAndUnselectedTokens = (
+export const matchedAndUnMatchedTokens = (
   uniqueId: ChainUniqueId,
-  targetTokens: TokenV2[], // 需要分类的tokens, 最后的数量 selected + unselected = target
+  targetTokens: TokenV2[], // 需要分类的tokens, 最后的数量 matched + unMatched = target
   standardTokens?: TokenV2[], // 评判标准
 ) => {
-  const selected: TokenV2[] = [];
-  let unselected: TokenV2[] = [];
+  const matched: TokenV2[] = [];
+  let unMatched: TokenV2[] = [];
 
   if (standardTokens && standardTokens.length > 0) {
     let contractAddressSet: Set<string>;
@@ -132,15 +132,15 @@ export const selectedAndUnselectedTokens = (
     // debugger;
     targetTokens.forEach((t) => {
       if (contractAddressSet.has(t.contractAddress.toLowerCase())) {
-        selected.push(t);
+        matched.push(t);
       } else {
-        unselected.push(t);
+        unMatched.push(t);
       }
     });
   } else {
-    unselected = targetTokens;
+    unMatched = targetTokens;
   }
-  return { selectedTokens: selected, unselectedTokens: unselected };
+  return { matchedTokens: matched, unMatchedTokens: unMatched };
 };
 
 export const useGroupInteractiveTokens = (
@@ -162,7 +162,7 @@ export const useGroupInteractiveTokens = (
       const whiteTokens = allTokens.filter(
         (it) => it?.security === TokenSecurity.WHITE,
       );
-      const { selectedTokens: tokens } = selectedAndUnselectedTokens(
+      const { matchedTokens: tokens } = matchedAndUnMatchedTokens(
         uniqueId,
         userInteractiveTokens,
         whiteTokens,

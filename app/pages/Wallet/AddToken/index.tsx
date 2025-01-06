@@ -7,7 +7,7 @@ import { TokenItem, TokenItemWithBalance } from "@/components/Wallet/TokenItem";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
 import {
-  selectedAndUnselectedTokens,
+  matchedAndUnMatchedTokens,
   useAllTokens,
   useAllWhiteTokens,
   useRecommendTokens,
@@ -28,6 +28,7 @@ import {
 } from "core/coins/ALEO/constants";
 import { type Token } from "core/coins/ALEO/types/Token";
 import { isEqual } from "lodash";
+import type React from "react";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSafeParams } from "@/hooks/useSafeParams";
@@ -69,45 +70,16 @@ function AddToken() {
     return keyword ? rawAllTokens : recommendTokens;
   }, [keyword, rawAllTokens, recommendTokens]);
 
-  const { selectedTokens, unselectedTokens } = useMemo(() => {
-    return selectedAndUnselectedTokens(uniqueId, targetTokens, userTokens);
+  const { unMatchedTokens } = useMemo(() => {
+    return matchedAndUnMatchedTokens(uniqueId, targetTokens, userTokens);
   }, [targetTokens, uniqueId, userTokens]);
 
-  // const { selectedTokens, unselectedTokens } = useMemo(() => {
-  //   const selected: TokenV2[] = [];
-  //   let unselected: TokenV2[] = [];
-  //   if (userTokens && userTokens.length > 0) {
-  //     let contractAddressSet: Set<string>;
-  //     if (uniqueId === InnerChainUniqueId.ALEO_MAINNET) {
-  //       contractAddressSet = new Set(
-  //         userTokens.map((token) => {
-  //           if (token.contractAddress) {
-  //             return token.contractAddress.toLowerCase();
-  //           } else if (token.tokenId === BETA_STAKING_ALEO_TOKEN_ID) {
-  //             return `${token.programId}-stAleo`.toLowerCase();
-  //           } else {
-  //             return `${token.programId}-${token.tokenId}`.toLowerCase();
-  //           }
-  //         }) ?? [],
-  //       );
-  //     } else {
-  //       contractAddressSet = new Set(
-  //         userTokens.map((token) => token.contractAddress.toLowerCase()) ?? [],
-  //       );
-  //     }
-  //     // debugger;
-  //     targetTokens.forEach((t) => {
-  //       if (contractAddressSet.has(t.contractAddress.toLowerCase())) {
-  //         selected.push(t);
-  //       } else {
-  //         unselected.push(t);
-  //       }
-  //     });
-  //   } else {
-  //     unselected = targetTokens;
-  //   }
-  //   return { selectedTokens: selected, unselectedTokens: unselected };
-  // }, [targetTokens, uniqueId, userTokens]);
+  const { selectedTokens, unselectedTokens } = useMemo(() => {
+    return {
+      selectedTokens: userTokens ?? [],
+      unselectedTokens: unMatchedTokens ?? [],
+    };
+  }, [unMatchedTokens, userTokens]);
 
   const onKeywordChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -157,6 +129,7 @@ function AddToken() {
       </InputGroup>
       {loadingTokens && <Spinner w={6} h={6} alignSelf={"center"} mt={10} />}
       <Flex flexDir={"column"} maxH={"500px"} overflowY={"auto"} mt={"10px"}>
+        {/* 已经添加的token */}
         {selectedTokens.length > 0 && (
           <>
             {selectedTokens.map((token) => {
@@ -193,6 +166,7 @@ function AddToken() {
             </Flex>
           </>
         )}
+        {/* 没有添加的token */}
         {!loadingTokens &&
           unselectedTokens.length > 0 &&
           unselectedTokens.map((token) => {

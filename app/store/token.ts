@@ -68,8 +68,12 @@ export const tokens = createModel<RootModel>()({
       const allChainTokens = state.userTokens;
       const oldUniqueIdUserTokens = allChainTokens[uniqueId] ?? {};
       const oldAddressTokens = oldUniqueIdUserTokens[address] ?? [];
+
       const exist = oldAddressTokens.some((item: TokenV2) => {
-        return item.tokenId === token.tokenId;
+        return (
+          item.contractAddress.toLowerCase() ===
+          token.contractAddress.toLowerCase()
+        );
       });
       if (exist) {
         return state;
@@ -99,7 +103,10 @@ export const tokens = createModel<RootModel>()({
       const oldUniqueIdUserTokens = allChainTokens[uniqueId] ?? {};
       const oldAddressTokens = oldUniqueIdUserTokens[address] ?? [];
       const newTokens = oldAddressTokens.filter((item: TokenV2) => {
-        return item.tokenId !== token.tokenId;
+        return (
+          item.contractAddress.toLowerCase() !==
+          token.contractAddress.toLowerCase()
+        );
       });
       return {
         ...state,
