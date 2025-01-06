@@ -59,6 +59,7 @@ const RescanButton = (props: RescanButtonProps) => {
       px={1}
       justify={"center"}
       align={"center"}
+      ml={2}
     >
       <IconLoading animation={`${rotateAnimation} infinite 2s linear`} />
       <Text ml={1} fontSize={10}>

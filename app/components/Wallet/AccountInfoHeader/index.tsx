@@ -41,6 +41,7 @@ import { showChangeNetworkDrawer } from "@/components/Wallet/ChangeNetworkDrawer
 import { ActionPanel } from "@/components/Wallet/ActionPanel";
 import { HeaderMiddleView } from "@/components/Wallet/HeaderMiddleView";
 import { showCopyAddressDrawer } from "@/components/Wallet/CopyAddressDrawer";
+import { useBalance } from "@/hooks/useBalance";
 
 const rotateAnimation = keyframes`
   from { transform: rotate(0deg) }
@@ -113,6 +114,11 @@ export const AccountInfoHeader = () => {
       }
     }
   }, [availableAccounts, availableChains, chainMode, isAllMode, showToast]);
+
+  const { balance } = useBalance({
+    uniqueId,
+    address: availableAccounts[0].account.address,
+  });
 
   const bgGradient = useColorModeValue(
     "linear(to-br, #ECFFF2, #FFFFFF, #ECFFF2)",
@@ -233,7 +239,7 @@ export const AccountInfoHeader = () => {
               <Box fontSize={24} fontWeight={600}>
                 {showBalance ? (
                   <TokenNum
-                    amount={123123123123n}
+                    amount={balance?.total ?? 0n}
                     decimals={nativeCurrency.decimals}
                     symbol={nativeCurrency.symbol}
                   />
@@ -243,7 +249,7 @@ export const AccountInfoHeader = () => {
               </Box>
               <Box
                 cursor={"pointer"}
-                ml={1}
+                ml={2}
                 onClick={() => dispatch.accountV2.changeBalanceState()}
               >
                 {showBalance ? (
