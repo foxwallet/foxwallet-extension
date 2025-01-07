@@ -13,6 +13,7 @@ import {
   chainUniqueIdToCoinType,
 } from "core/helper/CoinType";
 import { isEqual } from "lodash";
+import { type RootState } from "@/store/store";
 
 type WalletBackupedMnemonicMap = { [walletId in string]: boolean };
 
