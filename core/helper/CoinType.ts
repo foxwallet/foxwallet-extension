@@ -15,8 +15,6 @@ import { INNER_ETH_CONFIG } from "core/coins/ETH/config/chains";
 
 export const chainUniqueIdToCoinType = (uniqueId: ChainUniqueId): CoinType => {
   switch (uniqueId) {
-    // case InnerChainUniqueId.ALEO_TESTNET:
-    //   return CoinType.ALEO;
     case InnerChainUniqueId.ALEO_MAINNET:
       return CoinType.ALEO;
     default: {
@@ -26,7 +24,6 @@ export const chainUniqueIdToCoinType = (uniqueId: ChainUniqueId): CoinType => {
       if (uniqueId.startsWith(EthRpcPrefix)) {
         return CoinType.ETH;
       }
-      // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
       throw new Error("unknown uniqueId: " + uniqueId);
     }
   }

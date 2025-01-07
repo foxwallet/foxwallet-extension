@@ -6,6 +6,7 @@ import { setting } from "./setting";
 import { tokens } from "./token";
 import { wallet } from "./wallet";
 import { multiChain } from "./multiChain";
+import { address } from "@/store/addressModel";
 
 export interface RootModel extends Models<RootModel> {
   user: typeof user;
@@ -15,6 +16,7 @@ export interface RootModel extends Models<RootModel> {
   tokens: typeof tokens;
   wallet: typeof wallet;
   multiChain: typeof multiChain;
+  address: typeof address;
 }
 
 export const models: RootModel = {
@@ -25,4 +27,5 @@ export const models: RootModel = {
   tokens,
   wallet,
   multiChain,
+  address,
 };

@@ -1,78 +1,84 @@
 var v = Object.defineProperty;
-var S = (s, e, t) => e in s ? v(s, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : s[e] = t;
-var f = (s, e, t) => (S(s, typeof e != "symbol" ? e + "" : e, t), t), y = (s, e, t) => {
-  if (!e.has(s))
+var b = (n, e, t) => e in n ? v(n, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : n[e] = t;
+var y = (n, e, t) => (b(n, typeof e != "symbol" ? e + "" : e, t), t), f = (n, e, t) => {
+  if (!e.has(n))
     throw TypeError("Cannot " + t);
 };
-var a = (s, e, t) => (y(s, e, "read from private field"), t ? t.call(s) : e.get(s)), w = (s, e, t) => {
-  if (e.has(s))
+var a = (n, e, t) => (f(n, e, "read from private field"), t ? t.call(n) : e.get(n)), w = (n, e, t) => {
+  if (e.has(n))
     throw TypeError("Cannot add the same private member more than once");
-  e instanceof WeakSet ? e.add(s) : e.set(s, t);
-}, i = (s, e, t, n) => (y(s, e, "write to private field"), n ? n.call(s, t) : e.set(s, t), t);
+  e instanceof WeakSet ? e.add(n) : e.set(n, t);
+}, i = (n, e, t, s) => (f(n, e, "write to private field"), s ? s.call(n, t) : e.set(n, t), t);
 const k = "fox_dapp_request", T = "fox_dapp_response";
-function _(s) {
-  return { all: s = s || /* @__PURE__ */ new Map(), on: function(e, t) {
-    var n = s.get(e);
-    n ? n.push(t) : s.set(e, [t]);
+function P(n) {
+  return { all: n = n || /* @__PURE__ */ new Map(), on: function(e, t) {
+    var s = n.get(e);
+    s ? s.push(t) : n.set(e, [t]);
   }, off: function(e, t) {
-    var n = s.get(e);
-    n && (t ? n.splice(n.indexOf(t) >>> 0, 1) : s.set(e, []));
+    var s = n.get(e);
+    s && (t ? s.splice(s.indexOf(t) >>> 0, 1) : n.set(e, []));
   }, emit: function(e, t) {
-    var n = s.get(e);
-    n && n.slice().map(function(r) {
+    var s = n.get(e);
+    s && s.slice().map(function(r) {
       r(t);
-    }), (n = s.get("*")) && n.slice().map(function(r) {
+    }), (s = n.get("*")) && s.slice().map(function(r) {
       r(e, t);
     });
   } };
 }
-let P = (s = 21) => crypto.getRandomValues(new Uint8Array(s)).reduce((e, t) => (t &= 63, t < 36 ? e += t.toString(36) : t < 62 ? e += (t - 26).toString(36).toUpperCase() : t > 62 ? e += "-" : e += "_", e), "");
-var g, l, h;
-class M {
+const S = "useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict";
+let _ = (n = 21) => {
+  let e = "", t = crypto.getRandomValues(new Uint8Array(n |= 0));
+  for (; n--; )
+    e += S[t[n] & 63];
+  return e;
+};
+var p, l, h;
+class A {
   constructor() {
-    w(this, g, void 0);
+    w(this, p, void 0);
     w(this, l, void 0);
     w(this, h, void 0);
-    f(this, "onMessage", (e) => {
-      const { id: t, error: n, data: r } = e.detail, o = a(this, h).get(t);
-      o && (o(n, r), a(this, h).delete(t));
+    y(this, "onMessage", (e) => {
+      const { id: t, error: s, data: r } = e.detail, o = a(this, h).get(t);
+      o && (o(s, r), a(this, h).delete(t));
     });
-    f(this, "on", (e, t) => (a(this, l).on(e, t), () => a(this, l).off(e, t)));
-    f(this, "emit", (e, t) => {
+    y(this, "on", (e, t) => (a(this, l).on(e, t), () => a(this, l).off(e, t)));
+    y(this, "emit", (e, t) => {
       a(this, l).emit(e, t);
     });
-    i(this, g, !0), i(this, l, _()), i(this, h, /* @__PURE__ */ new Map()), window.addEventListener(T, this.onMessage);
+    i(this, p, !0), i(this, l, P()), i(this, h, /* @__PURE__ */ new Map()), window.addEventListener(T, this.onMessage);
   }
-  send(e, t, n = {}) {
+  send(e, t, s = {}) {
     return new Promise((r, o) => {
-      const c = P(), x = new CustomEvent(k, {
+      const c = _(), x = new CustomEvent(k, {
         detail: {
           id: c,
           method: e,
           payload: t,
-          metadata: n
+          metadata: s
         }
-      }), q = (p, E) => {
-        p ? o(p) : r(E);
+      }), q = (g, E) => {
+        g ? o(g) : r(E);
       };
       a(this, h).set(c, q), window.dispatchEvent(x);
     });
   }
   get isFoxWallet() {
-    return a(this, g);
+    return a(this, p);
   }
 }
-g = new WeakMap(), l = new WeakMap(), h = new WeakMap();
-function R(s) {
-  return Array.from(s).map((e) => e.toString(16).padStart(2, "0")).join("");
+p = new WeakMap(), l = new WeakMap(), h = new WeakMap();
+function M(n) {
+  return Array.from(n).map((e) => e.toString(16).padStart(2, "0")).join("");
 }
 var u, d;
-class A extends M {
+class R extends A {
   constructor() {
     super();
     w(this, u, void 0);
     w(this, d, void 0);
-    f(this, "_readyState");
+    y(this, "_readyState");
     i(this, u, null), i(this, d, null), this._readyState = "Installed";
   }
   get publicKey() {
@@ -96,13 +102,13 @@ class A extends M {
         throw new Error("Unsupport network " + t);
     }
   }
-  async connect(t, n, r) {
-    const o = this.convertNetworkToChainId(n), c = await this.send("connect", {
+  async connect(t, s, r) {
+    const o = this.convertNetworkToChainId(s), c = await this.send("connect", {
       decryptPermission: t,
       network: o,
       programs: r
     });
-    return i(this, u, c || null), i(this, d, n), !!c;
+    return i(this, u, c || null), i(this, d, s), !!c;
   }
   async disconnect() {
     if (!a(this, u) || !this.network)
@@ -110,10 +116,10 @@ class A extends M {
     const t = await this.send("disconnect", {});
     return i(this, u, null), i(this, d, null), t;
   }
-  async decrypt(t, n, r, o, c) {
+  async decrypt(t, s, r, o, c) {
     return await this.send("decrypt", {
       cipherText: t,
-      tpk: n,
+      tpk: s,
       programId: r,
       functionName: o,
       index: c
@@ -147,22 +153,22 @@ class A extends M {
     return await this.send("requestTransactionHistory", { program: t });
   }
   async signMessage(t) {
-    const n = R(t), r = await this.send("signMessage", {
-      message: n
+    const s = M(t), r = await this.send("signMessage", {
+      message: s
     });
     if (!r)
       throw new Error("sign message failed");
     return { signature: new TextEncoder().encode(r.signature) };
   }
-  send(t, n) {
-    return super.send(t, n, {
+  send(t, s) {
+    return super.send(t, s, {
       address: a(this, u),
       network: a(this, d) ? this.convertNetworkToChainId(a(this, d)) : ""
     });
   }
 }
 u = new WeakMap(), d = new WeakMap();
-const m = new A();
+const m = new R();
 window.foxwallet = {
   aleo: m
 };
