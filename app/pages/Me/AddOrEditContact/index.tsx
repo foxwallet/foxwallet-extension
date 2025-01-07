@@ -8,29 +8,65 @@ import type React from "react";
 import { useMemo, useEffect, useCallback, useState } from "react";
 import { useDebounce } from "use-debounce";
 import { useCoinBasic, useCoinService } from "@/hooks/useCoinService";
-import { InnerChainUniqueId } from "core/types/ChainUniqueId";
+import {
+  type ChainUniqueId,
+  InnerChainUniqueId,
+} from "core/types/ChainUniqueId";
 import { IconChevronRight } from "@/components/Custom/Icon";
 import { showSelectContactNetworkDrawer } from "@/components/Me/SelectContactNetworkDrawer";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
+import { useSelector } from "react-redux";
+import { type RootState } from "@/store/store";
+import { hasDupAddressSelector } from "@/store/selectors/address";
+import { matchAddressSupportedUniqueIds } from "@/common/utils/address";
+import { CoinType } from "core/types";
+import { useLocationParams } from "@/hooks/useLocationParams";
+import { type AddressItemV2 } from "@/store/addressModel";
+import { usePopupDispatch } from "@/hooks/useStore";
+import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
+import { isEqual } from "lodash";
 
 const AddOrEditContactScreen = () => {
-  const { addOrEdit } = useParams(); // "add" "edit"
+  const { addOrEdit = "add" } = useParams(); // "add" "edit"
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const dispatch = usePopupDispatch();
   const isAdd = useMemo(() => addOrEdit === "add", [addOrEdit]);
-  const { deleteColor } = useThemeStyle();
+  const addressItem = useLocationParams("addressItem");
 
-  // 此处多链需要修改
-  const uniqueId = InnerChainUniqueId.ALEO_MAINNET;
-  const { coinService } = useCoinService(uniqueId);
+  useEffect(() => {
+    if (!isAdd && !addressItem) {
+      throw new Error("Edit address failed");
+    }
+  }, [isAdd, addressItem]);
 
-  const [contactName, setContactName] = useState("");
-  const [address, setAddress] = useState("");
-  const [debounceAddress] = useDebounce(address, 500);
+  // edit 时传入的address对象
+  const addressItemInfo = useMemo(() => {
+    try {
+      if (!addressItem) {
+        return undefined;
+      }
+      return JSON.parse(addressItem) as AddressItemV2;
+    } catch (err) {
+      return undefined;
+    }
+  }, [addressItem]);
+
+  const [addressUniqueIds, setAddressUniqueIds] = useState<ChainUniqueId[]>(
+    !isAdd ? addressItemInfo?.uniqueIds ?? [] : [],
+  );
+
+  const [address, setAddress] = useState(
+    !isAdd ? addressItemInfo?.address ?? "" : "",
+  );
+  const [name, setName] = useState(
+    !isAdd ? addressItemInfo?.addressName ?? "" : "",
+  );
 
   const onContactNameChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const value = event.target.value.trim();
-      setContactName(value);
+      setName(value);
     },
     [],
   );
@@ -43,29 +79,100 @@ const AddOrEditContactScreen = () => {
     [],
   );
 
-  const addressValid = useMemo(() => {
-    if (debounceAddress) {
-      const valid = coinService.validateAddress(debounceAddress);
-      console.log("valid      " + valid);
-      return valid;
+  const addressExist = useSelector((state: RootState) => {
+    return !isAdd ? false : hasDupAddressSelector(state, { address });
+  });
+
+  const {
+    valid: addressValid,
+    supportChains,
+    isEVMAddress,
+  } = useMemo(() => matchAddressSupportedUniqueIds(address), [address]);
+
+  const [showInAllEVM, setShowInAllEVM] = useState(false);
+  const allEVMChains = useMemo(
+    () => supportChains.filter((cfg) => cfg.coinType === CoinType.ETH),
+    [supportChains],
+  );
+
+  useEffect(() => {
+    if (supportChains.length === 1 && isAdd) {
+      setAddressUniqueIds([supportChains[0].uniqueId]);
     }
-    return true;
-  }, [coinService, debounceAddress]);
+  }, [isAdd, supportChains]);
+
+  const onSelectChains = useCallback(
+    (configs: ChainBaseConfig[]) => {
+      if (configs.length === 0) {
+        return;
+      }
+      setShowInAllEVM(
+        isEqual(
+          allEVMChains.map((cfg) => cfg.uniqueId),
+          configs.map((cfg) => cfg.uniqueId),
+        ),
+      );
+      setAddressUniqueIds(configs.map((item) => item.uniqueId));
+    },
+    [allEVMChains],
+  );
 
   const onSelectNetwork = useCallback(async () => {
     const { data } = await showSelectContactNetworkDrawer({});
   }, []);
 
-  const canSubmit = useMemo(() => {
-    if (!contactName || !debounceAddress || !addressValid) {
-      return false;
+  const canSubmit = useMemo(
+    () =>
+      address &&
+      !addressExist &&
+      addressValid &&
+      name &&
+      addressUniqueIds.length > 0,
+    [address, addressExist, addressUniqueIds, addressValid, name],
+  );
+
+  const onSubmit = useCallback(() => {
+    if (!canSubmit) {
+      return;
     }
-    return true;
-  }, [addressValid, contactName, debounceAddress]);
 
-  const onConfirm = useCallback(() => {}, []);
+    const item: Omit<AddressItemV2, "id"> = {
+      address,
+      addressName: name,
+      uniqueIds: addressUniqueIds,
+      isShowInAllEVM: showInAllEVM,
+    };
 
-  const onDelete = useCallback(() => {}, []);
+    if (isAdd) {
+      dispatch.address.addAddress({ addressItem: item });
+    } else {
+      dispatch.address.editAddress({
+        id: addressItemInfo!.id,
+        newAddressItem: item,
+      });
+    }
+    navigate(-1);
+  }, [
+    address,
+    addressItemInfo,
+    addressUniqueIds,
+    canSubmit,
+    dispatch.address,
+    isAdd,
+    name,
+    navigate,
+    showInAllEVM,
+  ]);
+
+  const onRemove = useCallback(() => {
+    if (isAdd && !addressItemInfo) {
+      return;
+    }
+    dispatch.address.removeAddress({ id: addressItemInfo!.id });
+    navigate(-1);
+  }, [addressItemInfo, dispatch, isAdd, navigate]);
+
+  const { deleteColor } = useThemeStyle();
 
   return (
     <PageWithHeader title={t("Contacts:addContact")}>
@@ -74,7 +181,7 @@ const AddOrEditContactScreen = () => {
           title={t("Contacts:contactInfo")}
           placeholder={t("Contacts:enterContactName")}
           container={{ mt: "2" }}
-          value={contactName}
+          value={name}
           onChange={onContactNameChange}
         />
         <BaseInput
@@ -82,10 +189,9 @@ const AddOrEditContactScreen = () => {
           container={{ mt: "2" }}
           value={address}
           onChange={onAddressChange}
-          isInvalid={!addressValid && !!debounceAddress}
+          isInvalid={!addressValid && !!address}
         />
-        {/* {addressValid && debounceAddress && ( */}
-        {debounceAddress && (
+        {address && (
           <Flex
             flexDir={"row"}
             borderStyle={"solid"}
@@ -103,7 +209,7 @@ const AddOrEditContactScreen = () => {
             <IconChevronRight w={4} h={4} mr={-1} />
           </Flex>
         )}
-        <Button mt={10} w={"full"} onClick={onConfirm} isDisabled={!canSubmit}>
+        <Button mt={10} w={"full"} onClick={onSubmit} isDisabled={!canSubmit}>
           {isAdd ? t("Contacts:confirmCreate") : t("Contacts:confirmUpdate")}
         </Button>
         {!isAdd && (
@@ -111,7 +217,7 @@ const AddOrEditContactScreen = () => {
             backgroundColor={deleteColor}
             mt={5}
             w={"full"}
-            onClick={onDelete}
+            onClick={onRemove}
           >
             {t("Contacts:remove")}
           </Button>
