@@ -2,10 +2,10 @@ import { Content } from "@/layouts/Content";
 import { PageWithHeader } from "@/layouts/Page";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
-import { Button, Flex, Text } from "@chakra-ui/react";
+import { Button, Flex, Text, Image } from "@chakra-ui/react";
 import { BaseInput, BaseInputGroup } from "@/components/Custom/Input";
 import type React from "react";
-import { useMemo, useEffect, useCallback, useState } from "react";
+import { useEffect, useMemo, useCallback, useState } from "react";
 import { useDebounce } from "use-debounce";
 import { useCoinBasic, useCoinService } from "@/hooks/useCoinService";
 import {
@@ -25,6 +25,8 @@ import { type AddressItemV2 } from "@/store/addressModel";
 import { usePopupDispatch } from "@/hooks/useStore";
 import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
 import { isEqual } from "lodash";
+
+const DisplayedUniqueIdMaxLimit = 5;
 
 const AddOrEditContactScreen = () => {
   const { addOrEdit = "add" } = useParams(); // "add" "edit"
@@ -53,14 +55,14 @@ const AddOrEditContactScreen = () => {
   }, [addressItem]);
 
   const [addressUniqueIds, setAddressUniqueIds] = useState<ChainUniqueId[]>(
-    !isAdd ? addressItemInfo?.uniqueIds ?? [] : [],
+    isAdd ? [] : addressItemInfo?.uniqueIds ?? [],
   );
 
   const [address, setAddress] = useState(
-    !isAdd ? addressItemInfo?.address ?? "" : "",
+    isAdd ? "" : addressItemInfo?.address ?? "",
   );
   const [name, setName] = useState(
-    !isAdd ? addressItemInfo?.addressName ?? "" : "",
+    isAdd ? "" : addressItemInfo?.addressName ?? "",
   );
 
   const onContactNameChange = useCallback(
@@ -101,9 +103,14 @@ const AddOrEditContactScreen = () => {
     }
   }, [isAdd, supportChains]);
 
+  const [userSelectedChains, setUserSelectedChains] = useState<
+    ChainBaseConfig[]
+  >([]);
+
   const onSelectChains = useCallback(
     (configs: ChainBaseConfig[]) => {
       if (configs.length === 0) {
+        setUserSelectedChains([]);
         return;
       }
       setShowInAllEVM(
@@ -112,17 +119,23 @@ const AddOrEditContactScreen = () => {
           configs.map((cfg) => cfg.uniqueId),
         ),
       );
-      setAddressUniqueIds(configs.map((item) => item.uniqueId));
+      // setAddressUniqueIds(configs.map((item) => item.uniqueId));
+      setUserSelectedChains(configs);
     },
     [allEVMChains],
   );
 
+  useEffect(() => {
+    setAddressUniqueIds(userSelectedChains.map((cfg) => cfg.uniqueId));
+  }, [userSelectedChains]);
+
   const onSelectNetwork = useCallback(async () => {
-    const { data } = await showSelectContactNetworkDrawer({
+    await showSelectContactNetworkDrawer({
       onSelectChains,
       supportChains,
+      selectedUniqueId: addressUniqueIds,
     });
-  }, [onSelectChains, supportChains]);
+  }, [addressUniqueIds, onSelectChains, supportChains]);
 
   const canSubmit = useMemo(
     () =>
@@ -177,6 +190,41 @@ const AddOrEditContactScreen = () => {
 
   const { deleteColor } = useThemeStyle();
 
+  const renderSelectNetwork = useMemo(() => {
+    return address && addressValid ? (
+      <Flex
+        flexDir={"row"}
+        borderStyle={"solid"}
+        borderColor={"gray.50"}
+        borderWidth={"1.5px"}
+        borderRadius={"lg"}
+        px={4}
+        mt={2}
+        onClick={onSelectNetwork}
+        justify={"space-between"}
+        align={"center"}
+        h={"48px"}
+      >
+        <Flex>
+          {userSelectedChains.length > 0 ? (
+            userSelectedChains
+              .slice(0, DisplayedUniqueIdMaxLimit)
+              .map((item, index) => {
+                return (
+                  <Flex key={item.uniqueId} ml={index === 0 ? 0 : -1}>
+                    <Image src={item.logo} w={6} h={6} borderRadius={12} />
+                  </Flex>
+                );
+              })
+          ) : (
+            <Text>{t("Contacts:selectNetwork")}</Text>
+          )}
+        </Flex>
+        <IconChevronRight w={4} h={4} mr={-1} />
+      </Flex>
+    ) : null;
+  }, [address, addressValid, onSelectNetwork, t, userSelectedChains]);
+
   return (
     <PageWithHeader title={t("Contacts:addContact")}>
       <Content>
@@ -194,24 +242,7 @@ const AddOrEditContactScreen = () => {
           onChange={onAddressChange}
           isInvalid={!addressValid && !!address}
         />
-        {address && addressValid && (
-          <Flex
-            flexDir={"row"}
-            borderStyle={"solid"}
-            borderColor={"gray.50"}
-            borderWidth={"1.5px"}
-            borderRadius={"lg"}
-            px={4}
-            py={3}
-            mt={2}
-            onClick={onSelectNetwork}
-            justify={"space-between"}
-            align={"center"}
-          >
-            <Text>{t("Contacts:selectNetwork")}</Text>
-            <IconChevronRight w={4} h={4} mr={-1} />
-          </Flex>
-        )}
+        {renderSelectNetwork}
         <Button mt={10} w={"full"} onClick={onSubmit} isDisabled={!canSubmit}>
           {isAdd ? t("Contacts:confirmCreate") : t("Contacts:confirmUpdate")}
         </Button>

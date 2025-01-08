@@ -152,6 +152,11 @@ const SelectContactNetworkDrawer = (props: Props) => {
     setUserSelectedChains(isAllSelected ? [] : supportChains);
   }, [isAllSelected, supportChains]);
 
+  const onConfirmSelect = useCallback(() => {
+    onSelectChains(userSelectedChains);
+    onConfirm();
+  }, [onConfirm, onSelectChains, userSelectedChains]);
+
   return (
     <BottomUpDrawer
       isOpen={isOpen}
@@ -202,7 +207,7 @@ const SelectContactNetworkDrawer = (props: Props) => {
       }
       footer={
         <Flex justify={"space-between"} flex={1}>
-          <Button flex={1} onClick={onConfirm}>
+          <Button flex={1} onClick={onConfirmSelect}>
             {t("Common:confirm")}
           </Button>
         </Flex>
