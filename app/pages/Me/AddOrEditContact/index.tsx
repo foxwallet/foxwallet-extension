@@ -118,8 +118,11 @@ const AddOrEditContactScreen = () => {
   );
 
   const onSelectNetwork = useCallback(async () => {
-    const { data } = await showSelectContactNetworkDrawer({});
-  }, []);
+    const { data } = await showSelectContactNetworkDrawer({
+      onSelectChains,
+      supportChains,
+    });
+  }, [onSelectChains, supportChains]);
 
   const canSubmit = useMemo(
     () =>
@@ -191,7 +194,7 @@ const AddOrEditContactScreen = () => {
           onChange={onAddressChange}
           isInvalid={!addressValid && !!address}
         />
-        {address && (
+        {address && addressValid && (
           <Flex
             flexDir={"row"}
             borderStyle={"solid"}
