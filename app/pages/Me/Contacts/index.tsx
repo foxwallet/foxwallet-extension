@@ -18,7 +18,7 @@ import {
 } from "@/components/Custom/Icon";
 import type React from "react";
 import { useMemo, useCallback, useState } from "react";
-import { usePopupSelector } from "@/hooks/useStore";
+import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
 import { isEqual } from "lodash";
 import { getChainAddressBooksSelector } from "@/store/selectors/address";
 import type { InnerChainUniqueId } from "core/types/ChainUniqueId";
@@ -28,6 +28,7 @@ import { useChainConfigs } from "@/hooks/useGroupAccount";
 import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
 import { showContactMoreDrawer } from "@/components/Me/ContactMoreDrawer";
 import { serializeData, serializeToken } from "@/common/utils/string";
+import { showContactDeleteDialog } from "@/components/Me/ContactDeleteDialog";
 
 const maxLabelNumber = 3;
 
@@ -41,6 +42,7 @@ const ContactItem = ({
   const chainConfigs = useChainConfigs(item.uniqueIds);
   const { showToast } = useCopyToast();
   const navigate = useNavigate();
+  const dispatch = usePopupDispatch();
 
   const onClickContactItem = useCallback(async () => {
     await navigator.clipboard.writeText(item.address);
@@ -54,7 +56,20 @@ const ContactItem = ({
     [navigate],
   );
 
-  const onRemoveContact = useCallback((item: AddressItemV2) => {}, []);
+  const onRemoveContact = useCallback(
+    async (item: AddressItemV2) => {
+      try {
+        const { confirmed } = await showContactDeleteDialog();
+        if (confirmed) {
+          dispatch.address.removeAddress({ id: item.id });
+          // navigate(-1);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    },
+    [dispatch.address],
+  );
 
   const onMore = useCallback(async () => {
     await showContactMoreDrawer({ item, onEditContact, onRemoveContact });

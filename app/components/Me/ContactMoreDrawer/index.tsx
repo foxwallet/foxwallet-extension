@@ -13,7 +13,7 @@ interface Props {
   onConfirm: () => void;
   item: AddressItemV2;
   onEditContact: (item: AddressItemV2) => void;
-  onRemoveContact: (item: AddressItemV2) => void;
+  onRemoveContact: (item: AddressItemV2) => {};
 }
 
 const ContactMoreDrawer = (props: Props) => {

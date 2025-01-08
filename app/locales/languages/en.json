@@ -228,7 +228,8 @@
     "networkName": "Network name",
     "remove": "Remove",
     "copyAddress": "Copy Address",
-    "editAddress": "Edit Address"
+    "editAddress": "Edit Address",
+    "deleteHint": "Confirm to remove this address?"
   },
   "SelectToken": {
     "title": "Select Token",

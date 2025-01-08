@@ -26,6 +26,9 @@ import { usePopupDispatch } from "@/hooks/useStore";
 import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
 import { isEqual } from "lodash";
 import { useChainConfigs } from "@/hooks/useGroupAccount";
+import { showConfirmResyncDialog } from "@/components/Setting/ConfirmResyncDialog";
+import { useClient } from "@/hooks/useClient";
+import { showContactDeleteDialog } from "@/components/Me/ContactDeleteDialog";
 
 const DisplayedUniqueIdMaxLimit = 5;
 
@@ -34,6 +37,8 @@ const AddOrEditContactScreen = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const dispatch = usePopupDispatch();
+  const { popupServerClient } = useClient();
+
   const isAdd = useMemo(() => addOrEdit === "add", [addOrEdit]);
   const addressItem = useLocationParams("addressItem");
 
@@ -183,12 +188,20 @@ const AddOrEditContactScreen = () => {
     showInAllEVM,
   ]);
 
-  const onRemove = useCallback(() => {
+  const onRemove = useCallback(async () => {
     if (isAdd && !addressItemInfo) {
       return;
     }
-    dispatch.address.removeAddress({ id: addressItemInfo!.id });
-    navigate(-1);
+
+    try {
+      const { confirmed } = await showContactDeleteDialog();
+      if (confirmed) {
+        dispatch.address.removeAddress({ id: addressItemInfo!.id });
+        navigate(-1);
+      }
+    } catch (err) {
+      console.error(err);
+    }
   }, [addressItemInfo, dispatch, isAdd, navigate]);
 
   const { deleteColor } = useThemeStyle();
