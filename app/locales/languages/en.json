@@ -229,7 +229,10 @@
     "remove": "Remove",
     "copyAddress": "Copy Address",
     "editAddress": "Edit Address",
-    "deleteHint": "Confirm to remove this address?"
+    "deleteHint": "Confirm to remove this address?",
+    "alreadyExist": "This address already in your contact list",
+    "invalidAddress": "Invalid address"
+
   },
   "SelectToken": {
     "title": "Select Token",

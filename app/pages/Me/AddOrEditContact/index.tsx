@@ -26,8 +26,6 @@ import { usePopupDispatch } from "@/hooks/useStore";
 import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
 import { isEqual } from "lodash";
 import { useChainConfigs } from "@/hooks/useGroupAccount";
-import { showConfirmResyncDialog } from "@/components/Setting/ConfirmResyncDialog";
-import { useClient } from "@/hooks/useClient";
 import { showContactDeleteDialog } from "@/components/Me/ContactDeleteDialog";
 
 const DisplayedUniqueIdMaxLimit = 5;
@@ -37,7 +35,6 @@ const AddOrEditContactScreen = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const dispatch = usePopupDispatch();
-  const { popupServerClient } = useClient();
 
   const isAdd = useMemo(() => addOrEdit === "add", [addOrEdit]);
   const addressItem = useLocationParams("addressItem");
@@ -71,6 +68,7 @@ const AddOrEditContactScreen = () => {
   const [name, setName] = useState(
     isAdd ? "" : addressItemInfo?.addressName ?? "",
   );
+  const [debounceAddress] = useDebounce(address, 500);
 
   const initChainConfigs = useChainConfigs(addressUniqueIds);
 
@@ -91,14 +89,19 @@ const AddOrEditContactScreen = () => {
   );
 
   const addressExist = useSelector((state: RootState) => {
-    return !isAdd ? false : hasDupAddressSelector(state, { address });
+    return !isAdd
+      ? false
+      : hasDupAddressSelector(state, { address: debounceAddress });
   });
 
   const {
     valid: addressValid,
     supportChains,
     isEVMAddress,
-  } = useMemo(() => matchAddressSupportedUniqueIds(address), [address]);
+  } = useMemo(
+    () => matchAddressSupportedUniqueIds(debounceAddress),
+    [debounceAddress],
+  );
 
   const [showInAllEVM, setShowInAllEVM] = useState(false);
   const allEVMChains = useMemo(
@@ -147,12 +150,12 @@ const AddOrEditContactScreen = () => {
 
   const canSubmit = useMemo(
     () =>
-      address &&
+      debounceAddress &&
       !addressExist &&
       addressValid &&
       name &&
       addressUniqueIds.length > 0,
-    [address, addressExist, addressUniqueIds, addressValid, name],
+    [debounceAddress, addressExist, addressUniqueIds, addressValid, name],
   );
 
   const onSubmit = useCallback(() => {
@@ -206,8 +209,22 @@ const AddOrEditContactScreen = () => {
 
   const { deleteColor } = useThemeStyle();
 
+  const addressWarn = useMemo(() => {
+    let warnStr = "";
+    if (!addressValid && !!debounceAddress) {
+      warnStr = t("Contacts:invalidAddress");
+    } else if (addressExist) {
+      warnStr = t("Contacts:alreadyExist");
+    }
+    return warnStr ? (
+      <Text fontSize={"12px"} mt={2} color={"#EF466F"}>
+        {warnStr}
+      </Text>
+    ) : null;
+  }, [debounceAddress, addressExist, addressValid, t]);
+
   const renderSelectNetwork = useMemo(() => {
-    return address && addressValid ? (
+    return debounceAddress && addressValid && !addressExist ? (
       <Flex
         flexDir={"row"}
         borderStyle={"solid"}
@@ -239,7 +256,14 @@ const AddOrEditContactScreen = () => {
         <IconChevronRight w={4} h={4} mr={-1} />
       </Flex>
     ) : null;
-  }, [address, addressValid, onSelectNetwork, t, userSelectedChains]);
+  }, [
+    debounceAddress,
+    addressValid,
+    addressExist,
+    onSelectNetwork,
+    userSelectedChains,
+    t,
+  ]);
 
   return (
     <PageWithHeader title={t("Contacts:addContact")}>
@@ -256,8 +280,9 @@ const AddOrEditContactScreen = () => {
           container={{ mt: "2" }}
           value={address}
           onChange={onAddressChange}
-          isInvalid={!addressValid && !!address}
+          isInvalid={(!addressValid && !!debounceAddress) || addressExist}
         />
+        {addressWarn}
         {renderSelectNetwork}
         <Button mt={10} w={"full"} onClick={onSubmit} isDisabled={!canSubmit}>
           {isAdd ? t("Contacts:confirmCreate") : t("Contacts:confirmUpdate")}
