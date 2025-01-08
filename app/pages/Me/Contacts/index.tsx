@@ -21,33 +21,31 @@ import { useMemo, useCallback, useState } from "react";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
 import { isEqual } from "lodash";
 import { getChainAddressBooksSelector } from "@/store/selectors/address";
-import type { InnerChainUniqueId } from "core/types/ChainUniqueId";
+import type {
+  ChainUniqueId,
+  InnerChainUniqueId,
+} from "core/types/ChainUniqueId";
 import { type AddressItemV2 } from "@/store/addressModel";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import { useChainConfigs } from "@/hooks/useGroupAccount";
 import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
 import { showContactMoreDrawer } from "@/components/Me/ContactMoreDrawer";
-import { serializeData, serializeToken } from "@/common/utils/string";
+import { serializeData } from "@/common/utils/string";
 import { showContactDeleteDialog } from "@/components/Me/ContactDeleteDialog";
+import { useLocationParams } from "@/hooks/useLocationParams";
 
 const maxLabelNumber = 3;
 
 const ContactItem = ({
   item,
-  onClick,
+  onClickContactItem,
 }: {
   item: AddressItemV2;
-  onClick: () => void;
+  onClickContactItem: (item: AddressItemV2) => void;
 }) => {
   const chainConfigs = useChainConfigs(item.uniqueIds);
-  const { showToast } = useCopyToast();
   const navigate = useNavigate();
   const dispatch = usePopupDispatch();
-
-  const onClickContactItem = useCallback(async () => {
-    await navigator.clipboard.writeText(item.address);
-    showToast();
-  }, [item.address, showToast]);
 
   const onEditContact = useCallback(
     (item: AddressItemV2) => {
@@ -103,7 +101,9 @@ const ContactItem = ({
       justify={"space-between"}
       alignItems={"center"}
       cursor={"pointer"}
-      onClick={onClickContactItem}
+      onClick={() => {
+        onClickContactItem(item);
+      }}
     >
       {/* avatar name labels address */}
       <Flex alignItems={"center"}>
@@ -160,10 +160,12 @@ const ContactItem = ({
 const ContactsScreen = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { uniqueId: paramUniqueId, address: paramAddress } = useParams<{
-    uniqueId: InnerChainUniqueId;
-    address: string;
+  const { showToast } = useCopyToast();
+
+  const { action } = useParams<{
+    action: string; // manage / choose
   }>();
+  const paramUniqueId = useLocationParams("uniqueId") as ChainUniqueId;
 
   const [searchStr, setSearchStr] = useState("");
   const onInputChange = useCallback(
@@ -192,7 +194,20 @@ const ContactsScreen = () => {
       ) ?? []
     );
   }, [addressListInStore, searchStr]);
-  console.log("      addressList", addressList);
+  // console.log("      addressList", addressList);
+
+  const onClickContactItem = useCallback(
+    async (item: AddressItemV2) => {
+      if (action === "manage") {
+        await navigator.clipboard.writeText(item.address);
+        showToast();
+      } else if (action === "choose") {
+        sessionStorage.setItem("contactAddress", item.address);
+        navigate(-1);
+      }
+    },
+    [action, navigate, showToast],
+  );
 
   return (
     <PageWithHeader title={t("Setting:contacts")}>
@@ -227,7 +242,11 @@ const ContactsScreen = () => {
           >
             {addressList.map((item, index) => {
               return (
-                <ContactItem item={item} key={item.id} onClick={() => {}} />
+                <ContactItem
+                  item={item}
+                  key={item.id}
+                  onClickContactItem={onClickContactItem}
+                />
               );
             })}
           </VStack>

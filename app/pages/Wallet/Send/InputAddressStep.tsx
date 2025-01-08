@@ -44,8 +44,8 @@ export const InputAddressStep = (props: InputAddressStepProps) => {
   }, [coinService, debounceAddress]);
 
   const openContact = useCallback(() => {
-    navigate("/contacts");
-  }, [navigate]);
+    navigate(`/contacts/choose?uniqueId=${uniqueId}`);
+  }, [navigate, uniqueId]);
 
   const canConfirm = useMemo(() => {
     return !!debounceAddress && !!address && addressValid;

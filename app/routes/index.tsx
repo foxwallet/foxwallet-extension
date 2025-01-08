@@ -215,7 +215,7 @@ export const routesConfig: RouteObject[] = [
         element: <SelectToken />,
       },
       {
-        path: "contacts",
+        path: "contacts/:action",
         element: <Contacts />,
       },
       {

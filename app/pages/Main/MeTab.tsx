@@ -11,7 +11,6 @@ import {
   IconSettings,
   IconWallet,
 } from "@/components/Custom/Icon";
-import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import SettingItem from "@/components/Setting/SettingItem";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
@@ -91,7 +90,7 @@ export const MeTab = () => {
   }, [navigate]);
 
   const onContact = useCallback(() => {
-    navigate("/contacts");
+    navigate(`/contacts/manage?uniqueId=`);
   }, [navigate]);
 
   const onConnectedSites = useCallback(() => {
