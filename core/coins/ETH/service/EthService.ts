@@ -913,18 +913,18 @@ export class EthService extends CoinServiceBasic {
         console.warn("getUserInteractiveTokensByMoralis", e);
       }
     }
-    if (this.blockscoutService) {
-      try {
-        return await this.blockscoutService.getUserInteractiveTokens(params);
-      } catch (e) {
-        console.warn("getUserInteractiveTokensByBlockscout", e);
-      }
-    }
     if (this.blockbookService) {
       try {
         return await this.blockbookService.getUserInteractiveTokens(params);
       } catch (e) {
         console.warn("getUserInteractiveTokensByBlockbook", e);
+      }
+    }
+    if (this.blockscoutService) {
+      try {
+        return await this.blockscoutService.getUserInteractiveTokens(params);
+      } catch (e) {
+        console.warn("getUserInteractiveTokensByBlockscout", e);
       }
     }
     if (this.filfoxService) {
