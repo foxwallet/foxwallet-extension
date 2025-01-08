@@ -5,6 +5,7 @@ import { TokenItemWithBalance } from "../TokenItem";
 import { serializeToken } from "@/common/utils/string";
 import { type TokenV2 } from "core/types/Token";
 import { useGroupAccountAssets } from "@/hooks/useGroupAccountAssets";
+import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 
 export const AssetList = () => {
   const navigate = useNavigate();
@@ -29,6 +30,7 @@ export const AssetList = () => {
       flexDir={"column"}
       overflowY={"auto"}
       marginBottom={"60px"}
+      sx={HIDE_SCROLL_BAR_CSS}
     >
       {groupAssets.map((token) => (
         <TokenItemWithBalance

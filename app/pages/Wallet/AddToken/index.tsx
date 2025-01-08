@@ -28,6 +28,7 @@ import { useSafeParams } from "@/hooks/useSafeParams";
 import { type TokenV2 } from "core/types/Token";
 import { LoadingView } from "@/components/Custom/Loading";
 import { useSearchTokens } from "@/hooks/useSearchTokens";
+import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 
 function AddToken() {
   const { t } = useTranslation();
@@ -123,7 +124,13 @@ function AddToken() {
         />
       </InputGroup>
       {loading && <LoadingView w={12} h={12} alignSelf={"center"} mt={2} />}
-      <Flex flexDir={"column"} maxH={"500px"} overflowY={"auto"} mt={"6px"}>
+      <Flex
+        flexDir={"column"}
+        maxH={"500px"}
+        overflowY={"auto"}
+        mt={"6px"}
+        sx={HIDE_SCROLL_BAR_CSS}
+      >
         {/* added tokens */}
         {selectedTokens.length > 0 && (
           <>

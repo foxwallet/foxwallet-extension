@@ -25,6 +25,7 @@ import { isEqual } from "lodash";
 import { useSafeParams } from "@/hooks/useSafeParams";
 import { useAllTokens, useRecommendTokens } from "@/hooks/useToken";
 import { useAssetList } from "@/hooks/useAssetList";
+import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 
 const SelectTokenScreenV2 = () => {
   const { action = NextAction.Receive } = useParams<{
@@ -95,7 +96,7 @@ const SelectTokenScreenV2 = () => {
 
   const renderTokens = useMemo(() => {
     return (
-      <Box overflowY="auto">
+      <Box overflowY="auto" sx={HIDE_SCROLL_BAR_CSS}>
         <VStack spacing={"10px"}>
           {assets.map((item, index) => {
             const { symbol, name, contractAddress, tokenId } = item;
