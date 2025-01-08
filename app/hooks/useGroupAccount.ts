@@ -1,7 +1,10 @@
 import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import { usePopupDispatch, usePopupSelector } from "./useStore";
 import { useCallback, useEffect, useMemo } from "react";
-import { selectedGroupAccountSelector } from "@/store/selectors/account";
+import {
+  allChainConfigsSelector,
+  selectedGroupAccountSelector,
+} from "@/store/selectors/account";
 import { matchAccountsWithUnqiueId } from "@/store/accountV2";
 import { type OneMatchAccount } from "@/scripts/background/store/vault/types/keyring";
 import { isEqual } from "lodash";
@@ -133,4 +136,17 @@ export const getChainConfigsByFilter = ({
     }
   }
   return finalConfigs;
+};
+
+export const useChainConfigs = (uniqueIds: ChainUniqueId[]) => {
+  return useSelector((state: RootState) => {
+    const allChainConfigs = allChainConfigsSelector(state);
+    // 确保不包含已废弃的网络
+    const availableUniqueIds = uniqueIds.filter((uniqueId) =>
+      allChainConfigs.some((cfg) => cfg.uniqueId === uniqueId),
+    );
+    return availableUniqueIds.map((uniqueId) =>
+      getChainConfig({ state, uniqueId }),
+    );
+  }, isEqual);
 };

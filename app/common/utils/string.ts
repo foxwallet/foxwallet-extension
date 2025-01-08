@@ -5,3 +5,9 @@ export const serializeToken = (token: TokenV2) => {
     typeof value === "bigint" ? value.toString() : value,
   );
 };
+
+export const serializeData = <T>(token: T) => {
+  return JSON.stringify(token, (key, value) =>
+    typeof value === "bigint" ? value.toString() : value,
+  );
+};

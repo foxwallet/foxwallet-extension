@@ -226,7 +226,9 @@
     "confirmUpdate": "Confirm Update",
     "selectNetwork": "Select Network",
     "networkName": "Network name",
-    "remove": "Remove"
+    "remove": "Remove",
+    "copyAddress": "Copy Address",
+    "editAddress": "Edit Address"
   },
   "SelectToken": {
     "title": "Select Token",

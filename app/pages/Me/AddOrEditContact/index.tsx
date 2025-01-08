@@ -25,6 +25,7 @@ import { type AddressItemV2 } from "@/store/addressModel";
 import { usePopupDispatch } from "@/hooks/useStore";
 import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
 import { isEqual } from "lodash";
+import { useChainConfigs } from "@/hooks/useGroupAccount";
 
 const DisplayedUniqueIdMaxLimit = 5;
 
@@ -53,6 +54,7 @@ const AddOrEditContactScreen = () => {
       return undefined;
     }
   }, [addressItem]);
+  // console.log("      addressItemInfo", addressItemInfo);
 
   const [addressUniqueIds, setAddressUniqueIds] = useState<ChainUniqueId[]>(
     isAdd ? [] : addressItemInfo?.uniqueIds ?? [],
@@ -64,6 +66,8 @@ const AddOrEditContactScreen = () => {
   const [name, setName] = useState(
     isAdd ? "" : addressItemInfo?.addressName ?? "",
   );
+
+  const initChainConfigs = useChainConfigs(addressUniqueIds);
 
   const onContactNameChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,9 +107,8 @@ const AddOrEditContactScreen = () => {
     }
   }, [isAdd, supportChains]);
 
-  const [userSelectedChains, setUserSelectedChains] = useState<
-    ChainBaseConfig[]
-  >([]);
+  const [userSelectedChains, setUserSelectedChains] =
+    useState<ChainBaseConfig[]>(initChainConfigs);
 
   const onSelectChains = useCallback(
     (configs: ChainBaseConfig[]) => {
