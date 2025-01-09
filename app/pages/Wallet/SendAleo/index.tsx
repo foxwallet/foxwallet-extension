@@ -28,16 +28,18 @@ import {
 import { useLocationParams } from "@/hooks/useLocationParams";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
+import { type AleoService } from "core/coins/ALEO/service/AleoService";
+import { type TokenV2 } from "core/types/Token";
 
 function SendScreen() {
   const navigate = useNavigate();
   const { popupServerClient } = useClient();
   const { getMatchAccountsWithUniqueId } = useGroupAccount();
-  // TODO: get uniqueId from chain mode or page params
+  // Only use in Aleo
+  const uniqueId = InnerChainUniqueId.ALEO_MAINNET;
   const selectedAccount = useMemo(() => {
     return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_MAINNET)[0];
   }, [getMatchAccountsWithUniqueId]);
-  const uniqueId = InnerChainUniqueId.ALEO_MAINNET;
   const { coinService, chainConfig, nativeCurrency } = useCoinService(uniqueId);
   const { t } = useTranslation();
 
@@ -52,8 +54,12 @@ function SendScreen() {
     RecordDetailWithSpent | undefined
   >();
   const tokenStr = useLocationParams("token");
-  const token: Token | undefined = tokenStr ? JSON.parse(tokenStr) : undefined;
-  const [transferToken, setTransferToken] = useState<Token | undefined>(token);
+  const token: TokenV2 | undefined = tokenStr
+    ? JSON.parse(tokenStr)
+    : undefined;
+  const [transferToken, setTransferToken] = useState<TokenV2 | undefined>(
+    token,
+  );
 
   const onStep1Submit = useCallback(
     ({
@@ -67,7 +73,7 @@ function SendScreen() {
       amountNum: bigint;
       transferMethod: AleoTransferMethod;
       transferRecord?: RecordDetailWithSpent;
-      token: Token;
+      token: TokenV2;
     }) => {
       setReceiverAddress(submitReceiverAddress);
       setTransferAmount(submitAmountNum);
@@ -110,7 +116,7 @@ function SendScreen() {
       setSubmitting(true);
       try {
         const address = selectedAccount.account.address;
-        let inputs: string[];
+        let inputs: string[] = [];
         switch (finalTransferMethod) {
           case AleoTransferMethod.PRIVATE:
           case AleoTransferMethod.PRIVATE_TO_PUBLIC: {
@@ -170,7 +176,10 @@ function SendScreen() {
           tokenId: token.tokenId,
           notification: false,
         };
-        await coinService.setAddressLocalTx(address, pendingTx);
+        await (coinService as AleoService).setAddressLocalTx(
+          address,
+          pendingTx,
+        );
         popupServerClient
           .sendAleoTransaction({
             uniqueId: chainConfig.uniqueId,
@@ -193,7 +202,10 @@ function SendScreen() {
           .catch(async (err) => {
             pendingTx.error = (err as Error).message;
             pendingTx.status = AleoTxStatus.FAILED;
-            await coinService.setAddressLocalTx(address, pendingTx);
+            await (coinService as AleoService).setAddressLocalTx(
+              address,
+              pendingTx,
+            );
           });
         navigate(-1);
       } catch (err) {
@@ -203,12 +215,13 @@ function SendScreen() {
       }
     },
     [
-      selectedAccount,
-      nativeCurrency,
-      chainConfig,
-      coinService,
-      navigate,
+      submittingRef,
       transferToken,
+      selectedAccount,
+      coinService,
+      popupServerClient,
+      chainConfig,
+      navigate,
     ],
   );
 
@@ -253,7 +266,6 @@ function SendScreen() {
     receiverAddress,
     setReceiverAddress,
     transferAmount,
-    setTransferAmount,
     amountStr,
     setAmountStr,
     transferMethod,

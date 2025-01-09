@@ -15,25 +15,26 @@ import {
 } from "core/coins/ALEO/constants";
 import { AleoFeeMethod } from "core/coins/ALEO/types/FeeMethod";
 import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
-import { type Token } from "core/coins/ALEO/types/Token";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { type AleoGasFee } from "core/types/GasFee";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useBalance } from "@/hooks/useBalance";
-import { AssetType } from "core/types/Token";
+import { type TokenV2 } from "core/types/Token";
+import { type AleoService } from "core/coins/ALEO/service/AleoService";
+import { type Balance } from "@/hooks/useAleoBalance";
 
 interface GasFeeProps {
   receiverAddress: string;
   amountNum: bigint;
   transferMethod: AleoTransferMethod;
   transferRecord?: RecordDetailWithSpent;
-  token: Token;
+  token: TokenV2;
   onConfirm: (params: {
     receiverAddress: string;
     amountNum: bigint;
-    token: Token;
+    token: TokenV2;
     transferMethod: AleoTransferMethod;
     transferRecord?: RecordDetailWithSpent;
     feeType: AleoFeeMethod;
@@ -66,52 +67,26 @@ export const GasFeeStep = (props: GasFeeProps) => {
 
   const { coinService, nativeCurrency, chainConfig } = useCoinService(uniqueId);
 
-  // const { balance, loadingBalance } = useAleoBalance({
-  //   uniqueId,
-  //   programId: NATIVE_TOKEN_PROGRAM_ID,
-  //   address: selectedAccount.account.address,
-  //   refreshInterval: 10000,
-  // });
-
-  const { balance, loadingBalance } = useBalance({
+  const { balance: coinBalance, loadingBalance } = useBalance({
     uniqueId,
     address: selectedAccount.account.address,
     refreshInterval: 10000,
-    token: {
-      type: AssetType.COIN,
-      contractAddress: "",
-      uniqueId,
-      programId: NATIVE_TOKEN_PROGRAM_ID,
-      symbol: chainConfig.nativeCurrency.symbol,
-      decimals: chainConfig.nativeCurrency.decimals,
-      ownerAddress: selectedAccount.account.address,
-    },
   });
 
-  // const { balance: tokenBalance, loadingBalance: loadingTokenBalance } =
-  //   useAleoBalance({
-  //     uniqueId,
-  //     address: selectedAccount.account.address,
-  //     refreshInterval: 10000,
-  //     tokenId: token.tokenId,
-  //     programId: token.programId,
-  //   });
+  const balance: Balance = useMemo(() => {
+    return {
+      total: coinBalance?.total ?? 0n,
+      publicBalance: coinBalance?.publicBalance ?? 0n,
+      privateBalance: coinBalance?.privateBalance ?? 0n,
+    };
+  }, [coinBalance]);
 
   const { balance: tokenBalance, loadingBalance: loadingTokenBalance } =
     useBalance({
       uniqueId,
       address: selectedAccount.account.address,
       refreshInterval: 10000,
-      token: {
-        type: AssetType.TOKEN,
-        contractAddress: "",
-        uniqueId,
-        programId: token.programId,
-        tokenId: token.tokenId,
-        symbol: "",
-        decimals: 0,
-        ownerAddress: selectedAccount.account.address,
-      },
+      token,
     });
 
   const { records, loading: loadingRecords } = useRecords({
@@ -133,10 +108,9 @@ export const GasFeeStep = (props: GasFeeProps) => {
     async (method: AleoTransferMethod) => {
       setLoadingGasFee(true);
       try {
-        const { baseFee, priorityFee } = await coinService.getGasFee(
-          token.programId,
-          method,
-        );
+        const { baseFee, priorityFee } = await (
+          coinService as AleoService
+        ).getGasFee(token.programId ?? NATIVE_TOKEN_PROGRAM_ID, method);
         setFeeInfo({ baseFee, priorityFee });
       } catch (err) {
         setFeeInfo(null);
@@ -149,7 +123,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
   );
   useEffect(() => {
     void getGasFee(transferMethod);
-  }, [transferMethod]);
+  }, [getGasFee, transferMethod]);
 
   // fee record
   const defaultFeeRecord = useMemo(() => {
@@ -207,7 +181,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
       console.log(err);
       return AleoFeeMethod.FEE_PRIVATE;
     }
-  }, [currFeeRecord, gasFeeEstimated, balance, loadingBalance]);
+  }, [gasFeeEstimated, loadingBalance, balance, currFeeRecord, gasFee]);
   const [selectedFeeType, setSelectedFeeType] = useState<AleoFeeMethod | null>(
     null,
   );
@@ -275,7 +249,14 @@ export const GasFeeStep = (props: GasFeeProps) => {
         }
       }
     }
-  }, [gasFeeEstimated, currFeeType, loadingBalance, balance, currFeeRecord]);
+  }, [
+    gasFeeEstimated,
+    currFeeType,
+    loadingBalance,
+    balance.publicBalance,
+    gasFee,
+    currFeeRecord,
+  ]);
 
   const transferMethodMap = useMemo(() => {
     return {
@@ -308,7 +289,10 @@ export const GasFeeStep = (props: GasFeeProps) => {
       case AleoTransferMethod.PUBLIC:
       case AleoTransferMethod.PUBLIC_TO_PRIVATE: {
         if (token.tokenId !== NATIVE_TOKEN_TOKEN_ID) {
-          return amountNum <= tokenBalance.publicBalance;
+          return (
+            tokenBalance.publicBalance &&
+            amountNum <= tokenBalance.publicBalance
+          );
         } else {
           if (currFeeType === AleoFeeMethod.FEE_PUBLIC) {
             return amountNum + gasFee <= balance.publicBalance;
@@ -326,16 +310,17 @@ export const GasFeeStep = (props: GasFeeProps) => {
       }
     }
   }, [
-    amountNum,
     loadingBalance,
     balance,
-    transferMethod,
-    transferRecord,
-    records,
-    gasFee,
+    loadingTokenBalance,
+    tokenBalance,
     gasFeeEstimated,
+    transferMethod,
+    token.tokenId,
+    amountNum,
     currFeeType,
-    token,
+    gasFee,
+    recordAmount,
   ]);
 
   const canSubmit = useMemo(() => {
@@ -364,15 +349,13 @@ export const GasFeeStep = (props: GasFeeProps) => {
     return true;
   }, [
     loadingGasFee,
-    receiverAddress,
+    amountValid,
     gasFeeEstimated,
     gasFeeValid,
     transferMethod,
-    currFeeRecord,
     currFeeType,
-    currFeeType,
+    transferRecord,
     currFeeRecord,
-    amountValid,
   ]);
 
   const onSubmit = useCallback(() => {
@@ -392,6 +375,8 @@ export const GasFeeStep = (props: GasFeeProps) => {
       gasFee: feeInfo,
     });
   }, [
+    feeInfo,
+    onConfirm,
     receiverAddress,
     amountNum,
     token,
@@ -399,7 +384,6 @@ export const GasFeeStep = (props: GasFeeProps) => {
     transferRecord,
     currFeeType,
     currFeeRecord,
-    feeInfo,
   ]);
 
   const errorInfo = useMemo(() => {

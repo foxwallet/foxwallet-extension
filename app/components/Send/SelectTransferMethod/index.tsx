@@ -11,8 +11,6 @@ import {
   Spinner,
   Text,
 } from "@chakra-ui/react";
-import { L1, P3 } from "../../../common/theme/components/text";
-import { BasicModal } from "../../Custom/Modal";
 import { promisifyChooseDialogWrapper } from "@/common/utils/dialog";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
 import { useMemo } from "react";
@@ -22,7 +20,6 @@ import { useCoinService } from "@/hooks/useCoinService";
 import { IconCheckLine } from "@/components/Custom/Icon";
 import { useRecords } from "@/hooks/useRecord";
 import { useTranslation } from "react-i18next";
-import { type Token } from "core/coins/ALEO/types/Token";
 import { RecordFilter } from "@/scripts/background/servers/IWalletServer";
 import {
   ALPHA_TOKEN_PROGRAM_ID,
@@ -31,14 +28,14 @@ import {
   NATIVE_TOKEN_TOKEN_ID,
 } from "core/coins/ALEO/constants";
 import { useBalance } from "@/hooks/useBalance";
-import { AssetType } from "core/types/Token";
+import { type TokenV2 } from "core/types/Token";
 
 interface Props {
   isOpen: boolean;
   selectedMethod: AleoTransferMethod;
   uniqueId: ChainUniqueId;
   address: string;
-  token: Token;
+  token: TokenV2;
   onConfirm: (data: AleoTransferMethod) => void;
   onCancel: () => void;
 }
@@ -53,29 +50,12 @@ const SelectTransferMethodDrawer = (props: Props) => {
     selectedMethod,
     token,
   } = props;
-  const { nativeCurrency } = useCoinService(uniqueId);
-  // const { balance, loadingBalance } = useAleoBalance({
-  //   uniqueId,
-  //   address,
-  //   programId: token.programId,
-  //   tokenId: token.tokenId,
-  //   refreshInterval: 10000,
-  // });
 
   const { balance, loadingBalance } = useBalance({
     uniqueId,
     address,
     refreshInterval: 10000,
-    token: {
-      type: AssetType.TOKEN,
-      contractAddress: "",
-      uniqueId,
-      programId: token.programId,
-      tokenId: token.tokenId,
-      symbol: "",
-      decimals: 0,
-      ownerAddress: address,
-    },
+    token,
   });
 
   const { records, loading: loadingRecords } = useRecords({
@@ -121,7 +101,7 @@ const SelectTransferMethodDrawer = (props: Props) => {
       return t("Send:noRecordExist");
     }
     return t("Send:recordStatistics", { COUNT: tokenRecords.length });
-  }, [tokenRecords]);
+  }, [t, tokenRecords]);
 
   const transferMethods = useMemo(() => {
     return Object.values(AleoTransferMethod);
