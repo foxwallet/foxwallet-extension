@@ -100,7 +100,7 @@ function SendScreen() {
     }: {
       receiverAddress: string;
       amountNum: bigint;
-      token: Token;
+      token: TokenV2;
       transferMethod: AleoTransferMethod;
       transferRecord?: RecordDetailWithSpent;
       feeType: AleoFeeMethod;
@@ -151,7 +151,7 @@ function SendScreen() {
                 break;
               }
               case ALPHA_TOKEN_PROGRAM_ID: {
-                inputs = [token.tokenId, to, `${amount}u128`];
+                inputs = [token?.tokenId ?? "", to, `${amount}u128`];
                 break;
               }
             }
@@ -163,7 +163,7 @@ function SendScreen() {
         const pendingTx: AleoLocalTxInfo = {
           localId,
           address,
-          programId: token.programId,
+          programId: token?.programId ?? "",
           functionName: finalTransferMethod,
           inputs,
           baseFee: gasFee.baseFee.toString(),
@@ -173,7 +173,7 @@ function SendScreen() {
           timestamp,
           amount: amount.toString(),
           txType: AleoTxType.EXECUTION,
-          tokenId: token.tokenId,
+          tokenId: token?.tokenId ?? "",
           notification: false,
         };
         await (coinService as AleoService).setAddressLocalTx(
@@ -189,7 +189,7 @@ function SendScreen() {
             address,
             localId,
             chainId: chainConfig.chainId,
-            programId: token.programId,
+            programId: token?.programId ?? "",
             functionName: finalTransferMethod,
             inputs,
             feeRecord: feeRecord?.plaintext || null,
@@ -197,7 +197,7 @@ function SendScreen() {
             priorityFee: gasFee.priorityFee.toString(),
             timestamp,
             amount: amount.toString(),
-            tokenId: token.tokenId,
+            tokenId: token?.tokenId ?? "",
           })
           .catch(async (err) => {
             pendingTx.error = (err as Error).message;
