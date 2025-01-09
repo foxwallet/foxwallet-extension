@@ -10,63 +10,39 @@ import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { IconSearch } from "@/components/Custom/Icon";
 import { useDebounce } from "use-debounce";
-import {
-  type ChainUniqueId,
-  InnerChainUniqueId,
-} from "core/types/ChainUniqueId";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { PageWithHeader } from "@/layouts/Page";
 import { useNavigate, useParams } from "react-router-dom";
 import { NextAction } from "@/pages/Wallet/SelectNetwork";
 import { type TokenV2 } from "core/types/Token";
 import { serializeToken } from "@/common/utils/string";
 import { TokenItemWithBalance } from "@/components/Wallet/TokenItem";
-import { usePopupSelector } from "@/hooks/useStore";
-import { isEqual } from "lodash";
-import { useSafeParams } from "@/hooks/useSafeParams";
-import { useAllTokens, useRecommendTokens } from "@/hooks/useToken";
-import { useAssetList } from "@/hooks/useAssetList";
 import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 import { useSearchTokens } from "@/hooks/useSearchTokens";
+import { useGroupAccountAssets } from "@/hooks/useGroupAccountAssets";
+import { useGroupAccount } from "@/hooks/useGroupAccount";
 
-const SelectTokenScreenV2 = () => {
+const SelectGroupTokenScreen = () => {
   const { action = NextAction.Receive } = useParams<{
-    uniqueId: ChainUniqueId;
     action: NextAction;
   }>();
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { uniqueId, address } = useSafeParams();
 
   const [searchStr, setSearchStr] = useState("");
   const [debounceSearchStr] = useDebounce(searchStr, 500);
-  const { nativeToken } = useAssetList(uniqueId, address);
-  const recommendTokens = useRecommendTokens(uniqueId); // 推荐 数量适中
-  // console.log("      recommendTokens", recommendTokens);
-  //
-  const rawAllTokens = useAllTokens(uniqueId); // 所有 数量很多
-  // console.log("      rawAllTokens", rawAllTokens);
-
-  const userTokens = usePopupSelector(
-    (state) => state.tokens.userTokens?.[uniqueId]?.[address],
-    isEqual,
-  );
-
-  const assets = useMemo(() => {
-    if (action === NextAction.Send) {
-      return [nativeToken, ...(userTokens ?? [])];
-    } else {
-      return [nativeToken, ...recommendTokens];
-    }
-  }, [action, nativeToken, recommendTokens, userTokens]);
+  const { groupAccount, getMatchAccountsWithUniqueId } = useGroupAccount();
+  const { assets: groupAssets } = useGroupAccountAssets();
+  console.log("      groupAssets", groupAssets);
 
   const { searchRes, searching: loading } = useSearchTokens(
     searchStr,
-    rawAllTokens,
+    groupAssets,
   );
 
   const displayList = useMemo(() => {
-    return debounceSearchStr ? searchRes : assets;
-  }, [debounceSearchStr, assets, searchRes]);
+    return debounceSearchStr ? searchRes : groupAssets;
+  }, [debounceSearchStr, groupAssets, searchRes]);
 
   const onKeywordChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -78,23 +54,19 @@ const SelectTokenScreenV2 = () => {
 
   const onSelect = useCallback(
     (token: TokenV2) => {
-      if (action === NextAction.Receive) {
-        navigate(
-          `/receive/${uniqueId}/${address}?token=${serializeToken(token)}`,
-        );
-      } else if (action === NextAction.Send) {
-        if (uniqueId !== InnerChainUniqueId.ALEO_MAINNET) {
+      if (action === NextAction.Send) {
+        if (token.uniqueId !== InnerChainUniqueId.ALEO_MAINNET) {
           navigate(
-            `/send_token/${uniqueId}/${address}/?token=${serializeToken(
-              token,
-            )}`,
+            `/send_token/${token.uniqueId}/${
+              token.ownerAddress
+            }/?token=${serializeToken(token)}`,
           );
         } else {
-          navigate(`/send_aleo`);
+          navigate(`/send_aleo?token=${serializeToken(token)}`);
         }
       }
     },
-    [action, navigate, address, uniqueId],
+    [action, navigate],
   );
 
   const renderTokens = useMemo(() => {
@@ -102,13 +74,16 @@ const SelectTokenScreenV2 = () => {
       <Box overflowY="auto" sx={HIDE_SCROLL_BAR_CSS}>
         <VStack spacing={"10px"}>
           {displayList.map((item, index) => {
-            const { symbol, name, contractAddress, tokenId } = item;
+            const { symbol, name, contractAddress, tokenId, uniqueId } = item;
+            const selectAccount = getMatchAccountsWithUniqueId(
+              item.uniqueId,
+            )[0];
             const key = `${symbol}${name}${contractAddress}${tokenId}`;
             return (
               <TokenItemWithBalance
                 key={key}
                 uniqueId={uniqueId}
-                address={address}
+                address={selectAccount.account.address}
                 token={item}
                 onClick={onSelect}
                 hover
@@ -118,7 +93,7 @@ const SelectTokenScreenV2 = () => {
         </VStack>
       </Box>
     );
-  }, [displayList, onSelect, address, uniqueId]);
+  }, [displayList, getMatchAccountsWithUniqueId, onSelect]);
 
   return (
     <PageWithHeader title={t("Networks:selectToken")}>
@@ -141,4 +116,4 @@ const SelectTokenScreenV2 = () => {
   );
 };
 
-export default SelectTokenScreenV2;
+export default SelectGroupTokenScreen;

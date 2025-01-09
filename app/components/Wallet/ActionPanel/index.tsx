@@ -89,7 +89,6 @@ const MultiChainActionPanel = () => {
         title: t("Receive:title"),
         icon: <IconReceive w={9} h={9} />,
         onPress: () => {
-          // navigate("/receive");
           navigate("/select_network/receive");
         },
       },
@@ -98,8 +97,7 @@ const MultiChainActionPanel = () => {
         icon: <IconSend w={9} h={9} />,
         disabled: false,
         onPress: () => {
-          // navigate("/send_token");
-          // navigate("/select_network/send");
+          navigate("/select_group_token/send");
         },
       },
     ];
@@ -120,8 +118,8 @@ const SingleChainActionPanel = ({ uniqueId }: { uniqueId: ChainUniqueId }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { sendingAleoTx } = useIsSendingAleoTx(uniqueId);
-  const { groupAccount, getMatchAccountsWithUniqueId } = useGroupAccount();
-  const { nativeCurrency, chainConfig, coinService } = useCoinService(uniqueId);
+  const { getMatchAccountsWithUniqueId } = useGroupAccount();
+  const { chainConfig } = useCoinService(uniqueId);
   const option = useFaucetActionOption(uniqueId);
 
   const selectedAccount = useMemo(() => {
@@ -150,12 +148,6 @@ const SingleChainActionPanel = ({ uniqueId }: { uniqueId: ChainUniqueId }) => {
         disabled: sendingAleoTx ?? balance === undefined,
         onPress: () => {
           navigate(`/select_token_v2/${uniqueId}/send`);
-
-          // if (uniqueId !== InnerChainUniqueId.ALEO_MAINNET) {
-          //   navigate("/send_token");
-          // } else {
-          //   navigate("/send_aleo");
-          // }
         },
       },
     ];

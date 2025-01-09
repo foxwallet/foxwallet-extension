@@ -3,6 +3,7 @@ import { Navigate, Outlet, type RouteObject } from "react-router-dom";
 import { CheckOnboard } from "@/components/Onboard/CheckOnboard";
 import { CheckAuth } from "@/components/Onboard/CheckAuth";
 import { CheckBrowserVersion } from "@/components/Onboard/CheckBrowserVersion";
+import SelectGroupTokenScreen from "@/pages/Wallet/SelectGroupToken";
 
 // WalletTab
 const MainPage = lazy(async () => await import("../pages/Main"));
@@ -82,6 +83,9 @@ const OnboardCreateWallet = lazy(
 );
 const OnboardImportWallet = lazy(
   async () => await import("../pages/Onboard/OnboardImportWallet"),
+);
+const SelectGroupToken = lazy(
+  async () => await import("../pages/Wallet/SelectGroupToken"),
 );
 
 // 加上 onboard 和 lock 逻辑
@@ -245,6 +249,10 @@ export const routesConfig: RouteObject[] = [
       {
         path: "select_token_v2/:uniqueId/:action",
         element: <SelectTokenV2 />,
+      },
+      {
+        path: "select_group_token/:action",
+        element: <SelectGroupToken />,
       },
     ],
   },
