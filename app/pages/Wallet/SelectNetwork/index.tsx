@@ -18,10 +18,9 @@ import { useUserSelectedChains } from "@/hooks/useUserSelectedChains";
 import { type SingleChainDisplayData } from "@/components/Wallet/ChangeNetworkDrawer";
 import { Content } from "@/layouts/Content";
 import { PageWithHeader } from "@/layouts/Page";
-import type { ChainBaseConfig } from "core/types/ChainBaseConfig";
 import { getCurrLanguage, SupportLanguages } from "@/locales/i18";
 import { useNavigate, useParams } from "react-router-dom";
-import { uniqueId } from "lodash";
+import { useSearchNetworks } from "@/hooks/useSearchNetworks";
 
 export enum NextAction {
   Receive = "receive",
@@ -76,18 +75,24 @@ const SelectNetworkScreen = () => {
   }>();
   const { t } = useTranslation();
   const navigate = useNavigate();
-
+  const { selectedChains } = useUserSelectedChains();
   const [searchStr, setSearchStr] = useState("");
   const [debounceSearchStr] = useDebounce(searchStr, 500);
 
-  const { selectedChains } = useUserSelectedChains();
+  const displaySingleList = useMemo(() => {
+    return selectedChains.filter(
+      (i) => i.mode === ChainAssembleMode.SINGLE,
+    ) as SingleChainDisplayData[];
+  }, [selectedChains]);
+
+  const { searchRes, searching: loading } = useSearchNetworks(
+    searchStr,
+    displaySingleList,
+  );
 
   const displayList = useMemo(() => {
-    if (selectedChains[0].mode === ChainAssembleMode.ALL) {
-      return selectedChains.slice(1);
-    }
-    return selectedChains;
-  }, [selectedChains]);
+    return debounceSearchStr ? searchRes : displaySingleList;
+  }, [debounceSearchStr, displaySingleList, searchRes]);
 
   const onKeywordChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -109,10 +114,8 @@ const SelectNetworkScreen = () => {
       <Box overflowY="auto">
         <VStack spacing={"10px"}>
           {displayList.map((i, index) => {
-            const item = i as SingleChainDisplayData;
-            const key = item.uniqueId;
-
-            return <NetworkItem config={item} onSelect={onSelect} key={key} />;
+            const key = i.uniqueId;
+            return <NetworkItem config={i} onSelect={onSelect} key={key} />;
           })}
         </VStack>
       </Box>
