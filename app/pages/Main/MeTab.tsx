@@ -25,8 +25,6 @@ import browser from "webextension-polyfill";
 import { usePopupSelector } from "@/hooks/useStore";
 import { useCoinService } from "@/hooks/useCoinService";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
-import type { GasFee } from "core/types/GasFee";
-import { CoinType } from "core/types";
 import { useClient } from "@/hooks/useClient";
 
 export const MeTab = () => {

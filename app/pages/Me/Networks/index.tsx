@@ -3,7 +3,6 @@ import { PageWithHeader } from "@/layouts/Page";
 import { useTranslation } from "react-i18next";
 import {
   Box,
-  Button,
   Flex,
   Image,
   Input,
@@ -16,7 +15,6 @@ import {
 import {
   IconCheckboxSelected,
   IconCheckboxUnselected,
-  IconEmptyTxPlaceholder,
   IconInfo,
   IconSearch,
 } from "@/components/Custom/Icon";
@@ -32,10 +30,7 @@ import {
   useGroupAccount,
 } from "@/hooks/useGroupAccount";
 import { isEqual } from "lodash";
-import {
-  currSelectedChainsSelector,
-  walletByIdSelector,
-} from "@/store/selectors/account";
+import { currSelectedChainsSelector } from "@/store/selectors/account";
 import { getCurrLanguage, SupportLanguages } from "@/locales/i18";
 import { useNavigate } from "react-router-dom";
 import { ETH_CHAIN_CONFIGS } from "core/coins/ETH/config/chains";
@@ -46,9 +41,8 @@ import { type CoinType } from "core/types";
 import { usePopupDispatch } from "@/hooks/useStore";
 import { showNavigateToWalletManageDialog } from "@/components/Me/NavigateToWalletManageDialog";
 import { showErrorToast } from "@/components/Custom/ErrorToast";
-import { chainUniqueIdToAccountOptions } from "core/helper/CoinType";
 import { useCurrWallet } from "@/hooks/useWallets";
-import sleep from "sleep-promise";
+import { useSearchNetworks } from "@/hooks/useSearchNetworks";
 
 export type NetworkListItemProps = {
   item: ChainBaseConfig;
@@ -78,7 +72,6 @@ export const NetworkListItem = (props: NetworkListItemProps) => {
     <Flex
       alignItems={"center"}
       justify={"space-between"}
-      // bg={"aqua"}
       w={"full"}
       minH={"44px"}
     >
@@ -86,7 +79,6 @@ export const NetworkListItem = (props: NetworkListItemProps) => {
         cursor={"pointer"}
         justify={"start"}
         alignItems={"center"}
-        // bg={"yellow"}
         h={"full"}
         w={"full"}
         onClick={onSelect}
@@ -109,7 +101,6 @@ export const NetworkListItem = (props: NetworkListItemProps) => {
       </Flex>
       <Flex
         cursor={"pointer"}
-        // bg={"red"}
         mr={1}
         w={8}
         h={"full"}
@@ -125,15 +116,13 @@ export const NetworkListItem = (props: NetworkListItemProps) => {
 
 const NetworksScreen = () => {
   const { t } = useTranslation();
-  const { groupAccount, getMatchAccountsWithUniqueId } = useGroupAccount();
+  const { groupAccount } = useGroupAccount();
   const dispatch = usePopupDispatch();
   const [searchStr, setSearchStr] = useState("");
   const [debounceAddress] = useDebounce(searchStr, 500);
   const titleColor = useColorModeValue("black", "white");
   const navigate = useNavigate();
   const { selectedWallet: wallet } = useCurrWallet();
-
-  const searchRes: ChainBaseConfig[] = useMemo(() => [], []);
 
   const chainConfigs = useSelector((state: RootState) => {
     return getChainConfigsByFilter({
@@ -189,13 +178,18 @@ const NetworksScreen = () => {
     [],
   );
 
+  const { searchRes, searching: loading } = useSearchNetworks(
+    searchStr,
+    chainConfigs,
+  );
+
   const dataList = useMemo(() => {
     return debounceAddress ? searchRes : chainConfigs;
   }, [chainConfigs, debounceAddress, searchRes]);
 
   const showEmpty = useMemo(() => {
-    return debounceAddress && searchRes.length === 0;
-  }, [debounceAddress, searchRes.length]);
+    return debounceAddress && dataList.length === 0;
+  }, [debounceAddress, dataList.length]);
 
   const onPressItem = useCallback(
     async (item: ChainBaseConfig, isSelected: boolean) => {
