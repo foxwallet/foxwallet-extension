@@ -1,14 +1,9 @@
 import {
-  Box,
   Button,
   type ButtonProps,
   Flex,
   IconButton,
-  Image,
-  Tab,
-  TabIndicator,
   TabList,
-  TabPanels,
   Tabs,
   useMultiStyleConfig,
   useTab,
@@ -24,12 +19,19 @@ import {
 import { IconAddCircle } from "@/components/Custom/Icon";
 import { useNavigate } from "react-router-dom";
 import { useChainMode } from "@/hooks/useChainMode";
-import { ChainAssembleMode } from "core/types/ChainUniqueId";
+import {
+  ChainAssembleMode,
+  type ChainDisplayMode,
+} from "core/types/ChainUniqueId";
+import {
+  showChangeNetworkDrawer,
+  type SingleChainDisplayData,
+} from "@/components/Wallet/ChangeNetworkDrawer";
 
 const CustomTab = forwardRef(
   (props: PropsWithChildren & ButtonProps, ref: any) => {
     const tabProps = useTab({ ...props, ref });
-    const isSelected = !!tabProps["aria-selected"];
+    const isSelected = tabProps["aria-selected"];
 
     const styles = useMultiStyleConfig("Tabs", tabProps);
 
@@ -54,13 +56,27 @@ export const HomeTabList = () => {
 
   const [tabIndex, setTabIndex] = useState(0);
 
-  const onAddToken = useCallback(() => {
+  const onAddToken = useCallback(async () => {
     if (chainMode.mode === ChainAssembleMode.SINGLE) {
       const uniqueId = availableChainUniqueIds[0];
       navigate(`/add_token/${uniqueId}`);
     } else {
+      await showChangeNetworkDrawer({
+        title: t("Networks:selectNetwork"),
+        chainMode,
+        onWallet: () => {
+          navigate("/manage_wallet");
+        },
+        onNetworks: () => {
+          navigate("/networks");
+        },
+        onSelectNetwork: (data: ChainDisplayMode) => {
+          navigate(`/add_token/${(data as SingleChainDisplayData).uniqueId}`);
+        },
+        isForAddToken: true,
+      });
     }
-  }, [availableChainUniqueIds, chainMode.mode, navigate]);
+  }, [availableChainUniqueIds, chainMode, navigate, t]);
 
   return (
     <Tabs

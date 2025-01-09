@@ -28,6 +28,7 @@ import { NetworkItem } from "@/components/Wallet/NetworkItem";
 import { useUserSelectedChains } from "@/hooks/useUserSelectedChains";
 import { HeaderMiddleView } from "@/components/Wallet/HeaderMiddleView";
 import { useSearchNetworks } from "@/hooks/useSearchNetworks";
+import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 
 export type SingleChainDisplayData = {
   mode: ChainAssembleMode.SINGLE;
@@ -48,6 +49,7 @@ interface Props {
   onNetworks: () => void;
   onWallet: () => void;
   onSelectNetwork: (data: ChainDisplayMode) => void;
+  isForAddToken?: boolean;
 }
 
 const ChangeNetworkDrawer = (props: Props) => {
@@ -60,6 +62,7 @@ const ChangeNetworkDrawer = (props: Props) => {
     onNetworks,
     onWallet,
     onSelectNetwork,
+    isForAddToken = false,
   } = props;
   const { t } = useTranslation();
   const [searchStr, setSearchStr] = useState("");
@@ -107,7 +110,7 @@ const ChangeNetworkDrawer = (props: Props) => {
 
   const renderNetworks = useMemo(() => {
     return (
-      <Box overflowY="auto">
+      <Box overflowY="auto" sx={HIDE_SCROLL_BAR_CSS}>
         <VStack spacing={"10px"}>
           {displayList.map((item, index) => {
             const key =
@@ -163,7 +166,30 @@ const ChangeNetworkDrawer = (props: Props) => {
               {t("Networks:title")}
             </Text>
           </Flex>
-          <HeaderMiddleView onClick={onManageWallet} title={title} />
+          {isForAddToken ? (
+            <Flex
+              flexDirection={"row"}
+              align={"center"}
+              minH={"24px"}
+              pr={2}
+              pl={2}
+              position={"absolute"}
+              left={"50%"}
+              transform={"translateX(-50%)"}
+            >
+              <Text
+                fontSize={12}
+                lineHeight={4}
+                fontWeight={500}
+                maxW={100}
+                noOfLines={1}
+              >
+                {t("Networks:selectNetwork")}
+              </Text>
+            </Flex>
+          ) : (
+            <HeaderMiddleView onClick={onManageWallet} title={title} />
+          )}
           <IconCloseLine w={6} h={6} cursor={"pointer"} onClick={onCancel} />
         </Flex>
       }
