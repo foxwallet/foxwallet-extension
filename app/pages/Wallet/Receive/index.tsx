@@ -63,8 +63,8 @@ function ReceiveScreen() {
           </Text>
           <Flex
             bg={"rgba(239, 70, 111, 0.08)"}
-            h={6}
             px={2.5}
+            py={1}
             borderRadius={4}
             align={"center"}
           >

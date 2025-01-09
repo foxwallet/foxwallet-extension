@@ -129,7 +129,7 @@ const WalletsDrawer = (props: Props) => {
       footer={
         <Flex justify={"space-between"} flex={1}>
           <Button flex={1} onClick={onAddAccount}>
-            {t("Manage:addAccount")}
+            {t("Wallet:Manage:addAccount")}
           </Button>
         </Flex>
       }
