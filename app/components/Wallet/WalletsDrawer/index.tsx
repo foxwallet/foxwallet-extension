@@ -1,20 +1,17 @@
-import { Box, Flex, Text } from "@chakra-ui/react";
-import { promisifyChooseDialogWrapper } from "../../../common/utils/dialog";
+import { Button, Flex, Text } from "@chakra-ui/react";
+import { promisifyChooseDialogWrapper } from "@/common/utils/dialog";
 import { BasicDrawer } from "@/components/Custom/Drawer";
-import { useCurrWallet } from "@/hooks/useWallets";
-import {
-  IconAleo,
-  IconArrowRight,
-  IconCheckLineBlack,
-} from "@/components/Custom/Icon";
+import { useCurrWallet, useWallets } from "@/hooks/useWallets";
+import { IconArrowRight, IconCheckLineBlack } from "@/components/Custom/Icon";
 import type React from "react";
-import { useCallback } from "react";
+import { useMemo, useCallback } from "react";
 import { usePopupDispatch } from "@/hooks/useStore";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
 import { H6 } from "@/common/theme/components/text";
-import { useNavigate } from "react-router-dom";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { type OneMatchGroupAccount } from "@/scripts/background/store/vault/types/keyring";
+import { useTranslation } from "react-i18next";
+import { nanoid } from "nanoid";
 
 interface AccountListItemProps {
   account: OneMatchGroupAccount;
@@ -47,9 +44,6 @@ const AccountListItem: React.FC<AccountListItemProps> = ({
         <Text fontSize={13} fontWeight={500} align={"start"}>
           {account.group.groupName}
         </Text>
-        {/* <Box fontSize={9} color={"#777E90"} noOfLines={1}>
-          <MiddleEllipsisText text={account.address} width={260} />
-        </Box> */}
       </Flex>
       {isSelected && <IconCheckLineBlack height={18} width={18} />}
     </Flex>
@@ -65,10 +59,19 @@ interface Props {
 
 const WalletsDrawer = (props: Props) => {
   const { isOpen, onCancel, onConfirm, onManageWallet } = props;
-
+  const { t } = useTranslation();
   const { groupAccount } = useGroupAccount();
   const { selectedWallet, groupAccountsInWallet } = useCurrWallet();
   const dispatch = usePopupDispatch();
+  const { addAccount } = useWallets();
+
+  const walletId = useMemo(() => {
+    return selectedWallet?.walletId ?? "";
+  }, [selectedWallet]);
+
+  const onAddAccount = useCallback(() => {
+    void addAccount(walletId, nanoid());
+  }, [addAccount, walletId]);
 
   const handleManageWallet = useCallback(() => {
     onConfirm?.();
@@ -118,15 +121,16 @@ const WalletsDrawer = (props: Props) => {
       }
       body={
         <Flex flexDirection={"column"} px={1.5}>
-          {/* <Flex align={"center"} justify={"flex-start"}> */}
-          {/*  <IconAleo /> */}
-          {/*  <Text ml={1} fontSize={14} fontWeight={500}> */}
-          {/*    ALEO */}
-          {/*  </Text> */}
-          {/* </Flex> */}
-          <Flex direction={"column"} maxH={190} overflowY="auto">
+          <Flex direction={"column"} maxH={400} overflowY="auto">
             {groupAccountsInWallet.map(renderAccountItem)}
           </Flex>
+        </Flex>
+      }
+      footer={
+        <Flex justify={"space-between"} flex={1}>
+          <Button flex={1} onClick={onAddAccount}>
+            {t("Manage:addAccount")}
+          </Button>
         </Flex>
       }
     />

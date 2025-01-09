@@ -186,7 +186,6 @@ export const AccountInfoHeader = () => {
                 borderRadius={10}
               />
             )}
-
             <Text ml={"5px"} fontSize={"9px"}>
               {chainModeName}
             </Text>
