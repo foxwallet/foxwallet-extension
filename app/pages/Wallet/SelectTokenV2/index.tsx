@@ -26,6 +26,7 @@ import { useSafeParams } from "@/hooks/useSafeParams";
 import { useAllTokens, useRecommendTokens } from "@/hooks/useToken";
 import { useAssetList } from "@/hooks/useAssetList";
 import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
+import { useSearchTokens } from "@/hooks/useSearchTokens";
 
 const SelectTokenScreenV2 = () => {
   const { action = NextAction.Receive } = useParams<{
@@ -43,14 +44,8 @@ const SelectTokenScreenV2 = () => {
   const recommendTokens = useRecommendTokens(uniqueId); // 推荐 数量适中
   // console.log("      recommendTokens", recommendTokens);
   //
-  // const rawAllTokens = useAllTokens(uniqueId); // 所有 数量很多
+  const rawAllTokens = useAllTokens(uniqueId); // 所有 数量很多
   // console.log("      rawAllTokens", rawAllTokens);
-  //
-  // const whiteListTokens = useAllWhiteTokens(uniqueId); // 白名单 数量较多
-  // console.log("      whiteListTokens", whiteListTokens);
-  //
-  // const { assets: addressTokens } = useGroupAccountAssets();
-  // console.log("      addressTokens", addressTokens);
 
   const userTokens = usePopupSelector(
     (state) => state.tokens.userTokens?.[uniqueId]?.[address],
@@ -64,6 +59,15 @@ const SelectTokenScreenV2 = () => {
       return [nativeToken, ...recommendTokens];
     }
   }, [action, nativeToken, recommendTokens, userTokens]);
+
+  const { searchRes, searching: loading } = useSearchTokens(
+    searchStr,
+    rawAllTokens,
+  );
+
+  const displayList = useMemo(() => {
+    return debounceSearchStr ? searchRes : assets;
+  }, [debounceSearchStr, assets, searchRes]);
 
   const onKeywordChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,10 +102,9 @@ const SelectTokenScreenV2 = () => {
     return (
       <Box overflowY="auto" sx={HIDE_SCROLL_BAR_CSS}>
         <VStack spacing={"10px"}>
-          {assets.map((item, index) => {
+          {displayList.map((item, index) => {
             const { symbol, name, contractAddress, tokenId } = item;
             const key = `${symbol}${name}${contractAddress}${tokenId}`;
-            // return <TokenItem token={item} onSelect={onSelect} key={key} />;
             return (
               <TokenItemWithBalance
                 key={key}
@@ -116,7 +119,7 @@ const SelectTokenScreenV2 = () => {
         </VStack>
       </Box>
     );
-  }, [assets, onSelect, address, uniqueId]);
+  }, [displayList, onSelect, address, uniqueId]);
 
   return (
     <PageWithHeader title={t("Networks:selectToken")}>

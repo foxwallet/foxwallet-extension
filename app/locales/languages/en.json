@@ -237,7 +237,7 @@
   "SelectToken": {
     "title": "Select Token",
     "searchToken": "Search token",
-    "searchHint": "Search tokens"
+    "searchHint": "Search token(Symbol, Address)"
   },
   "Me": {
     "title": "Me"
