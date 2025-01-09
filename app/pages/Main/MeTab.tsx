@@ -22,10 +22,6 @@ import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import browser from "webextension-polyfill";
-import { usePopupSelector } from "@/hooks/useStore";
-import { useCoinService } from "@/hooks/useCoinService";
-import { InnerChainUniqueId } from "core/types/ChainUniqueId";
-import { useClient } from "@/hooks/useClient";
 
 export const MeTab = () => {
   const navigate = useNavigate();
@@ -54,24 +50,8 @@ export const MeTab = () => {
   const onCummunity = useCallback(() => {
     navigate("/community");
   }, [navigate]);
-  const { popupServerClient } = useClient();
 
-  const { nativeCurrency, chainConfig, coinService } = useCoinService(
-    InnerChainUniqueId.ETHEREUM,
-  );
-
-  // TODO local
-  const state = usePopupSelector((state) => state);
-  const onSecurityTips = useCallback(async () => {
-    const walletAddress = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045";
-    const txs = await coinService.getNativeCoinTxHistory({
-      address: walletAddress,
-      pagination: { pageNum: 0, pageSize: 50 },
-    });
-    console.log("txs", txs);
-  }, [coinService]);
-
-  const onSecurityTips1 = useCallback(() => {
+  const onSecurityTips = useCallback(() => {
     const url =
       i18next.resolvedLanguage === "zh"
         ? `${HELP_CENTER_URL}/zh/docs/security-tips`
