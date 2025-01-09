@@ -1,17 +1,13 @@
 import { useMemo } from "react";
 import { useFuseSearch } from "@/hooks/useFuseSearch";
 import { getCurrLanguage, SupportLanguages } from "@/locales/i18";
-import {
-  type ChainDisplayData,
-  type SingleChainDisplayData,
-} from "@/components/Wallet/ChangeNetworkDrawer";
-import { ChainAssembleMode } from "core/types/ChainUniqueId";
+import type { ChainBaseConfig } from "core/types/ChainBaseConfig";
 
 const CustomSearchKeyRemark = "remark";
 
-export const useSearchNetworks = (
+export const useSearchNetworks = <T extends ChainBaseConfig>(
   searchText: string,
-  targetChainList: ChainDisplayData[],
+  targetChainList: T[],
 ) => {
   const language = getCurrLanguage();
 
@@ -27,10 +23,7 @@ export const useSearchNetworks = (
   );
 
   const chainConfigWithRemark = useMemo(() => {
-    const temp = targetChainList.filter(
-      (i) => i.mode !== ChainAssembleMode.ALL,
-    );
-    return (temp as SingleChainDisplayData[]).map((config) => ({
+    return targetChainList.map((config) => ({
       ...config,
       [CustomSearchKeyRemark]:
         config.chainRemark?.[language] ??
@@ -38,12 +31,11 @@ export const useSearchNetworks = (
     }));
   }, [targetChainList, language]);
 
-  const { searchRes, searching, delaySearchStr } =
-    useFuseSearch<ChainDisplayData>(
-      searchText,
-      chainConfigWithRemark,
-      fuseOptions,
-    );
+  const { searchRes, searching, delaySearchStr } = useFuseSearch<T>(
+    searchText,
+    chainConfigWithRemark,
+    fuseOptions,
+  );
 
   return {
     searchRes,

@@ -74,11 +74,12 @@ const ChangeNetworkDrawer = (props: Props) => {
     [],
   );
 
-  const {
-    searchRes,
-    searching: loading,
-    delaySearchStr,
-  } = useSearchNetworks(searchStr, selectedChains);
+  const { searchRes, searching: loading } = useSearchNetworks(
+    searchStr,
+    selectedChains.filter(
+      (i) => i.mode === ChainAssembleMode.SINGLE,
+    ) as SingleChainDisplayData[],
+  );
 
   const displayList = useMemo(() => {
     return debounceSearchStr ? searchRes : selectedChains;

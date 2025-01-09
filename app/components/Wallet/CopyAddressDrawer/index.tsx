@@ -21,6 +21,7 @@ import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import Hover from "@/components/Custom/Hover";
 import { useChainMode } from "@/hooks/useChainMode";
 import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
+import { useSearchNetworks } from "@/hooks/useSearchNetworks";
 
 interface Props {
   isOpen: boolean;
@@ -32,11 +33,8 @@ const CopyAddressDrawer = (props: Props) => {
   const { isOpen, onCancel, onConfirm } = props;
   const { t } = useTranslation();
   const { showToast } = useCopyToast();
-
   const { availableChains } = useChainMode();
-
   const { getMatchAccountsWithUniqueId } = useGroupAccount();
-
   const [searchStr, setSearchStr] = useState("");
   const [debounceSearchStr] = useDebounce(searchStr, 500);
 
@@ -47,6 +45,15 @@ const CopyAddressDrawer = (props: Props) => {
     },
     [],
   );
+
+  const { searchRes, searching: loading } = useSearchNetworks(
+    searchStr,
+    availableChains,
+  );
+
+  const displayChains = useMemo(() => {
+    return debounceSearchStr ? searchRes : availableChains;
+  }, [debounceSearchStr, availableChains, searchRes]);
 
   const onCopyAddress = useCallback(
     async (data: OneMatchAccount) => {
@@ -61,7 +68,7 @@ const CopyAddressDrawer = (props: Props) => {
     return (
       <Box overflowY="auto">
         <VStack spacing={"10px"}>
-          {availableChains.map((item, index) => {
+          {displayChains.map((item, index) => {
             const selectedAccount = getMatchAccountsWithUniqueId(
               item.uniqueId,
             )[0];
@@ -127,7 +134,7 @@ const CopyAddressDrawer = (props: Props) => {
         </VStack>
       </Box>
     );
-  }, [availableChains, getMatchAccountsWithUniqueId, onCopyAddress]);
+  }, [displayChains, getMatchAccountsWithUniqueId, onCopyAddress]);
 
   return (
     <BottomUpDrawer
