@@ -27,6 +27,7 @@ import {
 import { NetworkItem } from "@/components/Wallet/NetworkItem";
 import { useUserSelectedChains } from "@/hooks/useUserSelectedChains";
 import { HeaderMiddleView } from "@/components/Wallet/HeaderMiddleView";
+import { useSearchNetworks } from "@/hooks/useSearchNetworks";
 
 export type SingleChainDisplayData = {
   mode: ChainAssembleMode.SINGLE;
@@ -63,7 +64,7 @@ const ChangeNetworkDrawer = (props: Props) => {
   const { t } = useTranslation();
   const [searchStr, setSearchStr] = useState("");
   const [debounceSearchStr] = useDebounce(searchStr, 500);
-  const { selectedChains: displayList } = useUserSelectedChains();
+  const { selectedChains } = useUserSelectedChains();
 
   const onKeywordChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -72,6 +73,16 @@ const ChangeNetworkDrawer = (props: Props) => {
     },
     [],
   );
+
+  const {
+    searchRes,
+    searching: loading,
+    delaySearchStr,
+  } = useSearchNetworks(searchStr, selectedChains);
+
+  const displayList = useMemo(() => {
+    return debounceSearchStr ? searchRes : selectedChains;
+  }, [debounceSearchStr, selectedChains, searchRes]);
 
   const onManageNetworks = useCallback(() => {
     onCancel?.();
