@@ -17,13 +17,18 @@ import { type TokenV2 } from "core/types/Token";
 import { useCoinService } from "@/hooks/useCoinService";
 import { useChainConfig } from "@/hooks/useGroupAccount";
 import { formatGasStr } from "core/utils/num";
-import { useNavigate } from "react-router-dom";
+
+export type Step2Data = {
+  amountStr?: string;
+  gasFee?: GasFee<CoinType>;
+};
 
 interface SendDataStepProps {
   fromAddress: string;
   toAddress: string;
   uniqueId: ChainUniqueId;
-  onStep3: () => void;
+  initData: Step2Data;
+  onStep3: (data: Step2Data) => void;
   onSend: (
     gasFee: GasFee<CoinType> | undefined,
     value: bigint | undefined,
@@ -32,12 +37,15 @@ interface SendDataStepProps {
 }
 
 export const SendDataStep = (props: SendDataStepProps) => {
-  const { uniqueId, toAddress, onSend, token, fromAddress, onStep3 } = props;
+  const { uniqueId, toAddress, onSend, token, fromAddress, onStep3, initData } =
+    props;
   const { t } = useTranslation();
   const { nativeCurrency, chainConfig, coinService } = useCoinService(uniqueId);
   const { supportCustomGasFee } = useChainConfig(uniqueId);
 
-  const [amountStr, setAmountStr] = useState("");
+  console.log("      initData ", initData);
+
+  const [amountStr, setAmountStr] = useState(initData?.amountStr ?? "");
   const [debounceAmountStr] = useDebounce(amountStr.trim(), 500);
 
   const onAmountChange = useCallback(
@@ -117,7 +125,7 @@ export const SendDataStep = (props: SendDataStepProps) => {
   // maxPriorityFeePerGas: 1097240700n
   // type: 1
   const {
-    gasFee,
+    gasFee: netGasFee,
     loadingGasFee,
     error: loadGasFeeError,
   } = useGasFee<typeof coinType>({
@@ -127,7 +135,11 @@ export const SendDataStep = (props: SendDataStepProps) => {
     value: amountBigint,
     token,
   });
-  console.log("      gasFee", gasFee);
+  console.log("      gasFee", netGasFee);
+
+  const gasFee = useMemo(() => {
+    return initData?.gasFee ?? netGasFee;
+  }, [initData.gasFee, netGasFee]);
 
   const gasValue = useMemo(() => {
     if (!gasFee) {
@@ -243,8 +255,6 @@ export const SendDataStep = (props: SendDataStepProps) => {
   const onNext = useCallback(() => {
     onSend(gasFee, amountBigint);
   }, [amountBigint, gasFee, onSend]);
-
-  const onGasSetting = useCallback(() => {}, []);
 
   const BalanceView = useMemo(() => {
     return (
@@ -363,7 +373,7 @@ export const SendDataStep = (props: SendDataStepProps) => {
               h={"30px"}
               justifyContent={loadingGasFee ? "center" : "space-between"}
               onClick={() => {
-                onStep3();
+                onStep3({ amountStr, gasFee });
               }}
             >
               <Text>
@@ -393,6 +403,7 @@ export const SendDataStep = (props: SendDataStepProps) => {
     gasFee,
     networkFeeStr,
     onStep3,
+    amountStr,
   ]);
 
   return (

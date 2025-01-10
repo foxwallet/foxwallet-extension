@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import React, { useCallback, useMemo, useState } from "react";
 import { InputAddressStep } from "@/pages/Wallet/Send/InputAddressStep";
-import { SendDataStep } from "@/pages/Wallet/Send/SendDataStep";
+import { SendDataStep, type Step2Data } from "@/pages/Wallet/Send/SendDataStep";
 import { type InnerChainUniqueId } from "core/types/ChainUniqueId";
 import type { GasFee } from "core/types/GasFee";
 import { CoinType } from "core/types";
@@ -26,6 +26,7 @@ const SendScreen = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [toAddress, setToAddress] = useState("");
+  const [step2Data, setStep2Data] = useState<Step2Data>({});
 
   const { uniqueId: paramUniqueId, address: paramAddress } = useParams<{
     uniqueId: InnerChainUniqueId;
@@ -157,10 +158,12 @@ const SendScreen = () => {
         return (
           <SendDataStep
             key={"sendDataStep"}
+            initData={step2Data}
             fromAddress={fromAddress}
             toAddress={toAddress}
             uniqueId={uniqueId}
-            onStep3={() => {
+            onStep3={(data) => {
+              setStep2Data(data);
               setStep(3);
             }}
             onSend={(gasFee, value) => {
@@ -174,15 +177,25 @@ const SendScreen = () => {
         return null;
       }
     }
-  }, [fromAddress, onSend, step, tokenInfo, toAddress, uniqueId]);
+  }, [step, uniqueId, toAddress, step2Data, fromAddress, tokenInfo, onSend]);
 
   return (
     <PageWithHeader
       title={`${t("Send:title")} ${tokenInfo.symbol}`}
       onBack={() => {
-        if (step > 1) {
-          setStep((prevState) => prevState - 1);
-          return false;
+        switch (step) {
+          case 1: {
+            return true;
+          }
+          case 2: {
+            setStep2Data({});
+            setStep((prevState) => prevState - 1);
+            return false;
+          }
+          case 3: {
+            setStep((prevState) => prevState - 1);
+            return false;
+          }
         }
         return true;
       }}
