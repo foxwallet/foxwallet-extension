@@ -120,13 +120,13 @@ export const SendDataStep = (props: SendDataStepProps) => {
     gasFee,
     loadingGasFee,
     error: loadGasFeeError,
-  } = useGasFee<typeof coinType>(
+  } = useGasFee<typeof coinType>({
     uniqueId,
-    fromAddress,
-    toAddress,
-    amountBigint,
+    from: fromAddress,
+    to: toAddress,
+    value: amountBigint,
     token,
-  );
+  });
   console.log("      gasFee", gasFee);
 
   const gasValue = useMemo(() => {
@@ -218,8 +218,7 @@ export const SendDataStep = (props: SendDataStepProps) => {
     return `${networkFee} ${gasUnit}`;
   }, [gasFee, gasUnit, supportCustomGasFee]);
 
-  console.log("      networkFeeStr");
-  console.log(networkFeeStr);
+  console.log("      networkFeeStr", networkFeeStr);
 
   // const fiatStr = useMemo(() => {
   //   if (!amountStr) {
