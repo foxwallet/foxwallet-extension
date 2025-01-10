@@ -3,7 +3,6 @@ import { Navigate, Outlet, type RouteObject } from "react-router-dom";
 import { CheckOnboard } from "@/components/Onboard/CheckOnboard";
 import { CheckAuth } from "@/components/Onboard/CheckAuth";
 import { CheckBrowserVersion } from "@/components/Onboard/CheckBrowserVersion";
-import SelectGroupTokenScreen from "@/pages/Wallet/SelectGroupToken";
 
 // WalletTab
 const MainPage = lazy(async () => await import("../pages/Main"));

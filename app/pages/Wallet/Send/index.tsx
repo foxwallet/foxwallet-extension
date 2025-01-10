@@ -149,15 +149,20 @@ const SendScreen = () => {
               setStep(2);
             }}
             toAddr={toAddress}
+            key={"inputAddressStep"}
           />
         );
       }
       case 2: {
         return (
           <SendDataStep
+            key={"sendDataStep"}
             fromAddress={fromAddress}
             toAddress={toAddress}
             uniqueId={uniqueId}
+            onStep3={() => {
+              setStep(3);
+            }}
             onSend={(gasFee, value) => {
               onSend(gasFee, value);
             }}
@@ -176,7 +181,7 @@ const SendScreen = () => {
       title={`${t("Send:title")} ${tokenInfo.symbol}`}
       onBack={() => {
         if (step > 1) {
-          setStep(1);
+          setStep((prevState) => prevState - 1);
           return false;
         }
         return true;

@@ -17,11 +17,13 @@ import { type TokenV2 } from "core/types/Token";
 import { useCoinService } from "@/hooks/useCoinService";
 import { useChainConfig } from "@/hooks/useGroupAccount";
 import { formatGasStr } from "core/utils/num";
+import { useNavigate } from "react-router-dom";
 
 interface SendDataStepProps {
   fromAddress: string;
   toAddress: string;
   uniqueId: ChainUniqueId;
+  onStep3: () => void;
   onSend: (
     gasFee: GasFee<CoinType> | undefined,
     value: bigint | undefined,
@@ -30,7 +32,7 @@ interface SendDataStepProps {
 }
 
 export const SendDataStep = (props: SendDataStepProps) => {
-  const { uniqueId, toAddress, onSend, token, fromAddress } = props;
+  const { uniqueId, toAddress, onSend, token, fromAddress, onStep3 } = props;
   const { t } = useTranslation();
   const { nativeCurrency, chainConfig, coinService } = useCoinService(uniqueId);
   const { supportCustomGasFee } = useChainConfig(uniqueId);
@@ -64,7 +66,11 @@ export const SendDataStep = (props: SendDataStepProps) => {
 
   const balanceStr = useMemo(() => {
     if (balance) {
-      return ethers.utils.formatUnits(balance.total, decimals);
+      try {
+        return ethers.utils.formatUnits(balance.total, decimals);
+      } catch (err) {
+        return "";
+      }
     }
     return "";
   }, [balance, decimals]);
@@ -136,25 +142,6 @@ export const SendDataStep = (props: SendDataStepProps) => {
         return 0n;
     }
   }, [gasFee]);
-
-  // const { gasEthStr, gasGweiStr } = useMemo(() => {
-  //   let gasEthStr = "";
-  //   let gasGweiStr = "";
-  //   if (
-  //     gasFee?.estimateGas &&
-  //     gasFee?.gasLimit &&
-  //     gasFee?.type === GasFeeType.EIP1559
-  //   ) {
-  //     gasEthStr = ethers.utils.formatUnits(gasFee.estimateGas, "ether");
-  //     gasGweiStr = ethers.utils.formatUnits(
-  //       gasFee.estimateGas / BigInt(gasFee.gasLimit),
-  //       "gwei",
-  //     );
-  //   }
-  //   return { gasEthStr, gasGweiStr };
-  // }, [gasFee]);
-  // console.log("      gasEthStr " + gasEthStr);
-  // console.log("      gasGweiStr " + gasGweiStr);
 
   // const [valueMode, setValueMode] = useState(false);
 
@@ -257,6 +244,8 @@ export const SendDataStep = (props: SendDataStepProps) => {
   const onNext = useCallback(() => {
     onSend(gasFee, amountBigint);
   }, [amountBigint, gasFee, onSend]);
+
+  const onGasSetting = useCallback(() => {}, []);
 
   const BalanceView = useMemo(() => {
     return (
@@ -369,10 +358,14 @@ export const SendDataStep = (props: SendDataStepProps) => {
             <LoadingView />
           ) : (
             <Flex
+              cursor={"pointer"}
               w={"full"}
               alignItems={"center"}
               h={"30px"}
               justifyContent={loadingGasFee ? "center" : "space-between"}
+              onClick={() => {
+                onStep3();
+              }}
             >
               <Text>
                 {formatGasStr(
@@ -400,6 +393,7 @@ export const SendDataStep = (props: SendDataStepProps) => {
     gasDecimals,
     gasFee,
     networkFeeStr,
+    onGasSetting,
   ]);
 
   return (
