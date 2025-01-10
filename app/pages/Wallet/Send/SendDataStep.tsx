@@ -393,7 +393,7 @@ export const SendDataStep = (props: SendDataStepProps) => {
     gasDecimals,
     gasFee,
     networkFeeStr,
-    onGasSetting,
+    onStep3,
   ]);
 
   return (

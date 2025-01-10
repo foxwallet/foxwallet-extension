@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
-import { KeepAliveClient, PopupServerClient } from "../common/utils/client";
-import { PortName } from "../common/types/port";
+import { KeepAliveClient, PopupServerClient } from "@/common/utils/client";
+import { PortName } from "@/common/types/port";
 
 interface Client {
   keepAliveClient: KeepAliveClient;
