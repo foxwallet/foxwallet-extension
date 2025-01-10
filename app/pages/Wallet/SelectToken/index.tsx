@@ -2,15 +2,13 @@ import { serializeToken } from "@/common/utils/string";
 import {
   IconCheckCircle,
   IconCheckCircleBlack,
-  IconCheckLine,
   IconSearch,
 } from "@/components/Custom/Icon";
-import { TokenItem, TokenItemWithBalance } from "@/components/Wallet/TokenItem";
+import { TokenItemWithBalance } from "@/components/Wallet/TokenItem";
 import { useAssetList } from "@/hooks/useAssetList";
 import { useLocationParams } from "@/hooks/useLocationParams";
 import { PageWithHeader } from "@/layouts/Page";
 import { Flex, Input, InputGroup, InputLeftElement } from "@chakra-ui/react";
-import { type Token } from "core/coins/ALEO/types/Token";
 import { type InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
@@ -19,6 +17,7 @@ import { useMemo, useCallback, useState } from "react";
 import { useFuseSearch } from "@/hooks/useFuseSearch";
 import { EmptyView } from "@/components/Custom/EmptyView";
 import { Content } from "@/layouts/Content";
+import { type TokenV2 } from "core/types/Token";
 
 const SelectTokenScreen = () => {
   const { t } = useTranslation();
@@ -27,7 +26,7 @@ const SelectTokenScreen = () => {
 
   const nextPage = useLocationParams("page");
   const currTokenStr = useLocationParams("currToken");
-  const currToken: Token | undefined = currTokenStr
+  const currToken: TokenV2 | undefined = currTokenStr
     ? JSON.parse(currTokenStr)
     : undefined;
   const { assets } = useAssetList(uniqueId as InnerChainUniqueId, address!);
@@ -42,7 +41,7 @@ const SelectTokenScreen = () => {
     [],
   );
 
-  const onTokenClick = (token: Token) => {
+  const onTokenClick = (token: TokenV2) => {
     console.log(
       "===> url",
       `${nextPage}?token=${serializeToken(token)}`,
