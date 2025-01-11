@@ -15,6 +15,7 @@ import { AssetType, type TokenV2 } from "core/types/Token";
 import { useLocationParams } from "@/hooks/useLocationParams";
 import { useChainMode } from "@/hooks/useChainMode";
 import { useAssetList } from "@/hooks/useAssetList";
+import { GasSettingStep } from "@/pages/Wallet/Send/GasSettingStep";
 
 export enum AmountType {
   FIAT,
@@ -25,7 +26,9 @@ const SendScreen = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
+  // step1 data
   const [toAddress, setToAddress] = useState("");
+  // step2 data
   const [step2Data, setStep2Data] = useState<Step2Data>({});
 
   const { uniqueId: paramUniqueId, address: paramAddress } = useParams<{
@@ -167,11 +170,14 @@ const SendScreen = () => {
               setStep(3);
             }}
             onSend={(gasFee, value) => {
-              onSend(gasFee, value);
+              // onSend(gasFee, value); //todo
             }}
             token={tokenInfo}
           />
         );
+      }
+      case 3: {
+        return <GasSettingStep uniqueId={uniqueId} onConfirm={() => {}} />;
       }
       default: {
         return null;
@@ -189,11 +195,11 @@ const SendScreen = () => {
           }
           case 2: {
             setStep2Data({});
-            setStep((prevState) => prevState - 1);
+            setStep(1);
             return false;
           }
           case 3: {
-            setStep((prevState) => prevState - 1);
+            setStep(2);
             return false;
           }
         }

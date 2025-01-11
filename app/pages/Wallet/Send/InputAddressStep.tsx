@@ -23,7 +23,7 @@ export const InputAddressStep = (props: InputAddressStepProps) => {
 
   const [borderColor, setBorderColor] = useState("gray.50");
   const [address, setAddress] = useState(toAddr ?? "");
-  const [debounceAddress] = useDebounce(address, 500);
+  const [debounceAddress] = useDebounce(address, 100);
 
   const { coinService } = useCoinService(uniqueId);
 

@@ -135,7 +135,7 @@ export const SendDataStep = (props: SendDataStepProps) => {
     value: amountBigint,
     token,
   });
-  console.log("      gasFee", netGasFee);
+  console.log("      netGasFee", netGasFee);
 
   const gasFee = useMemo(() => {
     return initData?.gasFee ?? netGasFee;

@@ -72,6 +72,7 @@ import {
   GasFeeType,
   type SerializeGasFee,
   GasGrade,
+  type GasGradeData,
 } from "core/types/GasFee";
 import { addHexPrefix, stripHexPrefix } from "ethereumjs-util";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
@@ -89,6 +90,9 @@ import {
 import { FilfoxService } from "core/coins/ETH/service/instances/filfox";
 import { MoralisService } from "core/coins/ETH/service/instances/moralis";
 import { AssetType, type TokenMetaV2, type TokenV2 } from "core/types/Token";
+import { MemoizeExpiring } from "typescript-memoize";
+import { GasPriceOracle } from "gas-price-oracle";
+import { type GasPrice } from "gas-price-oracle/lib/services";
 
 export class EthService extends CoinServiceBasic {
   config: ETHConfig;
@@ -935,5 +939,39 @@ export class EthService extends CoinServiceBasic {
 
   gasUnit(): string {
     return "Gwei";
+  }
+
+  @MemoizeExpiring(60 * 1000)
+  async getGasGradeData(): Promise<
+    | GasGradeData<GasFeeType.EIP1559>
+    | GasGradeData<GasFeeType.LEGACY>
+    | undefined
+  > {
+    if (this.config.uniqueId === InnerChainUniqueId.ETHEREUM) {
+      return await this.getEthGradeData();
+    }
+    const feeData = await this.getFeeData();
+    const oracle = new GasPriceOracle({
+      chainId: this.chainId,
+      defaultRpc: this.rpcService.connection.url,
+    });
+    if (!feeData?.eip1559) {
+      const gasPrice: GasPrice = await oracle.legacy.gasPrices();
+      return {
+        [GasGrade.Fast]: {
+          label: "<15s",
+          gasPrice: Number(gasPrice.fast),
+        },
+        [GasGrade.Middle]: {
+          label: "<30s",
+          gasPrice: Number(gasPrice.standard),
+        },
+        [GasGrade.Slow]: {
+          label: "≈30s",
+          gasPrice: Number(gasPrice.low),
+        },
+      };
+    }
+    return undefined;
   }
 }
