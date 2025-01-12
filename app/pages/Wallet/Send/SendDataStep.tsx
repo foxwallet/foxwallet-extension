@@ -27,6 +27,7 @@ interface SendDataStepProps {
   fromAddress: string;
   toAddress: string;
   uniqueId: ChainUniqueId;
+  // initData 页面加载时需要填充的数据, 包括转账金额amountStr和gasFee, 这里的gasGee可能为自定义的数据
   initData: Step2Data;
   onStep3: (data: Step2Data) => void;
   onSend: (
@@ -118,16 +119,35 @@ export const SendDataStep = (props: SendDataStepProps) => {
     amountValidErrMsg,
   );
 
+  // gas fee 相关
+
   // gas fee sample
   // estimateGas: 241382509200000n
   // gasLimit: 21000
   // maxFeePerGas: 11494405200n
   // maxPriorityFeePerGas: 1097240700n
   // type: 1
+
+  // 在发送交易时真正被使用的Gas参数
+  // const [gasFee, setGasFee] = useState<GasFee<CoinType> | undefined>();
+
+  // 默认Gas，也可以理解为系统推荐的Gas，用户修改自定义Gas后可以恢复到默认Gas。
+  // const [defaultGasFeeData, setDefaultGasFeeData] = useState<
+  //   GasFee<CoinType> | undefined
+  // >();
+
+  // 用户手动修改的自定义Gas
+  // customGasFeeOption for estimate param only, customGasFeeOption.estimateGas should not be used
+  // 当自定义Gas发生变化后 会触发 reEstimate，更新 gasFeeData
+  // const [customGasFeeOption, setCustomGasFeeOption] = useState<
+  //   GasFee<CoinType> | undefined
+  // >();
+
+  // 默认Gas，也可以理解为系统推荐的Gas
   const {
-    gasFee: netGasFee,
+    gasFee: defaultGasFeeData,
     loadingGasFee,
-    error: loadGasFeeError,
+    error: loadingGasFeeError,
   } = useGasFee<typeof coinType>({
     uniqueId,
     from: fromAddress,
@@ -135,11 +155,12 @@ export const SendDataStep = (props: SendDataStepProps) => {
     value: amountBigint,
     token,
   });
-  console.log("      netGasFee", netGasFee);
+  console.log("      defaultGasFeeData", defaultGasFeeData);
 
+  // 在发送交易时真正被使用的Gas参数
   const gasFee = useMemo(() => {
-    return initData?.gasFee ?? netGasFee;
-  }, [initData.gasFee, netGasFee]);
+    return initData?.gasFee ?? defaultGasFeeData;
+  }, [initData.gasFee, defaultGasFeeData]);
 
   const gasValue = useMemo(() => {
     if (!gasFee) {
@@ -205,18 +226,18 @@ export const SendDataStep = (props: SendDataStepProps) => {
     return coinService.gasUnit();
   }, [coinService]);
 
-  const networkFeeStr = useMemo(() => {
+  const gasFeeStr = useMemo(() => {
     const data = gasFee;
     if (!data || !supportCustomGasFee) {
       return "";
     }
-    let networkFee = "";
+    let displayStr = "";
     switch (data.type) {
       case GasFeeType.EIP1559:
-        networkFee = utils.formatUnits(data.maxFeePerGas, "gwei");
+        displayStr = utils.formatUnits(data.maxFeePerGas, "gwei");
         break;
       case GasFeeType.LEGACY:
-        networkFee = utils.formatUnits(data.gasPrice, "gwei");
+        displayStr = utils.formatUnits(data.gasPrice, "gwei");
         break;
       // case GasFeeType.UTXO:
       //   networkFee = data.feeRate ? `${data.feeRate}` : "--";
@@ -224,13 +245,13 @@ export const SendDataStep = (props: SendDataStepProps) => {
       default:
         break;
     }
-    if (!networkFee) {
+    if (!displayStr) {
       return "";
     }
-    return `${networkFee} ${gasUnit}`;
+    return `${displayStr} ${gasUnit}`;
   }, [gasFee, gasUnit, supportCustomGasFee]);
 
-  console.log("      networkFeeStr", networkFeeStr);
+  console.log("      gasFeeStr", gasFeeStr);
 
   // const fiatStr = useMemo(() => {
   //   if (!amountStr) {
@@ -346,6 +367,12 @@ export const SendDataStep = (props: SendDataStepProps) => {
     t,
   ]);
 
+  const onGasSetting = useCallback(() => {
+    if (supportCustomGasFee) {
+      onStep3({ amountStr, gasFee });
+    }
+  }, [amountStr, gasFee, onStep3, supportCustomGasFee]);
+
   const GasFeeView = useMemo(() => {
     return (
       <>
@@ -370,11 +397,9 @@ export const SendDataStep = (props: SendDataStepProps) => {
               cursor={"pointer"}
               w={"full"}
               alignItems={"center"}
-              h={"30px"}
+              h={"full"}
               justifyContent={loadingGasFee ? "center" : "space-between"}
-              onClick={() => {
-                onStep3({ amountStr, gasFee });
-              }}
+              onClick={onGasSetting}
             >
               <Text>
                 {formatGasStr(
@@ -385,8 +410,10 @@ export const SendDataStep = (props: SendDataStepProps) => {
               </Text>
               {gasFee && (
                 <Flex justifyContent={"center"} alignItems={"center"}>
-                  <Text>{networkFeeStr}</Text>
-                  <IconChevronRight w={4} h={4} ml={"1px"} />
+                  <Text>{gasFeeStr}</Text>
+                  {supportCustomGasFee && (
+                    <IconChevronRight w={4} h={4} ml={"1px"} />
+                  )}
                 </Flex>
               )}
             </Flex>
@@ -397,13 +424,13 @@ export const SendDataStep = (props: SendDataStepProps) => {
   }, [
     t,
     loadingGasFee,
+    onGasSetting,
     gasSymbol,
     gasValue,
     gasDecimals,
     gasFee,
-    networkFeeStr,
-    onStep3,
-    amountStr,
+    gasFeeStr,
+    supportCustomGasFee,
   ]);
 
   return (
