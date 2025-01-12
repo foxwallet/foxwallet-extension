@@ -1,11 +1,12 @@
 import { useCoinService } from "@/hooks/useCoinService";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { GasFee } from "core/types/GasFee";
+import { type FeeData, type GasFee, type GasFeeType } from "core/types/GasFee";
 import { type CoinType } from "core/types";
 import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import { AssetType, type TokenV2 } from "core/types/Token";
 import { type EstimateGasExtraOption } from "core/types/NativeCoinTransaction";
 import useSWR from "swr";
+import { useChainConfig } from "@/hooks/useGroupAccount";
 
 export type GasFeeReq<T extends CoinType> = {
   uniqueId: ChainUniqueId;
@@ -151,4 +152,25 @@ export const useGasFee = <T extends CoinType>(params: GasFeeReq<T>) => {
   }, [error, gasFee, getGasFee, isValidData, loadingGasFee]);
 
   return res;
+};
+
+export const useNetworkFeeData = (uniqueId: ChainUniqueId) => {
+  const { supportFeeData, coinService } = useChainConfig(uniqueId);
+  const [networkFeeData, setNetworkFeeData] = useState<
+    FeeData<GasFeeType> | undefined
+  >(undefined);
+
+  useEffect(() => {
+    const getFeeData = async () => {
+      const feeDataRes = await coinService.getFeeData();
+      if (feeDataRes) {
+        setNetworkFeeData(feeDataRes);
+      }
+    };
+    if (supportFeeData) {
+      getFeeData();
+    }
+  }, [coinService, supportFeeData, uniqueId]);
+
+  return networkFeeData;
 };

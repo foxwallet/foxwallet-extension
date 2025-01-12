@@ -12,6 +12,8 @@ import {
   type NativeCoinTxHistoryParams,
 } from "core/types/NativeCoinTransaction";
 import {
+  type FeeDataEIP1559,
+  type FeeDataLegacy,
   type GasFee,
   type GasFeeType,
   type GasGradeData,
@@ -195,5 +197,18 @@ export abstract class CoinServiceBasic {
       this.baseConfig.explorerUrls[ExplorerLanguages.EN];
     const path = this.baseConfig.explorerPaths.tx.replace("{txid}", txId);
     return simpleConcatUrl(baseUrl, path);
+  }
+
+  supportFeeData(): boolean {
+    return false;
+  }
+
+  async getFeeData(): Promise<
+    FeeDataLegacy<false> | FeeDataEIP1559<false> | undefined
+  > {
+    console.error(
+      "getFeeData not implemented for " + this.baseConfig.chainName,
+    );
+    return undefined;
   }
 }

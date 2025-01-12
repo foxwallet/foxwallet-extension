@@ -297,6 +297,10 @@ export class EthService extends CoinServiceBasic {
     };
   }
 
+  supportFeeData(): boolean {
+    return true;
+  }
+
   async getFeeData(): Promise<FeeData<GasFeeType> | undefined> {
     if (this.config.uniqueId === InnerChainUniqueId.ETHEREUM) {
       const gradeData = await this.getEthGradeData();

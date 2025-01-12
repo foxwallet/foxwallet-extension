@@ -64,7 +64,7 @@ export const useChainConfig = (uniqueId: ChainUniqueId) => {
       // supportEstimateGasFee: coinService.supportEstimateGasFee(),
       supportCustomGasFee: coinService.supportCustomGasFee(),
       // supportFaucetAirDrop: coinService.supportFaucetAirDrop(),
-      // supportFeeData: coinService.supportFeeData(),
+      supportFeeData: coinService.supportFeeData(),
       // supportNFT: coinService.supportNFT(),
       // supportBRC20: coinService.supportBRC20(),
       // supportDefi: coinService.supportDefi(),
