@@ -1,21 +1,19 @@
 import { PageWithHeader } from "@/layouts/Page";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import React, { useCallback, useMemo, useState } from "react";
 import { InputAddressStep } from "@/pages/Wallet/Send/InputAddressStep";
 import { SendDataStep, type Step2Data } from "@/pages/Wallet/Send/SendDataStep";
-import { type InnerChainUniqueId } from "core/types/ChainUniqueId";
 import type { GasFee } from "core/types/GasFee";
 import { CoinType } from "core/types";
 import { useCoinService } from "@/hooks/useCoinService";
 import { useNonce } from "@/hooks/useNonce";
 import { usePrivateKey } from "@/hooks/usePrivateKey";
 import { LoadingOverlay } from "@/components/Custom/Loading";
-import { AssetType, type TokenV2 } from "core/types/Token";
-import { useLocationParams } from "@/hooks/useLocationParams";
-import { useChainMode } from "@/hooks/useChainMode";
-import { useAssetList } from "@/hooks/useAssetList";
+import { AssetType } from "core/types/Token";
 import { GasSettingStep } from "@/pages/Wallet/Send/GasSettingStep";
+import { useSafeParams } from "@/hooks/useSafeParams";
+import { useSafeTokenInfo } from "@/hooks/useSafeTokenInfo";
 
 export enum AmountType {
   FIAT,
@@ -25,37 +23,14 @@ export enum AmountType {
 const SendScreen = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { uniqueId, address: fromAddress } = useSafeParams();
+  const { tokenInfo } = useSafeTokenInfo(uniqueId, fromAddress);
+
   const [step, setStep] = useState(1);
   // step1 data
   const [toAddress, setToAddress] = useState("");
   // step2 data
   const [step2Data, setStep2Data] = useState<Step2Data>({});
-
-  const { uniqueId: paramUniqueId, address: paramAddress } = useParams<{
-    uniqueId: InnerChainUniqueId;
-    address: string;
-  }>();
-  const { availableChainUniqueIds, availableAccounts } = useChainMode();
-
-  const { uniqueId, address: fromAddress } = useMemo(() => {
-    return {
-      uniqueId: paramUniqueId ?? availableChainUniqueIds[0],
-      address: paramAddress ?? availableAccounts[0].account.address,
-    };
-  }, [availableAccounts, availableChainUniqueIds, paramAddress, paramUniqueId]);
-
-  const token = useLocationParams("token");
-  const { nativeToken } = useAssetList(uniqueId, fromAddress);
-  const tokenInfo = useMemo(() => {
-    try {
-      if (!token) {
-        return nativeToken;
-      }
-      return JSON.parse(token) as TokenV2;
-    } catch (err) {
-      return nativeToken;
-    }
-  }, [nativeToken, token]);
 
   const { coinService } = useCoinService(uniqueId);
 
@@ -177,13 +152,19 @@ const SendScreen = () => {
         );
       }
       case 3: {
-        return <GasSettingStep uniqueId={uniqueId} onConfirm={() => {}} />;
+        return (
+          <GasSettingStep
+            uniqueId={uniqueId}
+            onConfirm={() => {}}
+            currGasGFee={step2Data.gasFee}
+          />
+        );
       }
       default: {
         return null;
       }
     }
-  }, [step, uniqueId, toAddress, step2Data, fromAddress, tokenInfo, onSend]);
+  }, [step, uniqueId, toAddress, step2Data, fromAddress, tokenInfo]);
 
   return (
     <PageWithHeader

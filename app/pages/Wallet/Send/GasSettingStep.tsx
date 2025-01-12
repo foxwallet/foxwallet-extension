@@ -13,11 +13,13 @@ import React, { useMemo, useState } from "react";
 import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import { useGasGrade } from "@/hooks/useGasGrade";
 import {
+  type GasFee,
   type GasFeeType,
   GasGrade,
   type GasGradeDataItem,
 } from "core/types/GasFee";
 import { useCoinService } from "@/hooks/useCoinService";
+import type { CoinType } from "core/types";
 
 const GasGrades: GasGrade[] = [GasGrade.Fast, GasGrade.Middle, GasGrade.Slow];
 
@@ -50,20 +52,23 @@ const GradeItemView = (props: GradeItemViewProps) => {
 interface GasSettingStepProps {
   uniqueId: ChainUniqueId;
   onConfirm: () => void;
+  currGasGFee?: GasFee<CoinType>;
 }
 
 export const GasSettingStep = (props: GasSettingStepProps) => {
-  const { onConfirm, uniqueId } = props;
+  const { onConfirm, uniqueId, currGasGFee } = props;
   const { t } = useTranslation();
   const { gasGrade, loadingGasGrade } = useGasGrade(uniqueId);
   const { nativeCurrency, chainConfig, coinService } = useCoinService(uniqueId);
   const [advanceSettings, setAdvanceSettings] = useState(false);
 
+  console.log("      currGasGFee", currGasGFee);
+
   const gasUnit = useMemo(() => {
     return coinService.gasUnit();
   }, [coinService]);
 
-  const feeType: GasFeeType = useMemo(() => gasFeeData.type, [gasFeeData]);
+  // const feeType: GasFeeType = useMemo(() => gasFeeData.type, [gasFeeData]);
 
   return (
     <Content>

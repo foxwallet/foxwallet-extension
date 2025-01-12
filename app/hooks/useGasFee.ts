@@ -25,7 +25,7 @@ export const useGasFee = <T extends CoinType>(params: GasFeeReq<T>) => {
     value,
     token,
     option,
-    refreshInterval = 4000,
+    refreshInterval = 5000,
   } = params;
 
   // const [gasFee, setGasFee] = useState<GasFee<T> | undefined>(undefined);
