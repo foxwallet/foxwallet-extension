@@ -113,12 +113,12 @@ export const SendDataStep = (props: SendDataStepProps) => {
       amountValidErrMsg: "",
     };
   }, [debounceAmountStr, decimals, balance, t]);
-  console.log(
-    "      amountBigint",
-    amountValid,
-    amountBigint,
-    amountValidErrMsg,
-  );
+  // console.log(
+  //   "      amountBigint",
+  //   amountValid,
+  //   amountBigint,
+  //   amountValidErrMsg,
+  // );
 
   // gas fee 相关
 
@@ -230,6 +230,7 @@ export const SendDataStep = (props: SendDataStepProps) => {
     return coinService.gasUnit();
   }, [coinService]);
 
+  // e.g.  21.4357382734 Gwei
   const gasFeeStr = useMemo(() => {
     const data = gasFee;
     if (!data || !supportCustomGasFee) {
@@ -254,8 +255,9 @@ export const SendDataStep = (props: SendDataStepProps) => {
     }
     return `${displayStr} ${gasUnit}`;
   }, [gasFee, gasUnit, supportCustomGasFee]);
-  console.log("      gasFeeStr", gasFeeStr);
+  // console.log("      gasFeeStr", gasFeeStr);
 
+  // e.g.  0.00043423 ETH
   const gasAmountStr = useMemo(() => {
     return formatGasStr(
       gasSymbol,

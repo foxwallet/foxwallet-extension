@@ -160,7 +160,14 @@ const SendScreen = () => {
         return (
           <GasSettingStep
             uniqueId={uniqueId}
-            onConfirm={() => {}}
+            onConfirm={(data) => {
+              console.log("      step3Data", data);
+              setStep3Data(data);
+              setStep2Data((prevState) => {
+                return { ...prevState, currGasFee: data.gasFee };
+              });
+              setStep(2);
+            }}
             step3Data={{ ...step3Data, gasFee: step2Data.currGasFee }}
             token={tokenInfo}
           />

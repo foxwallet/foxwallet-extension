@@ -150,6 +150,7 @@ const GradeItemView = (props: GradeItemViewProps) => {
       onClick={() => {
         onSelectGrade(grade);
       }}
+      pr={2}
     >
       <Flex
         w={"full"}
@@ -158,7 +159,7 @@ const GradeItemView = (props: GradeItemViewProps) => {
         align={"center"}
         justify={"space-between"}
       >
-        <Flex key={"speedAndGwei"} direction={"column"} w={"80px"}>
+        <Flex key={"speedAndGwei"} direction={"column"} w={"80px"} ml={2}>
           <Text fontSize={"12px"} fontWeight={"bold"}>
             {gradeName}
           </Text>
@@ -183,7 +184,7 @@ interface GasSettingStepProps {
   onConfirm: (data: Step3Data) => void;
   step3Data?: Step3Data;
   token?: TokenV2;
-  returnStep2: () => void;
+  // returnStep2: (data: Step3Data) => void;
 }
 
 export const GasSettingStep = (props: GasSettingStepProps) => {
@@ -199,7 +200,7 @@ export const GasSettingStep = (props: GasSettingStepProps) => {
   const [advanceSettings, setAdvanceSettings] = useState(false);
   const networkFeeData = useNetworkFeeData(uniqueId);
 
-  console.log("      gasGrade", gasGrade);
+  // console.log("      gasGrade", gasGrade);
   console.log("      gasFee", gasFee);
 
   const gasUnit = useMemo(() => {
@@ -248,7 +249,8 @@ export const GasSettingStep = (props: GasSettingStepProps) => {
       maxFeePerGas: (gasFee as GasFeeEIP1559).maxFeePerGas ?? null,
       maxPriorityFeePerGas:
         (gasFee as GasFeeEIP1559).maxPriorityFeePerGas ?? null,
-      gasLimit: (gasFee as GasFeeLegacy).gasLimit ?? null,
+      gasLimit:
+        (gasFee as GasFeeLegacy).gasLimit ?? constants.DEFAULT_GAS_LIMIT,
       feeRate: (gasFee as GasFeeUTXO).feeRate ?? null,
     };
   });
@@ -319,7 +321,7 @@ export const GasSettingStep = (props: GasSettingStepProps) => {
       }
       return false;
     });
-    console.log("      matchingGrade", matchingGrade);
+    // console.log("      matchingGrade", matchingGrade);
     return matchingGrade;
   }, [currentData, gasGrade]);
 
@@ -327,6 +329,7 @@ export const GasSettingStep = (props: GasSettingStepProps) => {
     () => pageSelectGrade ?? defaultSelectedGrade,
     [defaultSelectedGrade, pageSelectGrade],
   );
+  // console.log("      selectedGrade", selectedGrade);
 
   const onSelectGrade = useCallback(
     async (data: GasGrade) => {
@@ -335,7 +338,9 @@ export const GasSettingStep = (props: GasSettingStepProps) => {
       const gasGradeDataItem = gasGrade?.[data];
       if (isNotEmpty(gasGradeDataItem)) {
         const gradeDataKeys = Object.keys(gasGradeDataItem);
+        const gasLimit = currentData.gasLimit;
         const gradeData: EditableFields = {};
+        let estimateGas: bigint = 0n;
         for (const gradeDataKey of gradeDataKeys) {
           // @ts-expect-error ignore
           const property = gasGradeDataItem[gradeDataKey] as number;
@@ -343,30 +348,62 @@ export const GasSettingStep = (props: GasSettingStepProps) => {
             case "feeRate":
               gradeData.feeRate = property;
               break;
-            case "maxFeePerGas":
-              gradeData.maxFeePerGas = utils
+            case "maxFeePerGas": {
+              const maxFeePerGas = utils
                 .parseUnits(`${property}`, "gwei")
                 .toBigInt();
+              gradeData.maxFeePerGas = maxFeePerGas;
+              estimateGas = maxFeePerGas * BigInt(gasLimit);
               break;
+            }
+
             case "maxPriorityFeePerGas":
               gradeData.maxPriorityFeePerGas = utils
                 .parseUnits(`${property}`, "gwei")
                 .toBigInt();
               break;
-            case "gasPrice":
-              gradeData.gasPrice = utils
+            case "gasPrice": {
+              const gasPrice = utils
                 .parseUnits(`${property}`, "gwei")
                 .toBigInt();
+              gradeData.gasPrice = gasPrice;
+              estimateGas = gasPrice * BigInt(gasLimit);
               break;
+            }
+
             default:
               break;
           }
         }
         updateCurrentData({ ...currentData, ...gradeData });
         await timeout(0);
+
+        const newGasFee =
+          gasFee?.type === GasFeeType.EIP1559
+            ? {
+                estimateGas,
+                gasLimit,
+                type: gasFee?.type,
+                maxFeePerGas: gradeData.maxFeePerGas,
+                maxPriorityFeePerGas: gradeData.maxPriorityFeePerGas,
+              }
+            : gasFee?.type === GasFeeType.LEGACY
+            ? {
+                estimateGas,
+                gasLimit,
+                type: gasFee?.type,
+                gasPrice: gradeData.gasPrice,
+              }
+            : undefined;
+        onConfirm({
+          isCustom: false,
+          selectedGrade: data,
+          // @ts-expect-error ignore
+          gasFee: newGasFee,
+        });
       }
     },
-    [currentData, gasGrade, updateCurrentData],
+    [currentData, gasFee, gasGrade, onConfirm, updateCurrentData],
   );
 
   useEffect(() => {
@@ -400,7 +437,7 @@ export const GasSettingStep = (props: GasSettingStepProps) => {
           gasGrade={gasGrade}
           gasUnit={gasUnit}
           isCustom={isCustom}
-          customGasLimit={currentData.gasLimit ?? constants.DEFAULT_GAS_LIMIT}
+          customGasLimit={currentData.gasLimit}
           gasDecimals={nativeCurrency.decimals}
           gasSymbol={nativeCurrency.symbol}
           selectedGrade={selectedGrade}
