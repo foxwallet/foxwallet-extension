@@ -26,12 +26,8 @@ export const useGasFee = <T extends CoinType>(params: GasFeeReq<T>) => {
     value,
     token,
     option,
-    refreshInterval = 5000,
+    refreshInterval = 1 * 60 * 1000,
   } = params;
-
-  // const [gasFee, setGasFee] = useState<GasFee<T> | undefined>(undefined);
-  // const [loading, setLoading] = useState(false);
-  // const [error, setError] = useState<Error | undefined>(undefined);
 
   const { coinService } = useCoinService(uniqueId);
 
@@ -90,49 +86,6 @@ export const useGasFee = <T extends CoinType>(params: GasFeeReq<T>) => {
   } = useSWR(isValidData ? key : null, fetchGas, {
     refreshInterval,
   });
-
-  // useEffect(() => {
-  //   if (
-  //     !value ||
-  //     value === 0n ||
-  //     !coinService.validateAddress(from) ||
-  //     !coinService.validateAddress(to)
-  //   ) {
-  //     setGasFee(undefined);
-  //     setLoading(false);
-  //     setError(new Error("Data error"));
-  //     return;
-  //   }
-  //
-  //   const fetchGasFee = async () => {
-  //     try {
-  //       setLoading(true);
-  //
-  //       if (token?.type === AssetType.TOKEN) {
-  //         const res = (await coinService.getTokenEstimateGasFee({
-  //           tx: { from, to, value, token },
-  //           option,
-  //         })) as GasFee<T>;
-  //
-  //         setGasFee(res);
-  //       } else {
-  //         const res = (await coinService.estimateGasFee({
-  //           tx: { from, to, value },
-  //         })) as GasFee<T>;
-  //
-  //         setGasFee(res);
-  //       }
-  //     } catch (err) {
-  //       setError(
-  //         err instanceof Error ? err : new Error("Failed to estimate gas fee"),
-  //       );
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-  //
-  //   fetchGasFee();
-  // }, [token, uniqueId, coinService, from, to, value, option]);
 
   const res = useMemo(() => {
     if (!isValidData) {

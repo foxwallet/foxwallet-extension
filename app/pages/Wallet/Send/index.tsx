@@ -11,7 +11,10 @@ import { useNonce } from "@/hooks/useNonce";
 import { usePrivateKey } from "@/hooks/usePrivateKey";
 import { LoadingOverlay } from "@/components/Custom/Loading";
 import { AssetType } from "core/types/Token";
-import { GasSettingStep } from "@/pages/Wallet/Send/GasSettingStep";
+import {
+  GasSettingStep,
+  type Step3Data,
+} from "@/pages/Wallet/Send/GasSettingStep";
 import { useSafeParams } from "@/hooks/useSafeParams";
 import { useSafeTokenInfo } from "@/hooks/useSafeTokenInfo";
 
@@ -31,6 +34,8 @@ const SendScreen = () => {
   const [toAddress, setToAddress] = useState("");
   // step2 data
   const [step2Data, setStep2Data] = useState<Step2Data>({});
+  // step3 data
+  const [step3Data, setStep3Data] = useState<Step3Data>({});
 
   const { coinService } = useCoinService(uniqueId);
 
@@ -156,7 +161,8 @@ const SendScreen = () => {
           <GasSettingStep
             uniqueId={uniqueId}
             onConfirm={() => {}}
-            currGasGFee={step2Data.gasFee}
+            step3Data={{ ...step3Data, gasFee: step2Data.currGasFee }}
+            token={tokenInfo}
           />
         );
       }
@@ -164,7 +170,7 @@ const SendScreen = () => {
         return null;
       }
     }
-  }, [step, uniqueId, toAddress, step2Data, fromAddress, tokenInfo]);
+  }, [step, uniqueId, toAddress, step2Data, fromAddress, tokenInfo, step3Data]);
 
   return (
     <PageWithHeader

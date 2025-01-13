@@ -136,6 +136,11 @@
     "processing": "Transaction is processing, please wait.",
     "selectGasFee": "Select Gas Fee"
   },
+  "GasSetting": {
+    "fast": "Fast",
+    "middle": "Middle",
+    "slow": "Slow"
+  },
   "JoinSplit": {
     "title": "Join&Split",
     "join": "Join",

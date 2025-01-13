@@ -20,7 +20,8 @@ import { formatGasStr } from "core/utils/num";
 
 export type Step2Data = {
   amountStr?: string;
-  gasFee?: GasFee<CoinType>;
+  currGasFee?: GasFee<CoinType>;
+  recommendGasFee?: GasFee<CoinType>;
 };
 
 interface SendDataStepProps {
@@ -154,13 +155,14 @@ export const SendDataStep = (props: SendDataStepProps) => {
     to: toAddress,
     value: amountBigint,
     token,
+    refreshInterval: 1 * 60 * 1000,
   });
   console.log("      defaultGasFeeData", defaultGasFeeData);
 
   // 在发送交易时真正被使用的Gas参数
   const gasFee = useMemo(() => {
-    return initData?.gasFee ?? defaultGasFeeData;
-  }, [initData.gasFee, defaultGasFeeData]);
+    return initData?.currGasFee ?? defaultGasFeeData;
+  }, [initData.currGasFee, defaultGasFeeData]);
 
   const gasValue = useMemo(() => {
     if (!gasFee) {
@@ -171,6 +173,8 @@ export const SendDataStep = (props: SendDataStepProps) => {
         return gasFee.maxFeePerGas * BigInt(gasFee.gasLimit);
       case GasFeeType.LEGACY:
         return gasFee.gasPrice * BigInt(gasFee.gasLimit);
+      case GasFeeType.UTXO:
+        return gasFee.estimateGas;
       default:
         return 0n;
     }
@@ -369,7 +373,7 @@ export const SendDataStep = (props: SendDataStepProps) => {
 
   const onGasSetting = useCallback(() => {
     if (supportCustomGasFee) {
-      onStep3({ amountStr, gasFee });
+      onStep3({ amountStr, currGasFee: gasFee });
     }
   }, [amountStr, gasFee, onStep3, supportCustomGasFee]);
 
