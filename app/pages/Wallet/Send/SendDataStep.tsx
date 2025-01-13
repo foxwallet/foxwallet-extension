@@ -254,8 +254,15 @@ export const SendDataStep = (props: SendDataStepProps) => {
     }
     return `${displayStr} ${gasUnit}`;
   }, [gasFee, gasUnit, supportCustomGasFee]);
-
   console.log("      gasFeeStr", gasFeeStr);
+
+  const gasAmountStr = useMemo(() => {
+    return formatGasStr(
+      gasSymbol,
+      BigNumber.from(gasValue.toString()),
+      gasDecimals,
+    );
+  }, [gasDecimals, gasSymbol, gasValue]);
 
   // const fiatStr = useMemo(() => {
   //   if (!amountStr) {
@@ -405,13 +412,7 @@ export const SendDataStep = (props: SendDataStepProps) => {
               justifyContent={loadingGasFee ? "center" : "space-between"}
               onClick={onGasSetting}
             >
-              <Text>
-                {formatGasStr(
-                  gasSymbol,
-                  BigNumber.from(gasValue.toString()),
-                  gasDecimals,
-                )}
-              </Text>
+              <Text>{gasAmountStr}</Text>
               {gasFee && (
                 <Flex justifyContent={"center"} alignItems={"center"}>
                   <Text>{gasFeeStr}</Text>
@@ -429,12 +430,10 @@ export const SendDataStep = (props: SendDataStepProps) => {
     t,
     loadingGasFee,
     onGasSetting,
-    gasSymbol,
-    gasValue,
-    gasDecimals,
     gasFee,
     gasFeeStr,
     supportCustomGasFee,
+    gasAmountStr,
   ]);
 
   return (
