@@ -1,8 +1,15 @@
-import { Flex, Text, VStack } from "@chakra-ui/react";
-import { H6 } from "@/common/theme/components/text";
+import {
+  Button,
+  Flex,
+  InputRightElement,
+  Text,
+  VStack,
+} from "@chakra-ui/react";
+import { H6, H4, P1, B1 } from "@/common/theme/components/text";
 import { useTranslation } from "react-i18next";
 import { Content } from "@/layouts/Content";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import type React from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import { useGasGrade } from "@/hooks/useGasGrade";
 import {
@@ -25,8 +32,15 @@ import { formatGasStr } from "core/utils/num";
 import { BigNumber, utils } from "ethers";
 import { isNotEmpty } from "core/utils/is";
 import { timeout } from "@/common/utils/timeout";
+import { BaseInput, BaseInputGroup } from "@/components/Custom/Input";
+import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
+import { TokenNum } from "@/components/Wallet/TokenNum";
 
 const GasGrades: GasGrade[] = [GasGrade.Fast, GasGrade.Middle, GasGrade.Slow];
+
+function isNumeric(str: string) {
+  return /^-?\d+(\.\d+)?$/.test(str);
+}
 
 export type Step3Data = {
   isCustom?: boolean; // 用户自己输入数据
@@ -69,7 +83,7 @@ const GasGradeSelector = (props: GasGradeSelectorProps<GasFeeType>) => {
 
   return (
     <>
-      <H6 mb={"2"}>{t("Send:selectGasFee")}</H6>
+      <H6 mb={"2"}>{t("GasSetting:selectGasFee")}</H6>
       <VStack spacing={2}>
         {gasGrade &&
           Object.entries(gasGrade).map(([grade, gradeData], index) => {
@@ -142,7 +156,7 @@ const GradeItemView = (props: GradeItemViewProps) => {
     <Flex
       bg={"#f9f9f9"}
       w={"full"}
-      h={"45px"}
+      h={"50px"}
       borderRadius={4}
       align={"center"}
       justify={"space-between"}
@@ -179,12 +193,269 @@ const GradeItemView = (props: GradeItemViewProps) => {
   );
 };
 
+type CustomGasViewProps = {
+  showData: {
+    showMaxFeeSetting: boolean;
+    showGasPriceSetting: boolean;
+    showGasLimitSetting: boolean;
+  };
+  currentData: {
+    gasPrice: bigint;
+    maxFeePerGas: bigint;
+    maxPriorityFeePerGas: bigint;
+    gasLimit: number;
+    feeRate: number | null;
+  };
+  isAdvanced: boolean;
+  setAdvanced: () => void;
+  gasUnit: string;
+  feeType?: GasFeeType;
+  onConfirm: (data: Step3Data) => void;
+};
+
+const CustomGasView = (props: CustomGasViewProps) => {
+  const {
+    isAdvanced,
+    setAdvanced,
+    currentData,
+    showData,
+    gasUnit,
+    feeType,
+    onConfirm,
+  } = props;
+  const { showMaxFeeSetting, showGasPriceSetting, showGasLimitSetting } =
+    showData;
+  const { t } = useTranslation();
+
+  // maxPriorityFeePerGas
+  const paramMaxPriorityFeePerGas = useMemo(() => {
+    return showMaxFeeSetting
+      ? utils.formatUnits(currentData.maxPriorityFeePerGas, "gwei")
+      : "";
+  }, [currentData.maxPriorityFeePerGas, showMaxFeeSetting]);
+  const [maxPriorityFeePerGas, setMaxPriorityFeePerGas] = useState(
+    paramMaxPriorityFeePerGas,
+  );
+  const onMaxPriorityFeePerGasChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setMaxPriorityFeePerGas(event.target.value);
+    },
+    [],
+  );
+
+  // maxFeePerGas
+  const paramMaxFeePerGas = useMemo(() => {
+    return showMaxFeeSetting
+      ? utils.formatUnits(currentData.maxFeePerGas, "gwei")
+      : "";
+  }, [currentData.maxFeePerGas, showMaxFeeSetting]);
+  const [maxFeePerGas, setMaxFeePerGas] = useState(paramMaxFeePerGas);
+  const onMaxFeePerGasChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setMaxFeePerGas(event.target.value);
+    },
+    [],
+  );
+
+  // gasPrice
+  const paramGasPrice = useMemo(() => {
+    return showGasPriceSetting
+      ? utils.formatUnits(currentData.gasPrice, "gwei")
+      : "";
+  }, [currentData.gasPrice, showGasPriceSetting]);
+  const [gasPrice, setGasPrice] = useState(paramGasPrice);
+  const onGasPriceChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setGasPrice(event.target.value);
+    },
+    [],
+  );
+
+  // gasLimit
+  const [gasLimit, setGasLimit] = useState(currentData.gasLimit.toString());
+  const onGasLimitChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setGasLimit(event.target.value);
+    },
+    [],
+  );
+
+  const {
+    maxPriorityFeePerGasValid,
+    maxFeePerGasValid,
+    gasPriceValid,
+    gasLimitValid,
+  } = useMemo(() => {
+    return {
+      maxPriorityFeePerGasValid: isNumeric(maxPriorityFeePerGas),
+      maxFeePerGasValid: isNumeric(maxFeePerGas),
+      gasPriceValid: isNumeric(gasPrice),
+      gasLimitValid: isNumeric(gasLimit),
+    };
+  }, [gasLimit, gasPrice, maxFeePerGas, maxPriorityFeePerGas]);
+
+  const canConfirm = useMemo(() => {
+    if (!gasLimitValid) {
+      return false;
+    }
+    if (maxPriorityFeePerGasValid && maxFeePerGasValid) {
+      return true;
+    }
+    if (gasPriceValid) {
+      return true;
+    }
+  }, [
+    gasLimitValid,
+    gasPriceValid,
+    maxFeePerGasValid,
+    maxPriorityFeePerGasValid,
+  ]);
+
+  const onCustom = useCallback(() => {
+    const newGasFee =
+      feeType === GasFeeType.EIP1559
+        ? {
+            estimateGas:
+              utils.parseUnits(maxFeePerGas, "gwei").toBigInt() *
+              BigInt(gasLimit),
+            gasLimit: Number(gasLimit),
+            type: feeType,
+            maxFeePerGas: utils.parseUnits(maxFeePerGas, "gwei").toBigInt(),
+            maxPriorityFeePerGas: utils
+              .parseUnits(maxPriorityFeePerGas, "gwei")
+              .toBigInt(),
+          }
+        : feeType === GasFeeType.LEGACY
+        ? {
+            estimateGas:
+              utils.parseUnits(gasPrice, "gwei").toBigInt() * BigInt(gasLimit),
+            gasLimit: Number(gasLimit),
+            type: feeType,
+            gasPrice: utils.parseUnits(gasPrice, "gwei").toBigInt(),
+          }
+        : undefined;
+    onConfirm({
+      isCustom: true,
+      selectedGrade: undefined,
+      gasFee: newGasFee,
+    });
+  }, [
+    feeType,
+    gasLimit,
+    gasPrice,
+    maxFeePerGas,
+    maxPriorityFeePerGas,
+    onConfirm,
+  ]);
+
+  return (
+    <Flex mt={4} direction={"column"}>
+      <Flex
+        w={"full"}
+        h={"40px"}
+        justifyContent={"space-between"}
+        alignItems={"center"}
+        pr={2}
+        cursor={"pointer"}
+        onClick={setAdvanced}
+        mb={2}
+        bg={isAdvanced ? "" : "#f9f9f9"}
+        borderRadius={4}
+      >
+        <H6>{t("GasSetting:advanced")}</H6>
+        {isAdvanced ? <IconCheckboxSelected /> : <Flex w={"18px"} />}
+      </Flex>
+      {isAdvanced ? (
+        <Flex direction={"column"}>
+          {showMaxFeeSetting && (
+            <>
+              <BaseInputGroup
+                container={{ mt: 2 }}
+                title={t("GasSetting:maxPriorityFeeTitle")}
+                inputProps={{
+                  defaultValue: maxPriorityFeePerGas,
+                  onChange: onMaxPriorityFeePerGasChange,
+                  isInvalid: !maxPriorityFeePerGasValid,
+                }}
+                rightElement={
+                  <InputRightElement
+                    display={"flex"}
+                    justifyContent={"center"}
+                    alignItems={"center"}
+                    height="100%"
+                    pr={4}
+                  >
+                    <Text color={"#777e90"}>{gasUnit}</Text>
+                  </InputRightElement>
+                }
+              />
+              <BaseInputGroup
+                container={{ mt: 2 }}
+                title={t("GasSetting:maxFeeTitle")}
+                inputProps={{
+                  defaultValue: maxFeePerGas,
+                  onChange: onMaxFeePerGasChange,
+                  isInvalid: !maxFeePerGasValid,
+                }}
+                rightElement={
+                  <InputRightElement
+                    display={"flex"}
+                    justifyContent={"center"}
+                    alignItems={"center"}
+                    height="100%"
+                    pr={4}
+                  >
+                    <Text color={"#777e90"}>{gasUnit}</Text>
+                  </InputRightElement>
+                }
+              />
+            </>
+          )}
+          {showGasPriceSetting && (
+            <BaseInputGroup
+              container={{ mt: 2 }}
+              title={"Gas price"}
+              inputProps={{
+                defaultValue: gasPrice,
+                onChange: onGasPriceChange,
+                isInvalid: !gasPriceValid,
+              }}
+              rightElement={
+                <InputRightElement
+                  display={"flex"}
+                  justifyContent={"center"}
+                  alignItems={"center"}
+                  height="100%"
+                  pr={4}
+                >
+                  <Text color={"#777e90"}>{gasUnit}</Text>
+                </InputRightElement>
+              }
+            />
+          )}
+          {showGasLimitSetting && (
+            <BaseInput
+              title={t("GasSetting:gasLimitTitle")}
+              container={{ mt: "2" }}
+              value={gasLimit}
+              onChange={onGasLimitChange}
+              isInvalid={!gasLimitValid}
+            />
+          )}
+          <Button mt={5} w={"full"} onClick={onCustom} isDisabled={!canConfirm}>
+            {t("Common:confirm")}
+          </Button>
+        </Flex>
+      ) : null}
+    </Flex>
+  );
+};
+
 interface GasSettingStepProps {
   uniqueId: ChainUniqueId;
   onConfirm: (data: Step3Data) => void;
   step3Data?: Step3Data;
   token?: TokenV2;
-  // returnStep2: (data: Step3Data) => void;
 }
 
 export const GasSettingStep = (props: GasSettingStepProps) => {
@@ -197,7 +468,7 @@ export const GasSettingStep = (props: GasSettingStepProps) => {
   } = step3Data;
   const { gasGrade, loadingGasGrade } = useGasGrade(uniqueId);
   const { nativeCurrency, chainConfig, coinService } = useCoinService(uniqueId);
-  const [advanceSettings, setAdvanceSettings] = useState(false);
+  const [advanceSettings, setAdvanceSettings] = useState(isCustom);
   const networkFeeData = useNetworkFeeData(uniqueId);
 
   // console.log("      gasGrade", gasGrade);
@@ -217,6 +488,17 @@ export const GasSettingStep = (props: GasSettingStepProps) => {
         return [];
     }
   }, [gasFee]);
+
+  const { showMaxFeeSetting, showGasPriceSetting, showGasLimitSetting } =
+    useMemo(() => {
+      return {
+        showMaxFeeSetting: gasFee?.type === GasFeeType.EIP1559,
+        showGasPriceSetting: gasFee?.type === GasFeeType.LEGACY,
+        showGasLimitSetting:
+          gasFee?.type === GasFeeType.LEGACY ||
+          gasFee?.type === GasFeeType.EIP1559,
+      };
+    }, [gasFee]);
 
   // const {
   //   recommendGasPrice = null,
@@ -325,10 +607,12 @@ export const GasSettingStep = (props: GasSettingStepProps) => {
     return matchingGrade;
   }, [currentData, gasGrade]);
 
-  const selectedGrade = useMemo(
-    () => pageSelectGrade ?? defaultSelectedGrade,
-    [defaultSelectedGrade, pageSelectGrade],
-  );
+  const selectedGrade = useMemo(() => {
+    if (advanceSettings) {
+      return undefined;
+    }
+    return pageSelectGrade ?? defaultSelectedGrade;
+  }, [defaultSelectedGrade, advanceSettings, pageSelectGrade]);
   // console.log("      selectedGrade", selectedGrade);
 
   const onSelectGrade = useCallback(
@@ -406,12 +690,6 @@ export const GasSettingStep = (props: GasSettingStepProps) => {
     [currentData, gasFee, gasGrade, onConfirm, updateCurrentData],
   );
 
-  useEffect(() => {
-    if (!selectedGrade) {
-      setAdvanceSettings(true);
-    }
-  }, [selectedGrade]);
-
   const maxFeeError = useMemo(() => {
     if (
       currentData.maxFeePerGas &&
@@ -430,20 +708,43 @@ export const GasSettingStep = (props: GasSettingStepProps) => {
   }, [gasFee, maxFeeError]);
 
   return (
-    <Content>
-      {!!gasGrade && !!gasFee ? (
-        <GasGradeSelector
-          feeType={gasFee.type}
-          gasGrade={gasGrade}
+    <Content h={"400px"}>
+      <Flex
+        direction={"column"}
+        overflowY={"auto"}
+        marginBottom={"10px"}
+        sx={HIDE_SCROLL_BAR_CSS}
+        // bg={"yellow"}
+      >
+        {!!gasGrade && !!gasFee ? (
+          <GasGradeSelector
+            feeType={gasFee.type}
+            gasGrade={gasGrade}
+            gasUnit={gasUnit}
+            isCustom={advanceSettings}
+            customGasLimit={currentData.gasLimit}
+            gasDecimals={nativeCurrency.decimals}
+            gasSymbol={nativeCurrency.symbol}
+            selectedGrade={selectedGrade}
+            onSelectGrade={onSelectGrade}
+          />
+        ) : null}
+        <CustomGasView
+          feeType={gasFee?.type}
+          showData={{
+            showGasPriceSetting,
+            showGasLimitSetting,
+            showMaxFeeSetting,
+          }}
           gasUnit={gasUnit}
-          isCustom={isCustom}
-          customGasLimit={currentData.gasLimit}
-          gasDecimals={nativeCurrency.decimals}
-          gasSymbol={nativeCurrency.symbol}
-          selectedGrade={selectedGrade}
-          onSelectGrade={onSelectGrade}
+          currentData={currentData}
+          isAdvanced={advanceSettings}
+          setAdvanced={() => {
+            setAdvanceSettings(true);
+          }}
+          onConfirm={onConfirm}
         />
-      ) : null}
+      </Flex>
     </Content>
   );
 };

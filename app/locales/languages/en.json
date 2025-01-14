@@ -133,13 +133,22 @@
     "insufficientFee": "Insufficient balance to pay fee",
     "value": "Value",
     "invalidAmount": "Invalid amount",
-    "processing": "Transaction is processing, please wait.",
-    "selectGasFee": "Select Gas Fee"
+    "processing": "Transaction is processing, please wait."
   },
   "GasSetting": {
     "fast": "Fast",
     "middle": "Middle",
-    "slow": "Slow"
+    "slow": "Slow",
+    "selectGasFee": "Select Gas Fee",
+    "advanced": "Advanced Setting",
+    "maxPriorityFeeTitle": "Priority Fee",
+    "maxPriorityFeeRemind": "Priority Fee shouldn't be higher than Max Fee",
+    "maxPriorityLowRemind": "Priority Fee too low",
+    "maxPriorityHighRemind": "Priority Fee too high",
+    "maxFeeTitle": "Max Fee",
+    "maxFeeHighRemind": "Max Fee too high",
+    "maxFeeLowRemind": "Max Fee too low",
+    "gasLimitTitle": "Gas Limit"
   },
   "JoinSplit": {
     "title": "Join&Split",

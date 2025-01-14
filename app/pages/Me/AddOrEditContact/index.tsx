@@ -3,15 +3,11 @@ import { PageWithHeader } from "@/layouts/Page";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button, Flex, Text, Image } from "@chakra-ui/react";
-import { BaseInput, BaseInputGroup } from "@/components/Custom/Input";
+import { BaseInput } from "@/components/Custom/Input";
 import type React from "react";
 import { useEffect, useMemo, useCallback, useState } from "react";
 import { useDebounce } from "use-debounce";
-import { useCoinBasic, useCoinService } from "@/hooks/useCoinService";
-import {
-  type ChainUniqueId,
-  InnerChainUniqueId,
-} from "core/types/ChainUniqueId";
+import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import { IconChevronRight } from "@/components/Custom/Icon";
 import { showSelectContactNetworkDrawer } from "@/components/Me/SelectContactNetworkDrawer";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
