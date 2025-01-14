@@ -183,7 +183,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
         return [null, false];
       }
       const amountNum = parseUnits(amountStr, tokenInfo.decimals).toBigInt();
-      return [amountNum, true];
+      return amountNum >= 0n ? [amountNum, true] : [null, false];
     } catch (err) {
       return [null, false];
     }

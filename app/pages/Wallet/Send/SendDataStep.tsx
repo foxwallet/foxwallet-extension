@@ -91,6 +91,13 @@ export const SendDataStep = (props: SendDataStepProps) => {
       try {
         const res = ethers.utils.parseUnits(debounceAmountStr, decimals);
         const amountBigint = res.toBigInt();
+        if (amountBigint < 0n) {
+          return {
+            amountValid: false,
+            amountBigint: undefined,
+            amountValidErrMsg: t("Send:invalidAmount"),
+          };
+        }
         if (balance && amountBigint > balance.total) {
           return {
             amountValid: false,
