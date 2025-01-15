@@ -12,6 +12,7 @@ import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { type OneMatchGroupAccount } from "@/scripts/background/store/vault/types/keyring";
 import { useTranslation } from "react-i18next";
 import { nanoid } from "nanoid";
+import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 
 interface AccountListItemProps {
   account: OneMatchGroupAccount;
@@ -121,7 +122,12 @@ const WalletsDrawer = (props: Props) => {
       }
       body={
         <Flex flexDirection={"column"} px={1.5}>
-          <Flex direction={"column"} maxH={400} overflowY="auto">
+          <Flex
+            direction={"column"}
+            maxH={400}
+            overflowY="auto"
+            sx={HIDE_SCROLL_BAR_CSS}
+          >
             {groupAccountsInWallet.map(renderAccountItem)}
           </Flex>
         </Flex>
