@@ -36,3 +36,8 @@ export type CurrencyRes = {
   msg: string;
   data: CurrencyItem[];
 };
+
+export enum RampType {
+  BUY = "buy",
+  Sell = "sell",
+}
