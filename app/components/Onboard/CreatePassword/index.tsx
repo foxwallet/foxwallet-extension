@@ -1,7 +1,7 @@
-import { Button, Flex, InputRightElement } from "@chakra-ui/react";
+import { Button, Flex, InputRightElement, Text } from "@chakra-ui/react";
 import type React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Content } from "../../../layouts/Content";
+import { Content } from "@/layouts/Content";
 import { BaseInput, BaseInputGroup } from "../../Custom/Input";
 import { WarningArea } from "../../Custom/WarningArea";
 import {
@@ -12,17 +12,21 @@ import {
 } from "../../Custom/Icon";
 import { type Score as PasswordScore } from "@zxcvbn-ts/core";
 import { useDebounce } from "use-debounce";
-import { getPasswordStrength } from "../../../common/utils/zxcvbn";
+import { getPasswordStrength } from "@/common/utils/zxcvbn";
 import { PasswordStrengthIndicator } from "../PasswordStrengthIndicator";
-import { PASSWORD_MINIMUL_LENGTH } from "../../../common/constants";
+import { PASSWORD_MINIMUL_LENGTH } from "@/common/constants";
 import { showPasswordWarningDialog } from "../PasswordWarningDialog";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
+import { defaultWalletNameSelector } from "@/store/selectors/account";
+import { isEqual } from "lodash";
 
 export const CreatePasswordStep = (props: {
   onConfirm: (walletName: string, password: string) => void;
 }) => {
   const { t } = useTranslation();
-  const [walletName, setWalletName] = useState("");
+  const defaultWalletName = useSelector(defaultWalletNameSelector, isEqual);
+  const [walletName, setWalletName] = useState(defaultWalletName);
   const [viewPass, setViewPass] = useState(false);
   const [password, setPassword] = useState("");
   const [passwordScore, setPasswordScore] = useState<PasswordScore | null>(
@@ -32,13 +36,13 @@ export const CreatePasswordStep = (props: {
   const [confirmPassword, setConfirmPassword] = useState("");
   const { onConfirm: onSubmit } = props;
 
-  const onWalletNameChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      const value = event.target.value.trim();
-      setWalletName(value);
-    },
-    [],
-  );
+  // const onWalletNameChange = useCallback(
+  //   (event: React.ChangeEvent<HTMLInputElement>) => {
+  //     const value = event.target.value.trim();
+  //     setWalletName(value);
+  //   },
+  //   [],
+  // );
 
   const onPasswordChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -91,13 +95,13 @@ export const CreatePasswordStep = (props: {
 
   return (
     <Content>
-      <BaseInput
-        title={t("Wallet:Create:walletName")}
-        placeholder={t("Wallet:Create:walletNamePlaceholder")}
-        container={{ mt: "2" }}
-        value={walletName}
-        onChange={onWalletNameChange}
-      />
+      {/* <BaseInput */}
+      {/*  title={t("Wallet:Create:walletName")} */}
+      {/*  placeholder={t("Wallet:Create:walletNamePlaceholder")} */}
+      {/*  container={{ mt: "2" }} */}
+      {/*  value={walletName} */}
+      {/*  onChange={onWalletNameChange} */}
+      {/* /> */}
       <BaseInputGroup
         container={{ mt: 2 }}
         title={t("Password:title")}

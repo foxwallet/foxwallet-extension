@@ -1,7 +1,7 @@
 import { logger } from "@/common/utils/logger";
 import { showErrorToast } from "@/components/Custom/ErrorToast";
 import { ImportPrivateKeyStep } from "@/components/Onboard/ImportPrivateKey";
-import { WalletNameStep } from "@/components/Setting/WalletName";
+// import { WalletNameStep } from "@/components/Setting/WalletName";
 import { useClient } from "@/hooks/useClient";
 import { usePopupDispatch } from "@/hooks/useStore";
 import { Body } from "@/layouts/Body";
@@ -13,29 +13,33 @@ import { nanoid } from "nanoid";
 import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { defaultWalletNameSelector } from "@/store/selectors/account";
+import { isEqual } from "lodash";
 
 const ImportPrivateKeyScreen = () => {
   const [step, setStep] = useState(1);
-  const walletNameRef = useRef("");
+  const defaultWalletName = useSelector(defaultWalletNameSelector, isEqual);
+  const walletNameRef = useRef(defaultWalletName);
   const { popupServerClient } = useClient();
-  const walletIdRef = useRef("");
+  const walletIdRef = useRef(nanoid());
   const navigate = useNavigate();
   const dispatch = usePopupDispatch();
   const { t } = useTranslation();
 
   const stepContent = useMemo(() => {
     switch (step) {
+      // case 1:
+      //   return (
+      //     <WalletNameStep
+      //       onConfirm={async (walletName) => {
+      //         walletNameRef.current = walletName;
+      //         walletIdRef.current = nanoid();
+      //         setStep((_step) => _step + 1);
+      //       }}
+      //     />
+      //   );
       case 1:
-        return (
-          <WalletNameStep
-            onConfirm={async (walletName) => {
-              walletNameRef.current = walletName;
-              walletIdRef.current = nanoid();
-              setStep((_step) => _step + 1);
-            }}
-          />
-        );
-      case 2:
         return (
           <ImportPrivateKeyStep
             onConfirm={async (privateKey) => {
@@ -78,7 +82,7 @@ const ImportPrivateKeyScreen = () => {
           />
         );
     }
-  }, [step, popupServerClient]);
+  }, [step, popupServerClient, dispatch.accountV2, navigate]);
 
   return (
     <PageWithHeader

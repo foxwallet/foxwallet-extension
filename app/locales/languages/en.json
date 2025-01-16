@@ -51,7 +51,8 @@
     "Upgrade": {
       "reminderTips": "The current browser version is too old, please upgrade to the latest version to use the FoxWallet extension wallet.",
       "upgradeBtn": "Upgrade"
-    }
+    },
+    "defaultWalletName": "Wallet-"
   },
   "Agreement": {
     "content1": "I agree to FoxWallet's ",

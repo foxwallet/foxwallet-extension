@@ -1,18 +1,15 @@
 import { useCallback, useContext, useMemo, useRef, useState } from "react";
-import { PageWithHeader } from "../../../layouts/Page";
-import { Body } from "../../../layouts/Body";
-import { OnboardProgress } from "../../../components/Onboard/OnboardProgress";
-import { useClient } from "../../../hooks/useClient";
-import { logger } from "../../../common/utils/logger";
-import { showMnemonicWarningDialog } from "../../../components/Onboard/MnemonicWarningDialog";
+import { PageWithHeader } from "@/layouts/Page";
+import { Body } from "@/layouts/Body";
+import { useClient } from "@/hooks/useClient";
+import { logger } from "@/common/utils/logger";
 import { nanoid } from "nanoid";
-import { CreatePasswordStep } from "../../../components/Onboard/CreatePassword";
-import { ImportMnemonicStep } from "../../../components/Onboard/ImportMnemonic";
-import { showErrorToast } from "../../../components/Custom/ErrorToast";
+import { CreatePasswordStep } from "@/components/Onboard/CreatePassword";
+import { ImportMnemonicStep } from "@/components/Onboard/ImportMnemonic";
+import { showErrorToast } from "@/components/Custom/ErrorToast";
 import { usePopupDispatch } from "@/hooks/useStore";
 import { sleep } from "core/utils/sleep";
 import { useNavigate } from "react-router-dom";
-import { CoinType } from "core/types";
 import { useTranslation } from "react-i18next";
 
 export default function OnboardImportWallet() {
@@ -57,7 +54,7 @@ export default function OnboardImportWallet() {
                     backupedMnemonic: true,
                   });
                   dispatch.multiChain.addHdWalletChainItem({ walletId });
-                  await sleep(500);
+                  // await sleep(50);
                   navigate("/");
                 } catch (err) {
                   if (err instanceof Error) {

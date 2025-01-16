@@ -16,10 +16,10 @@ import {
   IconLogo,
 } from "@/components/Custom/Icon";
 import { usePopupDispatch } from "@/hooks/useStore";
-import { CoinType } from "core/types";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
 import Hover from "@/components/Custom/Hover";
 import { showEditWalletNameDrawer } from "@/components/Wallet/EditWalletNameDrawer";
+import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 
 interface WalletItemProps {
   wallet: DisplayWallet;
@@ -49,7 +49,7 @@ const WalletItem: React.FC<WalletItemProps> = ({
       void showEditWalletNameDrawer({ wallet });
       event.stopPropagation();
     },
-    [showEditWalletNameDrawer, wallet],
+    [wallet],
   );
 
   const { borderColor, selectedBorderColor } = useThemeStyle();
@@ -120,7 +120,7 @@ function ManageWalletScreen() {
       }
       navigate(-1);
     },
-    [dispatch.accountV2, navigate],
+    [dispatch.accountV2, navigate, selectedWallet?.walletId],
   );
 
   const onDeleteWallet = useCallback(
@@ -151,7 +151,7 @@ function ManageWalletScreen() {
         />
       );
     },
-    [selectedWallet?.walletId, isOpen],
+    [selectedWallet?.walletId, isOpen, onSelectWallet, onDeleteWallet],
   );
 
   return (
@@ -171,7 +171,12 @@ function ManageWalletScreen() {
       }
     >
       <Flex direction={"column"} flex={1} px={5} pb={4}>
-        <Flex direction={"column"} maxH={470} overflowY="auto">
+        <Flex
+          direction={"column"}
+          maxH={470}
+          overflowY="auto"
+          sx={HIDE_SCROLL_BAR_CSS}
+        >
           {walletList.map(renderWalletItem)}
         </Flex>
         <Button

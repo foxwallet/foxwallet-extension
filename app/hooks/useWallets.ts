@@ -94,7 +94,7 @@ export const useCurrWallet = () => {
     async (walletId: string, walletName: string) => {
       dispatch.accountV2.changeWalletName({ walletId, walletName });
     },
-    [popupServerClient, dispatch.accountV2],
+    [dispatch.accountV2],
   );
 
   return {

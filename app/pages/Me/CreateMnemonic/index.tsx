@@ -1,19 +1,22 @@
 import { BackupMnemonicStep } from "@/components/Onboard/BackupMnemonic";
 import { ConfirmMnemonicStep } from "@/components/Onboard/ConfirmMnemonic";
-import { WalletNameStep } from "@/components/Setting/WalletName";
+// import { WalletNameStep } from "@/components/Setting/WalletName";
 import { useClient } from "@/hooks/useClient";
 import { usePopupDispatch } from "@/hooks/useStore";
 import { Body } from "@/layouts/Body";
 import { PageWithHeader } from "@/layouts/Page";
-import { CoinType } from "core/types";
 import { nanoid } from "nanoid";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { defaultWalletNameSelector } from "@/store/selectors/account";
+import { isEqual } from "lodash";
 
 const CreateMnemonicScreen = () => {
   const [step, setStep] = useState(1);
-  const walletNameRef = useRef("");
+  const defaultWalletName = useSelector(defaultWalletNameSelector, isEqual);
+  const walletNameRef = useRef(defaultWalletName);
   const [mnemonic, setMnemonic] = useState("");
   const { popupServerClient } = useClient();
   const walletIdRef = useRef("");
@@ -52,16 +55,16 @@ const CreateMnemonicScreen = () => {
 
   const stepContent = useMemo(() => {
     switch (step) {
+      // case 1:
+      //   return (
+      //     <WalletNameStep
+      //       onConfirm={async (walletName) => {
+      //         walletNameRef.current = walletName;
+      //         setStep((_step) => _step + 1);
+      //       }}
+      //     />
+      //   );
       case 1:
-        return (
-          <WalletNameStep
-            onConfirm={async (walletName) => {
-              walletNameRef.current = walletName;
-              setStep((_step) => _step + 1);
-            }}
-          />
-        );
-      case 2:
         return (
           <BackupMnemonicStep
             mnemonic={mnemonic}
@@ -72,7 +75,7 @@ const CreateMnemonicScreen = () => {
             }}
           />
         );
-      case 3:
+      case 2:
         return (
           <ConfirmMnemonicStep
             mnemonic={mnemonic}
@@ -91,7 +94,7 @@ const CreateMnemonicScreen = () => {
   return (
     <PageWithHeader
       title={t("Wallet:Create:title")}
-      enableBack={step !== 2}
+      enableBack={step !== 1}
       onBack={() => {
         if (step > 1) {
           setStep((curr) => curr - 1);

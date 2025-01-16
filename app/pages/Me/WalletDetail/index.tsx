@@ -39,6 +39,7 @@ import type React from "react";
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
+import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 
 interface AccountListItemProps {
   account: OneMatchGroupAccount;
@@ -245,7 +246,12 @@ const WalletDetailScreen = () => {
       }
     >
       <Flex direction={"column"} flex={1} px={5} pb={4} pt={2.5}>
-        <Flex direction={"column"} maxH={435} overflowY="auto">
+        <Flex
+          direction={"column"}
+          maxH={435}
+          overflowY="auto"
+          sx={HIDE_SCROLL_BAR_CSS}
+        >
           {accountList.map(renderAccountItem)}
         </Flex>
         {walletInfo?.walletType === WalletType.HD && (

@@ -15,6 +15,7 @@ import {
 import { uniq } from "lodash";
 import { matchAccountsWithUnqiueId } from "../accountV2";
 import { fallbackToEmptyArray } from "@/store/selectors/utils";
+import i18n from "i18next";
 
 const createAppSelector = createSelector.withTypes<RootState>();
 
@@ -171,5 +172,47 @@ export const currSelectedChainsSelector = createAppSelector(
     return fallbackToEmptyArray(
       walletChainMap[groupAccount.wallet.walletId]?.userSelectedChains,
     );
+  },
+);
+
+/**
+ * @returns 所有钱包的数量
+ */
+export const walletLengthSelector = createAppSelector(
+  [accountSelector],
+  (account) => {
+    const allWallets = account.allWalletInfo;
+    return Object.values(allWallets).length;
+  },
+);
+
+export const allWalletsSelector = createAppSelector(
+  [accountSelector],
+  (account) => {
+    const allWallets = account.allWalletInfo;
+    return Object.values(allWallets);
+  },
+);
+
+export const defaultWalletNameSelector = createAppSelector(
+  [allWalletsSelector, accountSelector],
+  (allWallets, accountV3) => {
+    const dupName = (walletName: string) => {
+      return allWallets.some((item) => item.walletName === walletName);
+    };
+
+    const prefix = i18n.t("Onboard:defaultWalletName");
+    let walletName;
+    let i = allWallets.length + 1;
+
+    while (true) {
+      walletName = `${prefix}${i}`;
+      if (dupName(walletName)) {
+        i++;
+      } else {
+        break;
+      }
+    }
+    return walletName;
   },
 );
