@@ -9,9 +9,10 @@ import { usePopupSelector } from "@/hooks/useStore";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
 import { Flex, Text } from "@chakra-ui/react";
 import { isEqual } from "lodash";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { showBackupReminderDialog } from "@/components/Wallet/BackupReminderDialog";
 
 export const BackupReminderView = () => {
   const navigate = useNavigate();
@@ -33,40 +34,69 @@ export const BackupReminderView = () => {
     const { confirmed } = await showPasswordVerifyDrawer();
     confirmed &&
       navigate(`/backup_mnemonic/${selectedAccount.wallet.walletId}`);
-  }, [navigate, selectedAccount.wallet.walletId, showPasswordVerifyDrawer]);
+  }, [navigate, selectedAccount.wallet.walletId]);
 
-  const { borderColor } = useThemeStyle();
-  if (backupedMnemonic || !visible) return null;
+  useEffect(() => {
+    const showBackupReminder = async () => {
+      if (!backupedMnemonic) {
+        try {
+          await showBackupReminderDialog({
+            onBackup: () => {
+              const handleBackup = async () => {
+                const { confirmed } = await showPasswordVerifyDrawer();
+                if (confirmed) {
+                  navigate(
+                    `/backup_mnemonic/${selectedAccount.wallet.walletId}`,
+                  );
+                } else {
+                  showBackupReminder();
+                }
+              };
+              handleBackup();
+            },
+          });
+        } catch (error) {
+          console.error("Error during backup reminder:", error);
+        }
+      }
+    };
+    showBackupReminder();
+  }, [backupedMnemonic, navigate, selectedAccount.wallet.walletId]);
 
-  return (
-    <Flex
-      px={5}
-      py={3}
-      justify={"space-between"}
-      borderBottomWidth={1}
-      borderColor={borderColor}
-    >
-      <Flex direction={"column"} justify={"center"}>
-        <Text fontWeight={500} fontSize={13} maxW={150}>
-          {t("Wallet:backupTips")}
-        </Text>
-        <Flex cursor={"pointer"} align={"center"} mt={1} onClick={onBackup}>
-          <Text color={"#00D856"} fontWeight={500} fontSize={13}>
-            {t("Wallet:backupBtnTitle")}
-          </Text>
-          <IconArrowBackup ml={1} />
-        </Flex>
-      </Flex>
-      <Flex align={"flex-start"}>
-        <IconBackupReminder mt={1} />
-        <Hover
-          onClick={() => {
-            setVisible((prev) => !prev);
-          }}
-        >
-          <IconCloseLineGray w={4} h={4} />
-        </Hover>
-      </Flex>
-    </Flex>
-  );
+  return null;
+
+  // const { borderColor } = useThemeStyle();
+  // if (backupedMnemonic || !visible) return null;
+
+  // return (
+  //   <Flex
+  //     px={5}
+  //     py={3}
+  //     justify={"space-between"}
+  //     borderBottomWidth={1}
+  //     borderColor={borderColor}
+  //   >
+  //     <Flex direction={"column"} justify={"center"}>
+  //       <Text fontWeight={500} fontSize={13} maxW={150}>
+  //         {t("Wallet:backupTips")}
+  //       </Text>
+  //       <Flex cursor={"pointer"} align={"center"} mt={1} onClick={onBackup}>
+  //         <Text color={"#00D856"} fontWeight={500} fontSize={13}>
+  //           {t("Wallet:backupBtnTitle")}
+  //         </Text>
+  //         <IconArrowBackup ml={1} />
+  //       </Flex>
+  //     </Flex>
+  //     <Flex align={"flex-start"}>
+  //       <IconBackupReminder mt={1} />
+  //       <Hover
+  //         onClick={() => {
+  //           setVisible((prev) => !prev);
+  //         }}
+  //       >
+  //         <IconCloseLineGray w={4} h={4} />
+  //       </Hover>
+  //     </Flex>
+  //   </Flex>
+  // );
 };

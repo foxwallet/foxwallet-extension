@@ -9,7 +9,7 @@ import {
   Button,
   Link,
 } from "@chakra-ui/react";
-import { Content } from "../../../layouts/Content";
+import { Content } from "@/layouts/Content";
 import { IconPreventScreenshot } from "../../Custom/Icon";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
@@ -67,7 +67,7 @@ export const BackupMnemonicStep = (props: {
       t("Mnemonic:warning2"),
       t("Mnemonic:warning3"),
     ];
-  }, []);
+  }, [t]);
 
   const wordList = useMemo(() => {
     if (!mnemonic) {

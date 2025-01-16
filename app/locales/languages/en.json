@@ -322,7 +322,8 @@
     "wrongPassword": "Incorrect password",
     "noSearchResult": "No search result",
     "pleaseWait": "Please wait",
-    "copy": "Copy"
+    "copy": "Copy",
+    "reminder": "Reminder"
   },
   "Error": {
     "invalidPassword": "Invalid password",
