@@ -1,7 +1,7 @@
 import { type ChakraProps, Flex, Image, Text } from "@chakra-ui/react";
 import { TokenNum } from "../TokenNum";
 import { useNavigate } from "react-router-dom";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { usePopupSelector } from "@/hooks/useStore";
 import Hover from "@/components/Custom/Hover";
 import { type Token } from "core/coins/ALEO/types/Token";
@@ -13,6 +13,8 @@ import {
 import { type TokenV2 } from "core/types/Token";
 import { IconTokenPlaceHolder } from "@/components/Custom/Icon";
 import { useBalance } from "@/hooks/useBalance";
+import { commaInteger } from "@/common/utils/comma";
+import { formatPrice } from "@/common/utils/num";
 
 export const TokenItemWithBalance = ({
   uniqueId,
@@ -30,6 +32,21 @@ export const TokenItemWithBalance = ({
   hover?: boolean;
 }) => {
   const showBalance = usePopupSelector((state) => state.accountV2.showBalance);
+  const { price, change } = token;
+  const priceStr = useMemo(() => {
+    return formatPrice(price).toString();
+  }, [price]);
+  const changeStrColor = useMemo(() => {
+    if (!change) {
+      return "#777e90";
+    }
+    const numericValue = parseFloat(change.replace("%", ""));
+    if (numericValue >= 0) {
+      return "#00D856";
+    } else {
+      return "#ef466f";
+    }
+  }, [change]);
 
   const { balance } = useBalance({ uniqueId, address, token });
 
@@ -60,12 +77,18 @@ export const TokenItemWithBalance = ({
           <Text fontSize={13} fontWeight={600}>
             {token.symbol}
           </Text>
-          {token.programId !== NATIVE_TOKEN_PROGRAM_ID &&
-            token.programId !== BETA_STAKING_PROGRAM_ID && (
-              <Text maxW={"120"} noOfLines={1} fontSize={10} color={"gray.400"}>
-                {token.tokenId}
-              </Text>
-            )}
+          <Flex justify={"center"} alignItems={"center"} fontSize={"11px"}>
+            <Text color={"#777e90"}>{commaInteger(priceStr)}</Text>
+            <Text ml={1} color={changeStrColor}>
+              {change}
+            </Text>
+          </Flex>
+          {/* {token.programId !== NATIVE_TOKEN_PROGRAM_ID && */}
+          {/*  token.programId !== BETA_STAKING_PROGRAM_ID && ( */}
+          {/*    <Text maxW={"120"} noOfLines={1} fontSize={10} color={"gray.400"}> */}
+          {/*      {token.tokenId} */}
+          {/*    </Text> */}
+          {/*  )} */}
         </Flex>
       </Flex>
       {showBalance ? (

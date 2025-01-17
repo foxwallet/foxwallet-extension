@@ -43,3 +43,34 @@ export const formatTokenNum = (
     return placeHolder;
   }
 };
+
+export const formatPrice = (price: number | string | undefined): string => {
+  try {
+    if (price === 0) {
+      return "0";
+    }
+    // 对于 "" NaN undefined 的情况返回
+    if (!price) {
+      console.log("formatRatePrice", price);
+      return "---";
+    }
+
+    let fixedNum = 2;
+    const decimalNum = String(price).split(".")[1];
+    if (decimalNum) {
+      const dec2IntStr = String(parseInt(decimalNum, 10));
+      fixedNum = Math.max(
+        2,
+        decimalNum.length -
+          dec2IntStr.length +
+          (dec2IntStr.charAt(1) === "0" ? 1 : 2),
+      );
+    }
+
+    const formatPrice = typeof price === "string" ? parseFloat(price) : price;
+    return formatPrice.toFixed(fixedNum);
+  } catch (err) {
+    console.log("failed formatRatePrice", price, err);
+    return "---";
+  }
+};
