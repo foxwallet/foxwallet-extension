@@ -57,4 +57,9 @@ export type AddressBalance = {
   ownerAddress: string;
 };
 
-export type TokenV2 = TokenMetaV2 & TokenMarket & AddressBalance;
+export type TokenPrice = {
+  price?: number;
+  change?: string;
+};
+
+export type TokenV2 = TokenMetaV2 & TokenMarket & AddressBalance & TokenPrice;

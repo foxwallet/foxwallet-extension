@@ -239,8 +239,8 @@ const TokenDetailScreen = () => {
   // console.log("      params ", uniqueId, address);
 
   const { tokenInfo } = useSafeTokenInfo(uniqueId, address);
-  console.log("      tokenInfo");
-  console.log({ ...tokenInfo });
+  // console.log("      tokenInfo");
+  // console.log({ ...tokenInfo });
 
   const { chainConfig, nativeCurrency } = useCoinService(uniqueId);
 
