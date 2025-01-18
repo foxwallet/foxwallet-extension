@@ -8,6 +8,7 @@ import { wallet } from "./wallet";
 import { multiChain } from "./multiChain";
 import { address } from "@/store/addressModel";
 import { coinPriceV2 } from "@/store/coinPriceModelV2";
+import { coinBalanceV2 } from "@/store/coinBalanceModelV2";
 
 export interface RootModel extends Models<RootModel> {
   user: typeof user;
@@ -19,6 +20,7 @@ export interface RootModel extends Models<RootModel> {
   multiChain: typeof multiChain;
   address: typeof address;
   coinPriceV2: typeof coinPriceV2;
+  coinBalanceV2: typeof coinBalanceV2;
 }
 
 export const models: RootModel = {
@@ -31,4 +33,5 @@ export const models: RootModel = {
   multiChain,
   address,
   coinPriceV2,
+  coinBalanceV2,
 };
