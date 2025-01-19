@@ -104,7 +104,7 @@ const MultiChainActionPanel = () => {
     return initOptions;
   }, [t, navigate]);
   return (
-    <Flex direction={"row"} justify={"space-around"} mt={4}>
+    <Flex direction={"row"} justify={"space-around"} mt={2}>
       {options.map((item, index) => {
         return (
           <ActionButton key={`${item.title}${index}`} {...item} maxW={"20%"} />
@@ -184,7 +184,7 @@ const SingleChainActionPanel = ({ uniqueId }: { uniqueId: ChainUniqueId }) => {
   ]);
 
   return (
-    <Flex direction={"row"} justify={"space-around"} mt={4}>
+    <Flex direction={"row"} justify={"space-around"} mt={2}>
       {options.map((item, index) => {
         return (
           <ActionButton key={`${item.title}${index}`} {...item} maxW={"20%"} />

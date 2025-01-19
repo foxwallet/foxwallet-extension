@@ -236,36 +236,34 @@ export const AccountInfoHeader = ({
           </Flex>
         )}
         {/* value */}
-        {isAllMode && (
-          <Flex direction={"row"} align={"center"} justify={"center"} mt={4}>
-            <Flex align={"center"}>
-              <Box fontSize={24} fontWeight={600}>
-                {showBalance ? (
-                  // <TokenNum
-                  //   amount={balance?.total ?? 0n}
-                  //   decimals={nativeCurrency.decimals}
-                  //   symbol={nativeCurrency.symbol}
-                  // />
-                  <Text ml={3}>{totalUsdValue}</Text>
-                ) : (
-                  "*****"
-                )}
-              </Box>
-              <Box
-                cursor={"pointer"}
-                ml={2}
-                onClick={() => dispatch.accountV2.changeBalanceState()}
-              >
-                {showBalance ? (
-                  <IconEyeOn w={4} h={4} />
-                ) : (
-                  <IconEyeClose w={4} h={4} />
-                )}
-              </Box>
-            </Flex>
-            <RescanButton paused={!!sendingAleoTx} />
+        <Flex direction={"row"} align={"center"} justify={"center"} mt={2}>
+          <Flex align={"center"}>
+            <Box fontSize={24} fontWeight={600}>
+              {showBalance ? (
+                // <TokenNum
+                //   amount={balance?.total ?? 0n}
+                //   decimals={nativeCurrency.decimals}
+                //   symbol={nativeCurrency.symbol}
+                // />
+                <Text ml={3}>{`$${totalUsdValue}`}</Text>
+              ) : (
+                "*****"
+              )}
+            </Box>
+            <Box
+              cursor={"pointer"}
+              ml={2}
+              onClick={() => dispatch.accountV2.changeBalanceState()}
+            >
+              {showBalance ? (
+                <IconEyeOn w={4} h={4} />
+              ) : (
+                <IconEyeClose w={4} h={4} />
+              )}
+            </Box>
           </Flex>
-        )}
+          <RescanButton paused={!!sendingAleoTx} />
+        </Flex>
         {/* Action Item */}
         <ActionPanel chainMode={chainMode} />
       </Box>
