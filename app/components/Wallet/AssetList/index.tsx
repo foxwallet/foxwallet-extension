@@ -32,7 +32,7 @@ export const AssetList = () => {
       marginBottom={"60px"}
       sx={HIDE_SCROLL_BAR_CSS}
     >
-      {groupAssets.map((token) => (
+      {groupAssets?.map((token) => (
         <TokenItemWithBalance
           key={`${token.contractAddress}-${token.symbol}-${token.type}-${token.uniqueId}`}
           uniqueId={token.uniqueId}

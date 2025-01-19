@@ -13,6 +13,7 @@ import { type ExchangeItem } from "@/store/coinPriceModelV2";
 import { useMultiChainPrice } from "@/hooks/useTokenPrice";
 import type { BalanceResp } from "core/types/Balance";
 import useSWR from "swr";
+import { utils } from "ethers";
 
 export const useUserAssets = () => {
   const { getMatchAccountsWithUniqueId } = useGroupAccount();
@@ -166,7 +167,7 @@ export const useUserAssetsWithPriceBalance = () => {
   }, [assets]);
 
   const {
-    data: userAssetsWithPriceBalance,
+    data,
     error,
     mutate: getUserAssetsWithPriceBalance,
     isLoading: loadingUserAssetsWithPriceBalance,
@@ -174,8 +175,20 @@ export const useUserAssetsWithPriceBalance = () => {
     refreshInterval: 5 * 1000,
   });
 
+  const assetsWithValue = useMemo(() => {
+    return data?.map((item) => {
+      const { decimals, price, total } = item;
+      if (!!price && !!total) {
+        const num = Number(utils.formatUnits(total, decimals));
+        const value = num * price;
+        return { ...item, value };
+      }
+      return item;
+    });
+  }, [data]);
+
   return {
-    userAssetsWithPriceBalance,
+    userAssetsWithPriceBalance: assetsWithValue,
     error,
     getUserAssetsWithPriceBalance,
     loadingUserAssetsWithPriceBalance,
@@ -240,6 +253,17 @@ export const useGroupAccountAssets = () => {
 
   const { userAssetsWithPriceBalance: assets } =
     useUserAssetsWithPriceBalance();
+  // console.log("      assets", assets);
 
+  // const totalUsdValue = useMemo(() => {
+  //   return assets
+  //     .filter((item) => !!item.price && !!item.total && !!item.decimals)
+  //     .reduce((total: number, currentValue: TokenV2) => {
+  //       return (
+  //         Number(total) +
+  //         Number(currentValue?.usdValue?.round(4).toString() ?? 0)
+  //       );
+  //     }, 0);
+  // }, [assetList]);
   return { assets };
 };
