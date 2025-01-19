@@ -7,10 +7,14 @@ import { type TokenV2 } from "core/types/Token";
 import { useGroupAccountAssets } from "@/hooks/useGroupAccountAssets";
 import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 
-export const AssetList = () => {
-  const navigate = useNavigate();
+type AssetListProps = {
+  assets: TokenV2[] | undefined;
+};
 
-  const { assets: groupAssets } = useGroupAccountAssets();
+export const AssetList = (props: AssetListProps) => {
+  const navigate = useNavigate();
+  const { assets: groupAssets } = props;
+  // const { assets: groupAssets } = useGroupAccountAssets();
   // console.log("      group assets", { ...groupAssets });
 
   const onTokenDetail = useCallback(

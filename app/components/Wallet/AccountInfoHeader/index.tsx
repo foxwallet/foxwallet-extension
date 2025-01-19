@@ -48,7 +48,11 @@ const rotateAnimation = keyframes`
   to { transform: rotate(360deg) }
 `;
 
-export const AccountInfoHeader = () => {
+export const AccountInfoHeader = ({
+  totalUsdValue,
+}: {
+  totalUsdValue: number;
+}) => {
   const navigate = useNavigate();
   const { groupAccount, getMatchAccountsWithUniqueId } = useGroupAccount();
   const {
@@ -216,7 +220,7 @@ export const AccountInfoHeader = () => {
         {/* copy address */}
         {!isAllMode && (
           <Flex
-            mt={2}
+            mt={4}
             direction={"row"}
             align={"center"}
             justifyContent={"center"}
@@ -232,16 +236,17 @@ export const AccountInfoHeader = () => {
           </Flex>
         )}
         {/* value */}
-        {!isAllMode && (
-          <Flex direction={"row"} align={"center"} justify={"center"} mt={2}>
+        {isAllMode && (
+          <Flex direction={"row"} align={"center"} justify={"center"} mt={4}>
             <Flex align={"center"}>
               <Box fontSize={24} fontWeight={600}>
                 {showBalance ? (
-                  <TokenNum
-                    amount={balance?.total ?? 0n}
-                    decimals={nativeCurrency.decimals}
-                    symbol={nativeCurrency.symbol}
-                  />
+                  // <TokenNum
+                  //   amount={balance?.total ?? 0n}
+                  //   decimals={nativeCurrency.decimals}
+                  //   symbol={nativeCurrency.symbol}
+                  // />
+                  <Text ml={3}>{totalUsdValue}</Text>
                 ) : (
                   "*****"
                 )}
@@ -261,7 +266,6 @@ export const AccountInfoHeader = () => {
             <RescanButton paused={!!sendingAleoTx} />
           </Flex>
         )}
-
         {/* Action Item */}
         <ActionPanel chainMode={chainMode} />
       </Box>

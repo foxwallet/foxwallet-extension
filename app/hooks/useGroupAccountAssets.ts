@@ -14,6 +14,8 @@ import { useMultiChainPrice } from "@/hooks/useTokenPrice";
 import type { BalanceResp } from "core/types/Balance";
 import useSWR from "swr";
 import { utils } from "ethers";
+import { commaInteger } from "@/common/utils/comma";
+import { formatPrice } from "@/common/utils/num";
 
 export const useUserAssets = () => {
   const { getMatchAccountsWithUniqueId } = useGroupAccount();
@@ -255,15 +257,17 @@ export const useGroupAccountAssets = () => {
     useUserAssetsWithPriceBalance();
   // console.log("      assets", assets);
 
-  // const totalUsdValue = useMemo(() => {
-  //   return assets
-  //     .filter((item) => !!item.price && !!item.total && !!item.decimals)
-  //     .reduce((total: number, currentValue: TokenV2) => {
-  //       return (
-  //         Number(total) +
-  //         Number(currentValue?.usdValue?.round(4).toString() ?? 0)
-  //       );
-  //     }, 0);
-  // }, [assetList]);
-  return { assets };
+  const totalUsdValue = useMemo(() => {
+    if (!assets) {
+      return "";
+    }
+    const temp = assets
+      .filter((item) => !!item.price && !!item.total && !!item.decimals)
+      .reduce((total: number, currentValue: TokenV2) => {
+        return Number(total) + Number(currentValue?.value?.toString() ?? 0);
+      }, 0);
+    return commaInteger(formatPrice(temp).toString());
+  }, [assets]);
+
+  return { assets, totalUsdValue };
 };
