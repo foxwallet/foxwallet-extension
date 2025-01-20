@@ -31,6 +31,9 @@ import {
 import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
 import { ExplorerLanguages } from "core/types/ExplorerLanguages";
 import { simpleConcatUrl } from "@/common/utils/url";
+import { type RecordFilter } from "@/scripts/background/servers/IWalletServer";
+import type { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
+import { NATIVE_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
 
 export abstract class CoinServiceBasic {
   baseConfig: ChainBaseConfig;
@@ -210,5 +213,17 @@ export abstract class CoinServiceBasic {
       "getFeeData not implemented for " + this.baseConfig.chainName,
     );
     return undefined;
+  }
+
+  async getRecords(
+    address: string,
+    programId: string,
+    recordFilter: RecordFilter,
+    withRecordName?: boolean,
+  ): Promise<RecordDetailWithSpent[]> {
+    console.error(
+      "getRecords not implemented for " + this.baseConfig.chainName,
+    );
+    return [];
   }
 }
