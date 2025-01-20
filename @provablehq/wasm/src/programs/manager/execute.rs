@@ -17,29 +17,17 @@
 use super::*;
 
 use crate::{
-    execute_fee,
-    execute_program,
-    log,
+    ExecutionResponse, OfflineQuery, PrivateKey, RecordPlaintext, Transaction, execute_fee, execute_program, log,
     process_inputs,
-    ExecutionResponse,
-    OfflineQuery,
-    PrivateKey,
-    RecordPlaintext,
-    Transaction,
 };
 
 use crate::types::native::{
-    CurrentAleo,
-    CurrentNetwork,
-    IdentifierNative,
-    ProcessNative,
-    ProgramNative,
-    RecordPlaintextNative,
+    CurrentAleo, CurrentNetwork, IdentifierNative, ProcessNative, ProgramNative, RecordPlaintextNative,
     TransactionNative,
 };
 use core::ops::Add;
 use js_sys::{Array, Object};
-use rand::{rngs::StdRng, SeedableRng};
+use rand::{SeedableRng, rngs::StdRng};
 use snarkvm_console::prelude::Network;
 use snarkvm_ledger_query::QueryTrait;
 use snarkvm_synthesizer::prelude::cost_in_microcredits_v1;
@@ -155,7 +143,9 @@ impl ProgramManager {
         program: &str,
         function: &str,
         inputs: Array,
-        fee_credits: f64,
+        // ----- Modified by FoxWallet -----
+        base_fee: u64,
+        priority_fee: u64,
         fee_record: Option<RecordPlaintext>,
         url: Option<String>,
         imports: Option<Object>,
@@ -165,11 +155,12 @@ impl ProgramManager {
         fee_verifying_key: Option<VerifyingKey>,
         offline_query: Option<OfflineQuery>,
     ) -> Result<Transaction, String> {
-        log(&format!("Executing function: {function} on-chain"));
-        let fee_microcredits = match &fee_record {
-            Some(fee_record) => Self::validate_amount(fee_credits, fee_record, true)?,
-            None => (fee_credits * 1_000_000.0) as u64,
-        };
+        log(&format!("ProgramManager Executing function: {function} on-chain"));
+        // ----- Modified by FoxWallet -----
+        // let fee_microcredits = match &fee_record {
+        //     Some(fee_record) => Self::validate_amount(fee_credits, fee_record, true)?,
+        //     None => (fee_credits as u64) * 1_000_000,
+        // };
         let mut process_native = ProcessNative::load_web().map_err(|err| err.to_string())?;
         let process = &mut process_native;
         let node_url = url.as_deref().unwrap_or(DEFAULT_URL);
@@ -212,7 +203,9 @@ impl ProgramManager {
             process,
             private_key,
             fee_record,
-            fee_microcredits,
+            // ----- Modified by FoxWallet -----
+            base_fee,
+            priority_fee,
             node_url,
             fee_proving_key,
             fee_verifying_key,

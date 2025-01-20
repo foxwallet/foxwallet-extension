@@ -16,9 +16,9 @@
 
 use crate::account::{Address, PrivateKey};
 
-use crate::types::native::SignatureNative;
+use crate::types::native::{SignatureNative, ToBytes};
 use core::{fmt, ops::Deref, str::FromStr};
-use rand::{rngs::StdRng, SeedableRng};
+use rand::{SeedableRng, rngs::StdRng};
 use wasm_bindgen::prelude::*;
 
 /// Cryptographic signature of a message signed by an Aleo account
@@ -60,6 +60,11 @@ impl Signature {
     pub fn to_string(&self) -> String {
         self.0.to_string()
     }
+
+    /// ----- Modified by FoxWallet -----
+    pub fn to_hex(&self) -> String {
+        hex::encode(self.0.to_bytes_le().unwrap())
+    }
 }
 
 impl FromStr for Signature {
@@ -88,7 +93,7 @@ impl Deref for Signature {
 mod tests {
     use super::*;
 
-    use rand::{rngs::StdRng, Rng, SeedableRng};
+    use rand::{Rng, SeedableRng, rngs::StdRng};
     use wasm_bindgen_test::*;
 
     const ITERATIONS: u64 = 1_000;

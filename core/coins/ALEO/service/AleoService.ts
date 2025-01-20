@@ -44,7 +44,7 @@ import {
   Program,
   RecordCiphertext,
   ViewKey,
-} from "aleo_wasm";
+} from "@provablehq/wasm";
 import { type AleoApiService, createAleoApiService } from "./instances/sync";
 import { type AleoSyncAccount } from "../types/AleoSyncAccount";
 import {

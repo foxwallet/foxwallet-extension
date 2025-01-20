@@ -1,4 +1,4 @@
-import init, { PrivateKey } from "aleo_wasm";
+import { PrivateKey } from "@provablehq/wasm";
 import { expose } from "comlink";
 import type { LogFunc } from "./aleo.di";
 import { AleoWorker } from "./aleo";
@@ -7,9 +7,10 @@ import type { WorkerSyncTask } from "core/coins/ALEO/types/SyncTask";
 let aleoWorker: AleoWorker | null = null;
 let workerId: number;
 
-async function initWasm() {
-  await init();
-}
+// todo: check init aleo wasm
+// async function initWasm() {
+//   await init();
+// }
 
 async function initAleoWorker(
   id: number,
@@ -44,7 +45,7 @@ async function getWorkerId() {
 }
 
 const workerAPI = {
-  initWasm,
+  // initWasm,
   initAleoWorker,
   getPrivateKey,
   syncRecords,

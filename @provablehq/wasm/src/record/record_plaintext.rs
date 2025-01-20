@@ -14,9 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with the Aleo SDK library. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{account::PrivateKey, types::Field, Credits};
+use crate::{Credits, account::PrivateKey, types::Field};
 
-use crate::types::native::{IdentifierNative, ProgramIDNative, RecordPlaintextNative};
+use crate::types::native::{
+    CurrentNetwork, Entry, IdentifierNative, Network, PlaintextNative, ProgramIDNative, RecordPlaintextNative,
+};
+use serde_json::{Value, json};
 use std::{ops::Deref, str::FromStr};
 use wasm_bindgen::prelude::*;
 
@@ -91,6 +94,83 @@ impl RecordPlaintext {
         let serial_number = RecordPlaintextNative::serial_number(private_key.into(), commitment.into())
             .map_err(|_| "Serial number derivation failed".to_string())?;
         Ok(serial_number.to_string())
+    }
+
+    /// ----- Modified by FoxWallet -----
+    #[wasm_bindgen(js_name = toJSON)]
+    pub fn to_json(&self) -> String {
+        fn aleo_parse_entry(entry: &Entry<CurrentNetwork, PlaintextNative>) -> serde_json::Value {
+            let (plaintext, visibility) = match entry {
+                Entry::Constant(constant) => (constant, "constant"),
+                Entry::Public(public) => (public, "public"),
+                Entry::Private(private) => (private, "private"),
+            };
+            match plaintext {
+                PlaintextNative::Literal(literal, ..) => {
+                    serde_json::Value::String(format!("{}.{}", literal, visibility))
+                }
+                PlaintextNative::Struct(struct_, ..) => {
+                    let mut map = serde_json::value::Map::new();
+                    let _ = struct_.iter().enumerate().try_for_each(|(_i, (name, plaintext))| {
+                        match plaintext {
+                            PlaintextNative::Literal(literal, ..) => {
+                                map.insert(
+                                    name.to_string(),
+                                    serde_json::Value::String(format!("{}.{}", literal, visibility)),
+                                );
+                            }
+                            PlaintextNative::Struct(..) | PlaintextNative::Array(..) => {
+                                map.insert(
+                                    name.to_string(),
+                                    aleo_parse_entry(&match entry {
+                                        Entry::Constant(..) => Entry::Constant(plaintext.clone()),
+                                        Entry::Public(..) => Entry::Public(plaintext.clone()),
+                                        Entry::Private(..) => Entry::Private(plaintext.clone()),
+                                    }),
+                                );
+                            }
+                        }
+                        Ok::<(), String>(())
+                    });
+                    Value::Object(map)
+                }
+                PlaintextNative::Array(array, ..) => {
+                    let mut res: Vec<serde_json::Value> = vec![];
+                    let _ = array.iter().enumerate().try_for_each(|(_i, plaintext)| {
+                        match plaintext {
+                            PlaintextNative::Literal(literal, ..) => {
+                                res.push(serde_json::Value::String(format!("{}.{}", literal, visibility)));
+                            }
+                            PlaintextNative::Struct(..) | PlaintextNative::Array(..) => {
+                                res.push(aleo_parse_entry(&match entry {
+                                    Entry::Constant(..) => Entry::Constant(plaintext.clone()),
+                                    Entry::Public(..) => Entry::Public(plaintext.clone()),
+                                    Entry::Private(..) => Entry::Private(plaintext.clone()),
+                                }));
+                            }
+                        }
+                        Ok::<(), String>(())
+                    });
+                    Value::Array(res)
+                }
+            }
+        }
+
+        let data = self.0.data();
+        let mut map = serde_json::Map::new();
+        for (key, value) in data {
+            map.insert(key.to_string(), aleo_parse_entry(value));
+        }
+        json!(map).to_string()
+    }
+
+    /// ----- Modified by FoxWallet -----
+    #[wasm_bindgen(js_name = tag)]
+    pub fn tag(sk_tag: &Field, commitment: &Field) -> Result<String, String> {
+        let field = CurrentNetwork::hash_psd2(&[sk_tag.clone().into(), commitment.clone().into()])
+            .map_err(|_| "get tag error".to_string())
+            .unwrap();
+        Ok(field.to_string())
     }
 }
 

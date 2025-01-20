@@ -73,6 +73,9 @@ const {
     ViewKey,
     VerifyingKey,
     verifyFunctionExecution,
+    Future,
+    hashBHP256,
+    Plaintext,
 } = await wasm({
     importHook: () => {
         return new URL("aleo_wasm.wasm", import.meta.url);
@@ -109,6 +112,9 @@ export {
     ViewKey,
     VerifyingKey,
     verifyFunctionExecution,
+    Future,
+    hashBHP256,
+    Plaintext,
 };`;
 
     await buildRollup({
@@ -210,6 +216,9 @@ export {
     ViewKey,
     VerifyingKey,
     verifyFunctionExecution,
+    Future,
+    hashBHP256,
+    Plaintext,
 } from "./aleo_wasm";`;
 
     const worker = `export {};`;
@@ -236,6 +245,7 @@ export {
 // and `worker.js` builds, so we build the Wasm, and then
 // build the `index.js` and `worker.js` separately.
 async function build(network) {
+    console.log(`Start building wasm/${network}...`);
     await Promise.all([
         buildTypes(network),
         buildWasm(network),
@@ -245,6 +255,7 @@ async function build(network) {
         buildJS(network),
         buildWorker(network),
     ]);
+    console.log(`Finish building wasm/${network}!`);
 }
 
 

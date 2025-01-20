@@ -103,7 +103,8 @@ export class MainLoop {
   async initWorker() {
     for (let i = this.workerList.length; i < WORKER_NUMBER; i++) {
       const aleoWorker = await this.createAleoWorker();
-      await aleoWorker.initWasm();
+      // todo: check init aleo wasm
+      // await aleoWorker.initWasm();
       await aleoWorker.initAleoWorker(i, this.apiList, ENABLE_MEASURE);
       this.workerList[i] = aleoWorker;
       console.log("===> spawen worker: ", i);

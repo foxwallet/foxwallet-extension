@@ -6,7 +6,7 @@ import {
   PrivateKey,
   RecordCiphertext,
   Future,
-} from "aleo_wasm";
+} from "@provablehq/wasm";
 import { AutoSwitch, AutoSwitchServiceType } from "core/utils/retry";
 import { Measure, MeasureAsync } from "@/common/utils/measure";
 import { ALEO_SYNC_HEIGHT_SIZE } from "@/common/constants";

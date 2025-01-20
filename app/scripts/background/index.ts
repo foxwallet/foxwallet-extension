@@ -29,7 +29,8 @@ keepAliveConnection.connect();
 
 const authManager = new AuthManager();
 const keyringManager = new KeyringManager(authManager);
-keyringManager.init();
+// todo: check init aleo wasm
+// keyringManager.init();
 const dappStorage = new DappStorage();
 const coinService = coinServiceEntry;
 

@@ -36,6 +36,11 @@ impl Field {
     pub fn from_string(field: &str) -> Result<Field, String> {
         Ok(Self(FieldNative::from_str(field).map_err(|e| e.to_string())?))
     }
+
+    /// ----- Modified by FoxWallet -----
+    pub fn clone(&self) -> Self {
+        Self(self.0.clone())
+    }
 }
 
 impl From<FieldNative> for Field {
