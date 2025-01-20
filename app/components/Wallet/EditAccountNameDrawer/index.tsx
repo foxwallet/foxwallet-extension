@@ -53,6 +53,7 @@ const EditAccountNameDrawer = (props: Props) => {
     (state) =>
       dupGroupNameSelector(state, {
         walletId: account.wallet.walletId,
+        groupId: account.group.groupId,
         groupName: accountName ?? "",
       }),
     isEqual,
