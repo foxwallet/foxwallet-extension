@@ -103,7 +103,7 @@ export const useUserAssetsWithPrice = () => {
   return assetsWithPrice;
 };
 
-export const useUserAssetsWithPriceBalance = () => {
+export const useUserAssetsWithPriceBalanceAndValue = () => {
   const assets = useUserAssetsWithPrice();
 
   const fetchData = useCallback(async () => {
@@ -178,7 +178,10 @@ export const useUserAssetsWithPriceBalance = () => {
   });
 
   const assetsWithValue = useMemo(() => {
-    return data?.map((item) => {
+    if (!data || data.length === 0) {
+      return [];
+    }
+    return data.map((item) => {
       const { decimals, price, total } = item;
       if (!!price && !!total) {
         const num = Number(utils.formatUnits(total, decimals));
@@ -189,8 +192,16 @@ export const useUserAssetsWithPriceBalance = () => {
     });
   }, [data]);
 
+  const sortedAssets = useMemo(() => {
+    return [...assetsWithValue].sort((a, b) => {
+      if (a.value === undefined) return 1;
+      if (b.value === undefined) return -1;
+      return b.value - a.value;
+    });
+  }, [assetsWithValue]);
+
   return {
-    userAssetsWithPriceBalance: assetsWithValue,
+    userAssetsWithPriceAndBalance: sortedAssets,
     error,
     getUserAssetsWithPriceBalance,
     loadingUserAssetsWithPriceBalance,
@@ -253,14 +264,11 @@ export const useGroupAccountAssets = () => {
     void updateTokens();
   }, [dispatch.tokens, getGroupInteractiveTokens]);
 
-  const { userAssetsWithPriceBalance: assets } =
-    useUserAssetsWithPriceBalance();
+  const { userAssetsWithPriceAndBalance: assets } =
+    useUserAssetsWithPriceBalanceAndValue();
   // console.log("      assets", assets);
 
   const totalUsdValue = useMemo(() => {
-    if (!assets) {
-      return "";
-    }
     const temp = assets
       .filter((item) => !!item.price && !!item.total && !!item.decimals)
       .reduce((total: number, currentValue: TokenV2) => {

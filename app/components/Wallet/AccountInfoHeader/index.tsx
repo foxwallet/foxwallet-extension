@@ -51,7 +51,7 @@ const rotateAnimation = keyframes`
 export const AccountInfoHeader = ({
   totalUsdValue,
 }: {
-  totalUsdValue: number;
+  totalUsdValue: string;
 }) => {
   const navigate = useNavigate();
   const { groupAccount, getMatchAccountsWithUniqueId } = useGroupAccount();
