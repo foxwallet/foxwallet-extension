@@ -21,6 +21,8 @@ export const TokenItemWithBalance = ({
   onClick,
   hover,
   leftElement,
+  showPriceAndChange = true,
+  showBalnaceAndValue = true,
 }: {
   uniqueId: ChainUniqueId;
   address: string;
@@ -28,8 +30,12 @@ export const TokenItemWithBalance = ({
   onClick: (token: TokenV2) => void;
   leftElement?: React.ReactNode;
   hover?: boolean;
+  showPriceAndChange?: boolean;
+  showBalnaceAndValue?: boolean;
 }) => {
-  const showBalance = usePopupSelector((state) => state.accountV2.showBalance);
+  const showBalanceGlobal = usePopupSelector(
+    (state) => state.accountV2.showBalance,
+  );
 
   const { price, change, value } = token;
   const priceStr = useMemo(() => {
@@ -86,42 +92,41 @@ export const TokenItemWithBalance = ({
           <Text fontSize={13} fontWeight={600}>
             {token.symbol}
           </Text>
-          <Flex justify={"center"} alignItems={"center"} fontSize={"11px"}>
-            <Text color={"#777e90"}>{priceStr}</Text>
-            <Text ml={1} color={changeStrColor}>
-              {change}
-            </Text>
-          </Flex>
-          {/* {token.programId !== NATIVE_TOKEN_PROGRAM_ID && */}
-          {/*  token.programId !== BETA_STAKING_PROGRAM_ID && ( */}
-          {/*    <Text maxW={"120"} noOfLines={1} fontSize={10} color={"gray.400"}> */}
-          {/*      {token.tokenId} */}
-          {/*    </Text> */}
-          {/*  )} */}
+          {showPriceAndChange && (
+            <Flex justify={"center"} alignItems={"center"} fontSize={"11px"}>
+              <Text color={"#777e90"}>{priceStr}</Text>
+              <Text ml={1} color={changeStrColor}>
+                {change}
+              </Text>
+            </Flex>
+          )}
         </Flex>
       </Flex>
-      {showBalance ? (
-        <Flex
-          direction={"column"}
-          justify={"center"}
-          alignItems={"flex-end"}
-          // bg={"yellow"}
-        >
-          <TokenNum
-            amount={token?.total}
-            decimals={token.decimals}
-            symbol={""}
-          />
-          <Text color={"#777e90"} fontSize={"11px"}>
-            {valueStr}
-          </Text>
-        </Flex>
-      ) : (
-        <>
-          <Text>*****</Text>
-          <Text>*****</Text>
-        </>
-      )}
+      {showBalnaceAndValue &&
+        (showBalanceGlobal ? (
+          <Flex
+            direction={"column"}
+            justify={"center"}
+            alignItems={"flex-end"}
+            // bg={"yellow"}
+          >
+            <TokenNum
+              amount={token?.total}
+              decimals={token.decimals}
+              symbol={""}
+            />
+            <Text color={"#777e90"} fontSize={"11px"}>
+              {valueStr}
+            </Text>
+          </Flex>
+        ) : (
+          <Flex direction={"column"} justify={"center"} alignItems={"flex-end"}>
+            <Text>*****</Text>
+            <Text color={"#777e90"} fontSize={"11px"}>
+              *****
+            </Text>
+          </Flex>
+        ))}
     </Flex>
   );
 };
