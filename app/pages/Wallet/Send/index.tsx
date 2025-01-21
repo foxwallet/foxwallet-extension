@@ -175,7 +175,16 @@ const SendScreen = () => {
         return null;
       }
     }
-  }, [step, uniqueId, toAddress, step2Data, fromAddress, tokenInfo, step3Data]);
+  }, [
+    step,
+    uniqueId,
+    toAddress,
+    step2Data,
+    fromAddress,
+    onSend,
+    tokenInfo,
+    step3Data,
+  ]);
 
   return (
     <PageWithHeader
