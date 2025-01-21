@@ -1,23 +1,12 @@
-import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
 import Hover from "@/components/Custom/Hover";
-import {
-  IconAleo,
-  IconCopy,
-  IconEdit,
-  IconMore,
-} from "@/components/Custom/Icon";
-import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
+import { IconEdit, IconMore } from "@/components/Custom/Icon";
 import { showPasswordVerifyDrawer } from "@/components/Custom/PasswordVerifyDrawer";
-import {
-  AccountOperateOptions,
-  showAccountOptionDrawer,
-} from "@/components/Wallet/AccountOptionDrawer";
 import { showEditAccountNameDrawer } from "@/components/Wallet/EditAccountNameDrawer";
 import {
   WalletOperateOption,
   showWalletOptionDrawer,
 } from "@/components/Wallet/WalletOptionDrawer";
-import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
+import { usePopupSelector } from "@/hooks/useStore";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
 import { useWallets } from "@/hooks/useWallets";
 import { PageWithHeader } from "@/layouts/Page";
@@ -25,44 +14,20 @@ import {
   type OneMatchGroupAccount,
   WalletType,
 } from "@/scripts/background/store/vault/types/keyring";
-import {
-  Box,
-  Button,
-  Flex,
-  Text,
-  useClipboard,
-  useColorModeValue,
-} from "@chakra-ui/react";
-import { CoinType } from "core/types";
+import { Button, Flex, Text, useColorModeValue } from "@chakra-ui/react";
 import { nanoid } from "nanoid";
 import type React from "react";
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
+import { serializeData } from "@/common/utils/string";
 
 interface AccountListItemProps {
   account: OneMatchGroupAccount;
 }
 const AccountListItem: React.FC<AccountListItemProps> = ({ account }) => {
-  // const { onCopy } = useClipboard(account.address);
-  const { showToast } = useCopyToast();
   const navigate = useNavigate();
-  const dispatch = usePopupDispatch();
-
-  const allWalletInfo = usePopupSelector(
-    (state) => state.accountV2.allWalletInfo,
-  );
-
-  const operatingWallet = useMemo(
-    () => allWalletInfo[account.wallet.walletId],
-    [allWalletInfo, account.wallet.walletId],
-  );
-
-  const accountListInWallet = useMemo(
-    () => operatingWallet?.groupAccounts || [],
-    [operatingWallet.groupAccounts],
-  );
 
   const handleEditName = useCallback(() => {
     void showEditAccountNameDrawer({
@@ -70,35 +35,9 @@ const AccountListItem: React.FC<AccountListItemProps> = ({ account }) => {
     });
   }, [account]);
 
-  // const handleCopyAddress = useCallback(() => {
-  //   showToast();
-  //   onCopy();
-  // }, [onCopy, showToast]);
-
-  // const onExportPrivateKey = useCallback(async () => {
-  //   const { confirmed } = await showPasswordVerifyDrawer();
-  //   if (confirmed) {
-  //     navigate(
-  //       `/export_private_key/${account.walletId}/${account.accountId}/${CoinType.ALEO}`,
-  //     );
-  //   }
-  // }, [navigate, account]);
-
-  // const handleShowMore = useCallback(() => {
-  //   showAccountOptionDrawer({
-  //     wallet: operatingWallet,
-  //     account,
-  //     onClickOption: (option) => {
-  //       switch (option) {
-  //         case AccountOperateOptions.ExportPrivateKey:
-  //           onExportPrivateKey();
-  //           break;
-  //         default:
-  //           break;
-  //       }
-  //     },
-  //   });
-  // }, [account, onExportPrivateKey]);
+  const handleShowMore = useCallback(() => {
+    navigate(`/account_more/${serializeData(account)}`);
+  }, [account, navigate]);
 
   const titleColor = useColorModeValue("black", "white");
   const { borderColor } = useThemeStyle();
@@ -144,9 +83,9 @@ const AccountListItem: React.FC<AccountListItemProps> = ({ account }) => {
           </Hover>
         </Flex> */}
       </Flex>
-      {/* <Hover onClick={handleShowMore} p={1}>
+      <Hover onClick={handleShowMore} p={1}>
         <IconMore />
-      </Hover> */}
+      </Hover>
     </Flex>
   );
 };

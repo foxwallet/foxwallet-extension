@@ -15,9 +15,6 @@ import {
   Text,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { TokenNum } from "../TokenNum";
-import { useCoinService } from "@/hooks/useCoinService";
-import type React from "react";
 import { useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
@@ -54,7 +51,7 @@ export const AccountInfoHeader = ({
   totalUsdValue: string;
 }) => {
   const navigate = useNavigate();
-  const { groupAccount, getMatchAccountsWithUniqueId } = useGroupAccount();
+  const { groupAccount } = useGroupAccount();
   const {
     chainMode,
     chainModeName,
@@ -68,9 +65,7 @@ export const AccountInfoHeader = ({
   }, [chainMode.mode]);
 
   const uniqueId = availableChainUniqueIds[0];
-  const { nativeCurrency, chainConfig, coinService } = useCoinService(uniqueId);
 
-  const { selectedWallet } = useCurrWallet();
   const { t } = useTranslation();
   const showBalance = usePopupSelector((state) => state.accountV2.showBalance);
   const dispatch = usePopupDispatch();

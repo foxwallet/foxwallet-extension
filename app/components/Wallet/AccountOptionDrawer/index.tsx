@@ -1,15 +1,10 @@
 import { Flex, Text } from "@chakra-ui/react";
-import { promisifyChooseDialogWrapper } from "../../../common/utils/dialog";
-import { useCallback, useMemo } from "react";
+import { promisifyChooseDialogWrapper } from "@/common/utils/dialog";
+import { useCallback } from "react";
 import { BottomUpDrawer } from "@/components/Custom/BottomUpDrawer";
 import { useTranslation } from "react-i18next";
-import {
-  IconExportPhrase,
-  IconEyeClose,
-  IconEyeOn,
-} from "@/components/Custom/Icon";
+import { IconExportPhrase } from "@/components/Custom/Icon";
 import { type DisplayWallet } from "@/scripts/background/store/vault/types/keyring";
-import { CoinType } from "core/types";
 
 export enum AccountOperateOptions {
   ExportPrivateKey,

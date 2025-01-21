@@ -34,7 +34,7 @@ export type ChainItemProps = {
   item: ChainBaseConfig;
   onCopyAddress: (acc: OneMatchAccount) => void;
   hasMore?: boolean;
-  onMore?: (acc: OneMatchAccount) => void;
+  onMore?: (config: ChainBaseConfig) => void;
 };
 
 export const CopyAddressChainItem = (props: ChainItemProps) => {
@@ -77,7 +77,7 @@ export const CopyAddressChainItem = (props: ChainItemProps) => {
         >
           <Flex dir={"row"} align={"center"} justify={"center"} marginX={1}>
             <Flex
-              maxW={hasMore ? 240 : 300}
+              maxW={hasMore ? 230 : 300}
               noOfLines={1}
               fontSize={11}
               color={"#777E90"}
@@ -85,7 +85,7 @@ export const CopyAddressChainItem = (props: ChainItemProps) => {
             >
               <MiddleEllipsisText
                 text={selectedAccount.account.address}
-                width={hasMore ? 240 : 260}
+                width={hasMore ? 230 : 260}
               />
             </Flex>
             <IconCopy w={3} h={3} ml={1} />
@@ -96,7 +96,7 @@ export const CopyAddressChainItem = (props: ChainItemProps) => {
         <Hover
           p={1}
           onClick={() => {
-            onMore?.(selectedAccount);
+            onMore?.(item);
           }}
         >
           <IconMore />
