@@ -80,7 +80,7 @@ const EditAccountNameDrawer = (props: Props) => {
           {dupAccountName && (
             <WarningArea
               container={{ mt: "2" }}
-              content={t("Wallet:Create:dupAccountName")}
+              content={t("Wallet:Manage:dupAccountName")}
             />
           )}
         </Flex>
