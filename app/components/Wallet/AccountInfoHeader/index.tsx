@@ -114,10 +114,10 @@ export const AccountInfoHeader = ({
     }
   }, [availableAccounts, availableChains, chainMode, isAllMode, showToast]);
 
-  const { balance } = useBalance({
-    uniqueId,
-    address: availableAccounts[0].account.address,
-  });
+  // const { balance } = useBalance({
+  //   uniqueId,
+  //   address: availableAccounts[0].account.address,
+  // });
 
   const bgGradient = useColorModeValue(
     "linear(to-br, #ECFFF2, #FFFFFF, #ECFFF2)",
