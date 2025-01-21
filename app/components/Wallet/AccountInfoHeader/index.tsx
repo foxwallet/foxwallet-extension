@@ -20,7 +20,6 @@ import { useNavigate } from "react-router-dom";
 import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import { showWalletsDrawer } from "../WalletsDrawer";
-import { useCurrWallet } from "@/hooks/useWallets";
 import { useTranslation } from "react-i18next";
 import RescanButton from "../RescanButton";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
@@ -38,7 +37,6 @@ import { showChangeNetworkDrawer } from "@/components/Wallet/ChangeNetworkDrawer
 import { ActionPanel } from "@/components/Wallet/ActionPanel";
 import { HeaderMiddleView } from "@/components/Wallet/HeaderMiddleView";
 import { showCopyAddressDrawer } from "@/components/Wallet/CopyAddressDrawer";
-import { useBalance } from "@/hooks/useBalance";
 
 const rotateAnimation = keyframes`
   from { transform: rotate(0deg) }

@@ -149,9 +149,7 @@ const SendScreen = () => {
               setStep2Data(data);
               setStep(3);
             }}
-            onSend={(gasFee, value) => {
-              // onSend(gasFee, value); //todo
-            }}
+            onSend={onSend}
             token={tokenInfo}
           />
         );
