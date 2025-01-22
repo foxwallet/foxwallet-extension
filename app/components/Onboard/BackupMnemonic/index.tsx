@@ -160,17 +160,17 @@ export const BackupMnemonicStep = (props: {
         left={0}
         right={0}
       >
-        <Link
-          textDecorationLine={"underline"}
-          textDecorationColor={"green.600"}
-          color={"green.600"}
-          fontWeight={"bold"}
-          onClick={() => {
-            navigate("/main");
-          }}
-        >
-          <Text fontSize={"smaller"}>{t("Mnemonic:later")}</Text>
-        </Link>
+        {/* <Link */}
+        {/*  textDecorationLine={"underline"} */}
+        {/*  textDecorationColor={"green.600"} */}
+        {/*  color={"green.600"} */}
+        {/*  fontWeight={"bold"} */}
+        {/*  onClick={() => { */}
+        {/*    navigate("/main"); */}
+        {/*  }} */}
+        {/* > */}
+        {/*  <Text fontSize={"smaller"}>{t("Mnemonic:later")}</Text> */}
+        {/* </Link> */}
       </Flex>
     </Content>
   );
