@@ -1,5 +1,5 @@
 import Hover from "@/components/Custom/Hover";
-import { IconEdit, IconMore } from "@/components/Custom/Icon";
+import { IconArrowRight, IconEdit, IconMore } from "@/components/Custom/Icon";
 import { showPasswordVerifyDrawer } from "@/components/Custom/PasswordVerifyDrawer";
 import { showEditAccountNameDrawer } from "@/components/Wallet/EditAccountNameDrawer";
 import {
@@ -52,6 +52,8 @@ const AccountListItem: React.FC<AccountListItemProps> = ({ account }) => {
       minH={"60px"}
       align={"center"}
       justifyContent={"space-between"}
+      onClick={handleShowMore}
+      cursor={"pointer"}
     >
       <Flex direction={"column"}>
         <Flex align={"center"}>
@@ -64,27 +66,20 @@ const AccountListItem: React.FC<AccountListItemProps> = ({ account }) => {
           >
             {account.group.groupName}
           </Text>
-          <Hover p={1} onClick={handleEditName}>
-            <IconEdit />
-          </Hover>
-        </Flex>
-        {/* <Flex align={"center"}>
-          <Box
-            maxW={240}
-            noOfLines={1}
-            fontSize={9}
-            fontWeight={500}
-            color={"#777E90"}
+          <Flex
+            onClick={(event) => {
+              event.stopPropagation();
+              handleEditName();
+            }}
           >
-            <MiddleEllipsisText text={account.address} width={240} />
-          </Box>
-          <Hover onClick={handleCopyAddress} p={1}>
-            <IconCopy h={4} w={4} />
-          </Hover>
-        </Flex> */}
+            <Hover p={1}>
+              <IconEdit />
+            </Hover>
+          </Flex>
+        </Flex>
       </Flex>
       <Hover onClick={handleShowMore} p={1}>
-        <IconMore />
+        <IconArrowRight />
       </Hover>
     </Flex>
   );
