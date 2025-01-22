@@ -22,12 +22,11 @@ interface RescanButtonProps {
 
 const RescanButton = (props: RescanButtonProps) => {
   const { paused } = props;
+  const { chainMode } = useChainMode();
+  const { getMatchAccountsWithUniqueId } = useGroupAccount();
+  const { selectedBorderColor } = useThemeStyle();
 
-  const { chainMode, availableChainUniqueIds } = useChainMode();
-
-  const { groupAccount, getMatchAccountsWithUniqueId } = useGroupAccount();
-
-  const uniqueId = availableChainUniqueIds[0];
+  const uniqueId = InnerChainUniqueId.ALEO_MAINNET; // aleo use only
   const selectedAccount = useMemo(() => {
     return getMatchAccountsWithUniqueId(uniqueId)[0];
   }, [getMatchAccountsWithUniqueId, uniqueId]);
@@ -37,16 +36,14 @@ const RescanButton = (props: RescanButtonProps) => {
     uniqueId,
     selectedAccount.account.address,
   );
-  const { selectedBorderColor } = useThemeStyle();
+  // console.log("      progress", progress);
 
   const onRescan = useCallback(() => {
     void getProgress();
   }, [getProgress]);
 
   if (chainMode.mode !== ChainAssembleMode.SINGLE) return null;
-
   if (chainMode.uniqueId !== InnerChainUniqueId.ALEO_MAINNET) return null;
-
   if (!error && progress && progress >= 100) return null;
 
   return (
