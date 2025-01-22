@@ -100,7 +100,7 @@ export abstract class CoinServiceBasic {
   }
 
   // optional
-  validateAddress(_address: string): boolean {
+  validateAddress(address: string): boolean {
     console.error(
       "validateAddress not implemented for " + this.baseConfig.chainName,
     );
@@ -254,10 +254,7 @@ export abstract class CoinServiceBasic {
       "formatRequestTransactionInputsAndFee not implemented for " +
         this.baseConfig.chainName,
     );
-    return {
-      formatInputs: null,
-      feeRecord: [],
-    };
+    return {};
   };
 
   async getPriorityFee(): Promise<bigint> {

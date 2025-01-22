@@ -32,6 +32,7 @@ import { useChainMode } from "@/hooks/useChainMode";
 import {
   ChainAssembleMode,
   type ChainDisplayMode,
+  InnerChainUniqueId,
 } from "core/types/ChainUniqueId";
 import { showChangeNetworkDrawer } from "@/components/Wallet/ChangeNetworkDrawer";
 import { ActionPanel } from "@/components/Wallet/ActionPanel";
@@ -62,8 +63,6 @@ export const AccountInfoHeader = ({
     return chainMode.mode === ChainAssembleMode.ALL;
   }, [chainMode.mode]);
 
-  const uniqueId = availableChainUniqueIds[0];
-
   const { t } = useTranslation();
   const showBalance = usePopupSelector((state) => state.accountV2.showBalance);
   const dispatch = usePopupDispatch();
@@ -71,7 +70,7 @@ export const AccountInfoHeader = ({
 
   // debugger;
 
-  const { sendingAleoTx } = useIsSendingAleoTx(uniqueId);
+  const { sendingAleoTx } = useIsSendingAleoTx();
   const { lock } = useAuth();
   // todo
   // useTxsNotification(uniqueId, selectedAccount.account.address, 5000);
@@ -270,7 +269,7 @@ export const AccountInfoHeader = ({
           mt={2}
           mx={6}
           onClick={() => {
-            navigate(`/token_detail/${uniqueId}`);
+            navigate(`/token_detail/${InnerChainUniqueId.ALEO_MAINNET}`);
           }}
         >
           <IconLoading

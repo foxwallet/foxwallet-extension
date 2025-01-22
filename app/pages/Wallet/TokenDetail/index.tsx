@@ -314,7 +314,7 @@ const TokenDetailScreen = () => {
     }
   }, [getMore, reachBottom]);
 
-  const { sendingAleoTx } = useIsSendingAleoTx(uniqueId);
+  const { sendingAleoTx } = useIsSendingAleoTx();
   const { records, loading: loadingRecords } = useRecords({
     uniqueId,
     address,

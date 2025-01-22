@@ -1,10 +1,10 @@
 import init, { PrivateKey, Address } from "aleo_wasm";
 import { encode as bs58Encode, decode as bs58Decode } from "bs58";
 import { CoinBasic } from "../../CoinBasic";
-import { CoinType } from "../../../types/CoinType";
+import { CoinType } from "core/types";
 import { ALEO_PRIVATE_PREFIX } from "../constants";
 import { AleoExportPKType, AleoImportPKType } from "../types/AleoAccount";
-import { CoreError, CoreErrorCode } from "../../../types/Error";
+import { CoreError, CoreErrorCode } from "core/types/Error";
 import { logger } from "@/common/utils/logger";
 
 class AleoBasic extends CoinBasic<CoinType.ALEO> {
