@@ -134,7 +134,8 @@
     "insufficientFee": "Insufficient balance to pay fee",
     "value": "Value",
     "invalidAmount": "Invalid amount",
-    "processing": "Transaction is processing, please wait."
+    "processing": "Transaction is processing, please wait.",
+    "sendingAleoHint": "You have an ongoing transaction, please wait."
   },
   "GasSetting": {
     "fast": "Fast",
