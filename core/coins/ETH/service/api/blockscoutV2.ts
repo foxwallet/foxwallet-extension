@@ -215,6 +215,7 @@ export class BlockscoutApiV2 {
           from,
           to,
           txHash,
+          transactionHash,
           timestamp,
           total,
           token: tokenInfo,
@@ -226,7 +227,7 @@ export class BlockscoutApiV2 {
         const toAddress = to?.hash;
 
         return {
-          id: txHash,
+          id: transactionHash ?? txHash,
           from: toChecksumAddress(fromAddress),
           to: toChecksumAddress(toAddress),
           value: BigNumber.from(total.value).toBigInt(),

@@ -56,14 +56,14 @@ export type TransactionV2 = {
   priorityFee?: string;
   baseFeePerGas?: string;
   from?: AddressParam;
-  tokenTransfers?: any[]; //省略
+  tokenTransfers?: any[]; // 省略
   txTypes?: string[];
   gasUsed?: string;
   createdContract?: AddressParam;
   position?: number;
   nonce?: number;
   hasErrorInInternalTxs?: boolean;
-  actions?: any[]; //省略
+  actions?: any[]; // 省略
   decodedInput?: DecodedInput;
   tokenTransfersOverflow?: boolean;
   rawInput?: string;
@@ -106,7 +106,7 @@ export type TokenInfo = {
 };
 
 export type TokenBalanceV2 = {
-  tokenInstance?: any; //for NFT
+  tokenInstance?: any; // for NFT
   value?: string;
   tokenId?: string;
   token: TokenInfo;
@@ -135,4 +135,5 @@ export type TokenTransferV2 = {
   total?: any; // 省略
   txHash?: string;
   type?: string;
+  transactionHash?: string;
 };
