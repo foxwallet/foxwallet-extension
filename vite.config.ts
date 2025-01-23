@@ -6,8 +6,8 @@ import manifest from "./manifest";
 import viteSvgr from "vite-plugin-svgr";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import path from "path";
-import wasmPack from "vite-plugin-wasm-pack";
 import tsconfigPaths from "vite-tsconfig-paths";
+import wasm from "vite-plugin-wasm";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -44,7 +44,7 @@ export default defineConfig(({ mode }) => ({
         global: "globalThis",
       },
     },
-    exclude: [],
+    exclude: ["@aleohq/*"],
   },
   esbuild: {
     pure:
@@ -56,11 +56,15 @@ export default defineConfig(({ mode }) => ({
       { find: "@", replacement: path.resolve(__dirname, "app") },
       { find: "core", replacement: path.resolve(__dirname, "core") },
       { find: "aleo", replacement: path.resolve(__dirname, "aleo") },
-      { find: "axios/lib", replacement: path.resolve(__dirname, "node_modules/axios/lib") },
+      {
+        find: "axios/lib",
+        replacement: path.resolve(__dirname, "node_modules/axios/lib"),
+      },
     ],
   },
   define: {},
   plugins: [
+    wasm(),
     tsconfigPaths(),
     viteSvgr({
       exportAsDefault: true,
@@ -76,7 +80,6 @@ export default defineConfig(({ mode }) => ({
       protocolImports: true,
     }),
     react(),
-    wasmPack(["./@aleohq/aleo_wasm"]),
     crx({ manifest }),
   ],
 }));

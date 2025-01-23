@@ -52,6 +52,16 @@ async function buildWasm(network) {
 async function buildJS(network) {
     const js = `import wasm from "./dist/${network}/aleo_wasm.js";
 
+let exportObjs;
+
+(async () => {
+    exportObjs = await wasm({
+        importHook: () => {
+            return new URL("aleo_wasm.wasm", import.meta.url);
+        },
+    });
+})();
+
 const {
     initThreadPool: wasmInitThreadPool,
     Address,
@@ -76,11 +86,7 @@ const {
     Future,
     hashBHP256,
     Plaintext,
-} = await wasm({
-    importHook: () => {
-        return new URL("aleo_wasm.wasm", import.meta.url);
-    },
-});
+} = exportObjs;
 
 async function initThreadPool(threads) {
     if (threads == null) {
@@ -170,7 +176,10 @@ async function initializeWorker(wasm) {
     close();
 }
 
-await initializeWorker(wasm);`;
+(async () => {
+  await initializeWorker(wasm);
+})();
+`;
 
     await buildRollup({
         input: {
