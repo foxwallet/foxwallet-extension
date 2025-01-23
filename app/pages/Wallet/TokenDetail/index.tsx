@@ -55,6 +55,7 @@ import { ethers } from "ethers";
 import { type TransactionHistoryItem } from "core/types/TransactionHistory";
 import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 import { usePopupSelector } from "@/hooks/useStore";
+import { showCopyContractAddressDialog } from "@/components/Wallet/CopyContractAddressDialog";
 
 interface AleoTokenTxHistoryItemProps {
   item: AleoHistoryItem;
@@ -439,15 +440,50 @@ const TokenDetailScreen = () => {
     return "";
   }, [balance, decimals, symbol]);
 
+  const onCopyContractAddress = useCallback(async () => {
+    const { confirmed } = await showCopyContractAddressDialog();
+    if (confirmed) {
+      await navigator.clipboard.writeText(tokenInfo.contractAddress);
+      showToast();
+    }
+  }, [showToast, tokenInfo.contractAddress]);
+
   return (
     <PageWithHeader title={t("TokenDetail:title")}>
       <Flex direction={"column"} px={5} py={2.5}>
         <Flex align={"center"}>
           <Image src={tokenInfo.icon} mr={2.5} w={6} h={6} borderRadius={12} />
           <Flex direction={"column"}>
-            <Text fontSize={13} fontWeight={"bold"}>
-              {tokenInfo.symbol}
-            </Text>
+            <Flex>
+              <Text fontSize={13} fontWeight={"bold"}>
+                {tokenInfo.symbol}
+              </Text>
+              {!isAleo && (
+                <Flex
+                  bg={"#f9f9f9"}
+                  align={"center"}
+                  borderRadius={"10px"}
+                  ml={1}
+                  cursor={"pointer"}
+                  fontSize={"xx-small"}
+                  noOfLines={1}
+                  onClick={onCopyContractAddress}
+                >
+                  <MiddleEllipsisText
+                    text={tokenInfo.contractAddress}
+                    style={{
+                      justifyContent: "center",
+                      alignItems: "center",
+                      padding: "2px",
+                      maxWidth: "240px",
+                      marginLeft: "5px",
+                      marginRight: "5px",
+                    }}
+                  />
+                </Flex>
+              )}
+            </Flex>
+
             {isAleo ? (
               <Flex>
                 <Text color={"#777E90"} fontSize={10} mr={2}>

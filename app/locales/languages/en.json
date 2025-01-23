@@ -199,7 +199,8 @@
     "contract_call": "Call Smart Contract",
     "token_approve": "Token Approve",
     "bridge": "Bridge",
-    "receive": "Receive"
+    "receive": "Receive",
+    "copyContractAddressMsg": "This is token's contract address, not receiving address, do not transfer to this address."
   },
   "Tx": {
     "successToast": "Transaction Successful!",
