@@ -74,6 +74,11 @@ const ImportPrivateKeyScreen = () => {
                     walletId: wallet.walletId,
                     backupedMnemonic: true,
                   });
+                  dispatch.multiChain.addSimpleWalletChainItem({
+                    walletId,
+                    coinType,
+                    option: {},
+                  });
                   await sleep(500);
                   navigate("/");
                 } catch (err) {
@@ -88,7 +93,13 @@ const ImportPrivateKeyScreen = () => {
           />
         );
     }
-  }, [step, popupServerClient, dispatch.accountV2, navigate]);
+  }, [
+    step,
+    popupServerClient,
+    dispatch.accountV2,
+    dispatch.multiChain,
+    navigate,
+  ]);
 
   return (
     <PageWithHeader

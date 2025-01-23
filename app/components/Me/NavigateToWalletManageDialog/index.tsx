@@ -20,7 +20,7 @@ const NavigateToWalletManageDialog = (props: Props) => {
       onClose={onCancel}
       isCentered
       title={t("Common:remind")}
-      body={<P3 textAlign={"center"}>{t("Networks:remind")}</P3>}
+      body={<P3 textAlign={"center"}>{t("Networks:pkWalletRemind")}</P3>}
       footer={
         <Flex flex={1}>
           <Button flex={1} mr="2" colorScheme="secondary" onClick={onConfirm}>

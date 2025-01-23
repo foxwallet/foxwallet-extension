@@ -231,7 +231,8 @@
     "manageWallet": "Manage Wallet",
     "defaultChainRemind": "Default chain can't be unselected",
     "selectNetwork": "Select Network",
-    "selectToken": "Select Token"
+    "selectToken": "Select Token",
+    "pkWalletRemind": "Private key wallet only displays the supported networks. To use all the networks, switch to a seed phase wallet."
   },
   "Contacts": {
     "title": "Contacts",
