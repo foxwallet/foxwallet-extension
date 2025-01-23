@@ -87,6 +87,8 @@
   },
   "PrivateKey": {
     "title": "Private key",
+    "coinType": "Coin Type",
+    "selectCoinType": "Select Coin Type",
     "enterPlaceholder": "Enter private key",
     "backupTips1": "Please keep it in a safe place.",
     "backupTips2": "Seed phrase or private key are the only way to recover your wallet. Once lost, it cannot be retrieved. Do not save them via screenshots or social medias."

@@ -3,7 +3,6 @@ import { Navigate, Outlet, type RouteObject } from "react-router-dom";
 import { CheckOnboard } from "@/components/Onboard/CheckOnboard";
 import { CheckAuth } from "@/components/Onboard/CheckAuth";
 import { CheckBrowserVersion } from "@/components/Onboard/CheckBrowserVersion";
-import AccountMoreScreen from "@/pages/Me/AccountMore";
 
 // WalletTab
 const MainPage = lazy(async () => await import("../pages/Main"));
@@ -88,6 +87,10 @@ const SelectGroupToken = lazy(
   async () => await import("../pages/Wallet/SelectGroupToken"),
 );
 const AccountMore = lazy(async () => await import("../pages/Me/AccountMore"));
+
+const ChangeCoinType = lazy(
+  async () => await import("../pages/Me/ChangeCoinType"),
+);
 
 // 加上 onboard 和 lock 逻辑
 export const routesConfig: RouteObject[] = [
@@ -258,6 +261,10 @@ export const routesConfig: RouteObject[] = [
       {
         path: "account_more/:account",
         element: <AccountMore />,
+      },
+      {
+        path: "change_coin_type/:currCoinType",
+        element: <ChangeCoinType />,
       },
     ],
   },

@@ -38,6 +38,9 @@ import { showChangeNetworkDrawer } from "@/components/Wallet/ChangeNetworkDrawer
 import { ActionPanel } from "@/components/Wallet/ActionPanel";
 import { HeaderMiddleView } from "@/components/Wallet/HeaderMiddleView";
 import { showCopyAddressDrawer } from "@/components/Wallet/CopyAddressDrawer";
+import { useCurrWallet } from "@/hooks/useWallets";
+import { WalletType } from "@/scripts/background/store/vault/types/keyring";
+import { CoinType } from "core/types";
 
 const rotateAnimation = keyframes`
   from { transform: rotate(0deg) }
@@ -58,6 +61,19 @@ export const AccountInfoHeader = ({
     availableChains,
     availableAccounts,
   } = useChainMode();
+
+  const wallet = useCurrWallet();
+  const isSimpleWallet = useMemo(() => {
+    return wallet.selectedWallet?.walletType === WalletType.SIMPLE;
+  }, [wallet]);
+  const isEvmOnlyWallet = useMemo(() => {
+    if (!isSimpleWallet) {
+      return false;
+    } else {
+      const acc = wallet.selectedWallet?.groupAccounts[0].accounts[0];
+      return acc?.coinType === CoinType.ETH;
+    }
+  }, [isSimpleWallet, wallet]);
 
   const isAllMode = useMemo(() => {
     return chainMode.mode === ChainAssembleMode.ALL;
@@ -254,7 +270,7 @@ export const AccountInfoHeader = ({
               )}
             </Box>
           </Flex>
-          <RescanButton paused={!!sendingAleoTx} />
+          {!isEvmOnlyWallet && <RescanButton paused={!!sendingAleoTx} />}
         </Flex>
         {/* Action Item */}
         <ActionPanel chainMode={chainMode} />

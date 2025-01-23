@@ -1,4 +1,4 @@
-import { IconLoading, IconRescan } from "@/components/Custom/Icon";
+import { IconLoading } from "@/components/Custom/Icon";
 import { useChainMode } from "@/hooks/useChainMode";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { useSyncProgress } from "@/hooks/useSyncProgress";
@@ -27,14 +27,20 @@ const RescanButton = (props: RescanButtonProps) => {
   const { selectedBorderColor } = useThemeStyle();
 
   const uniqueId = InnerChainUniqueId.ALEO_MAINNET; // aleo use only
+  // selectedAccount 在evm私钥钱包时为undefined
   const selectedAccount = useMemo(() => {
-    return getMatchAccountsWithUniqueId(uniqueId)[0];
+    const accounts = getMatchAccountsWithUniqueId(uniqueId);
+    if (accounts.length > 0) {
+      return accounts[0];
+    } else {
+      return undefined;
+    }
   }, [getMatchAccountsWithUniqueId, uniqueId]);
 
   const { t } = useTranslation();
   const { progress, error, getProgress } = useSyncProgress(
     uniqueId,
-    selectedAccount.account.address,
+    selectedAccount?.account.address,
   );
   // console.log("      progress", progress);
 

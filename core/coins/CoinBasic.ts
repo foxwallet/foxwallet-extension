@@ -3,7 +3,7 @@ import {
   type ExportPrivateKeyTypeMap,
   type ImportPrivateKeyTypeMap,
 } from "../types/CoinBasic";
-import { type CoinType } from "../types/CoinType";
+import { type CoinType } from "core/types";
 
 export abstract class CoinBasic<T extends CoinType> {
   constructor(public coinType: CoinType) {}
