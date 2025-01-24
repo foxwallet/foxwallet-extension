@@ -1,7 +1,7 @@
 import { type BigNumberish, BigNumber, utils } from "ethers";
 
 export const formatTokenNum = (
-  num: BigNumberish | undefined,
+  num: bigint | undefined,
   decimals: number,
   precision?: number,
   commify: boolean = false,
@@ -20,7 +20,8 @@ export const formatTokenNum = (
       return "0";
     }
     if (!precision || precision > decimals) {
-      precision = decimals >= 8 ? 4 : Math.floor(decimals / 2);
+      // precision = decimals >= 8 ? 4 : 0; // todo
+      precision = 4;
     }
     const remainder = n.mod(BigNumber.from(10).pow(decimals - precision));
     let numStr = utils.formatUnits(n.sub(remainder), decimals);

@@ -13,6 +13,7 @@ export const WalletTab = () => {
   }, [dispatch.accountV2]);
 
   const { assets, totalUsdValue } = useGroupAccountAssets();
+  // console.log("      WalletTab assets", assets);
 
   return (
     <TabPanel h={"100vh"} display={"flex"} flexDir={"column"}>

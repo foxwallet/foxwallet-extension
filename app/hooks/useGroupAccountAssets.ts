@@ -67,6 +67,7 @@ export const useUserAssets = () => {
   return assets;
 };
 
+// add price and change
 export const useUserAssetsWithPrice = () => {
   const assets = useUserAssets();
   const { availableChainUniqueIds } = useChainMode();
@@ -82,6 +83,7 @@ export const useUserAssetsWithPrice = () => {
   const prices = usePopupSelector((state) => {
     return coinPriceSelector(state);
   });
+  // console.log("      allPrices", prices);
 
   const assetsWithPrice = useMemo(() => {
     return assets.map((item) => {
@@ -89,7 +91,7 @@ export const useUserAssetsWithPrice = () => {
       const chainItems = prices[uniqueId];
       let exchange: ExchangeItem | undefined;
       if (contractAddress && chainItems?.tokens) {
-        exchange = chainItems.tokens[contractAddress];
+        exchange = chainItems.tokens[contractAddress.toLowerCase()];
       } else if (chainItems?.baseCurrency) {
         exchange = chainItems.baseCurrency;
       }
@@ -103,11 +105,11 @@ export const useUserAssetsWithPrice = () => {
   return assetsWithPrice;
 };
 
+// add balance and value
 export const useUserAssetsWithPriceBalanceAndValue = () => {
   const assets = useUserAssetsWithPrice();
 
   const fetchData = useCallback(async () => {
-    console.log("      fetchData useUserAssetsWithPriceBalance");
     const promises = assets.map(async (item) => {
       const {
         uniqueId,
@@ -141,6 +143,7 @@ export const useUserAssetsWithPriceBalanceAndValue = () => {
       } else {
         balance = await coinService.getBalance(address);
       }
+      // console.log("      balance", balance);
       return balance ? { ...item, ...balance } : item;
     });
     const results = await Promise.allSettled(promises);
@@ -183,7 +186,7 @@ export const useUserAssetsWithPriceBalanceAndValue = () => {
     }
     return data.map((item) => {
       const { decimals, price, total } = item;
-      if (!!price && !!total) {
+      if (!!price && total !== undefined) {
         const num = Number(utils.formatUnits(total, decimals));
         const value = num * price;
         return { ...item, value };

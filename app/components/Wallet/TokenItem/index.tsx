@@ -57,7 +57,7 @@ export const TokenItemWithBalance = ({
   }, [change]);
 
   const valueStr = useMemo(() => {
-    if (!value) {
+    if (value === undefined) {
       return "";
     }
     return `$${commaCurrency(value)}`;
