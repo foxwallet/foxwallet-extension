@@ -34,7 +34,7 @@ import { AccountSettingStorage } from "../store/account/AccountStorage";
 import { PopupWalletServer } from "./PopupServer";
 import { SiteInfo } from "@/scripts/content/host";
 import { DAPP_CONNECTION_EXPIRE_TIME } from "@/common/constants";
-import { ViewKey, Program } from "@provablehq/wasm";
+import { ViewKey, Program } from "@provablehq/aleo_wasm_mainnet";
 import { CoinServiceEntry } from "core/coins/CoinServiceEntry";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { AleoLocalHistoryItem } from "core/coins/ALEO/types/History";

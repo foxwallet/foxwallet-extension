@@ -28,7 +28,8 @@
   },
   "dependencies": {
     "@aleohq/wasm": "file:./@aleohq/wasm",
-    "@provablehq/wasm": "file:./@provablehq/wasm",
+    "@provablehq/aleo_wasm_mainnet": "file:./@provablehq/pkgs/aleo_wasm_mainnet/pkg",
+    "@provablehq/aleo_wasm_testnet": "file:./@provablehq/pkgs/aleo_wasm_testnet/pkg",
     "@chakra-ui/react": "^2.8.0",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",

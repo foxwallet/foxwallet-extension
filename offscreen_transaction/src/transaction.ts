@@ -7,7 +7,7 @@ import {
   type Transaction,
   ProvingKey,
   VerifyingKey,
-} from "@provablehq/wasm";
+} from "@provablehq/aleo_wasm_mainnet";
 import { AleoStorage } from "./AleoStorage";
 import {
   AleoTxStatus,

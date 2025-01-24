@@ -1,4 +1,4 @@
-import { PrivateKey } from "@provablehq/wasm";
+import { PrivateKey } from "@provablehq/aleo_wasm_mainnet";
 import { expose } from "comlink";
 import type { LogFunc } from "./aleo.di";
 import { AleoWorker } from "./aleo";

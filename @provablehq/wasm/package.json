@@ -38,7 +38,10 @@
   },
   "homepage": "https://github.com/ProvableHQ/sdk#readme",
   "scripts": {
-    "build": "rimraf dist && node build.js",
+    "build:mainnet": "yarn clean && node scripts/wasm.js mainnet",
+    "build:testnet": "yarn clean && node scripts/wasm.js testnet",
+    "build:all": "yarn build:mainnet && yarn build:testnet",
+    "clean": "rimraf pkg && rimraf target",
     "test": "node test.js"
   },
   "devDependencies": {

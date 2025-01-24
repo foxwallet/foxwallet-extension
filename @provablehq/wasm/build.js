@@ -263,5 +263,5 @@ const networks = [
     "testnet",
     "mainnet",
 ];
-
+throw new Error("Use script/wasm.js to build wasm files!")
 await Promise.all(networks.map(build));
