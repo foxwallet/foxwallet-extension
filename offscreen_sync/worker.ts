@@ -1,5 +1,5 @@
 import { PrivateKey } from "@provablehq/aleo_wasm_mainnet";
-import init from "aleo_wasm_mainnet";
+// import init from "aleo_wasm_mainnet";
 import { expose } from "comlink";
 import type { LogFunc } from "./aleo.di";
 import { AleoWorker } from "./aleo";
@@ -10,7 +10,7 @@ let workerId: number;
 
 // todo: check init aleo wasm
 async function initWasm() {
-  await init();
+  // await init();
 }
 
 async function initAleoWorker(

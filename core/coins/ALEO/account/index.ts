@@ -1,5 +1,4 @@
 import { PrivateKey } from "@provablehq/aleo_wasm_mainnet";
-import init from "aleo_wasm_mainnet";
 import { encode as bs58Encode, decode as bs58Decode } from "bs58";
 import { CoinBasic } from "../../CoinBasic";
 import { CoinType } from "../../../types/CoinType";
@@ -12,7 +11,7 @@ class AleoBasic extends CoinBasic<CoinType.ALEO> {
   constructor() {
     super(CoinType.ALEO);
     // todo: check init aleo wasm
-    void init();
+    // void init();
   }
 
   public isValidPrivateKey(

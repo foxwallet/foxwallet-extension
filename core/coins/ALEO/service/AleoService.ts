@@ -38,7 +38,7 @@ import {
 import { Mutex } from "async-mutex";
 import {
   Address,
-  Future,
+  FoxFuture,
   hashBHP256,
   Plaintext,
   Program,
@@ -483,7 +483,7 @@ export class AleoService extends CoinServiceBasic {
       return undefined;
     }
     try {
-      const future = Future.fromString(futureStr);
+      const future = FoxFuture.fromString(futureStr);
       const futureObj = JSON.parse(future.toJSON());
       return futureObj;
     } catch (err) {

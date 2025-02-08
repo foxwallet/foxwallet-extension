@@ -7,7 +7,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "vite --mode development",
-    "build:dev": "npm run clean && node ./scripts/predev.js && yarn build:dapp &&  vite build --mode development && cd offscreen_transaction && NODE_ENV=development npx rollup -c && cd .. && cp ./offscreen_tx.html ./dist/offscreen_tx.html",
+    "build:dev": "yarn build:dapp &&  vite build --mode development && cd offscreen_transaction && NODE_ENV=development npx rollup -c && cd .. && cp ./offscreen_tx.html ./dist/offscreen_tx.html",
     "build:prod": "npm run clean && yarn wasm && node ./scripts/prerelease.js && yarn build:dapp && vite build && cd offscreen_transaction && NODE_ENV=production npx rollup -c && cd .. && cp ./offscreen_tx.html ./dist/offscreen_tx.html && cp ./dist/assets/aleo_wasm_bg.wasm ./dist/aleo_wasm_bg.wasm",
     "build:dapp": "vite build --config vite-injector.config.ts",
     "clean": "rimraf dist/ && rimraf node_modules/aleo_wasm/",
@@ -38,7 +38,7 @@
     "@glif/filecoin-wallet-provider": "^1.1.0",
     "@headlessui/react": "^1.7.17",
     "@metamask/browser-passworder": "^4.1.0",
-    "@provablehq/aleo_wasm_mainnet": "file:./@provablehq/wasm/mainnet",
+    "@provablehq/aleo_wasm_mainnet": "file:./@provablehq/wasm/dist/mainnet",
     "@rematch/core": "^2.2.0",
     "@rematch/loading": "^2.1.2",
     "@rematch/persist": "^2.1.2",
