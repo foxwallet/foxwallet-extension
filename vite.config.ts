@@ -8,6 +8,7 @@ import { nodePolyfills } from "vite-plugin-node-polyfills";
 import path from "path";
 import wasmPack from "vite-plugin-wasm-pack";
 import tsconfigPaths from "vite-tsconfig-paths";
+import topLevelAwait from "vite-plugin-top-level-await";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -44,7 +45,7 @@ export default defineConfig(({ mode }) => ({
         global: "globalThis",
       },
     },
-    exclude: [],
+    exclude: ["@aleohq/*"],
   },
   esbuild: {
     pure:
@@ -60,7 +61,17 @@ export default defineConfig(({ mode }) => ({
         find: "axios/lib",
         replacement: path.resolve(__dirname, "node_modules/axios/lib"),
       },
+      {
+        find: "@provablehq/aleo_wasm_mainnet",
+        replacement: path.resolve(
+          __dirname,
+          "@provablehq/wasm/mainnet/src/index.js",
+        ),
+      },
     ],
+  },
+  worker: {
+    plugins: [topLevelAwait()],
   },
   define: {},
   plugins: [

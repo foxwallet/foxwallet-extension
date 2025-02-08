@@ -1,9 +1,10 @@
 import {
   PrivateKey,
   RecordCiphertext,
-  Future,
+  // Future,
   ViewKey,
 } from "@provablehq/aleo_wasm_mainnet";
+import { Future } from "aleo_wasm_mainnet";
 import { type FutureJSON } from "./aleo.di";
 
 export const parsePrivateKey = (privateKeyStr: string): PrivateKey => {
