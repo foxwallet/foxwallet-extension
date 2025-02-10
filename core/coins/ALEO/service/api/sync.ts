@@ -127,17 +127,22 @@ export class AleoSyncApi {
   async getNodeStatus(): Promise<{
     syncHeight: number;
     referenceHeight: number;
+    serverHeight: number;
   }> {
-    const resp =
-      await this.fetchData<
-        SyncResp<{ sync_height: number; reference_height: number }>
-      >(`/height/status`);
+    const resp = await this.fetchData<
+      SyncResp<{
+        sync_height: number;
+        reference_height: number;
+        server_height: number;
+      }>
+    >(`/height/status`);
     if (resp.status !== 0) {
       throw new Error(resp.msg);
     }
     return {
       syncHeight: resp.data.sync_height,
       referenceHeight: resp.data.reference_height,
+      serverHeight: resp.data.server_height,
     };
   }
 }

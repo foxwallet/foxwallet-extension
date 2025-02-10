@@ -158,7 +158,9 @@ export class AleoService extends CoinServiceBasic {
       this.aleoStorage.getAleoRecordRanges(this.chainId, address),
       this.apiService.getNodeStatus(),
     ]);
-    const { syncHeight, referenceHeight } = nodeStatus;
+    const { referenceHeight, serverHeight } = nodeStatus;
+    const maxHeight = Math.max(referenceHeight ?? 0, serverHeight ?? 0);
+
     const finishHeight = recordRanges
       .map((item) => {
         const [start, end] = item.split("-");
@@ -169,7 +171,7 @@ export class AleoService extends CoinServiceBasic {
       }, 0);
     return Math.min(
       // add some buffer to avoid always 99%
-      Math.floor(((finishHeight + 20) / referenceHeight) * 100),
+      Math.floor(((finishHeight + 20) / maxHeight) * 100),
       100,
     );
   }
