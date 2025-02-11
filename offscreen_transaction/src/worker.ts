@@ -1,4 +1,4 @@
-import { initThreadPool } from "@provablehq/aleo_wasm_mainnet";
+import { initThreadPool } from "@provablehq/wasm-mainnet";
 import type { AleoSendTxParams } from "../../core/coins/ALEO/types/Transaction";
 import { AleoTxWorker } from "./transaction";
 import { type AleoRequestDeploymentParams } from "./types";

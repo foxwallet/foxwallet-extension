@@ -8,12 +8,11 @@ import { nodePolyfills } from "vite-plugin-node-polyfills";
 import path from "path";
 import wasmPack from "vite-plugin-wasm-pack";
 import tsconfigPaths from "vite-tsconfig-paths";
-import topLevelAwait from "vite-plugin-top-level-await";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   build: {
-    target: "esnext",
+    target: "es2020",
     commonjsOptions: {
       // https://github.com/originjs/vite-plugins/issues/9#issuecomment-924668456
       transformMixedEsModules: true,
@@ -38,15 +37,14 @@ export default defineConfig(({ mode }) => ({
       port: 5173,
     },
   },
-  assetsInclude: ["@provablehq/**/*.wasm"],
   optimizeDeps: {
     esbuildOptions: {
-      target: "esnext",
+      target: "es2020",
       define: {
         global: "globalThis",
       },
     },
-    exclude: ["@aleohq/*", "@provablehq/*"],
+    exclude: [],
   },
   esbuild: {
     pure:
@@ -62,24 +60,10 @@ export default defineConfig(({ mode }) => ({
         find: "axios/lib",
         replacement: path.resolve(__dirname, "node_modules/axios/lib"),
       },
-      {
-        find: "@provablehq/aleo_wasm_mainnet",
-        replacement: path.resolve(
-          __dirname,
-          "@provablehq/wasm/dist/mainnet/index.js",
-        ),
-      },
     ],
-  },
-  // worker: {
-  //   plugins: [topLevelAwait()],
-  // },
-  worker: {
-    format: "es",
   },
   define: {},
   plugins: [
-    // topLevelAwait(),
     tsconfigPaths(),
     viteSvgr({
       exportAsDefault: true,
@@ -95,10 +79,10 @@ export default defineConfig(({ mode }) => ({
       protocolImports: true,
     }),
     react(),
-    // wasmPack([
-    //   "./@provablehq/pkgs/aleo_wasm_mainnet",
-    //   "./@provablehq/pkgs/aleo_wasm_testnet",
-    // ]),
+    wasmPack([
+      "./@provablehq/mainnet/aleo_wasm_mainnet",
+      "./@provablehq/testnet/aleo_wasm_testnet",
+    ]),
     crx({ manifest }),
   ],
 }));

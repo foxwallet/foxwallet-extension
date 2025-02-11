@@ -7,9 +7,6 @@
   resolved "https://registry.yarnpkg.com/@aashutoshrathi/word-wrap/-/word-wrap-1.2.6.tgz#bd9154aec9983f77b3a034ecaa015c2e4201f6cf"
   integrity sha512-1Yjs2SvM8TflER/OD3cOjhWWOZb58A2t7wpE2S9XfBYTiIl+XFhQG2bjy4Pu1I+EAlCNUzRDYDdFwFYUKvXcIA==
 
-"@aleohq/wasm@file:./@aleohq/wasm":
-  version "0.6.9"
-
 "@ampproject/remapping@^2.2.0":
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/@ampproject/remapping/-/remapping-2.2.1.tgz#99e8e11851128b8702cd57c33684f1d0f260b630"
@@ -2798,8 +2795,11 @@
   resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.11.8.tgz#6b79032e760a0899cd4204710beede972a3a185f"
   integrity sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==
 
-"@provablehq/aleo_wasm_mainnet@file:./@provablehq/wasm/dist/mainnet":
-  version "0.0.0"
+"@provablehq/wasm-mainnet@file:./@provablehq/wasm/dist/mainnet":
+  version "0.8.0"
+
+"@provablehq/wasm-testnet@file:./@provablehq/wasm/dist/testnet":
+  version "0.8.0"
 
 "@rematch/core@^2.2.0":
   version "2.2.0"

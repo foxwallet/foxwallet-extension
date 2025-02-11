@@ -3,7 +3,7 @@ import {
   RecordCiphertext,
   ViewKey,
   FoxFuture,
-} from "@provablehq/aleo_wasm_mainnet";
+} from "aleo_wasm_mainnet";
 import { type FutureJSON } from "./aleo.di";
 
 export const parsePrivateKey = (privateKeyStr: string): PrivateKey => {

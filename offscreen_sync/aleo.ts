@@ -6,7 +6,7 @@ import {
   PrivateKey,
   RecordCiphertext,
   FoxFuture,
-} from "@provablehq/aleo_wasm_mainnet";
+} from "aleo_wasm_mainnet";
 import { Measure, MeasureAsync } from "@/common/utils/measure";
 import { ALEO_SYNC_HEIGHT_SIZE } from "@/common/constants";
 import { shuffle } from "@/common/utils/array";
