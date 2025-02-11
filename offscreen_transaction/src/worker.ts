@@ -1,4 +1,5 @@
-import { initThreadPool } from "@aleohq/wasm";
+import { initThreadPool } from "@provablehq/wasm";
+import { initThreadPool as initThreadPoolTestnet } from "@provablehq/wasm-testnet";
 import type { AleoSendTxParams } from "../../core/coins/ALEO/types/Transaction";
 import { AleoTxWorker } from "./transaction";
 import { type AleoRequestDeploymentParams } from "./types";
@@ -7,6 +8,7 @@ let aleoTxWorker: AleoTxWorker | null = null;
 let inited = false;
 
 await initThreadPool();
+await initThreadPoolTestnet();
 
 const taskQuene: Array<{
   taskType: "sendTx" | "deploy";

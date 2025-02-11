@@ -1,4 +1,5 @@
-import init, { PrivateKey } from "aleo_wasm";
+import init, { PrivateKey } from "aleo_wasm_mainnet";
+import initTestnet from "aleo_wasm_testnet";
 import { expose } from "comlink";
 import type { LogFunc } from "./aleo.di";
 import { AleoWorker } from "./aleo";
@@ -8,7 +9,7 @@ let aleoWorker: AleoWorker | null = null;
 let workerId: number;
 
 async function initWasm() {
-  await init();
+  await Promise.all([init(), initTestnet()]);
 }
 
 async function initAleoWorker(

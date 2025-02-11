@@ -38,13 +38,13 @@ import {
 import { Mutex } from "async-mutex";
 import {
   Address,
-  Future,
+  FoxFuture as Future,
   hashBHP256,
   Plaintext,
   Program,
   RecordCiphertext,
   ViewKey,
-} from "aleo_wasm";
+} from "aleo_wasm_mainnet";
 import { type AleoApiService, createAleoApiService } from "./instances/sync";
 import { type AleoSyncAccount } from "../types/AleoSyncAccount";
 import {

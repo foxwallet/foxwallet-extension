@@ -45,7 +45,7 @@ import browser from "webextension-polyfill";
 import { nanoid } from "nanoid";
 import { createPopup } from "../helper/popup";
 import { SiteInfo } from "@/scripts/content/host";
-import { PrivateKey } from "aleo_wasm";
+import { PrivateKey } from "aleo_wasm_mainnet";
 import { hexToUint8Array } from "@/common/utils/buffer";
 import {
   AleoLocalTxInfo,

@@ -26,7 +26,8 @@
     ]
   },
   "dependencies": {
-    "@aleohq/wasm": "file:./@aleohq/wasm",
+    "@provablehq/wasm": "file:./@provablehq/mainnet/wasm",
+    "@provablehq/wasm-testnet": "file:./@provablehq/testnet/wasm",
     "@chakra-ui/react": "^2.8.0",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",

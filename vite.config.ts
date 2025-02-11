@@ -56,7 +56,10 @@ export default defineConfig(({ mode }) => ({
       { find: "@", replacement: path.resolve(__dirname, "app") },
       { find: "core", replacement: path.resolve(__dirname, "core") },
       { find: "aleo", replacement: path.resolve(__dirname, "aleo") },
-      { find: "axios/lib", replacement: path.resolve(__dirname, "node_modules/axios/lib") },
+      {
+        find: "axios/lib",
+        replacement: path.resolve(__dirname, "node_modules/axios/lib"),
+      },
     ],
   },
   define: {},
@@ -76,7 +79,10 @@ export default defineConfig(({ mode }) => ({
       protocolImports: true,
     }),
     react(),
-    wasmPack(["./@aleohq/aleo_wasm"]),
+    wasmPack([
+      "./@provablehq/mainnet/aleo_wasm_mainnet",
+      "./@provablehq/testnet/aleo_wasm_testnet",
+    ]),
     crx({ manifest }),
   ],
 }));

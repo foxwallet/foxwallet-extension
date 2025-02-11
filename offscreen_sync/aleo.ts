@@ -5,8 +5,8 @@ import {
   RecordPlaintext,
   PrivateKey,
   RecordCiphertext,
-  Future,
-} from "aleo_wasm";
+  FoxFuture as Future,
+} from "aleo_wasm_mainnet";
 import { AutoSwitch, AutoSwitchServiceType } from "core/utils/retry";
 import { Measure, MeasureAsync } from "@/common/utils/measure";
 import { ALEO_SYNC_HEIGHT_SIZE } from "@/common/constants";
