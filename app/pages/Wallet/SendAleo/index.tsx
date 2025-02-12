@@ -207,7 +207,7 @@ function SendScreen() {
               pendingTx,
             );
           });
-        navigate(-1);
+        navigate("/");
       } catch (err) {
         void showErrorToast({ message: (err as Error).message });
       } finally {

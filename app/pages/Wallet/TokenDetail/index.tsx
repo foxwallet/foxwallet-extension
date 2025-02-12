@@ -458,7 +458,7 @@ const TokenDetailScreen = () => {
               <Text fontSize={13} fontWeight={"bold"}>
                 {tokenInfo.symbol}
               </Text>
-              {!isAleo && (
+              {!isAleo && tokenInfo.type === AssetType.TOKEN && (
                 <Flex
                   bg={"#f9f9f9"}
                   align={"center"}

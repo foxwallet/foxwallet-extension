@@ -93,10 +93,14 @@ const SendScreen = () => {
       Promise.all([
         tokenInfo.type === AssetType.TOKEN ? sendToken() : sendCoin(),
         new Promise((resolve) => setTimeout(resolve, 2000)),
-      ]).then(() => {
-        setIsSending(false);
-        navigate("/");
-      });
+      ])
+        .catch((error) => {
+          console.error(error);
+        })
+        .finally(() => {
+          setIsSending(false);
+          navigate("/");
+        });
     },
     [
       coinService,

@@ -9,6 +9,7 @@ import {
 import * as browser from "webextension-polyfill";
 import { AleoSendTxParams } from "core/coins/ALEO/types/Transaction";
 import { offscreen } from "./aleo";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 
 const OFFSCREEN_TX_DOCUMENT_PATH = "/offscreen_tx.html";
 const OFFSCREEN_DOCUMENT_PATH = "/offscreen.html";
