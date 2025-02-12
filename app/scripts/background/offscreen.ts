@@ -117,7 +117,7 @@ export async function sendTransaction(params: AleoSendTxParams) {
       origin: MessageOrigin.BACKGROUND_TO_OFFSCREEN_TX,
       payload: {
         ...params,
-        rpcList: ReserveChainConfigs.ALEO_MAINNET.rpcList,
+        rpcList: ReserveChainConfigs[InnerChainUniqueId.ALEO_MAINNET].rpcList,
       },
     };
     const sendTxResp: OffscreenMessage =
@@ -204,7 +204,7 @@ export async function sendDeployment(params: AleoRequestDeploymentParams) {
       origin: MessageOrigin.BACKGROUND_TO_OFFSCREEN_TX,
       payload: {
         ...params,
-        rpcList: ReserveChainConfigs.ALEO_MAINNET.rpcList,
+        rpcList: ReserveChainConfigs[InnerChainUniqueId.ALEO_MAINNET].rpcList,
       },
     };
     const sendTxResp: OffscreenMessage =
