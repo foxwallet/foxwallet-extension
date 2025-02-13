@@ -70,7 +70,12 @@ const SelectTokenScreen = () => {
       title={t("SelectToken:title")}
       enableBack
       onBack={() => {
-        navigate(`/${nextPage}?token=${currToken?.tokenId}`);
+        // navigate(`/${nextPage}?token=${currToken?.tokenId}`);
+        if (currToken) {
+          navigate(`/${nextPage}?token=${serializeToken(currToken)}`, {
+            replace: true,
+          });
+        }
         return false;
       }}
     >
