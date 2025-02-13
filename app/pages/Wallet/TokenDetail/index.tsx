@@ -5,6 +5,7 @@ import {
   IconEmptyTxPlaceholder,
   IconReceiveBlack,
   IconSendBlack,
+  IconTokenPlaceHolder,
 } from "@/components/Custom/Icon";
 import { TokenNum } from "@/components/Wallet/TokenNum";
 import { useCoinService } from "@/hooks/useCoinService";
@@ -452,8 +453,12 @@ const TokenDetailScreen = () => {
     <PageWithHeader title={t("TokenDetail:title")}>
       <Flex direction={"column"} px={5} py={2.5}>
         <Flex align={"center"}>
-          <Image src={tokenInfo.icon} mr={2.5} w={6} h={6} borderRadius={12} />
-          <Flex direction={"column"}>
+          {tokenInfo.icon ? (
+            <Image src={tokenInfo.icon} w={6} h={6} borderRadius={12} />
+          ) : (
+            <IconTokenPlaceHolder w={6} h={6} />
+          )}
+          <Flex direction={"column"} ml={2.5}>
             <Flex>
               <Text fontSize={13} fontWeight={"bold"}>
                 {tokenInfo.symbol}
