@@ -575,17 +575,17 @@ const TokenDetailScreen = () => {
                       ) : (
                         <Text>*****</Text>
                       )}
-                      {!!recordStr && !!tokenRecords[0] && (
-                        <Flex>
-                          (<Text>{recordStr}</Text>&nbsp;
-                          <TokenNum
-                            amount={recordAmount}
-                            decimals={tokenInfo.decimals}
-                            symbol={tokenInfo.symbol}
-                          />
-                          )
-                        </Flex>
-                      )}
+                      {/* {!!recordStr && !!tokenRecords[0] && ( */}
+                      {/*  <Flex> */}
+                      {/*    (<Text>{recordStr}</Text>&nbsp; */}
+                      {/*    <TokenNum */}
+                      {/*      amount={recordAmount} */}
+                      {/*      decimals={tokenInfo.decimals} */}
+                      {/*      symbol={tokenInfo.symbol} */}
+                      {/*    /> */}
+                      {/*    ) */}
+                      {/*  </Flex> */}
+                      {/* )} */}
                     </Flex>
                   </Flex>
                 </Flex>
