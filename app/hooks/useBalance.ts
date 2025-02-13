@@ -22,9 +22,7 @@ export const useBalance = (params: BalanceReq) => {
   const dispatch = usePopupDispatch();
 
   const isAddressValid = useMemo(() => {
-    // todo
-    // return coinService.validateAddress(address);
-    return true;
+    return coinService.validateAddress(address);
   }, [address, coinService]);
 
   const key = useMemo(() => {

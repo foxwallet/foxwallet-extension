@@ -27,12 +27,13 @@ import {
 } from "@/components/Custom/Icon";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import { useTranslation } from "react-i18next";
+import { type BalanceResp } from "core/types/Balance";
 
 interface Props {
   isOpen: boolean;
   onConfirm: (data?: RecordDetailWithSpent) => void;
   onCancel: () => void;
-  balance?: Balance;
+  balance?: BalanceResp;
   selectedFeeMethod: AleoFeeMethod;
   selectedFeeRecord?: RecordDetailWithSpent;
   recordList: RecordDetailWithSpent[];

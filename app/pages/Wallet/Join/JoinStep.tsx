@@ -19,6 +19,7 @@ import { type AleoGasFee } from "core/types/GasFee";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useBalance } from "@/hooks/useBalance";
+import { type AleoService } from "core/coins/ALEO/service/AleoService";
 
 export interface JoinStepProps {
   selectedRecords: RecordDetailWithSpent[];
@@ -65,10 +66,9 @@ export const JoinStep = (props: JoinStepProps) => {
     async (method: AleoRecordMethod) => {
       setLoadingGasFee(true);
       try {
-        const { baseFee, priorityFee } = await coinService.getGasFee(
-          NATIVE_TOKEN_PROGRAM_ID,
-          method,
-        );
+        const { baseFee, priorityFee } = await (
+          coinService as AleoService
+        ).getGasFee(NATIVE_TOKEN_PROGRAM_ID, method);
         setFeeInfo({ baseFee, priorityFee });
       } catch (err) {
         setFeeInfo(null);
@@ -81,7 +81,7 @@ export const JoinStep = (props: JoinStepProps) => {
   );
   useEffect(() => {
     void getGasFee(AleoRecordMethod.JOIN);
-  }, []);
+  }, [getGasFee]);
 
   // fee record
   const defaultFeeRecord: RecordDetailWithSpent | undefined = useMemo(() => {
@@ -118,7 +118,7 @@ export const JoinStep = (props: JoinStepProps) => {
       console.log(err);
       return AleoFeeMethod.FEE_PRIVATE;
     }
-  }, [currFeeRecord, gasFeeEstimated, balance, loadingBalance]);
+  }, [gasFeeEstimated, loadingBalance, balance, currFeeRecord, gasFee]);
   const [selectedFeeType, setSelectedFeeType] = useState<AleoFeeMethod | null>(
     null,
   );
@@ -185,7 +185,14 @@ export const JoinStep = (props: JoinStepProps) => {
         }
       }
     }
-  }, [gasFeeEstimated, currFeeType, loadingBalance, balance, currFeeRecord]);
+  }, [
+    gasFeeEstimated,
+    currFeeType,
+    loadingBalance,
+    balance,
+    gasFee,
+    currFeeRecord,
+  ]);
 
   const errorInfo = useMemo(() => {
     if (!gasFeeValid) {
@@ -203,7 +210,7 @@ export const JoinStep = (props: JoinStepProps) => {
         currFeeType === AleoFeeMethod.FEE_PRIVATE ? currFeeRecord : undefined,
       gasFee: feeInfo,
     });
-  }, [currFeeRecord, feeInfo]);
+  }, [currFeeRecord, currFeeType, feeInfo, onConfirm]);
 
   return (
     <Content>
