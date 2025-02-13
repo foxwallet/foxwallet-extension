@@ -21,6 +21,8 @@ import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 import { useSearchTokens } from "@/hooks/useSearchTokens";
 import { useGroupAccountAssets } from "@/hooks/useGroupAccountAssets";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
+import { showBlockContinuousSendAleoDialog } from "@/components/Wallet/BlockContinuousSendAleoDialog";
+import { useIsSendingAleoTx } from "@/hooks/useSendingTxStatus";
 
 const SelectGroupTokenScreen = () => {
   const { action = NextAction.Receive } = useParams<{
@@ -28,12 +30,13 @@ const SelectGroupTokenScreen = () => {
   }>();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { sendingAleoTx } = useIsSendingAleoTx();
 
   const [searchStr, setSearchStr] = useState("");
   const [debounceSearchStr] = useDebounce(searchStr, 500);
   const { groupAccount, getMatchAccountsWithUniqueId } = useGroupAccount();
   const { assets: groupAssets } = useGroupAccountAssets();
-  console.log("      groupAssets", groupAssets);
+  // console.log("      groupAssets", groupAssets);
 
   const { searchRes, searching: loading } = useSearchTokens(
     searchStr,
@@ -53,7 +56,7 @@ const SelectGroupTokenScreen = () => {
   );
 
   const onSelect = useCallback(
-    (token: TokenV2) => {
+    async (token: TokenV2) => {
       if (action === NextAction.Send) {
         if (token.uniqueId !== InnerChainUniqueId.ALEO_MAINNET) {
           navigate(
@@ -61,12 +64,14 @@ const SelectGroupTokenScreen = () => {
               token.ownerAddress
             }/?token=${serializeToken(token)}`,
           );
+        } else if (sendingAleoTx) {
+          await showBlockContinuousSendAleoDialog();
         } else {
           navigate(`/send_aleo?token=${serializeToken(token)}`);
         }
       }
     },
-    [action, navigate],
+    [action, navigate, sendingAleoTx],
   );
 
   const renderTokens = useMemo(() => {

@@ -62,4 +62,12 @@ export type TokenPrice = {
   change?: string;
 };
 
-export type TokenV2 = TokenMetaV2 & TokenMarket & AddressBalance & TokenPrice;
+export type UsdValue = {
+  value?: number; // usd value
+};
+
+export type TokenV2 = TokenMetaV2 &
+  TokenMarket &
+  AddressBalance &
+  TokenPrice &
+  UsdValue;

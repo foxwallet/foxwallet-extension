@@ -50,6 +50,7 @@ export const multiChain = createModel<RootModel>()({
         walletChainMap: payload.walletChainMap,
       } as MultiChainModel;
     },
+
     changeChainConfig(state, payload: { chainConfig: ChainBaseConfig }) {
       const { chainConfig } = payload;
       const uniqueId = chainConfig.uniqueId;
@@ -77,6 +78,7 @@ export const multiChain = createModel<RootModel>()({
         chainConfigItems,
       } as MultiChainModel;
     },
+
     removeChainConfig(state, payload: { chainConfig: ChainBaseConfig }) {
       const { chainConfig } = payload;
       const { uniqueId } = chainConfig;
@@ -117,6 +119,7 @@ export const multiChain = createModel<RootModel>()({
         },
       } as MultiChainModel;
     },
+
     _addUserSelectedChain(
       state,
       payload: {
@@ -164,9 +167,9 @@ export const multiChain = createModel<RootModel>()({
         console.error(`walletId ${walletId} isn't exist in walletChainMap`);
         return state;
       }
-      if (walletType === WalletType.SIMPLE) {
-        return state;
-      }
+      // if (walletType === WalletType.SIMPLE) {
+      //   return state;
+      // }
       // if (uniqueId === InnerChainUniqueId.ETHEREUM) {
       //   console.log(`Can't unselect ${InnerChainUniqueId.ETHEREUM} chain.`);
       //   return state;
@@ -238,6 +241,28 @@ export const multiChain = createModel<RootModel>()({
           ...state.walletChainMap,
           [walletId]: {
             userSelectedChains: defaultChain,
+          },
+        },
+      } as MultiChainModel;
+    },
+    batchAddSimpleWalletChainItem(
+      state,
+      payload: {
+        walletId: string;
+        coinType: CoinType;
+        options: Array<AccountOption[CoinType]>;
+      },
+    ) {
+      const { walletId, coinType, options } = payload;
+      const defaultChains = options.map((option) =>
+        getDefaultChainUniqueId(coinType, option),
+      );
+      return {
+        ...state,
+        walletChainMap: {
+          ...state.walletChainMap,
+          [walletId]: {
+            userSelectedChains: defaultChains,
           },
         },
       } as MultiChainModel;

@@ -15,15 +15,11 @@ import {
   Text,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { TokenNum } from "../TokenNum";
-import { useCoinService } from "@/hooks/useCoinService";
-import type React from "react";
 import { useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import { showWalletsDrawer } from "../WalletsDrawer";
-import { useCurrWallet } from "@/hooks/useWallets";
 import { useTranslation } from "react-i18next";
 import RescanButton from "../RescanButton";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
@@ -36,21 +32,28 @@ import { useChainMode } from "@/hooks/useChainMode";
 import {
   ChainAssembleMode,
   type ChainDisplayMode,
+  InnerChainUniqueId,
 } from "core/types/ChainUniqueId";
 import { showChangeNetworkDrawer } from "@/components/Wallet/ChangeNetworkDrawer";
 import { ActionPanel } from "@/components/Wallet/ActionPanel";
 import { HeaderMiddleView } from "@/components/Wallet/HeaderMiddleView";
 import { showCopyAddressDrawer } from "@/components/Wallet/CopyAddressDrawer";
-import { useBalance } from "@/hooks/useBalance";
+import { useCurrWallet } from "@/hooks/useWallets";
+import { WalletType } from "@/scripts/background/store/vault/types/keyring";
+import { CoinType } from "core/types";
 
 const rotateAnimation = keyframes`
   from { transform: rotate(0deg) }
   to { transform: rotate(360deg) }
 `;
 
-export const AccountInfoHeader = () => {
+export const AccountInfoHeader = ({
+  totalUsdValue,
+}: {
+  totalUsdValue: string;
+}) => {
   const navigate = useNavigate();
-  const { groupAccount, getMatchAccountsWithUniqueId } = useGroupAccount();
+  const { groupAccount } = useGroupAccount();
   const {
     chainMode,
     chainModeName,
@@ -59,14 +62,23 @@ export const AccountInfoHeader = () => {
     availableAccounts,
   } = useChainMode();
 
+  const wallet = useCurrWallet();
+  const isSimpleWallet = useMemo(() => {
+    return wallet.selectedWallet?.walletType === WalletType.SIMPLE;
+  }, [wallet]);
+  const isEvmOnlyWallet = useMemo(() => {
+    if (!isSimpleWallet) {
+      return false;
+    } else {
+      const acc = wallet.selectedWallet?.groupAccounts[0].accounts[0];
+      return acc?.coinType === CoinType.ETH;
+    }
+  }, [isSimpleWallet, wallet]);
+
   const isAllMode = useMemo(() => {
     return chainMode.mode === ChainAssembleMode.ALL;
   }, [chainMode.mode]);
 
-  const uniqueId = availableChainUniqueIds[0];
-  const { nativeCurrency, chainConfig, coinService } = useCoinService(uniqueId);
-
-  const { selectedWallet } = useCurrWallet();
   const { t } = useTranslation();
   const showBalance = usePopupSelector((state) => state.accountV2.showBalance);
   const dispatch = usePopupDispatch();
@@ -74,7 +86,7 @@ export const AccountInfoHeader = () => {
 
   // debugger;
 
-  const { sendingAleoTx } = useIsSendingAleoTx(uniqueId);
+  const { sendingAleoTx } = useIsSendingAleoTx();
   const { lock } = useAuth();
   // todo
   // useTxsNotification(uniqueId, selectedAccount.account.address, 5000);
@@ -115,10 +127,10 @@ export const AccountInfoHeader = () => {
     }
   }, [availableAccounts, availableChains, chainMode, isAllMode, showToast]);
 
-  const { balance } = useBalance({
-    uniqueId,
-    address: availableAccounts[0].account.address,
-  });
+  // const { balance } = useBalance({
+  //   uniqueId,
+  //   address: availableAccounts[0].account.address,
+  // });
 
   const bgGradient = useColorModeValue(
     "linear(to-br, #ECFFF2, #FFFFFF, #ECFFF2)",
@@ -216,7 +228,7 @@ export const AccountInfoHeader = () => {
         {/* copy address */}
         {!isAllMode && (
           <Flex
-            mt={2}
+            mt={4}
             direction={"row"}
             align={"center"}
             justifyContent={"center"}
@@ -232,36 +244,34 @@ export const AccountInfoHeader = () => {
           </Flex>
         )}
         {/* value */}
-        {!isAllMode && (
-          <Flex direction={"row"} align={"center"} justify={"center"} mt={2}>
-            <Flex align={"center"}>
-              <Box fontSize={24} fontWeight={600}>
-                {showBalance ? (
-                  <TokenNum
-                    amount={balance?.total ?? 0n}
-                    decimals={nativeCurrency.decimals}
-                    symbol={nativeCurrency.symbol}
-                  />
-                ) : (
-                  "*****"
-                )}
-              </Box>
-              <Box
-                cursor={"pointer"}
-                ml={2}
-                onClick={() => dispatch.accountV2.changeBalanceState()}
-              >
-                {showBalance ? (
-                  <IconEyeOn w={4} h={4} />
-                ) : (
-                  <IconEyeClose w={4} h={4} />
-                )}
-              </Box>
-            </Flex>
-            <RescanButton paused={!!sendingAleoTx} />
+        <Flex direction={"row"} align={"center"} justify={"center"} mt={2}>
+          <Flex align={"center"}>
+            <Box fontSize={24} fontWeight={600}>
+              {showBalance ? (
+                // <TokenNum
+                //   amount={balance?.total ?? 0n}
+                //   decimals={nativeCurrency.decimals}
+                //   symbol={nativeCurrency.symbol}
+                // />
+                <Text ml={3}>{`$${totalUsdValue}`}</Text>
+              ) : (
+                "*****"
+              )}
+            </Box>
+            <Box
+              cursor={"pointer"}
+              ml={2}
+              onClick={() => dispatch.accountV2.changeBalanceState()}
+            >
+              {showBalance ? (
+                <IconEyeOn w={4} h={4} />
+              ) : (
+                <IconEyeClose w={4} h={4} />
+              )}
+            </Box>
           </Flex>
-        )}
-
+          {!isEvmOnlyWallet && <RescanButton paused={!!sendingAleoTx} />}
+        </Flex>
         {/* Action Item */}
         <ActionPanel chainMode={chainMode} />
       </Box>
@@ -275,7 +285,7 @@ export const AccountInfoHeader = () => {
           mt={2}
           mx={6}
           onClick={() => {
-            navigate(`/token_detail/${uniqueId}`);
+            navigate(`/token_detail/${InnerChainUniqueId.ALEO_MAINNET}`);
           }}
         >
           <IconLoading

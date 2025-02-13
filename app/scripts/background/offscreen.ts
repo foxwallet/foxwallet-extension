@@ -9,6 +9,7 @@ import {
 import * as browser from "webextension-polyfill";
 import { AleoSendTxParams } from "core/coins/ALEO/types/Transaction";
 import { offscreen } from "./aleo";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 
 const OFFSCREEN_TX_DOCUMENT_PATH = "/offscreen_tx.html";
 const OFFSCREEN_DOCUMENT_PATH = "/offscreen.html";
@@ -117,7 +118,7 @@ export async function sendTransaction(params: AleoSendTxParams) {
       origin: MessageOrigin.BACKGROUND_TO_OFFSCREEN_TX,
       payload: {
         ...params,
-        rpcList: ReserveChainConfigs.aleo_mainnet.rpcList,
+        rpcList: ReserveChainConfigs[InnerChainUniqueId.ALEO_MAINNET].rpcList,
       },
     };
     const sendTxResp: OffscreenMessage =
@@ -204,7 +205,7 @@ export async function sendDeployment(params: AleoRequestDeploymentParams) {
       origin: MessageOrigin.BACKGROUND_TO_OFFSCREEN_TX,
       payload: {
         ...params,
-        rpcList: ReserveChainConfigs.aleo_mainnet.rpcList,
+        rpcList: ReserveChainConfigs[InnerChainUniqueId.ALEO_MAINNET].rpcList,
       },
     };
     const sendTxResp: OffscreenMessage =

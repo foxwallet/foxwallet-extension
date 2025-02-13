@@ -43,18 +43,30 @@ import { showNavigateToWalletManageDialog } from "@/components/Me/NavigateToWall
 import { showErrorToast } from "@/components/Custom/ErrorToast";
 import { useCurrWallet } from "@/hooks/useWallets";
 import { useSearchNetworks } from "@/hooks/useSearchNetworks";
+import {
+  useAllChainList,
+  useGroupAccountChainList,
+} from "@/hooks/useChainList";
 
 export type NetworkListItemProps = {
   item: ChainBaseConfig;
   isSelected: boolean;
   onPressItem: (item: ChainBaseConfig, isSelected: boolean) => void;
+  isSimple: boolean;
+  simpleCoinType?: CoinType;
 };
 
 export const NetworkListItem = (props: NetworkListItemProps) => {
-  const { item, isSelected, onPressItem } = props;
-  const titleColor = useColorModeValue("black", "white");
+  const { item, isSelected, onPressItem, isSimple, simpleCoinType } = props;
+  // const titleColor = useColorModeValue("black", "white");
   const language = getCurrLanguage();
   const navigate = useNavigate();
+  const titleColor = useMemo(() => {
+    if (isSimple) {
+      return item.coinType === simpleCoinType ? "black" : "gray.400";
+    }
+    return "black";
+  }, [isSimple, item.coinType, simpleCoinType]);
 
   const remark =
     item.chainRemark?.[language] ?? item.chainRemark?.[SupportLanguages.EN];
@@ -124,22 +136,26 @@ const NetworksScreen = () => {
   const navigate = useNavigate();
   const { selectedWallet: wallet } = useCurrWallet();
 
-  const chainConfigs = useSelector((state: RootState) => {
-    return getChainConfigsByFilter({
-      state,
-      filter: (_item) => {
-        return true;
-      },
-    });
-  }, isEqual);
+  // const chainConfigs = useSelector((state: RootState) => {
+  //   return getChainConfigsByFilter({
+  //     state,
+  //     filter: (_item) => {
+  //       return true;
+  //     },
+  //   });
+  // }, isEqual);
+  // const chainConfigs = useGroupAccountChainList();
+  const chainConfigs = useAllChainList();
 
+  console.log("      groupAccount", groupAccount);
   const reserveUniqueId = useMemo(() => {
     if (groupAccount.wallet.walletType === WalletType.HD) {
-      return ETH_CHAIN_CONFIGS.MAIN_NET.uniqueId; // eth 作为保留链
+      return ETH_CHAIN_CONFIGS.MAIN_NET.uniqueId; // 多链钱包时, eth 作为保留链
     }
     const account = groupAccount.group.accounts[0];
     return getDefaultChainUniqueId(account.coinType, account.option);
   }, [groupAccount]);
+  console.log("      reserveUniqueId", reserveUniqueId);
 
   const [isAddingAccount, setIsAddingAccount] = useState(false);
   const addingAccountRef = useRef(false);
@@ -169,6 +185,7 @@ const NetworksScreen = () => {
   const selectedUniqueIds = useSelector((state: RootState) => {
     return currSelectedChainsSelector(state);
   }, isEqual);
+  console.log("      selectedUniqueIds", selectedUniqueIds);
 
   const onInputChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -191,8 +208,18 @@ const NetworksScreen = () => {
     return debounceAddress && dataList.length === 0;
   }, [debounceAddress, dataList.length]);
 
+  const isSimple = useMemo(
+    () => groupAccount.wallet.walletType === WalletType.SIMPLE,
+    [groupAccount],
+  );
+  const simpleCoinType = useMemo(() => {
+    return isSimple ? groupAccount.group.accounts[0].coinType : undefined;
+  }, [groupAccount.group.accounts, isSimple]);
+
   const onPressItem = useCallback(
     async (item: ChainBaseConfig, isSelected: boolean) => {
+      console.log("      groupAccount", groupAccount);
+      console.log("      item", item);
       if (
         groupAccount.wallet.walletType === WalletType.SIMPLE &&
         (groupAccount.group.accounts[0].coinType !== item.coinType ||
@@ -202,6 +229,7 @@ const NetworksScreen = () => {
         if (confirmed) {
           navigate("/manage_wallet");
         }
+        return;
       }
 
       if (isSelected) {
@@ -244,13 +272,16 @@ const NetworksScreen = () => {
       );
       return (
         <NetworkListItem
+          key={item.uniqueId}
           item={item}
           isSelected={isSelected}
           onPressItem={onPressItem}
+          isSimple={isSimple}
+          simpleCoinType={simpleCoinType}
         />
       );
     },
-    [onPressItem, selectedUniqueIds],
+    [isSimple, onPressItem, selectedUniqueIds, simpleCoinType],
   );
 
   return (

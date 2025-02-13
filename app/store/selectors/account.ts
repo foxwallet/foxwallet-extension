@@ -59,17 +59,18 @@ export const dupGroupNameSelector = createAppSelector(
   [
     accountSelector,
     (_state, { walletId }: { walletId: string }) => walletId,
+    (_state, { groupId }: { groupId: string }) => groupId,
     (_state, { groupName }: { groupName: string }) => groupName,
   ],
-  (account, walletId, groupName) => {
+  (account, walletId, groupId, groupName) => {
     const allWallets = account.allWalletInfo;
     const dup = Object.values(allWallets).some((wallet) => {
       if (wallet.walletId !== walletId) {
         return false;
       }
-      const sameAccountIndex = wallet.groupAccounts.findIndex(
-        (item) => item.groupName === groupName,
-      );
+      const sameAccountIndex = wallet.groupAccounts.findIndex((item) => {
+        return item.groupId !== groupId && item.groupName === groupName;
+      });
       return sameAccountIndex >= 0;
     });
     return dup;

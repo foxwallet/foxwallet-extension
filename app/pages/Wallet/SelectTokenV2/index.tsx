@@ -20,13 +20,12 @@ import { NextAction } from "@/pages/Wallet/SelectNetwork";
 import { type TokenV2 } from "core/types/Token";
 import { serializeToken } from "@/common/utils/string";
 import { TokenItemWithBalance } from "@/components/Wallet/TokenItem";
-import { usePopupSelector } from "@/hooks/useStore";
-import { isEqual } from "lodash";
 import { useSafeParams } from "@/hooks/useSafeParams";
 import { useAllTokens, useRecommendTokens } from "@/hooks/useToken";
 import { useAssetList } from "@/hooks/useAssetList";
 import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 import { useSearchTokens } from "@/hooks/useSearchTokens";
+import { useGroupAccountAssets } from "@/hooks/useGroupAccountAssets";
 
 const SelectTokenScreenV2 = () => {
   const { action = NextAction.Receive } = useParams<{
@@ -40,28 +39,26 @@ const SelectTokenScreenV2 = () => {
   const [searchStr, setSearchStr] = useState("");
   const [debounceSearchStr] = useDebounce(searchStr, 500);
   const { nativeToken } = useAssetList(uniqueId, address);
-  const recommendTokens = useRecommendTokens(uniqueId); // 推荐 数量适中
-  // console.log("      recommendTokens", recommendTokens);
-  //
-  const rawAllTokens = useAllTokens(uniqueId); // 所有 数量很多
-  // console.log("      rawAllTokens", rawAllTokens);
+  const { assets: groupAssets } = useGroupAccountAssets();
 
-  const userTokens = usePopupSelector(
-    (state) => state.tokens.userTokens?.[uniqueId]?.[address],
-    isEqual,
-  );
+  const assetsOfUniqueId = useMemo(() => {
+    return groupAssets.filter((item) => item.uniqueId === uniqueId);
+  }, [groupAssets, uniqueId]);
+
+  const recommendTokens = useRecommendTokens(uniqueId); // 推荐 数量适中
+  const rawAllTokens = useAllTokens(uniqueId); // 所有 数量很多
 
   const assets = useMemo(() => {
     if (action === NextAction.Send) {
-      return [nativeToken, ...(userTokens ?? [])];
+      return assetsOfUniqueId;
     } else {
       return [nativeToken, ...recommendTokens];
     }
-  }, [action, nativeToken, recommendTokens, userTokens]);
+  }, [action, assetsOfUniqueId, nativeToken, recommendTokens]);
 
   const { searchRes, searching: loading } = useSearchTokens(
     searchStr,
-    rawAllTokens,
+    action === NextAction.Send ? assetsOfUniqueId : rawAllTokens,
   );
 
   const displayList = useMemo(() => {
@@ -112,13 +109,15 @@ const SelectTokenScreenV2 = () => {
                 token={item}
                 onClick={onSelect}
                 hover
+                showPriceAndChange={action === NextAction.Send}
+                showBalnaceAndValue={action === NextAction.Send}
               />
             );
           })}
         </VStack>
       </Box>
     );
-  }, [displayList, onSelect, address, uniqueId]);
+  }, [displayList, uniqueId, address, onSelect, action]);
 
   return (
     <PageWithHeader title={t("Networks:selectToken")}>

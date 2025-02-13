@@ -6,7 +6,6 @@ import { useClient } from "@/hooks/useClient";
 import { usePopupDispatch } from "@/hooks/useStore";
 import { Body } from "@/layouts/Body";
 import { PageWithHeader } from "@/layouts/Page";
-import { AleoImportPKType } from "core/coins/ALEO/types/AleoAccount";
 import { CoinType } from "core/types";
 import { sleep } from "core/utils/sleep";
 import { nanoid } from "nanoid";
@@ -16,6 +15,8 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { defaultWalletNameSelector } from "@/store/selectors/account";
 import { isEqual } from "lodash";
+import { AleoImportPKType } from "core/coins/ALEO/types/AleoAccount";
+import { ETHImportPKType } from "core/coins/ETH/types/ETHAccount";
 
 const ImportPrivateKeyScreen = () => {
   const [step, setStep] = useState(1);
@@ -42,18 +43,23 @@ const ImportPrivateKeyScreen = () => {
       case 1:
         return (
           <ImportPrivateKeyStep
-            onConfirm={async (privateKey) => {
+            onConfirm={async (privateKey, paramCoinType) => {
               const walletId = walletIdRef.current;
               const walletName = walletNameRef.current;
+              const coinType = paramCoinType as CoinType;
+              const privateKeyType =
+                coinType === CoinType.ALEO
+                  ? AleoImportPKType.ALEO_PK
+                  : ETHImportPKType.ETH_HEX;
+
               if (walletId && walletName && privateKey) {
                 try {
-                  const coinType = CoinType.ALEO;
                   const wallet = await popupServerClient.importPrivateKey({
                     walletId,
                     walletName,
                     privateKey,
                     coinType,
-                    privateKeyType: AleoImportPKType.ALEO_PK,
+                    privateKeyType,
                     option: {},
                   });
                   const { groupAccounts, ...restWallet } = wallet;
@@ -67,6 +73,11 @@ const ImportPrivateKeyScreen = () => {
                   dispatch.accountV2.changeWalletBackupedMnemonic({
                     walletId: wallet.walletId,
                     backupedMnemonic: true,
+                  });
+                  dispatch.multiChain.addSimpleWalletChainItem({
+                    walletId,
+                    coinType,
+                    option: {},
                   });
                   await sleep(500);
                   navigate("/");
@@ -82,7 +93,13 @@ const ImportPrivateKeyScreen = () => {
           />
         );
     }
-  }, [step, popupServerClient, dispatch.accountV2, navigate]);
+  }, [
+    step,
+    popupServerClient,
+    dispatch.accountV2,
+    dispatch.multiChain,
+    navigate,
+  ]);
 
   return (
     <PageWithHeader

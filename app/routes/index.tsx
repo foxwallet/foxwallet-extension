@@ -86,6 +86,11 @@ const OnboardImportWallet = lazy(
 const SelectGroupToken = lazy(
   async () => await import("../pages/Wallet/SelectGroupToken"),
 );
+const AccountMore = lazy(async () => await import("../pages/Me/AccountMore"));
+
+const ChangeCoinType = lazy(
+  async () => await import("../pages/Me/ChangeCoinType"),
+);
 
 // 加上 onboard 和 lock 逻辑
 export const routesConfig: RouteObject[] = [
@@ -252,6 +257,14 @@ export const routesConfig: RouteObject[] = [
       {
         path: "select_group_token/:action",
         element: <SelectGroupToken />,
+      },
+      {
+        path: "account_more/:account",
+        element: <AccountMore />,
+      },
+      {
+        path: "change_coin_type/:currCoinType",
+        element: <ChangeCoinType />,
       },
     ],
   },

@@ -53,6 +53,9 @@ import { useSafeTokenInfo } from "@/hooks/useSafeTokenInfo";
 import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
 import { ethers } from "ethers";
 import { type TransactionHistoryItem } from "core/types/TransactionHistory";
+import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
+import { usePopupSelector } from "@/hooks/useStore";
+import { showCopyContractAddressDialog } from "@/components/Wallet/CopyContractAddressDialog";
 
 interface AleoTokenTxHistoryItemProps {
   item: AleoHistoryItem;
@@ -236,13 +239,9 @@ const TokenDetailScreen = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { uniqueId, address } = useSafeParams();
-  // console.log("      params ", uniqueId, address);
-
   const { tokenInfo } = useSafeTokenInfo(uniqueId, address);
-  // console.log("      tokenInfo");
-  // console.log({ ...tokenInfo });
-
   const { chainConfig, nativeCurrency } = useCoinService(uniqueId);
+  const showBalance = usePopupSelector((state) => state.accountV2.showBalance);
 
   const isAleo = useMemo(() => {
     return uniqueId === InnerChainUniqueId.ALEO_MAINNET;
@@ -316,7 +315,7 @@ const TokenDetailScreen = () => {
     }
   }, [getMore, reachBottom]);
 
-  const { sendingAleoTx } = useIsSendingAleoTx(uniqueId);
+  const { sendingAleoTx } = useIsSendingAleoTx();
   const { records, loading: loadingRecords } = useRecords({
     uniqueId,
     address,
@@ -441,15 +440,50 @@ const TokenDetailScreen = () => {
     return "";
   }, [balance, decimals, symbol]);
 
+  const onCopyContractAddress = useCallback(async () => {
+    const { confirmed } = await showCopyContractAddressDialog();
+    if (confirmed) {
+      await navigator.clipboard.writeText(tokenInfo.contractAddress);
+      showToast();
+    }
+  }, [showToast, tokenInfo.contractAddress]);
+
   return (
     <PageWithHeader title={t("TokenDetail:title")}>
       <Flex direction={"column"} px={5} py={2.5}>
         <Flex align={"center"}>
           <Image src={tokenInfo.icon} mr={2.5} w={6} h={6} borderRadius={12} />
           <Flex direction={"column"}>
-            <Text fontSize={13} fontWeight={"bold"}>
-              {tokenInfo.symbol}
-            </Text>
+            <Flex>
+              <Text fontSize={13} fontWeight={"bold"}>
+                {tokenInfo.symbol}
+              </Text>
+              {!isAleo && tokenInfo.type === AssetType.TOKEN && (
+                <Flex
+                  bg={"#f9f9f9"}
+                  align={"center"}
+                  borderRadius={"10px"}
+                  ml={1}
+                  cursor={"pointer"}
+                  fontSize={"xx-small"}
+                  noOfLines={1}
+                  onClick={onCopyContractAddress}
+                >
+                  <MiddleEllipsisText
+                    text={tokenInfo.contractAddress}
+                    style={{
+                      justifyContent: "center",
+                      alignItems: "center",
+                      padding: "2px",
+                      maxWidth: "240px",
+                      marginLeft: "5px",
+                      marginRight: "5px",
+                    }}
+                  />
+                </Flex>
+              )}
+            </Flex>
+
             {isAleo ? (
               <Flex>
                 <Text color={"#777E90"} fontSize={10} mr={2}>
@@ -496,12 +530,14 @@ const TokenDetailScreen = () => {
                     <Text>{t("TokenDetail:public")}:&nbsp;</Text>
                     {loadingBalance ? (
                       <Spinner w={2} h={2} />
-                    ) : (
+                    ) : showBalance ? (
                       <TokenNum
                         amount={balance?.publicBalance}
                         decimals={tokenInfo.decimals}
                         symbol={tokenInfo.symbol}
                       />
+                    ) : (
+                      <Text>*****</Text>
                     )}
                   </Flex>
                   <Flex mt={2}>
@@ -509,12 +545,14 @@ const TokenDetailScreen = () => {
                     <Flex flexDir={"column"}>
                       {loadingBalance ? (
                         <Spinner w={2} h={2} />
-                      ) : (
+                      ) : showBalance ? (
                         <TokenNum
                           amount={balance?.privateBalance}
                           decimals={tokenInfo.decimals}
                           symbol={tokenInfo.symbol}
                         />
+                      ) : (
+                        <Text>*****</Text>
                       )}
                     </Flex>
                   </Flex>
@@ -523,12 +561,14 @@ const TokenDetailScreen = () => {
                     <Flex flexDir={"column"}>
                       {loadingBalance ? (
                         <Spinner w={2} h={2} />
-                      ) : (
+                      ) : showBalance ? (
                         <TokenNum
                           amount={balance?.total}
                           decimals={tokenInfo.decimals}
                           symbol={tokenInfo.symbol}
                         />
+                      ) : (
+                        <Text>*****</Text>
                       )}
                       {!!recordStr && !!tokenRecords[0] && (
                         <Flex>
@@ -546,15 +586,12 @@ const TokenDetailScreen = () => {
                 </Flex>
               </Flex>
               {/* todo: cash value */}
-              {/* <Text color={"#777E90"} fontSize={10}> */}
-              {/*  $123,234 */}
-              {/* </Text> */}
             </Flex>
           </Box>
         ) : (
           <Flex fontSize={"smaller"}>
             <Text>{t("TokenDetail:balance")}:&nbsp;</Text>
-            <Text>{balanceStr}</Text>
+            <Text>{showBalance ? balanceStr : "*****"}</Text>
           </Flex>
         )}
         {/* send and receive */}
@@ -581,7 +618,13 @@ const TokenDetailScreen = () => {
         {loading ? (
           <Spinner w={6} h={6} alignSelf={"center"} mt={10} />
         ) : history.length > 0 ? (
-          <Flex ref={listRef} direction={"column"} maxH={310} overflowY="auto">
+          <Flex
+            ref={listRef}
+            direction={"column"}
+            maxH={310}
+            overflowY="auto"
+            sx={HIDE_SCROLL_BAR_CSS}
+          >
             {loadingLocalTxs && (
               <Spinner w={6} h={6} alignSelf={"center"} mt={10} />
             )}

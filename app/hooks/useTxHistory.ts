@@ -43,7 +43,7 @@ export const useTxsNotification = (
 
   const localTxKey = `/localTxs/${uniqueId}/${address}`;
   const getLocalTxs = useCallback(async () => {
-    const res = await coinService.getLocalTxHistory(address);
+    const res = await (coinService as AleoService).getLocalTxHistory(address);
     return res;
   }, [coinService, address]);
   const {
@@ -93,7 +93,9 @@ export const useTxsNotification = (
               if (Date.now() - tx.timestamp <= NotificationExpiredTime) {
                 showToast(tx.status === AleoTxStatus.FINALIZD);
               }
-              await coinService.setLocalTxNotification(tx.localId);
+              await (coinService as AleoService).setLocalTxNotification(
+                tx.localId,
+              );
             }
           }
         }

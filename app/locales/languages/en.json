@@ -87,6 +87,8 @@
   },
   "PrivateKey": {
     "title": "Private key",
+    "coinType": "Coin Type",
+    "selectCoinType": "Select Coin Type",
     "enterPlaceholder": "Enter private key",
     "backupTips1": "Please keep it in a safe place.",
     "backupTips2": "Seed phrase or private key are the only way to recover your wallet. Once lost, it cannot be retrieved. Do not save them via screenshots or social medias."
@@ -134,7 +136,8 @@
     "insufficientFee": "Insufficient balance to pay fee",
     "value": "Value",
     "invalidAmount": "Invalid amount",
-    "processing": "Transaction is processing, please wait."
+    "processing": "Transaction is processing, please wait.",
+    "sendingAleoHint": "You have an ongoing transaction, please wait."
   },
   "GasSetting": {
     "fast": "Fast",
@@ -196,7 +199,8 @@
     "contract_call": "Call Smart Contract",
     "token_approve": "Token Approve",
     "bridge": "Bridge",
-    "receive": "Receive"
+    "receive": "Receive",
+    "copyContractAddressMsg": "This is token's contract address, not receiving address, do not transfer to this address."
   },
   "Tx": {
     "successToast": "Transaction Successful!",
@@ -228,7 +232,8 @@
     "manageWallet": "Manage Wallet",
     "defaultChainRemind": "Default chain can't be unselected",
     "selectNetwork": "Select Network",
-    "selectToken": "Select Token"
+    "selectToken": "Select Token",
+    "pkWalletRemind": "Private key wallet only displays the supported networks. To use all the networks, switch to a seed phase wallet."
   },
   "Contacts": {
     "title": "Contacts",

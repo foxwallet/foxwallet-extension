@@ -1,10 +1,8 @@
 import { type ChakraProps, Flex, Image, Text } from "@chakra-ui/react";
 import { TokenNum } from "../TokenNum";
-import { useNavigate } from "react-router-dom";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { usePopupSelector } from "@/hooks/useStore";
 import Hover from "@/components/Custom/Hover";
-import { type Token } from "core/coins/ALEO/types/Token";
 import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import {
   BETA_STAKING_PROGRAM_ID,
@@ -13,6 +11,8 @@ import {
 import { type TokenV2 } from "core/types/Token";
 import { IconTokenPlaceHolder } from "@/components/Custom/Icon";
 import { useBalance } from "@/hooks/useBalance";
+import { commaCurrency, commaInteger } from "@/common/utils/comma";
+import { formatPrice } from "@/common/utils/num";
 
 export const TokenItemWithBalance = ({
   uniqueId,
@@ -21,6 +21,8 @@ export const TokenItemWithBalance = ({
   onClick,
   hover,
   leftElement,
+  showPriceAndChange = true,
+  showBalnaceAndValue = true,
 }: {
   uniqueId: ChainUniqueId;
   address: string;
@@ -28,10 +30,40 @@ export const TokenItemWithBalance = ({
   onClick: (token: TokenV2) => void;
   leftElement?: React.ReactNode;
   hover?: boolean;
+  showPriceAndChange?: boolean;
+  showBalnaceAndValue?: boolean;
 }) => {
-  const showBalance = usePopupSelector((state) => state.accountV2.showBalance);
+  const showBalanceGlobal = usePopupSelector(
+    (state) => state.accountV2.showBalance,
+  );
 
-  const { balance } = useBalance({ uniqueId, address, token });
+  const { price, change, value } = token;
+  const priceStr = useMemo(() => {
+    const formatStr = formatPrice(price).toString();
+    const comma = commaInteger(formatStr);
+    return `$${comma}`; // usd price
+  }, [price]);
+
+  const changeStrColor = useMemo(() => {
+    if (!change) {
+      return "#777e90";
+    }
+    const numericValue = parseFloat(change.replace("%", ""));
+    if (numericValue >= 0) {
+      return "#00D856";
+    } else {
+      return "#ef466f";
+    }
+  }, [change]);
+
+  const valueStr = useMemo(() => {
+    if (value === undefined) {
+      return "";
+    }
+    return `$${commaCurrency(value)}`;
+  }, [value]);
+
+  // const { balance } = useBalance({ uniqueId, address, token });
 
   const onTokenDetail = useCallback(() => {
     onClick(token);
@@ -60,23 +92,41 @@ export const TokenItemWithBalance = ({
           <Text fontSize={13} fontWeight={600}>
             {token.symbol}
           </Text>
-          {token.programId !== NATIVE_TOKEN_PROGRAM_ID &&
-            token.programId !== BETA_STAKING_PROGRAM_ID && (
-              <Text maxW={"120"} noOfLines={1} fontSize={10} color={"gray.400"}>
-                {token.tokenId}
+          {showPriceAndChange && (
+            <Flex justify={"center"} alignItems={"center"} fontSize={"11px"}>
+              <Text color={"#777e90"}>{priceStr}</Text>
+              <Text ml={1} color={changeStrColor}>
+                {change}
               </Text>
-            )}
+            </Flex>
+          )}
         </Flex>
       </Flex>
-      {showBalance ? (
-        <TokenNum
-          amount={balance?.total}
-          decimals={token.decimals}
-          symbol={""}
-        />
-      ) : (
-        <Text>*****</Text>
-      )}
+      {showBalnaceAndValue &&
+        (showBalanceGlobal ? (
+          <Flex
+            direction={"column"}
+            justify={"center"}
+            alignItems={"flex-end"}
+            // bg={"yellow"}
+          >
+            <TokenNum
+              amount={token?.total}
+              decimals={token.decimals}
+              symbol={""}
+            />
+            <Text color={"#777e90"} fontSize={"11px"}>
+              {valueStr}
+            </Text>
+          </Flex>
+        ) : (
+          <Flex direction={"column"} justify={"center"} alignItems={"flex-end"}>
+            <Text>*****</Text>
+            <Text color={"#777e90"} fontSize={"11px"}>
+              *****
+            </Text>
+          </Flex>
+        ))}
     </Flex>
   );
 };

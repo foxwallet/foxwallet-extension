@@ -6,6 +6,8 @@ import { AssetType, type TokenV2 } from "core/types/Token";
 import { useCoinService } from "@/hooks/useCoinService";
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
+import { usePopupDispatch } from "@/hooks/useStore";
+import { type BalanceResp } from "core/types/Balance";
 
 export type BalanceReq = {
   uniqueId: ChainUniqueId;
@@ -17,6 +19,7 @@ export type BalanceReq = {
 export const useBalance = (params: BalanceReq) => {
   const { uniqueId, address, token, refreshInterval = 4000 } = params;
   const { coinService } = useCoinService(uniqueId);
+  const dispatch = usePopupDispatch();
 
   const isAddressValid = useMemo(() => {
     // todo
@@ -42,9 +45,10 @@ export const useBalance = (params: BalanceReq) => {
     if (!isAddressValid) {
       return undefined;
     }
+    let balance: BalanceResp | undefined;
     if (token?.type === AssetType.TOKEN) {
       if (token?.contractAddress) {
-        return await coinService.getTokenBalance({
+        balance = await coinService.getTokenBalance({
           address,
           token: { contractAddress: token.contractAddress },
         });
@@ -54,15 +58,34 @@ export const useBalance = (params: BalanceReq) => {
           token?.programId &&
           token?.tokenId
         ) {
-          return await coinService.getTokenBalance({
+          balance = await coinService.getTokenBalance({
             address,
             token: { contractAddress: `${token.programId}-${token.tokenId}` },
           });
         }
       }
+    } else {
+      balance = await coinService.getBalance(address);
     }
-    return await coinService.getBalance(address);
-  }, [address, coinService, isAddressValid, token, uniqueId]);
+    if (balance) {
+      const { total, privateBalance, publicBalance } = balance;
+      dispatch.coinBalanceV2.updateCoinBalance({
+        uniqueId,
+        address,
+        contractAddress: token?.contractAddress ?? "",
+        balanceItem: { total, privateBalance, publicBalance },
+      });
+    }
+
+    return balance;
+  }, [
+    address,
+    coinService,
+    dispatch.coinBalanceV2,
+    isAddressValid,
+    token,
+    uniqueId,
+  ]);
 
   const {
     data: balance,

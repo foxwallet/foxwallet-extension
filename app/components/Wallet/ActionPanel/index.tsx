@@ -104,7 +104,7 @@ const MultiChainActionPanel = () => {
     return initOptions;
   }, [t, navigate]);
   return (
-    <Flex direction={"row"} justify={"space-around"} mt={6}>
+    <Flex direction={"row"} justify={"space-around"} mt={2}>
       {options.map((item, index) => {
         return (
           <ActionButton key={`${item.title}${index}`} {...item} maxW={"20%"} />
@@ -117,7 +117,7 @@ const MultiChainActionPanel = () => {
 const SingleChainActionPanel = ({ uniqueId }: { uniqueId: ChainUniqueId }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { sendingAleoTx } = useIsSendingAleoTx(uniqueId);
+  const { sendingAleoTx } = useIsSendingAleoTx();
   const { getMatchAccountsWithUniqueId } = useGroupAccount();
   const { chainConfig } = useCoinService(uniqueId);
   const option = useFaucetActionOption(uniqueId);
@@ -132,6 +132,14 @@ const SingleChainActionPanel = ({ uniqueId }: { uniqueId: ChainUniqueId }) => {
     refreshInterval: 4000,
   });
 
+  const buttonDisabled = useMemo(() => {
+    if (uniqueId !== InnerChainUniqueId.ALEO_MAINNET) {
+      return false;
+    } else {
+      return sendingAleoTx ?? balance === undefined;
+    }
+  }, [balance, sendingAleoTx, uniqueId]);
+
   const options: ActionButtonProps[] = useMemo(() => {
     const initOptions: ActionButtonProps[] = [
       {
@@ -145,7 +153,7 @@ const SingleChainActionPanel = ({ uniqueId }: { uniqueId: ChainUniqueId }) => {
       {
         title: t("Send:title"),
         icon: <IconSend w={9} h={9} />,
-        disabled: sendingAleoTx ?? balance === undefined,
+        disabled: buttonDisabled,
         onPress: () => {
           navigate(`/select_token_v2/${uniqueId}/send`);
         },
@@ -155,7 +163,7 @@ const SingleChainActionPanel = ({ uniqueId }: { uniqueId: ChainUniqueId }) => {
       initOptions.push({
         title: t("JoinSplit:title"),
         icon: <IconJoinSplit w={9} h={9} />,
-        disabled: sendingAleoTx ?? balance === undefined,
+        disabled: buttonDisabled,
         onPress: async () => {
           const { confirmed, data } = await showSelectJoinSplitDialog();
           if (confirmed && data) {
@@ -173,18 +181,10 @@ const SingleChainActionPanel = ({ uniqueId }: { uniqueId: ChainUniqueId }) => {
       return initOptions.concat(option);
     }
     return initOptions;
-  }, [
-    t,
-    sendingAleoTx,
-    balance,
-    uniqueId,
-    chainConfig.testnet,
-    navigate,
-    option,
-  ]);
+  }, [t, buttonDisabled, uniqueId, chainConfig.testnet, navigate, option]);
 
   return (
-    <Flex direction={"row"} justify={"space-around"} mt={6}>
+    <Flex direction={"row"} justify={"space-around"} mt={2}>
       {options.map((item, index) => {
         return (
           <ActionButton key={`${item.title}${index}`} {...item} maxW={"20%"} />

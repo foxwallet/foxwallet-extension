@@ -4,6 +4,7 @@ import { BackupReminderView } from "@/components/Wallet/BackupReminderView";
 import { HomeTabList } from "@/components/Wallet/HomeTabList";
 import { useEffect } from "react";
 import { usePopupDispatch } from "@/hooks/useStore";
+import { useGroupAccountAssets } from "@/hooks/useGroupAccountAssets";
 
 export const WalletTab = () => {
   const dispatch = usePopupDispatch();
@@ -11,11 +12,14 @@ export const WalletTab = () => {
     void dispatch.accountV2.resyncAllWalletsToStore();
   }, [dispatch.accountV2]);
 
+  const { assets, totalUsdValue } = useGroupAccountAssets();
+  // console.log("      WalletTab assets", assets);
+
   return (
     <TabPanel h={"100vh"} display={"flex"} flexDir={"column"}>
-      <AccountInfoHeader />
+      <AccountInfoHeader totalUsdValue={totalUsdValue} />
       <BackupReminderView />
-      <HomeTabList />
+      <HomeTabList assets={assets} />
     </TabPanel>
   );
 };

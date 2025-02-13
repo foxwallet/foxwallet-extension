@@ -27,6 +27,7 @@ import {
   showChangeNetworkDrawer,
   type SingleChainDisplayData,
 } from "@/components/Wallet/ChangeNetworkDrawer";
+import { type TokenV2 } from "core/types/Token";
 
 const CustomTab = forwardRef(
   (props: PropsWithChildren & ButtonProps, ref: any) => {
@@ -49,7 +50,7 @@ const CustomTab = forwardRef(
 );
 CustomTab.displayName = "CustomTab";
 
-export const HomeTabList = () => {
+export const HomeTabList = ({ assets }: { assets: TokenV2[] | undefined }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { chainMode, availableChainUniqueIds } = useChainMode();
@@ -106,7 +107,7 @@ export const HomeTabList = () => {
           />
         </Flex>
       </Flex>
-      <AssetList />
+      <AssetList assets={assets} />
     </Tabs>
   );
 };

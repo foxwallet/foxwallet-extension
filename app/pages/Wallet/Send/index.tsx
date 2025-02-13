@@ -1,7 +1,7 @@
 import { PageWithHeader } from "@/layouts/Page";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import React, { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { InputAddressStep } from "@/pages/Wallet/Send/InputAddressStep";
 import { SendDataStep, type Step2Data } from "@/pages/Wallet/Send/SendDataStep";
 import type { GasFee } from "core/types/GasFee";
@@ -42,19 +42,6 @@ const SendScreen = () => {
   const { nonce } = useNonce(uniqueId, fromAddress);
   const { privateKey } = usePrivateKey(uniqueId, CoinType.ETH);
   const [isSending, setIsSending] = useState(false);
-
-  // for test
-  // const testToken: TokenV2 = useMemo(() => {
-  //   return {
-  //     symbol: "ZKB",
-  //     decimals: 18,
-  //     name: "ZKBase",
-  //     type: AssetType.TOKEN,
-  //     contractAddress: "0xBBBbbBBB46A1dA0F0C3F64522c275BAA4C332636",
-  //     uniqueId: InnerChainUniqueId.ETHEREUM,
-  //     ownerAddress: "0x180325d018A5ED8144e78eEfdc9Ea893E8BEd50E",
-  //   };
-  // }, []);
 
   const onSend = useCallback(
     async (gasFee: GasFee<CoinType> | undefined, value: bigint | undefined) => {
@@ -106,10 +93,14 @@ const SendScreen = () => {
       Promise.all([
         tokenInfo.type === AssetType.TOKEN ? sendToken() : sendCoin(),
         new Promise((resolve) => setTimeout(resolve, 2000)),
-      ]).then(() => {
-        setIsSending(false);
-        navigate("/");
-      });
+      ])
+        .catch((error) => {
+          console.error(error);
+        })
+        .finally(() => {
+          setIsSending(false);
+          navigate("/");
+        });
     },
     [
       coinService,
@@ -149,9 +140,7 @@ const SendScreen = () => {
               setStep2Data(data);
               setStep(3);
             }}
-            onSend={(gasFee, value) => {
-              // onSend(gasFee, value); //todo
-            }}
+            onSend={onSend}
             token={tokenInfo}
           />
         );
@@ -177,7 +166,16 @@ const SendScreen = () => {
         return null;
       }
     }
-  }, [step, uniqueId, toAddress, step2Data, fromAddress, tokenInfo, step3Data]);
+  }, [
+    step,
+    uniqueId,
+    toAddress,
+    step2Data,
+    fromAddress,
+    onSend,
+    tokenInfo,
+    step3Data,
+  ]);
 
   return (
     <PageWithHeader

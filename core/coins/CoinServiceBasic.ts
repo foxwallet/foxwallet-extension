@@ -31,6 +31,16 @@ import {
 import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
 import { ExplorerLanguages } from "core/types/ExplorerLanguages";
 import { simpleConcatUrl } from "@/common/utils/url";
+import {
+  type InputItem,
+  type RecordFilter,
+} from "@/scripts/background/servers/IWalletServer";
+import type { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
+import type {
+  AleoHistoryItem,
+  AleoLocalHistoryItem,
+} from "core/coins/ALEO/types/History";
+import type { Pagination } from "core/coins/ALEO/types/Pagination";
 
 export abstract class CoinServiceBasic {
   baseConfig: ChainBaseConfig;
@@ -90,7 +100,7 @@ export abstract class CoinServiceBasic {
   }
 
   // optional
-  validateAddress(_address: string): boolean {
+  validateAddress(address: string): boolean {
     console.error(
       "validateAddress not implemented for " + this.baseConfig.chainName,
     );
@@ -210,5 +220,70 @@ export abstract class CoinServiceBasic {
       "getFeeData not implemented for " + this.baseConfig.chainName,
     );
     return undefined;
+  }
+
+  async getRecords(
+    address: string,
+    programId: string,
+    recordFilter: RecordFilter,
+    withRecordName?: boolean,
+  ): Promise<RecordDetailWithSpent[]> {
+    console.error(
+      "getRecords not implemented for " + this.baseConfig.chainName,
+    );
+    return [];
+  }
+
+  async getLocalTxInfo(
+    address: string,
+    localId: string,
+    program?: string,
+  ): Promise<AleoLocalHistoryItem | null> {
+    console.error(
+      "getLocalTxInfo not implemented for " + this.baseConfig.chainName,
+    );
+    return null;
+  }
+
+  formatRequestTransactionInputsAndFee = async (
+    address: string,
+    inputs: InputItem[],
+    fee: bigint,
+  ) => {
+    console.error(
+      "formatRequestTransactionInputsAndFee not implemented for " +
+        this.baseConfig.chainName,
+    );
+    return {};
+  };
+
+  async getPriorityFee(): Promise<bigint> {
+    console.error(
+      "getPriorityFee not implemented for " + this.baseConfig.chainName,
+    );
+    return 0n;
+  }
+
+  async removeAddressLocalTx(address: string, localId: string) {
+    console.error(
+      "removeAddressLocalTx not implemented for " + this.baseConfig.chainName,
+    );
+  }
+
+  async getTxHistory(
+    address: string,
+    pagination: Pagination,
+    program?: string,
+  ): Promise<AleoHistoryItem[]> {
+    console.error(
+      "getTxHistory not implemented for " + this.baseConfig.chainName,
+    );
+    return [];
+  }
+
+  async resetChainData() {
+    console.error(
+      "resetChainData not implemented for " + this.baseConfig.chainName,
+    );
   }
 }

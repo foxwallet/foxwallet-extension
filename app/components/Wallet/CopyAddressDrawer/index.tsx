@@ -13,7 +13,7 @@ import type React from "react";
 import { useCallback, useMemo, useState } from "react";
 import { BottomUpDrawer } from "@/components/Custom/BottomUpDrawer";
 import { useTranslation } from "react-i18next";
-import { IconCopy, IconSearch } from "@/components/Custom/Icon";
+import { IconCopy, IconSearch, IconMore } from "@/components/Custom/Icon";
 import { useDebounce } from "use-debounce";
 import { type OneMatchAccount } from "@/scripts/background/store/vault/types/keyring";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
@@ -22,6 +22,7 @@ import Hover from "@/components/Custom/Hover";
 import { useChainMode } from "@/hooks/useChainMode";
 import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
 import { useSearchNetworks } from "@/hooks/useSearchNetworks";
+import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
 
 interface Props {
   isOpen: boolean;
@@ -29,12 +30,87 @@ interface Props {
   onConfirm: () => void;
 }
 
+export type ChainItemProps = {
+  item: ChainBaseConfig;
+  onCopyAddress: (acc: OneMatchAccount) => void;
+  hasMore?: boolean;
+  onMore?: (config: ChainBaseConfig) => void;
+};
+
+export const CopyAddressChainItem = (props: ChainItemProps) => {
+  const { onCopyAddress, item, hasMore = false, onMore } = props;
+  const { getMatchAccountsWithUniqueId } = useGroupAccount();
+  const selectedAccount = getMatchAccountsWithUniqueId(item.uniqueId)[0];
+  return (
+    <Flex
+      w={"full"}
+      h={"60px"}
+      align={"center"}
+      cursor={"pointer"}
+      borderRadius={"4px"}
+      borderWidth={"1px"}
+      borderColor={"#e6e8ec"}
+    >
+      <Image
+        src={item.logo}
+        w={"24px"}
+        h={"24px"}
+        borderRadius={"50px"}
+        ml={2}
+        mr={2}
+      />
+      <Flex
+        direction={"column"}
+        align={"start"}
+        w={hasMore ? "82%" : "full"}
+        h={"full"}
+        justifyContent={"center"}
+        // bg={"yellow"}
+      >
+        <Text fontSize={"small"}>{item.chainName}</Text>
+        <Hover
+          onClick={() => {
+            onCopyAddress(selectedAccount);
+          }}
+          bg={"#f9f9f9"}
+          borderRadius={"5px"}
+        >
+          <Flex dir={"row"} align={"center"} justify={"center"} marginX={1}>
+            <Flex
+              maxW={hasMore ? 230 : 300}
+              noOfLines={1}
+              fontSize={11}
+              color={"#777E90"}
+              w={"full"}
+            >
+              <MiddleEllipsisText
+                text={selectedAccount.account.address}
+                width={hasMore ? 230 : 260}
+              />
+            </Flex>
+            <IconCopy w={3} h={3} ml={1} />
+          </Flex>
+        </Hover>
+      </Flex>
+      {hasMore && (
+        <Hover
+          p={1}
+          onClick={() => {
+            onMore?.(item);
+          }}
+        >
+          <IconMore />
+        </Hover>
+      )}
+    </Flex>
+  );
+};
+
 const CopyAddressDrawer = (props: Props) => {
   const { isOpen, onCancel, onConfirm } = props;
   const { t } = useTranslation();
   const { showToast } = useCopyToast();
   const { availableChains } = useChainMode();
-  const { getMatchAccountsWithUniqueId } = useGroupAccount();
   const [searchStr, setSearchStr] = useState("");
   const [debounceSearchStr] = useDebounce(searchStr, 500);
 
@@ -69,72 +145,19 @@ const CopyAddressDrawer = (props: Props) => {
       <Box overflowY="auto">
         <VStack spacing={"10px"}>
           {displayChains.map((item, index) => {
-            const selectedAccount = getMatchAccountsWithUniqueId(
-              item.uniqueId,
-            )[0];
             return (
-              <Flex
-                w={"full"}
-                h={"60px"}
-                key={index}
-                align={"center"}
-                cursor={"pointer"}
-                borderRadius={"4px"}
-                borderWidth={"1px"}
-                borderColor={"#e6e8ec"}
-              >
-                <Image
-                  src={item.logo}
-                  w={"24px"}
-                  h={"24px"}
-                  borderRadius={"50px"}
-                  ml={2}
-                  mr={2}
-                />
-                <Flex
-                  direction={"column"}
-                  align={"start"}
-                  w={"full"}
-                  h={"full"}
-                  justifyContent={"center"}
-                >
-                  <Text fontSize={"small"}>{item.chainName}</Text>
-                  <Hover
-                    onClick={() => {
-                      onCopyAddress(selectedAccount);
-                    }}
-                    bg={"#f9f9f9"}
-                    borderRadius={"5px"}
-                  >
-                    <Flex
-                      dir={"row"}
-                      align={"center"}
-                      justify={"center"}
-                      marginX={1}
-                    >
-                      <Flex
-                        maxW={300}
-                        noOfLines={1}
-                        fontSize={11}
-                        color={"#777E90"}
-                        w={"full"}
-                      >
-                        <MiddleEllipsisText
-                          text={selectedAccount.account.address}
-                          width={260}
-                        />
-                      </Flex>
-                      <IconCopy w={3} h={3} ml={1} />
-                    </Flex>
-                  </Hover>
-                </Flex>
-              </Flex>
+              <CopyAddressChainItem
+                item={item}
+                onCopyAddress={onCopyAddress}
+                key={item.uniqueId}
+                // hasMore={true}
+              />
             );
           })}
         </VStack>
       </Box>
     );
-  }, [displayChains, getMatchAccountsWithUniqueId, onCopyAddress]);
+  }, [displayChains, onCopyAddress]);
 
   return (
     <BottomUpDrawer

@@ -10,7 +10,7 @@ interface Props {
   onCancel: () => void;
 }
 
-const NavigateToWalletManageDialog = (props: Props) => {
+const BlockContinuousSendAleoDialog = (props: Props) => {
   const { isOpen, onConfirm, onCancel } = props;
   const { t } = useTranslation();
 
@@ -19,15 +19,12 @@ const NavigateToWalletManageDialog = (props: Props) => {
       isOpen={isOpen}
       onClose={onCancel}
       isCentered
-      title={t("Common:remind")}
-      body={<P3 textAlign={"center"}>{t("Networks:pkWalletRemind")}</P3>}
+      title={t("Common:warning")}
+      body={<P3 textAlign={"center"}>{t("Send:sendingAleoHint")}</P3>}
       footer={
         <Flex flex={1}>
-          <Button flex={1} mr="2" colorScheme="secondary" onClick={onConfirm}>
-            {t("Networks:manageWallet")}
-          </Button>
-          <Button flex={1} ml="2" onClick={onCancel}>
-            {t("Common:cancel")}
+          <Button flex={1} mr="2" onClick={onConfirm}>
+            {t("Common:confirm")}
           </Button>
         </Flex>
       }
@@ -35,6 +32,6 @@ const NavigateToWalletManageDialog = (props: Props) => {
   );
 };
 
-export const showNavigateToWalletManageDialog = promisifyChooseDialogWrapper(
-  NavigateToWalletManageDialog,
+export const showBlockContinuousSendAleoDialog = promisifyChooseDialogWrapper(
+  BlockContinuousSendAleoDialog,
 );
