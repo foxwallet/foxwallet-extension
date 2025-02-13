@@ -5,12 +5,15 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
-import { H6, H4, P1, B1 } from "@/common/theme/components/text";
+import { H6 } from "@/common/theme/components/text";
 import { useTranslation } from "react-i18next";
 import { Content } from "@/layouts/Content";
 import type React from "react";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { type ChainUniqueId } from "core/types/ChainUniqueId";
+import { useCallback, useMemo, useState } from "react";
+import {
+  type ChainUniqueId,
+  InnerChainUniqueId,
+} from "core/types/ChainUniqueId";
 import { useGasGrade } from "@/hooks/useGasGrade";
 import {
   type GasFee,
@@ -34,7 +37,6 @@ import { isNotEmpty } from "core/utils/is";
 import { timeout } from "@/common/utils/timeout";
 import { BaseInput, BaseInputGroup } from "@/components/Custom/Input";
 import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
-import { TokenNum } from "@/components/Wallet/TokenNum";
 
 const GasGrades: GasGrade[] = [GasGrade.Fast, GasGrade.Middle, GasGrade.Slow];
 
@@ -468,7 +470,9 @@ export const GasSettingStep = (props: GasSettingStepProps) => {
   } = step3Data;
   const { gasGrade, loadingGasGrade } = useGasGrade(uniqueId);
   const { nativeCurrency, chainConfig, coinService } = useCoinService(uniqueId);
-  const [advanceSettings, setAdvanceSettings] = useState(isCustom);
+  const [advanceSettings, setAdvanceSettings] = useState(
+    uniqueId === InnerChainUniqueId.ETHEREUM ? isCustom : true,
+  );
   const networkFeeData = useNetworkFeeData(uniqueId);
 
   // console.log("      gasGrade", gasGrade);
