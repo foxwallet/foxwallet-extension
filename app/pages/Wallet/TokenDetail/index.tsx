@@ -540,6 +540,7 @@ const TokenDetailScreen = () => {
                         amount={balance?.publicBalance}
                         decimals={tokenInfo.decimals}
                         symbol={tokenInfo.symbol}
+                        precision={6}
                       />
                     ) : (
                       <Text>*****</Text>
@@ -555,6 +556,7 @@ const TokenDetailScreen = () => {
                           amount={balance?.privateBalance}
                           decimals={tokenInfo.decimals}
                           symbol={tokenInfo.symbol}
+                          precision={6}
                         />
                       ) : (
                         <Text>*****</Text>
@@ -571,6 +573,7 @@ const TokenDetailScreen = () => {
                           amount={balance?.total}
                           decimals={tokenInfo.decimals}
                           symbol={tokenInfo.symbol}
+                          precision={6}
                         />
                       ) : (
                         <Text>*****</Text>
