@@ -2795,10 +2795,10 @@
   resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.11.8.tgz#6b79032e760a0899cd4204710beede972a3a185f"
   integrity sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==
 
-"@provablehq/wasm-mainnet@file:./@provablehq/wasm/dist/mainnet":
+"@provablehq/wasm-mainnet@file:./@provablehq/mainnet/wasm":
   version "0.8.0"
 
-"@provablehq/wasm-testnet@file:./@provablehq/wasm/dist/testnet":
+"@provablehq/wasm-testnet@file:./@provablehq/testnet/wasm":
   version "0.8.0"
 
 "@rematch/core@^2.2.0":

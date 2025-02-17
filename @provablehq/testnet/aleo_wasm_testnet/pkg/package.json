@@ -1,0 +1,31 @@
+{
+  "name": "aleo-wasm-testnet",
+  "collaborators": [
+    "The Provable Team"
+  ],
+  "description": "WebAssembly based toolkit for developing zero-knowledge applications with Aleo",
+  "version": "0.8.0",
+  "license": "GPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ProvableHQ/sdk"
+  },
+  "files": [
+    "aleo_wasm_testnet_bg.wasm",
+    "aleo_wasm_testnet.js",
+    "aleo_wasm_testnet.d.ts"
+  ],
+  "module": "aleo_wasm_testnet.js",
+  "homepage": "https://provable.com",
+  "types": "aleo_wasm_testnet.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ],
+  "keywords": [
+    "aleo",
+    "cryptography",
+    "blockchain",
+    "decentralized",
+    "zero-knowledge"
+  ]
+}

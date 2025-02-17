@@ -40,9 +40,10 @@
   "scripts": {
     "build:mainnet": "yarn clean && node scripts/wasmpack.js mainnet",
     "build:testnet": "yarn clean && node scripts/wasmpack.js testnet",
-    "build:all": "yarn build:mainnet && yarn build:testnet",
+    "build:networks": "yarn build:mainnet && yarn build:testnet",
+    "build:wasm": "yarn clean && rimraf dist && node build.js && node ./scripts/copywasm.js",
+    "build:all": "yarn build:networks && yarn build:wasm",
     "clean": "rimraf pkg && rimraf target",
-    "build": "rimraf dist && node build.js",
     "test": "node test.js"
   },
   "devDependencies": {

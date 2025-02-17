@@ -1,9 +1,9 @@
 {
   "name": "@provablehq/wasm-mainnet",
   "version": "0.8.0",
-  "description": "Wasm build for the SDK",
+  "description": "SnarkVM WASM binaries with javascript bindings",
   "collaborators": [
-    "The Aleo Team <hello@aleo.org>"
+    "The Provable Team"
   ],
   "license": "GPL-3.0",
   "type": "module",
@@ -21,7 +21,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AleoHQ/sdk.git"
+    "url": "git+https://github.com/ProvableHQ/sdk.git"
   },
   "keywords": [
     "Aleo",
@@ -30,18 +30,7 @@
     "ZK"
   ],
   "bugs": {
-    "url": "https://github.com/AleoHQ/sdk/issues"
+    "url": "https://github.com/ProvableHQ/sdk/issues"
   },
-  "homepage": "https://github.com/AleoHQ/sdk#readme",
-  "scripts": {
-    "build": "rimraf src && rollup -c rollup.config.js && cpr js/types src && rimraf src/wasm*",
-    "prepublish": "yarn build",
-    "test": "node test.js"
-  },
-  "devDependencies": {
-    "@wasm-tool/rollup-plugin-rust": "^2.4.2",
-    "cpr": "^3.0.1",
-    "rimraf": "^5.0.1",
-    "rollup": "^3.27.2"
-  }
+  "homepage": "https://github.com/ProvableHQ/sdk#readme"
 }

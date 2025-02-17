@@ -33,8 +33,8 @@ async function buildWasm(network) {
                             "-C", "link-arg=--max-memory=4294967296",
 
                             // Strips out debug information
-                            // "-Z", "location-detail=none",
-                            // "-Z", "fmt-debug=none",
+                            "-Z", "location-detail=none",
+                            "-Z", "fmt-debug=none",
                         ]),
 
                         "--no-default-features",

@@ -1,0 +1,31 @@
+{
+  "name": "aleo-wasm-mainnet",
+  "collaborators": [
+    "The Provable Team"
+  ],
+  "description": "WebAssembly based toolkit for developing zero-knowledge applications with Aleo",
+  "version": "0.8.0",
+  "license": "GPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ProvableHQ/sdk"
+  },
+  "files": [
+    "aleo_wasm_mainnet_bg.wasm",
+    "aleo_wasm_mainnet.js",
+    "aleo_wasm_mainnet.d.ts"
+  ],
+  "module": "aleo_wasm_mainnet.js",
+  "homepage": "https://provable.com",
+  "types": "aleo_wasm_mainnet.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ],
+  "keywords": [
+    "aleo",
+    "cryptography",
+    "blockchain",
+    "decentralized",
+    "zero-knowledge"
+  ]
+}
