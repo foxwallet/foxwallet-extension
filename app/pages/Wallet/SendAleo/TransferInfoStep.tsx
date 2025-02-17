@@ -7,7 +7,7 @@ import { showSelectRecordDialog } from "@/components/Send/SelectRecord";
 import { showSelectTransferMethodDialog } from "@/components/Send/SelectTransferMethod";
 import { TokenItem } from "@/components/Wallet/TokenItem";
 import { TokenNum } from "@/components/Wallet/TokenNum";
-import { useCoinBasic, useCoinService } from "@/hooks/useCoinService";
+import { useCoinService } from "@/hooks/useCoinService";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { useRecords } from "@/hooks/useRecord";
 import { Content } from "@/layouts/Content";
@@ -35,9 +35,9 @@ import { useNavigate } from "react-router-dom";
 import { useDebounce } from "use-debounce";
 import { useBalance } from "@/hooks/useBalance";
 import { type TokenV2 } from "core/types/Token";
-import { useSafeTokenInfo } from "@/hooks/useSafeTokenInfo";
 
 interface TransferInfoStepProps {
+  transferToken: TokenV2;
   receiverAddress: string;
   setReceiverAddress: (address: string) => void;
   amountStr: string;
@@ -57,6 +57,7 @@ interface TransferInfoStepProps {
 
 export const TransferInfoStep = (props: TransferInfoStepProps) => {
   const {
+    transferToken: tokenInfo,
     receiverAddress,
     setReceiverAddress,
     amountStr,
@@ -75,15 +76,9 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
   }, [getMatchAccountsWithUniqueId]);
   const uniqueId = InnerChainUniqueId.ALEO_MAINNET;
 
-  const coinBasic = useCoinBasic(uniqueId);
   const { coinService } = useCoinService(uniqueId);
   const { t } = useTranslation();
   const navigate = useNavigate();
-
-  const { tokenInfo } = useSafeTokenInfo(
-    uniqueId,
-    selectedAccount.account.address,
-  );
 
   const { records, loading: loadingRecords } = useRecords({
     uniqueId,
@@ -368,7 +363,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
                 navigate(
                   `/select_token/${uniqueId}/${
                     selectedAccount.account.address
-                  }?page=send_aleo&currToken=${serializeToken(tokenInfo)}`,
+                  }?page=send_aleo&token=${serializeToken(tokenInfo)}`,
                   {
                     replace: true,
                   },
