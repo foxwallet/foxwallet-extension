@@ -1,5 +1,4 @@
 import {
-  IconAleo,
   IconChevronRight,
   IconCopyBlack,
   IconEmptyTxPlaceholder,
@@ -23,11 +22,13 @@ import {
 } from "@chakra-ui/react";
 import {
   type AleoHistoryItem,
+  AleoHistoryType,
+  type AleoLocalHistoryItem,
   AleoTxAddressType,
 } from "core/coins/ALEO/types/History";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import type React from "react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
@@ -57,6 +58,8 @@ import { type TransactionHistoryItem } from "core/types/TransactionHistory";
 import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 import { usePopupSelector } from "@/hooks/useStore";
 import { showCopyContractAddressDialog } from "@/components/Wallet/CopyContractAddressDialog";
+import { AleoTxStatus } from "core/coins/ALEO/types/Transaction";
+import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
 
 interface AleoTokenTxHistoryItemProps {
   item: AleoHistoryItem;
@@ -86,11 +89,34 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
     void browser.tabs.create({ url });
   }, [coinService, item.txId]);
 
-  const txLabel = useMemo(
-    () => `${item.functionName.split("_").join(" ")}`,
-    [item.functionName],
-  );
+  const txTitle = useMemo(() => {
+    return t(`TokenDetail:${item.addressType}`);
+  }, [item.addressType, t]);
+  const txPublicInfo = useMemo(() => {
+    const prefix = "transfer_";
+    const functionName = item.functionName.startsWith(prefix)
+      ? item.functionName.slice(prefix.length)
+      : item.functionName;
+    return `(${functionName.split("_").join(" ")})`;
+  }, [item.functionName]);
   const amount = useMemo(() => BigInt(item.amount || 0n), [item.amount]);
+
+  const addressLabel = useMemo(() => {
+    let fromTo = "";
+    let addr = "";
+    if (item.functionName === AleoTransferMethod.PUBLIC) {
+      if (item.type === AleoHistoryType.LOCAL) {
+        addr = item.inputs[0];
+      }
+
+      if (item.addressType === AleoTxAddressType.SEND) {
+        fromTo = `To ${addr}`;
+      } else if (item.addressType === AleoTxAddressType.RECEIVE) {
+        fromTo = `From ${addr}`;
+      }
+    }
+    return fromTo;
+  }, [item]);
 
   const { borderColor } = useThemeStyle();
 
@@ -117,28 +143,70 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
           <Flex align={"center"}>
             <Flex fontWeight={"bold"} fontSize={12}>
               <Text maxWidth={150} textOverflow={"ellipsis"} textAlign={"left"}>
-                {txLabel}
+                {txTitle}
               </Text>
             </Flex>
-            {!!item.amount && (
-              <Box fontWeight={"bold"} fontSize={12} ml={1}>
-                <TokenNum
-                  amount={amount}
-                  decimals={token.decimals}
-                  symbol={token.symbol}
-                />
-              </Box>
+            {txPublicInfo && (
+              <Flex
+                h={"14px"}
+                px={1}
+                alignItems={"center"}
+                justifyContent={"center"}
+              >
+                <Text fontSize={"11px"}>{txPublicInfo}</Text>
+              </Flex>
             )}
+            {item.status !== AleoTxStatus.FINALIZD &&
+              item.status !== AleoTxStatus.COMPLETED && (
+                <Flex
+                  h={"14px"}
+                  bg={"#EF466F"}
+                  px={1.5}
+                  borderRadius={"7px"}
+                  alignItems={"center"}
+                  justifyContent={"center"}
+                >
+                  <Text fontSize={"10px"} textColor={"white"}>
+                    {item.status}
+                  </Text>
+                </Flex>
+              )}
           </Flex>
-          <Flex color={"gray.500"} fontSize={10} align={"center"}>
-            <Text mr={2}>{item.status}</Text>
-            <Text>{timeStr}</Text>
-          </Flex>
+          {addressLabel && (
+            <Flex color={"gray.500"} fontSize={10} align={"center"}>
+              <Flex flexDirection={"row"}>
+                <MiddleEllipsisText text={addressLabel} width={200} />
+              </Flex>
+            </Flex>
+          )}
         </Flex>
       </Flex>
-      <Flex alignItems={"center"}>
-        <Text fontSize={10}>{t("TokenDetail:jump_explorer")}</Text>
-        <IconChevronRight />
+      <Flex
+        direction={"column"}
+        // bg={"yellow"}
+        justifyContent={"center"}
+        alignItems={"flex-end"}
+      >
+        {!!item.amount && (
+          <Box fontWeight={"bold"} fontSize={12} ml={1}>
+            <TokenNum
+              amount={amount}
+              decimals={token.decimals}
+              symbol={token.symbol}
+              textColor={
+                item.addressType === AleoTxAddressType.SEND
+                  ? "#00D856"
+                  : "#EF466F"
+              }
+              extraPreText={
+                item.addressType === AleoTxAddressType.RECEIVE ? "+ " : "- "
+              }
+            />
+          </Box>
+        )}
+        <Text color={"gray.500"} fontSize={10}>
+          {timeStr}
+        </Text>
       </Flex>
     </Flex>
   );
@@ -307,7 +375,7 @@ const TokenDetailScreen = () => {
     evmLoading,
     isAleo,
   ]);
-  // console.log("      history", history);
+  console.log("      history", history);
 
   useEffect(() => {
     if (reachBottom) {
@@ -422,7 +490,7 @@ const TokenDetailScreen = () => {
 
   const renderTxHistory = useMemo(() => {
     if (isAleo) {
-      (history as AleoHistoryItem[])?.map(renderAleoTxHistoryItem);
+      return (history as AleoHistoryItem[])?.map(renderAleoTxHistoryItem);
     }
     return (history as TransactionHistoryItem[])?.map(renderTxHistoryItem);
   }, [history, isAleo, renderTxHistoryItem, renderAleoTxHistoryItem]);
@@ -628,7 +696,7 @@ const TokenDetailScreen = () => {
           <Flex
             ref={listRef}
             direction={"column"}
-            maxH={310}
+            maxH={isAleo ? 270 : 330}
             overflowY="auto"
             sx={HIDE_SCROLL_BAR_CSS}
           >
