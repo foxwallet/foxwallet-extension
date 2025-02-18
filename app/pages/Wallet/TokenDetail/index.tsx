@@ -307,8 +307,7 @@ const TokenDetailScreen = () => {
     evmLoading,
     isAleo,
   ]);
-  console.log("      history");
-  console.log({ ...history });
+  // console.log("      history", history);
 
   useEffect(() => {
     if (reachBottom) {

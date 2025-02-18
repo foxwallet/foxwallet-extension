@@ -167,17 +167,21 @@ export const useTxHistory = ({
   }, [isAleo, token, coinService, address, currPagination]);
 
   const {
+    data: txs,
     error: onTxHistoryError,
     mutate: getTxHistory,
     isLoading: loadingTxHistory,
   } = useSWR(key, fetchTxHistory, {
     refreshInterval,
-    onSuccess: (curr) => {
-      setTxHistory((prev) => {
-        return uniqBy([...prev, ...curr], "id");
-      });
-    },
   });
+
+  useEffect(() => {
+    if (Array.isArray(txs) && txs.length > 0) {
+      setTxHistory((prev) => {
+        return uniqBy([...prev, ...txs], "id");
+      });
+    }
+  }, [txs]);
 
   const getMore = useCallback(() => {
     if (!endReach) {
