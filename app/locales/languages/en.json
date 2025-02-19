@@ -200,7 +200,8 @@
     "token_approve": "Token Approve",
     "bridge": "Bridge",
     "receive": "Receive",
-    "copyContractAddressMsg": "This is token's contract address, not receiving address, do not transfer to this address."
+    "copyContractAddressMsg": "This is token's contract address, not receiving address, do not transfer to this address.",
+    "failed": "Failed"
   },
   "Tx": {
     "successToast": "Transaction Successful!",

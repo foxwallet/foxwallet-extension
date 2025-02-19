@@ -1,5 +1,4 @@
 import {
-  IconChevronRight,
   IconCopyBlack,
   IconEmptyTxPlaceholder,
   IconReceiveBlack,
@@ -23,7 +22,6 @@ import {
 import {
   type AleoHistoryItem,
   AleoHistoryType,
-  type AleoLocalHistoryItem,
   AleoTxAddressType,
 } from "core/coins/ALEO/types/History";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
@@ -60,6 +58,7 @@ import { usePopupSelector } from "@/hooks/useStore";
 import { showCopyContractAddressDialog } from "@/components/Wallet/CopyContractAddressDialog";
 import { AleoTxStatus } from "core/coins/ALEO/types/Transaction";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
+import { TransactionStatus } from "core/types/TransactionStatus";
 
 interface AleoTokenTxHistoryItemProps {
   item: AleoHistoryItem;
@@ -99,7 +98,7 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
       : item.functionName;
     return `(${functionName.split("_").join(" ")})`;
   }, [item.functionName]);
-  const amount = useMemo(() => BigInt(item.amount || 0n), [item.amount]);
+  const amount = useMemo(() => BigInt(item.amount ?? 0n), [item.amount]);
 
   const addressLabel = useMemo(() => {
     let fromTo = "";
@@ -118,97 +117,26 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
     return fromTo;
   }, [item]);
 
-  const { borderColor } = useThemeStyle();
+  const status = useMemo(() => {
+    return item.status === AleoTxStatus.FINALIZD ||
+      item.status === AleoTxStatus.COMPLETED
+      ? undefined
+      : item.status.toLowerCase();
+  }, [item.status]);
 
   return (
-    <Flex
-      align={"center"}
-      justify={"space-between"}
-      borderColor={borderColor}
-      borderBottomWidth={"1px"}
-      py={2.5}
-      mt={2.5}
-      as={"button"}
+    <TxHistoryItem
+      isSend={item.addressType === AleoTxAddressType.SEND}
+      timeStr={timeStr}
+      txTitle={txTitle}
+      txTitle2={txPublicInfo}
+      addressLabel={addressLabel}
+      status={status}
+      amount={amount}
+      decimals={token.decimals}
+      symbol={token.symbol}
       onClick={onClick}
-    >
-      <Flex align={"center"}>
-        <Box bg={"#E6E8EC"} p={1} borderRadius={"50px"}>
-          {item.addressType === AleoTxAddressType.RECEIVE ? (
-            <IconReceiveBlack />
-          ) : (
-            <IconSendBlack />
-          )}
-        </Box>
-        <Flex direction={"column"} ml={2.5} alignItems={"flex-start"}>
-          <Flex align={"center"}>
-            <Flex fontWeight={"bold"} fontSize={12}>
-              <Text maxWidth={150} textOverflow={"ellipsis"} textAlign={"left"}>
-                {txTitle}
-              </Text>
-            </Flex>
-            {txPublicInfo && (
-              <Flex
-                h={"14px"}
-                px={1}
-                alignItems={"center"}
-                justifyContent={"center"}
-              >
-                <Text fontSize={"11px"}>{txPublicInfo}</Text>
-              </Flex>
-            )}
-            {item.status !== AleoTxStatus.FINALIZD &&
-              item.status !== AleoTxStatus.COMPLETED && (
-                <Flex
-                  h={"14px"}
-                  bg={"#EF466F"}
-                  px={1.5}
-                  borderRadius={"7px"}
-                  alignItems={"center"}
-                  justifyContent={"center"}
-                >
-                  <Text fontSize={"10px"} textColor={"white"}>
-                    {item.status}
-                  </Text>
-                </Flex>
-              )}
-          </Flex>
-          {addressLabel && (
-            <Flex color={"gray.500"} fontSize={10} align={"center"}>
-              <Flex flexDirection={"row"}>
-                <MiddleEllipsisText text={addressLabel} width={200} />
-              </Flex>
-            </Flex>
-          )}
-        </Flex>
-      </Flex>
-      <Flex
-        direction={"column"}
-        // bg={"yellow"}
-        justifyContent={"center"}
-        alignItems={"flex-end"}
-      >
-        {!!item.amount && (
-          <Box fontWeight={"bold"} fontSize={12} ml={1}>
-            <TokenNum
-              amount={amount}
-              decimals={token.decimals}
-              symbol={token.symbol}
-              textColor={
-                item.addressType === AleoTxAddressType.SEND
-                  ? "#00D856"
-                  : "#EF466F"
-              }
-              extraPreText={
-                item.addressType === AleoTxAddressType.RECEIVE ? "+ " : "- "
-              }
-            />
-          </Box>
-        )}
-        <Text color={"gray.500"} fontSize={10}>
-          {timeStr}
-        </Text>
-      </Flex>
-    </Flex>
+    />
   );
 };
 
@@ -219,12 +147,8 @@ interface TokenTxHistoryItemProps {
   address: string;
 }
 
-const TokenTxHistoryItem: React.FC<TokenTxHistoryItemProps> = ({
-  uniqueId,
-  item,
-  token,
-  address,
-}) => {
+const TokenTxHistoryItem = (props: TokenTxHistoryItemProps) => {
+  const { uniqueId, item, token, address } = props;
   const { t } = useTranslation();
   const { coinService } = useCoinService(uniqueId);
 
@@ -242,7 +166,7 @@ const TokenTxHistoryItem: React.FC<TokenTxHistoryItemProps> = ({
     void browser.tabs.create({ url });
   }, [coinService, item.id]);
 
-  const txLabel = useMemo(() => {
+  const txTitle = useMemo(() => {
     if (item.label) {
       return t(`TokenDetail:${item.label}`);
     } else {
@@ -254,9 +178,66 @@ const TokenTxHistoryItem: React.FC<TokenTxHistoryItemProps> = ({
     }
     return "";
   }, [address, item, t]);
-  const amount = useMemo(() => item.value || 0n, [item]);
+  const amount = useMemo(() => item.value ?? 0n, [item]);
 
+  const isSend = useMemo(() => {
+    return item.from === address;
+  }, [address, item]);
+
+  const addressLabel = useMemo(() => {
+    return isSend ? `To ${item.to}` : `From ${item.from}`;
+  }, [isSend, item]);
+
+  const status = useMemo(() => {
+    return item.status === TransactionStatus.SUCCESS
+      ? undefined
+      : item.status.toLowerCase();
+  }, [item.status]);
+
+  return (
+    <TxHistoryItem
+      isSend={isSend}
+      timeStr={timeStr}
+      txTitle={txTitle}
+      addressLabel={addressLabel}
+      status={status}
+      amount={amount}
+      decimals={token.decimals}
+      symbol={token.symbol}
+      onClick={onClick}
+    />
+  );
+};
+
+type TxHistoryItemProps = {
+  isSend: boolean;
+  timeStr?: string;
+  onClick?: () => void;
+  txTitle?: string;
+  txTitle2?: string;
+  addressLabel?: string;
+  status?: string;
+  amount: bigint;
+  decimals: number;
+  symbol: string;
+};
+
+const TxHistoryItem = (props: TxHistoryItemProps) => {
+  const {
+    isSend,
+    timeStr,
+    txTitle,
+    txTitle2,
+    addressLabel,
+    amount,
+    status,
+    onClick,
+    decimals,
+    symbol,
+  } = props;
   const { borderColor } = useThemeStyle();
+
+  console.log("     status ", status);
 
   return (
     <Flex
@@ -271,34 +252,75 @@ const TokenTxHistoryItem: React.FC<TokenTxHistoryItemProps> = ({
     >
       <Flex align={"center"}>
         <Box bg={"#E6E8EC"} p={1} borderRadius={"50px"}>
-          {item.to === address ? <IconReceiveBlack /> : <IconSendBlack />}
+          {isSend ? <IconSendBlack /> : <IconReceiveBlack />}
         </Box>
         <Flex direction={"column"} ml={2.5} alignItems={"flex-start"}>
           <Flex align={"center"}>
-            <Flex fontWeight={"bold"} fontSize={12}>
-              <Text maxWidth={150} textOverflow={"ellipsis"} textAlign={"left"}>
-                {txLabel}
-              </Text>
-            </Flex>
-            {!!item.value && (
-              <Box fontWeight={"bold"} fontSize={12} ml={1}>
-                <TokenNum
-                  amount={amount}
-                  decimals={token.decimals}
-                  symbol={token.symbol}
-                />
-              </Box>
+            {txTitle && (
+              <Flex fontWeight={"bold"} fontSize={12}>
+                <Text
+                  maxWidth={150}
+                  textOverflow={"ellipsis"}
+                  textAlign={"left"}
+                >
+                  {txTitle}
+                </Text>
+              </Flex>
+            )}
+            {txTitle2 && (
+              <Flex
+                h={"14px"}
+                px={1}
+                alignItems={"center"}
+                justifyContent={"center"}
+              >
+                <Text fontSize={"11px"}>{txTitle2}</Text>
+              </Flex>
+            )}
+            {status && (
+              <Flex
+                h={"14px"}
+                bg={"#EF466F"}
+                px={1.5}
+                ml={1}
+                borderRadius={"7px"}
+                alignItems={"center"}
+                justifyContent={"center"}
+              >
+                <Text fontSize={"10px"} textColor={"white"}>
+                  {status}
+                </Text>
+              </Flex>
             )}
           </Flex>
-          <Flex color={"gray.500"} fontSize={10} align={"center"}>
-            <Text mr={2}>{item.status}</Text>
-            <Text>{timeStr}</Text>
-          </Flex>
+          {addressLabel && (
+            <Flex color={"gray.500"} fontSize={10} align={"center"}>
+              <Flex flexDirection={"row"}>
+                <MiddleEllipsisText text={addressLabel} width={180} />
+              </Flex>
+            </Flex>
+          )}
         </Flex>
       </Flex>
-      <Flex alignItems={"center"}>
-        <Text fontSize={10}>{t("TokenDetail:jump_explorer")}</Text>
-        <IconChevronRight />
+      <Flex
+        direction={"column"}
+        justifyContent={"center"}
+        alignItems={"flex-end"}
+      >
+        {amount >= 0n && (
+          <Box fontWeight={"bold"} fontSize={12} ml={1}>
+            <TokenNum
+              amount={amount}
+              decimals={decimals}
+              symbol={symbol}
+              textColor={isSend ? "#00D856" : "#EF466F"}
+              extraPreText={amount === 0n ? "" : isSend ? "- " : "+ "}
+            />
+          </Box>
+        )}
+        <Text color={"gray.500"} fontSize={10}>
+          {timeStr}
+        </Text>
       </Flex>
     </Flex>
   );
@@ -459,41 +481,35 @@ const TokenDetailScreen = () => {
         );
   }, [address, isAleo, navigate, tokenInfo, uniqueId]);
 
-  const renderAleoTxHistoryItem = useCallback(
-    (item: AleoHistoryItem, index: number) => {
-      return (
-        <AleoTxHistoryItem
-          key={`${item.txId}${index}`}
-          item={item}
-          uniqueId={uniqueId}
-          token={tokenInfo}
-        />
-      );
-    },
-    [uniqueId, tokenInfo],
-  );
-
-  const renderTxHistoryItem = useCallback(
-    (item: TransactionHistoryItem, index: number) => {
-      return (
-        <TokenTxHistoryItem
-          key={`${item.id}${index}`}
-          item={item}
-          uniqueId={uniqueId}
-          token={tokenInfo}
-          address={address}
-        />
-      );
-    },
-    [address, tokenInfo, uniqueId],
-  );
-
   const renderTxHistory = useMemo(() => {
     if (isAleo) {
-      return (history as AleoHistoryItem[])?.map(renderAleoTxHistoryItem);
+      return (history as AleoHistoryItem[])?.map(
+        (item: AleoHistoryItem, index: number) => {
+          return (
+            <AleoTxHistoryItem
+              key={`${item.txId}${index}`}
+              item={item}
+              uniqueId={uniqueId}
+              token={tokenInfo}
+            />
+          );
+        },
+      );
     }
-    return (history as TransactionHistoryItem[])?.map(renderTxHistoryItem);
-  }, [history, isAleo, renderTxHistoryItem, renderAleoTxHistoryItem]);
+    return (history as TransactionHistoryItem[])?.map(
+      (item: TransactionHistoryItem, index: number) => {
+        return (
+          <TokenTxHistoryItem
+            key={`${item.id}${index}`}
+            item={item}
+            uniqueId={uniqueId}
+            token={tokenInfo}
+            address={address}
+          />
+        );
+      },
+    );
+  }, [isAleo, history, uniqueId, tokenInfo, address]);
 
   const onCopyAddress = useCallback(() => {
     onCopy();
