@@ -270,7 +270,7 @@ const TxHistoryItem = (props: TxHistoryItemProps) => {
             {txTitle2 && (
               <Flex
                 h={"14px"}
-                px={1}
+                pl={1}
                 alignItems={"center"}
                 justifyContent={"center"}
               >

@@ -129,14 +129,16 @@ export const useTxHistory = ({
   const [currPagination, setCurrPagination] =
     useState<TxHistoryPaginationParam>({
       pageNum: 0,
-      pageSize: 0,
+      pageSize: 100,
     });
   const [newPagination, setNewPagination] = useState<TxHistoryPaginationParam>({
     pageNum: 0,
-    pageSize: 0,
+    pageSize: 100,
   });
 
-  const key = `/tx_history/${uniqueId}/${address}?page=${currPagination.pageNum}&limit=${currPagination.pageSize}`;
+  const key = isAleo
+    ? undefined
+    : `/tx_history/${uniqueId}/${address}?page=${currPagination.pageNum}&limit=${currPagination.pageSize}`;
   const fetchTxHistory = useCallback(async () => {
     if (!isAleo) {
       try {
@@ -189,14 +191,20 @@ export const useTxHistory = ({
     }
   }, [endReach, newPagination]);
 
+  const sortedHistory = txHistory
+    .sort((a, b) => b.timestamp - a.timestamp)
+    .filter((item, index, array) => {
+      return index === 0 || item.timestamp !== array[index - 1].timestamp;
+    });
+
   const ret = useMemo(() => {
     return {
-      history: txHistory,
+      history: sortedHistory,
       loading: loadingTxHistory,
       error: onTxHistoryError,
       getMore,
     };
-  }, [getMore, loadingTxHistory, onTxHistoryError, txHistory]);
+  }, [getMore, loadingTxHistory, onTxHistoryError, sortedHistory]);
 
   return ret;
 };
@@ -254,7 +262,9 @@ export const useAleoTxHistory = ({
   } = useSWR(privateTxsKey, getPrivateTxs, { refreshInterval });
 
   const [pagination, setPagination] = useState<Pagination>({});
-  const key = `/onchain_history/${uniqueId}/${address}?page=${pagination.cursor}&limit=${pagination.limit}`;
+  const key = isAleo
+    ? `/onchain_history/${uniqueId}/${address}?page=${pagination.cursor}&limit=${pagination.limit}`
+    : undefined;
   const fetchOnChainHistory = useCallback(async () => {
     if (isAleo) {
       if (
