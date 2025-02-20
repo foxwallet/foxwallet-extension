@@ -193,37 +193,6 @@ const TransactionDetailScreen = () => {
     }, [address, isAleo, tokenInfo, txItem]);
   // console.log("      tx", tx);
 
-  // const [txDetail, setTxDetail] = useState<
-  //   | NativeCoinTxDetailRes<CoinType.ETH>
-  //   | TokenTxDetailRes<CoinType.ETH>
-  //   | undefined
-  // >(undefined);
-  // useEffect(() => {
-  //   const getTxDetail = async () => {
-  //     let res;
-  //     if (tokenInfo.type === AssetType.COIN) {
-  //       if (coinService.supportNativeCoinTxDetail() && txId) {
-  //         res = await coinService.getNativeCoinTxDetail({
-  //           txId,
-  //           filter: { address },
-  //         });
-  //       }
-  //     } else {
-  //       if (coinService.supportTokenTxDetail() && txId) {
-  //         res = await coinService.getTokenTxDetail({
-  //           txId,
-  //           token: tokenInfo,
-  //           filter: { address },
-  //         });
-  //       }
-  //     }
-  //     setTxDetail(res);
-  //   };
-  //   if (!txDetail) {
-  //     getTxDetail();
-  //   }
-  // }, [address, coinService, tokenInfo, txDetail, txId]);
-
   const { data: txDetail } = useTransactionDetail({
     uniqueId,
     address,
