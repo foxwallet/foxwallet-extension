@@ -45,7 +45,7 @@ import {
   NATIVE_TOKEN_PROGRAM_ID,
   NATIVE_TOKEN_TOKEN_ID,
 } from "core/coins/ALEO/constants";
-import { serializeToken } from "@/common/utils/string";
+import { serializeData, serializeToken } from "@/common/utils/string";
 import { useBalance } from "@/hooks/useBalance";
 import { AssetType, type TokenV2 } from "core/types/Token";
 import { useSafeParams } from "@/hooks/useSafeParams";
@@ -151,6 +151,7 @@ const TokenTxHistoryItem = (props: TokenTxHistoryItemProps) => {
   const { uniqueId, item, token, address } = props;
   const { t } = useTranslation();
   const { coinService } = useCoinService(uniqueId);
+  const navigate = useNavigate();
 
   const timeOfItem = dayjs(item.timestamp);
   const isCurrentYear = dayjs().year() === timeOfItem.year();
@@ -159,12 +160,12 @@ const TokenTxHistoryItem = (props: TokenTxHistoryItemProps) => {
   );
 
   const onClick = useCallback(() => {
-    if (!item.id) {
-      return;
-    }
-    const url = coinService.getTxDetailUrl(item.id);
-    void browser.tabs.create({ url });
-  }, [coinService, item.id]);
+    navigate(
+      `/transaction_detail/${uniqueId}/${address}?token=${serializeToken(
+        token,
+      )}&txItem=${serializeData(item)}`,
+    );
+  }, [address, item, navigate, token, uniqueId]);
 
   const txTitle = useMemo(() => {
     if (item.label) {
@@ -236,8 +237,6 @@ const TxHistoryItem = (props: TxHistoryItemProps) => {
     symbol,
   } = props;
   const { borderColor } = useThemeStyle();
-
-  console.log("     status ", status);
 
   return (
     <Flex
@@ -397,7 +396,7 @@ const TokenDetailScreen = () => {
     evmLoading,
     isAleo,
   ]);
-  console.log("      history", history);
+  // console.log("      history", history);
 
   useEffect(() => {
     if (reachBottom) {

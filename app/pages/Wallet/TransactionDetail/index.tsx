@@ -1,6 +1,6 @@
 import { Content } from "@/layouts/Content";
 import { PageWithHeader } from "@/layouts/Page";
-import { Box, Divider, Flex, Text } from "@chakra-ui/react";
+import { Divider, Flex, Text } from "@chakra-ui/react";
 import { useSafeParams } from "@/hooks/useSafeParams";
 import { useSafeTokenInfo } from "@/hooks/useSafeTokenInfo";
 import { useLocationParams } from "@/hooks/useLocationParams";
@@ -124,7 +124,7 @@ const TransactionDetailScreen = () => {
   const { tokenInfo } = useSafeTokenInfo(uniqueId, address);
   const txItem = useLocationParams("txItem");
   // console.log("      tokenInfo", tokenInfo);
-  const { nativeCurrency, chainConfig } = useCoinService(uniqueId);
+  const { nativeCurrency, chainConfig, coinService } = useCoinService(uniqueId);
 
   const isAleo = useMemo(() => {
     return uniqueId === InnerChainUniqueId.ALEO_MAINNET;
@@ -193,6 +193,37 @@ const TransactionDetailScreen = () => {
     }, [address, isAleo, tokenInfo, txItem]);
   // console.log("      tx", tx);
 
+  // const [txDetail, setTxDetail] = useState<
+  //   | NativeCoinTxDetailRes<CoinType.ETH>
+  //   | TokenTxDetailRes<CoinType.ETH>
+  //   | undefined
+  // >(undefined);
+  // useEffect(() => {
+  //   const getTxDetail = async () => {
+  //     let res;
+  //     if (tokenInfo.type === AssetType.COIN) {
+  //       if (coinService.supportNativeCoinTxDetail() && txId) {
+  //         res = await coinService.getNativeCoinTxDetail({
+  //           txId,
+  //           filter: { address },
+  //         });
+  //       }
+  //     } else {
+  //       if (coinService.supportTokenTxDetail() && txId) {
+  //         res = await coinService.getTokenTxDetail({
+  //           txId,
+  //           token: tokenInfo,
+  //           filter: { address },
+  //         });
+  //       }
+  //     }
+  //     setTxDetail(res);
+  //   };
+  //   if (!txDetail) {
+  //     getTxDetail();
+  //   }
+  // }, [address, coinService, tokenInfo, txDetail, txId]);
+
   const { data: txDetail } = useTransactionDetail({
     uniqueId,
     address,
@@ -205,14 +236,14 @@ const TransactionDetailScreen = () => {
     const fee = txDetail?.fees
       ? ethers.utils.formatUnits(
           BigNumber.from(txDetail?.fees),
-          tokenInfo.decimals,
+          nativeCurrency.decimals,
         )
       : undefined;
     if (fee) {
       return `${fee} ${nativeCurrency.symbol}`;
     }
     return undefined;
-  }, [nativeCurrency.symbol, tokenInfo.decimals, txDetail?.fees]);
+  }, [nativeCurrency, txDetail?.fees]);
 
   const renderDetailA = useMemo(() => {
     return (
