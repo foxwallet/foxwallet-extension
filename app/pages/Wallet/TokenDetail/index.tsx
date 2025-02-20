@@ -64,15 +64,18 @@ interface AleoTokenTxHistoryItemProps {
   item: AleoHistoryItem;
   uniqueId: InnerChainUniqueId;
   token: TokenV2;
+  address: string;
 }
 
 const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
   uniqueId,
   item,
   token,
+  address,
 }) => {
   const { t } = useTranslation();
   const { coinService } = useCoinService(uniqueId);
+  const navigate = useNavigate();
 
   const timeOfItem = dayjs(item.timestamp);
   const isCurrentYear = dayjs().year() === timeOfItem.year();
@@ -80,13 +83,21 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
     isCurrentYear ? "MM-DD LT" : "YYYY-MM-DD LT",
   );
 
-  const onClick = useCallback(() => {
+  const onClick2 = useCallback(() => {
     if (!item.txId) {
       return;
     }
     const url = coinService.getTxDetailUrl(item.txId);
     void browser.tabs.create({ url });
   }, [coinService, item.txId]);
+
+  const onClick = useCallback(() => {
+    navigate(
+      `/transaction_detail/${uniqueId}/${address}?token=${serializeToken(
+        token,
+      )}&txItem=${serializeData(item)}`,
+    );
+  }, [address, item, navigate, token, uniqueId]);
 
   const txTitle = useMemo(() => {
     return t(`TokenDetail:${item.addressType}`);
@@ -490,6 +501,7 @@ const TokenDetailScreen = () => {
               item={item}
               uniqueId={uniqueId}
               token={tokenInfo}
+              address={address}
             />
           );
         },

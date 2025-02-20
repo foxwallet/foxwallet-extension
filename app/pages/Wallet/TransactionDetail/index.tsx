@@ -20,6 +20,7 @@ import { BigNumber, ethers } from "ethers";
 import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
 import { useTransactionDetail } from "@/hooks/useTransactionDetail";
 import { useCoinService } from "@/hooks/useCoinService";
+import browser from "webextension-polyfill";
 
 type InfoAProps = {
   title: string;
@@ -46,9 +47,10 @@ const DetailInfoA = (props: InfoAProps) => {
 
   const onClick = useCallback(async () => {
     if (onParamClick) {
-      return onParamClick;
+      onParamClick();
+      return;
     }
-    return onCopy();
+    onCopy();
   }, [onCopy, onParamClick]);
 
   return (
@@ -214,6 +216,13 @@ const TransactionDetailScreen = () => {
     return undefined;
   }, [nativeCurrency, txDetail?.fees]);
 
+  const onHash = useCallback(() => {
+    if (txId) {
+      const url = coinService.getTxDetailUrl(txId);
+      void browser.tabs.create({ url });
+    }
+  }, [coinService, txId]);
+
   const renderDetailA = useMemo(() => {
     return (
       <Flex direction={"column"}>
@@ -223,7 +232,7 @@ const TransactionDetailScreen = () => {
           info={txId ?? ""}
           isHasCopy={true}
           textDecoration={"underline"}
-          onClick={() => {}}
+          onClick={onHash}
         />
         {/* from */}
         <DetailInfoA title={t("TransactionDetail:from")} info={from ?? ""} />
@@ -231,7 +240,7 @@ const TransactionDetailScreen = () => {
         <DetailInfoA title={t("TransactionDetail:to")} info={to ?? ""} />
       </Flex>
     );
-  }, [from, t, to, txId]);
+  }, [from, onHash, t, to, txId]);
 
   const renderDetailB = useMemo(() => {
     return (
