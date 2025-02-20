@@ -70,10 +70,6 @@ cd ../.. && yarn build:dev
 | Fungible token             | Working            |
 | Non fungible token         | Working            |
 
-## License
-
-This project is licensed under the [MIT License](./LICENSE).
-
 ## About `@provablehq` folder
 
 Since this project started early, it was initially built based on `@aleohq/wasm` (which has now migrated to [@provablehq/sdk](https://github.com/ProvableHQ/sdk)). Additionally, we have added some custom Rust code to better align with the business needs of the extension. The current WebAssembly (WASM) compilation process involves the following two methods:
