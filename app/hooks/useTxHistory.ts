@@ -138,7 +138,7 @@ export const useTxHistory = ({
 
   const key = isAleo
     ? undefined
-    : `/tx_history/${uniqueId}/${address}?page=${currPagination.pageNum}&limit=${currPagination.pageSize}`;
+    : `/tx_history/${token.contractAddress}/${uniqueId}/${address}?page=${currPagination.pageNum}&limit=${currPagination.pageSize}`;
   const fetchTxHistory = useCallback(async () => {
     if (!isAleo) {
       try {
@@ -243,7 +243,7 @@ export const useAleoTxHistory = ({
     isLoading: loadingLocalTxs,
   } = useSWR(localTxKey, getLocalTxs, { refreshInterval });
 
-  const privateTxsKey = `/privateTxs/${uniqueId}/${address}/${token.tokenId}`;
+  const privateTxsKey = `/privateTxs/${token.contractAddress}/${uniqueId}/${address}/${token.tokenId}`;
   const getPrivateTxs = useCallback(async () => {
     if (isAleo) {
       const res = await (coinService as AleoService).getPrivateTxHistory(

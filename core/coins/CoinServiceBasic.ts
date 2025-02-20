@@ -9,6 +9,8 @@ import {
   type EstimateGasParam,
   type NativeCoinSendTxParams,
   type NativeCoinSendTxRes,
+  type NativeCoinTxDetailParams,
+  type NativeCoinTxDetailRes,
   type NativeCoinTxHistoryParams,
 } from "core/types/NativeCoinTransaction";
 import {
@@ -27,6 +29,8 @@ import {
   type TokenSendTxParams,
   type TokenSendTxRes,
   type InteractiveTokenParams,
+  type TokenTxDetailReq,
+  type TokenTxDetailRes,
 } from "core/types/TokenTransaction";
 import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
 import { ExplorerLanguages } from "core/types/ExplorerLanguages";
@@ -285,5 +289,35 @@ export abstract class CoinServiceBasic {
     console.error(
       "resetChainData not implemented for " + this.baseConfig.chainName,
     );
+  }
+
+  supportGetTxStatus(): boolean {
+    return false;
+  }
+
+  supportNativeCoinTxDetail(): boolean {
+    return false;
+  }
+
+  async getNativeCoinTxDetail(
+    _params: NativeCoinTxDetailParams,
+  ): Promise<NativeCoinTxDetailRes<CoinType> | undefined> {
+    console.error(
+      "getNativeCoinTxDetail not implemented for " + this.baseConfig.chainName,
+    );
+    return undefined;
+  }
+
+  supportTokenTxDetail(): boolean {
+    return false;
+  }
+
+  async getTokenTxDetail(
+    _params: TokenTxDetailReq,
+  ): Promise<TokenTxDetailRes<CoinType> | undefined> {
+    console.error(
+      "getTokenTxDetail not implemented for " + this.baseConfig.chainName,
+    );
+    return undefined;
   }
 }

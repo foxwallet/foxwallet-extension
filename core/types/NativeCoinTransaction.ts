@@ -88,6 +88,14 @@ export type NativeCoinTxDetailParams = {
   auth?: { [key: string]: string };
 };
 
+export type TokenTransferLogInfo = {
+  token: string;
+  from: string;
+  to: string;
+  value: bigint;
+  tokenId?: bigint;
+};
+
 export type NativeCoinTxDetailRes<T extends CoinType> = {
   id: string;
   from: string;
@@ -98,7 +106,7 @@ export type NativeCoinTxDetailRes<T extends CoinType> = {
   fees: bigint;
   gasFee: GasFee<T>;
   nonce?: number;
-  // tokenTransfers?: TokenTransferLogInfo[];
+  tokenTransfers?: TokenTransferLogInfo[];
   status?: TransactionStatus;
   label?: TxLabel;
 

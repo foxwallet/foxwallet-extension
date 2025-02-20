@@ -191,7 +191,7 @@ export const routesConfig: RouteObject[] = [
         element: <ExportPrivateKey />,
       },
       {
-        path: "transaction_detail/:txId",
+        path: "transaction_detail/:uniqueId/:address",
         element: <TransactionDetail />,
       },
       {

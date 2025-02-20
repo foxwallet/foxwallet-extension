@@ -203,6 +203,17 @@
     "copyContractAddressMsg": "This is token's contract address, not receiving address, do not transfer to this address.",
     "failed": "Failed"
   },
+  "TransactionDetail": {
+    "hash": "Hash",
+    "from": "From",
+    "to": "To",
+    "value": "Value",
+    "time": "Time",
+    "nonce": "Nonce",
+    "confirmations": "Confirmations",
+    "network": "Network",
+    "gasFee": "Gas Fee"
+  },
   "Tx": {
     "successToast": "Transaction Successful!",
     "failToast": "Transaction Failed."
@@ -329,7 +340,9 @@
     "noSearchResult": "No search result",
     "pleaseWait": "Please wait",
     "copy": "Copy",
-    "reminder": "Reminder"
+    "reminder": "Reminder",
+    "success": "Success",
+    "failed": "Failed"
   },
   "Error": {
     "invalidPassword": "Invalid password",

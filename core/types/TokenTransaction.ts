@@ -5,6 +5,7 @@ import { type AleoTxType } from "core/coins/ALEO/types/History";
 import { type EstimateGasExtraOption } from "core/types/NativeCoinTransaction";
 import { type GasFee, type SerializeGasFee } from "core/types/GasFee";
 import { type ChainSpecificReturn } from "core/types/TransactionHistory";
+import { type TransactionStatus } from "core/types/TransactionStatus";
 
 export type FilForwarderTxParams = {
   from: string;
@@ -78,4 +79,31 @@ export type TokenTransferParams = {
   tokenAddr: string;
   tokenId?: string; // for ERC721 and ERC1155
   value?: bigint; // for ERC20 and ERC1155
+};
+
+export type TokenTxDetailReq = {
+  txId: string;
+  token: TokenV2;
+  filter: {
+    address?: string;
+    logIndex?: number;
+  };
+};
+
+export type TokenTxDetailRes<T extends CoinType> = {
+  id: string;
+  from: string;
+  to: string;
+  nonce?: number;
+  value: bigint;
+  height: number;
+  timestamp: number;
+  fees: bigint;
+  status?: TransactionStatus;
+
+  token: TokenV2;
+  confirmations?: number;
+  gasFee: GasFee<T>;
+  data?: string;
+  memo?: string;
 };

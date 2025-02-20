@@ -3,7 +3,10 @@ import {
   type ETHConfig,
 } from "core/coins/ETH/types/ETHConfig";
 import { CoinServiceBasic } from "core/coins/CoinServiceBasic";
-import { parseEthChainId } from "core/coins/ETH/utils";
+import {
+  parseEthChainId,
+  parseTokenTransferLogInfo,
+} from "core/coins/ETH/utils";
 import {
   type BalanceResp,
   type NativeBalanceRes,
@@ -18,10 +21,13 @@ import {
   type NativeCoinSendTxParams,
   type EstimateGasParam,
   type NativeCoinTxHistoryParams,
+  type NativeCoinTxDetailParams,
+  type NativeCoinTxDetailRes,
+  type TokenTransferLogInfo,
 } from "core/types/NativeCoinTransaction";
 import { type CoinType } from "core/types";
 import {
-  Log,
+  type Log,
   type TransactionRequest,
   type TransactionResponse,
 } from "@ethersproject/abstract-provider";
@@ -29,6 +35,7 @@ import { ETH_CHAIN_CONFIGS } from "core/coins/ETH/config/chains";
 import constants, {
   FIL_FORWARDER_ADDRESS,
   FILECOIN_ADDRESS_PREFIX,
+  FILECOIN_MESSAGE_ID_PREFIX,
 } from "../constants";
 import {
   ethAddressFromDelegated,
@@ -44,6 +51,8 @@ import {
   type TokenSendTxParams,
   type TokenSendTxRes,
   type InteractiveTokenParams,
+  type TokenTxDetailReq,
+  type TokenTxDetailRes,
 } from "core/types/TokenTransaction";
 import {
   type ContractInterface,
@@ -74,7 +83,11 @@ import {
   GasGrade,
   type GasGradeData,
 } from "core/types/GasFee";
-import { addHexPrefix, stripHexPrefix } from "ethereumjs-util";
+import {
+  addHexPrefix,
+  stripHexPrefix,
+  toChecksumAddress,
+} from "ethereumjs-util";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { isSameAddress } from "core/utils/address";
 import { hexValue } from "ethers/lib/utils";
@@ -93,6 +106,7 @@ import { AssetType, type TokenMetaV2, type TokenV2 } from "core/types/Token";
 import { MemoizeExpiring } from "typescript-memoize";
 import { GasPriceOracle } from "gas-price-oracle";
 import { type GasPrice } from "gas-price-oracle/lib/services";
+import { TransactionStatus } from "core/types/TransactionStatus";
 
 export class EthService extends CoinServiceBasic {
   config: ETHConfig;
@@ -977,5 +991,207 @@ export class EthService extends CoinServiceBasic {
       };
     }
     return undefined;
+  }
+
+  supportNativeCoinTxDetail(): boolean {
+    return true;
+  }
+
+  async getNativeCoinTxDetail(
+    params: NativeCoinTxDetailParams,
+  ): Promise<NativeCoinTxDetailRes<CoinType.ETH> | undefined> {
+    const { txId } = params;
+    // if (txId.startsWith(FILECOIN_MESSAGE_ID_PREFIX) && this.filfoxService) {
+    //   return await this.filfoxService.getNativeCoinTxDetail(params);
+    // }
+    const [tx, receipt] = await Promise.all([
+      this.rpcService.getTransaction(txId),
+      this.rpcService.getTransactionReceipt(txId),
+    ]);
+    if (!tx) {
+      return undefined;
+    }
+    if (tx.blockHash && receipt === null) {
+      throw new Error("bad result from backend");
+    }
+    let timestamp = tx.timestamp || 0;
+    const blockHash = receipt?.blockHash || tx.blockHash;
+    if (timestamp === 0 && blockHash) {
+      const block = await this.rpcService.getBlock(blockHash);
+      if (!block?.timestamp) {
+        throw new Error("bad result from backend");
+      }
+      timestamp = block.timestamp;
+    }
+    const maxFeePerGas = tx.maxFeePerGas?.toBigInt();
+    const maxPriorityFeePerGas = tx.maxPriorityFeePerGas?.toBigInt();
+    const gasPrice = tx.gasPrice?.toBigInt();
+    let estimateGas;
+    if (maxFeePerGas) {
+      estimateGas = maxFeePerGas * tx.gasLimit.toBigInt();
+    } else if (gasPrice) {
+      estimateGas = gasPrice * tx.gasLimit.toBigInt();
+    }
+
+    let fees = BigNumber.from(0);
+    let tokenTransfers;
+    if (receipt) {
+      fees = receipt.gasUsed.mul(
+        receipt.effectiveGasPrice || tx.maxFeePerGas || tx.gasPrice,
+      );
+      // tokenTransfers = receipt.logs.reduce(
+      //   (filtered: TokenTransferLogInfo[], log) => {
+      //     if (log) {
+      //       const info = parseTokenTransferLogInfo(log);
+      //       if (info) {
+      //         filtered.push(info);
+      //       }
+      //     }
+      //     return filtered;
+      //   },
+      //   [],
+      // );
+    }
+
+    const confirmations = receipt?.confirmations || tx.confirmations || 0;
+    const status = confirmations
+      ? receipt?.status
+        ? TransactionStatus.SUCCESS
+        : TransactionStatus.FAILED
+      : TransactionStatus.PENDING;
+    return {
+      id: txId,
+      from: toChecksumAddress(tx.from),
+      to: toChecksumAddress(tx.to ?? ""),
+      value: tx.value.toBigInt(),
+      data: tx.data,
+      fees: fees.toBigInt(),
+      height: receipt?.blockNumber || tx.blockNumber || 0,
+      timestamp: timestamp * 1000,
+      confirmations,
+      tokenTransfers,
+      gasFee: {
+        maxFeePerGas,
+        maxPriorityFeePerGas,
+        gasPrice,
+        gasLimit: tx.gasLimit.toNumber(),
+        estimateGas,
+        type:
+          maxFeePerGas && maxPriorityFeePerGas
+            ? GasFeeType.EIP1559
+            : GasFeeType.LEGACY,
+      } as GasFee<CoinType.ETH>,
+      nonce: tx.nonce,
+      status,
+    };
+  }
+
+  supportTokenTxDetail(): boolean {
+    return true;
+  }
+
+  async getTokenTxDetail(
+    params: TokenTxDetailReq,
+  ): Promise<TokenTxDetailRes<CoinType.ETH> | undefined> {
+    if (!this.supportTokenTxDetail()) {
+      return super.getTokenTxDetail(params);
+    }
+    const {
+      txId,
+      token,
+      filter: { address, logIndex },
+    } = params;
+
+    const [tx, receipt] = await Promise.all([
+      this.rpcService.getTransaction(txId),
+      this.rpcService.getTransactionReceipt(txId),
+    ]);
+
+    if (!tx) {
+      return undefined;
+    }
+
+    let timestamp = tx.timestamp ?? 0;
+    if (timestamp === 0 && tx.blockHash) {
+      const block = await this.rpcService.getBlock(tx.blockHash);
+      timestamp = block?.timestamp ?? 0;
+    }
+
+    if (!receipt) {
+      return undefined;
+    }
+
+    const log: Log = receipt.logs.filter((item) => {
+      if (logIndex && item) {
+        return item.logIndex.toString() === logIndex.toString();
+      }
+      const info = parseTokenTransferLogInfo(item);
+      if (!info) {
+        return false;
+      }
+      const isRelated =
+        isSameAddress(address, info.from) || isSameAddress(address, info.to);
+      if (isRelated) {
+        return (
+          token.contractAddress === undefined ||
+          isSameAddress(token.contractAddress, info.token)
+        );
+      }
+      return false;
+    })[0];
+
+    if (!log) {
+      return undefined;
+    }
+
+    const info = parseTokenTransferLogInfo(log);
+    if (!info) {
+      return undefined;
+    }
+
+    const maxFeePerGas = tx.maxFeePerGas?.toBigInt();
+    const maxPriorityFeePerGas = tx.maxPriorityFeePerGas?.toBigInt();
+    const gasPrice = tx.gasPrice?.toBigInt();
+    let estimateGas;
+    if (maxFeePerGas) {
+      estimateGas = maxFeePerGas * tx.gasLimit.toBigInt();
+    } else if (gasPrice) {
+      estimateGas = gasPrice * tx.gasLimit.toBigInt();
+    }
+
+    //  bsc 上的 erc20 交易 effectiveGasPriceeffectiveGasPrice 为 undefined
+    const fees = receipt.gasUsed.mul(
+      receipt.effectiveGasPrice || tx.maxFeePerGas || tx.gasPrice,
+    );
+
+    // for eth, 0 is fail, 1 is success
+    const status = receipt.status
+      ? TransactionStatus.SUCCESS
+      : TransactionStatus.FAILED;
+
+    return {
+      id: txId,
+      from: toChecksumAddress(info.from),
+      to: toChecksumAddress(info.to),
+      value: info.value,
+      fees: fees.toBigInt(),
+      confirmations: receipt.confirmations,
+      height: log.blockNumber,
+      timestamp: timestamp * 1000,
+      token,
+      gasFee: {
+        maxFeePerGas,
+        maxPriorityFeePerGas,
+        gasPrice,
+        estimateGas,
+        gasLimit: tx.gasLimit.toNumber(),
+        type:
+          maxFeePerGas && maxPriorityFeePerGas
+            ? GasFeeType.EIP1559
+            : GasFeeType.LEGACY,
+      } as GasFee<CoinType.ETH>,
+      nonce: tx.nonce,
+      status,
+    };
   }
 }
