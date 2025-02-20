@@ -6,7 +6,11 @@ import { useSafeTokenInfo } from "@/hooks/useSafeTokenInfo";
 import { useLocationParams } from "@/hooks/useLocationParams";
 import React, { useCallback, useMemo } from "react";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
-import type { AleoHistoryItem } from "core/coins/ALEO/types/History";
+import {
+  type AleoHistoryItem,
+  AleoHistoryType,
+  AleoTxAddressType,
+} from "core/coins/ALEO/types/History";
 import type { TransactionHistoryItem } from "core/types/TransactionHistory";
 import { TransactionStatus } from "core/types/TransactionStatus";
 import dayjs from "dayjs";
@@ -21,6 +25,7 @@ import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
 import { useTransactionDetail } from "@/hooks/useTransactionDetail";
 import { useCoinService } from "@/hooks/useCoinService";
 import browser from "webextension-polyfill";
+import { AleoTxStatus } from "core/coins/ALEO/types/Transaction";
 
 type InfoAProps = {
   title: string;
@@ -125,7 +130,7 @@ const TransactionDetailScreen = () => {
   const { uniqueId, address } = useSafeParams();
   const { tokenInfo } = useSafeTokenInfo(uniqueId, address);
   const txItem = useLocationParams("txItem");
-  // console.log("      tokenInfo", tokenInfo);
+  // console.log("      txItem", txItem);
   const { nativeCurrency, chainConfig, coinService } = useCoinService(uniqueId);
 
   const isAleo = useMemo(() => {
@@ -141,15 +146,26 @@ const TransactionDetailScreen = () => {
         let tx;
         let isSuccess = false;
         let txId, from, to, nonce;
-        let amount = 0n;
+        let amount;
         let isSend = false;
 
         if (isAleo) {
           tx = JSON.parse(txItem) as AleoHistoryItem;
-          isSuccess = false;
+          // console.log("      tx", tx);
+
           txId = tx.txId;
-          amount = BigInt(tx.amount ?? "0");
-          // todo
+          amount = tx.amount ? BigInt(tx.amount) : undefined;
+          isSend = tx.addressType === AleoTxAddressType.SEND;
+          if (tx.type === AleoHistoryType.LOCAL) {
+            if (isSend) {
+              to = tx.inputs[0];
+            } else {
+              from = tx.inputs[0];
+            }
+          }
+          isSuccess =
+            tx.status === AleoTxStatus.FINALIZD ||
+            tx.status === AleoTxStatus.COMPLETED;
         } else {
           tx = JSON.parse(txItem) as TransactionHistoryItem;
           isSuccess = tx.status === TransactionStatus.SUCCESS;
@@ -167,15 +183,15 @@ const TransactionDetailScreen = () => {
           isCurrentYear ? "MM-DD LT" : "YYYY-MM-DD LT",
         );
 
-        const valueStr = ethers.utils.formatUnits(
-          BigNumber.from(amount),
-          tokenInfo.decimals,
-        );
+        const valueStr = amount
+          ? ethers.utils.formatUnits(BigNumber.from(amount), tokenInfo.decimals)
+          : "";
 
-        const addOrMinus = amount === 0n ? "" : isSend ? `- ` : `+ `;
+        const addOrMinus = amount ? "" : isSend ? `- ` : `+ `;
 
-        const amountStr = `${addOrMinus}${valueStr} ${tokenInfo.symbol}`;
-        // console.log("      amountStr", valueStr);
+        const amountStr = amount
+          ? `${addOrMinus}${valueStr} ${tokenInfo.symbol}`
+          : "";
 
         return {
           tx,
@@ -193,7 +209,6 @@ const TransactionDetailScreen = () => {
         return { isSuccess: false };
       }
     }, [address, isAleo, tokenInfo, txItem]);
-  // console.log("      tx", tx);
 
   const { data: txDetail } = useTransactionDetail({
     uniqueId,
@@ -227,17 +242,21 @@ const TransactionDetailScreen = () => {
     return (
       <Flex direction={"column"}>
         {/* hash */}
-        <DetailInfoA
-          title={t("TransactionDetail:hash")}
-          info={txId ?? ""}
-          isHasCopy={true}
-          textDecoration={"underline"}
-          onClick={onHash}
-        />
+        {txId && (
+          <DetailInfoA
+            title={t("TransactionDetail:hash")}
+            info={txId}
+            isHasCopy={true}
+            textDecoration={"underline"}
+            onClick={onHash}
+          />
+        )}
         {/* from */}
-        <DetailInfoA title={t("TransactionDetail:from")} info={from ?? ""} />
+        {from && (
+          <DetailInfoA title={t("TransactionDetail:from")} info={from} />
+        )}
         {/* to */}
-        <DetailInfoA title={t("TransactionDetail:to")} info={to ?? ""} />
+        {to && <DetailInfoA title={t("TransactionDetail:to")} info={to} />}
       </Flex>
     );
   }, [from, onHash, t, to, txId]);
