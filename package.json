@@ -12,7 +12,7 @@
     "build:dapp": "vite build --config vite-injector.config.ts",
     "copy:dist_wasms": "cp ./dist/assets/aleo_wasm_mainnet_bg.wasm ./dist/aleo_wasm_mainnet_bg.wasm && cp ./dist/assets/aleo_wasm_testnet_bg.wasm ./dist/aleo_wasm_testnet_bg.wasm",
     "clean": "rimraf dist/ && rimraf node_modules/aleo_wasm_mainnet/ && rimraf node_modules/aleo_wasm_testnet/",
-    "wasm": "cd @provablehq/wasm && yarn install && yarn build:all",
+    "wasm": "cd fox-aleo-sdk/wasm && yarn install && yarn build:all",
     "redux-devtools": "redux-devtools --hostname=localhost --port=8000 --open",
     "translate": "node ./scripts/translate.cjs",
     "lint": "eslint --quiet --ext .ts,.tsx,.js,.jsx --fix .",

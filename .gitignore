@@ -21,7 +21,6 @@ dist-ssr
 
 coverage/
 **/target
-@provablehq/wasm/pkg
 **/pkg-parallel
 
 .env

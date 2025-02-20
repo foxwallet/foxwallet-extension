@@ -1,5 +1,6 @@
 {
   "name": "aleo-wasm-mainnet",
+  "type": "module",
   "collaborators": [
     "The Provable Team"
   ],
@@ -15,7 +16,7 @@
     "aleo_wasm_mainnet.js",
     "aleo_wasm_mainnet.d.ts"
   ],
-  "module": "aleo_wasm_mainnet.js",
+  "main": "aleo_wasm_mainnet.js",
   "homepage": "https://provable.com",
   "types": "aleo_wasm_mainnet.d.ts",
   "sideEffects": [

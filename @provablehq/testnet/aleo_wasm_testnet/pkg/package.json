@@ -1,5 +1,6 @@
 {
   "name": "aleo-wasm-testnet",
+  "type": "module",
   "collaborators": [
     "The Provable Team"
   ],
@@ -15,7 +16,7 @@
     "aleo_wasm_testnet.js",
     "aleo_wasm_testnet.d.ts"
   ],
-  "module": "aleo_wasm_testnet.js",
+  "main": "aleo_wasm_testnet.js",
   "homepage": "https://provable.com",
   "types": "aleo_wasm_testnet.d.ts",
   "sideEffects": [
