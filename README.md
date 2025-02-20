@@ -10,17 +10,16 @@ FoxWallet is a secure and user-friendly decentralized self-custody wallet design
 - **DApp Support**: Built-in DApp browser for seamless interaction with decentralized applications.
 
 ## Project structure
-Below are descriptions of some key directories in the project:  
 
-- **app**: Contains all application UI pages, data management, routing, i18n (multi-language support), and other related functionalities.  
-- **core**: Wallet service functionalities, including mnemonic phrase handling, private key import, address derivation, transaction sending, etc.  
-- **env**: Directory for RPC and public API configuration files.  
-- **offscreen_sync**: Offscreen Document functionality added specifically for Aleo blockchain synchronization.  
-- **offscreen_transaction**: Offscreen Document functionality added specifically for sending Aleo transactions.  
-- **fox-aleo-sdk**: A customized package based on [@provablehq/sdk](https://github.com/ProvableHQ/sdk), which is compiled using `fox-aleo-sdk/wasm` to generate a WASM package suitable for JavaScript.  
-- **@provablehq**: Packaged output based on `fox-aleo-sdk`, intended for use in different scenarios.  
-- **script**: Contains scripts for specific functionalities.  
-- **patches**: Stores patch files for dependencies.  
+- **app**: Contains all application UI pages, data management, routing, i18n (multi-language support), and other related functionalities.
+- **core**: Wallet service functionalities, including mnemonic phrase handling, private key import, address derivation, transaction sending, etc.
+- **env**: Directory for RPC and public API configuration files.
+- **offscreen_sync**: Offscreen Document functionality added specifically for Aleo blockchain synchronization.
+- **offscreen_transaction**: Offscreen Document functionality added specifically for sending Aleo transactions.
+- **fox-aleo-sdk**: A customized package based on [@provablehq/sdk](https://github.com/ProvableHQ/sdk), which is compiled using `fox-aleo-sdk/wasm` to generate a WASM package suitable for JavaScript.
+- **@provablehq**: Packaged output based on `fox-aleo-sdk`, intended for use in different scenarios.
+- **script**: Contains scripts for specific functionalities.
+- **patches**: Stores patch files for dependencies.
 
 ## Installation
 
@@ -55,7 +54,7 @@ cd ../.. && yarn build:dev
 
 > If you ensure that your Node.js version is compatible, you can directly run `yarn wasm` in the root directory to compile the WASM package, and then run `yarn build:dev`.
 
-## Features
+## Features of Aleo
 
 | Feature                    | Status             |
 | -------------------------- | ------------------ |
@@ -75,25 +74,28 @@ cd ../.. && yarn build:dev
 
 This project is licensed under the [MIT License](./LICENSE).
 
-## About `@provablehq`  
+## About `@provablehq` folder
 
-Since this project started early, it was initially built based on `@aleohq/wasm` (which has now migrated to [@provablehq/sdk](https://github.com/ProvableHQ/sdk)). Additionally, we have added some custom Rust code to better align with the business needs of the extension. The current WebAssembly (WASM) compilation process involves the following two methods:  
+Since this project started early, it was initially built based on `@aleohq/wasm` (which has now migrated to [@provablehq/sdk](https://github.com/ProvableHQ/sdk)). Additionally, we have added some custom Rust code to better align with the business needs of the extension. The current WebAssembly (WASM) compilation process involves the following two methods:
 
-- **`wasm-pack`**: Compiles the original WASM package. After compilation, the output is copied to `@provablehq/mainnet/aleo_wasm_mainnet` and `@provablehq/testnet/aleo_wasm_testnet`. In the application, it is imported using:  
+- **`wasm-pack`**: Compiles the original WASM package. After compilation, the output is copied to `@provablehq/mainnet/aleo_wasm_mainnet` and `@provablehq/testnet/aleo_wasm_testnet`. In the application, it is imported using:
   ```js
-  import { PrivateKey } from 'aleo_wasm_mainnet';
+  import { PrivateKey } from "aleo_wasm_mainnet";
   // or
-  import { PrivateKey } from 'aleo_wasm_testnet';
+  import { PrivateKey } from "aleo_wasm_testnet";
   ```
-  
-- **Rollup**: Follows the packaging approach of `@provablehq/sdk`. The output is copied to `@provablehq/mainnet/wasm` and `@provablehq/testnet/wasm`. In the application, it is imported using:  
+- **Rollup**: Follows the packaging approach of `@provablehq/sdk`. The output is copied to `@provablehq/mainnet/wasm` and `@provablehq/testnet/wasm`. In the application, it is imported using:
   ```js
-  import { initThreadPool } from '@provablehq/wasm-mainnet';
+  import { initThreadPool } from "@provablehq/wasm-mainnet";
   // or
-  import { initThreadPool } from '@provablehq/wasm-testnet';
+  import { initThreadPool } from "@provablehq/wasm-testnet";
   ```
-  You can find the corresponding dependencies for `@provablehq/wasm-mainnet` in the `package.json` file.  
+  > You can find the corresponding dependencies for `@provablehq/wasm-mainnet` in the `package.json` file.
 
-The existence of these two packaging methods is related to the project's technical architecture and the characteristics of the compiled output. Chrome Extension Manifest V3 does not support the **Top-Level Await** feature, which is included in the official package. To resolve this issue, we leverage the **Offscreen Document** feature, which is why you can see `offscreen_sync` and `offscreen_transaction` in the project.  
+The existence of these two packaging methods is related to the project's technical architecture and the characteristics of the compiled output. Chrome Extension Manifest V3 does not support the **Top-Level Await** feature, which is included in the official package. To resolve this issue, we leverage the **Offscreen Document** feature, which is why you can see `offscreen_sync` and `offscreen_transaction` in the project.
 
 > In summary, if you need to call the `initThreadPool` function, you must import `@provablehq/wasm-mainnet`. Since it involves the **Top-Level Await** feature, it must be placed inside an **Offscreen Document**. In all other cases, `aleo_wasm_mainnet` can be imported and used directly.
+
+## License
+
+This project is licensed under the [MIT License](./LICENSE).
