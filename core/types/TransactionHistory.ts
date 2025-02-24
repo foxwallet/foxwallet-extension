@@ -84,3 +84,34 @@ export type TransactionHistoryResp = {
   txs: TransactionHistoryItem[];
   pagination: ExtraTxHistoryPaginationParam;
 };
+
+export type TxHistoryItem = {
+  id: string;
+  from: string;
+  to: string;
+  value: bigint;
+  timestamp: number;
+  status: TransactionStatus;
+  height: number; // use SpecificHeightValue for unconfirmed and others
+
+  label?: TxLabel;
+  nonce?: number;
+  fees?: bigint; // 总手续费
+  gasFee?: GasFee<CoinType>; // 详细手续费参数
+  data?: string;
+  filSpecific?: FilSpecificTxParam;
+  chainSpecificReturn?: ChainSpecificReturn<CoinType>;
+  memo?: string;
+  inMessageId?: string;
+  opType?: string;
+  prefix?: string;
+};
+
+export type TxHistoryResp = {
+  txs: TxHistoryItem[];
+  pagination: TxHistoryPaginationParam & {
+    endReach: boolean;
+    totalPage?: number;
+    totalCount?: number;
+  };
+};

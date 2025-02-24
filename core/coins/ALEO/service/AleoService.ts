@@ -68,6 +68,10 @@ import { AssetType, type TokenV2 } from "core/types/Token";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import type { InteractiveTokenParams } from "core/types/TokenTransaction";
 import { type BalanceResp, type TokenBalanceParams } from "core/types/Balance";
+import { type CoinTxHistoryParams } from "core/types/NativeCoinTransaction";
+import { type TxHistoryResp } from "core/types/TransactionHistory";
+import { TransactionStatus } from "core/types/TransactionStatus";
+import { type AleoInfoApi } from "core/coins/ALEO/service/api/aleoInfoApi";
 
 const CREDITS_MAPPING_NAME = "account";
 
@@ -83,6 +87,7 @@ const GET_SPENT_TAGS_SIZE = 500;
 export class AleoService extends CoinServiceBasic {
   config: AleoConfig;
   chainId: string;
+  aleoInfoApi: AleoInfoApi;
   private aleoStorage: IAleoStorage;
   private rpcService: AleoRpcService;
   private apiService: AleoApiService;
@@ -125,14 +130,15 @@ export class AleoService extends CoinServiceBasic {
   }
 
   validateAddress(address: string): boolean {
-    try {
-      const addressObj = Address.from_string(address);
-      console.log("===> addressObj: ", addressObj, !!addressObj);
-      return !!addressObj;
-    } catch (err) {
-      logger.log("===> isValidAddress failed: ", err, address);
-      return false;
-    }
+    // try {
+    //   const addressObj = Address.from_string(address);
+    //   console.log("===> addressObj: ", addressObj, !!addressObj);
+    //   return !!addressObj;
+    // } catch (err) {
+    //   logger.log("===> isValidAddress failed: ", err, address);
+    //   return false;
+    // }
+    return true;
   }
 
   private async getSpentTagsInRange(tags: string[]) {
@@ -1862,5 +1868,51 @@ export class AleoService extends CoinServiceBasic {
 
   gasUnit(): string {
     return "ALEO";
+  }
+
+  async getLatestBlockNumber(): Promise<number> {
+    const height = await this.rpcService.getLatestHeight();
+    if (height) {
+      return height;
+    }
+    return -1;
+  }
+
+  supportCoinTxHistory(): boolean {
+    return true;
+  }
+
+  async getCoinTxHistory(params: CoinTxHistoryParams): Promise<TxHistoryResp> {
+    const { pageSize, pageNum } = params.pagination;
+    console.log("aleo getCoinTxHistory", pageSize, pageNum);
+    const hist = await this.aleoInfoApi.getTransferHistory(
+      params.address,
+      pageSize * pageNum,
+      pageSize,
+    );
+    return {
+      txs: hist.transactions.map((item) => {
+        return {
+          id: item.transactionId,
+          from: item.transferFrom?.address ?? "",
+          to: item.transferTo?.address ?? "",
+          value: BigInt(item.credits),
+          timestamp: item.timestamp * 1000,
+          status:
+            item.state === "Pending"
+              ? TransactionStatus.PENDING
+              : item.state === "Accepted"
+              ? TransactionStatus.SUCCESS
+              : TransactionStatus.FAILED,
+          height: item.height,
+        };
+      }),
+      pagination: {
+        pageSize,
+        pageNum,
+        endReach: hist.transactions.length < pageSize,
+        totalCount: hist.transferCount,
+      },
+    };
   }
 }

@@ -8,6 +8,7 @@ import {
   type ChainSpecificReturn,
 } from "core/types/TransactionHistory";
 import { type TransactionStatus } from "core/types/TransactionStatus";
+import { type AleoTxStatus } from "core/coins/ALEO/types/Transaction";
 
 export type AuthParams = {
   [key: string]: string;
@@ -130,3 +131,56 @@ export enum SpecificHeightValue {
   CONFIRM_WITHOUT_HEIGHT = -2,
   FAILED = -3,
 }
+
+export type CoinTxHistoryParams = {
+  address: string;
+  pagination: TxHistoryPaginationParam;
+  auth?: { [key: string]: string };
+};
+
+export type CoinTxDetailParams = {
+  txId: string;
+  filter: {
+    address?: string;
+    addressType?: "sender" | "receiver";
+  };
+  auth?: { [key: string]: string };
+};
+
+export type CoinTxDetailRes<T extends CoinType> = {
+  id: string;
+  from: string;
+  to: string;
+  value: bigint;
+  height: number;
+  timestamp: number;
+  fees: bigint;
+  gasFee: GasFee<T>;
+  nonce?: number;
+  tokenTransfers?: TokenTransferLogInfo[];
+  status?: TransactionStatus;
+  label?: TxLabel;
+
+  confirmations?: number;
+  data?: string;
+  rawTx?: string;
+  filSpecific?: FilSpecificTxParam;
+  memo?: string;
+  // qrc20TokenTransfers?: QRC20Transfer[];
+  inMessageId?: string;
+};
+
+export type TransactionStatusInfo = {
+  fee: bigint;
+  height: number;
+  timestamp: number;
+  confirmations: number;
+  call: string | undefined;
+  status: TransactionStatus;
+  from?: string;
+  to?: string;
+  value?: bigint;
+  chainSpecific: {
+    aleoStatus: AleoTxStatus;
+  };
+};
