@@ -7,10 +7,10 @@
   "license": "MIT",
   "scripts": {
     "dev": "vite --mode development",
-    "build:dev": "yarn clean && yarn build:dapp && vite build --mode development && cd offscreen_transaction && NODE_ENV=development npx rollup -c && cd .. && cp ./offscreen_tx.html ./dist/offscreen_tx.html && yarn copy:dist_wasms",
-    "build:prod": "yarn clean && yarn build:dapp && vite build && cd offscreen_transaction && NODE_ENV=production npx rollup -c && cd .. && cp ./offscreen_tx.html ./dist/offscreen_tx.html && yarn copy:dist_wasms",
+    "build:dev": "yarn clean && yarn build:dapp && vite build --mode development && cd offscreen_transaction && NODE_ENV=development npx rollup -c && cd .. && cp ./offscreen_tx.html ./dist/offscreen_tx.html && yarn move:dist_wasms",
+    "build:prod": "yarn clean && yarn build:dapp && vite build && cd offscreen_transaction && NODE_ENV=production npx rollup -c && cd .. && cp ./offscreen_tx.html ./dist/offscreen_tx.html && yarn move:dist_wasms",
     "build:dapp": "vite build --config vite-injector.config.ts",
-    "copy:dist_wasms": "cp ./dist/assets/aleo_wasm_mainnet_bg.wasm ./dist/aleo_wasm_mainnet_bg.wasm && cp ./dist/assets/aleo_wasm_testnet_bg.wasm ./dist/aleo_wasm_testnet_bg.wasm",
+    "move:dist_wasms": "mv ./dist/assets/aleo_wasm_mainnet_bg.wasm ./dist/aleo_wasm_mainnet_bg.wasm && mv ./dist/assets/aleo_wasm_testnet_bg.wasm ./dist/aleo_wasm_testnet_bg.wasm",
     "clean": "rimraf dist/ && rimraf node_modules/aleo_wasm_mainnet/ && rimraf node_modules/aleo_wasm_testnet/",
     "wasm": "cd fox-aleo-sdk/wasm && yarn install && yarn build:all",
     "redux-devtools": "redux-devtools --hostname=localhost --port=8000 --open",
