@@ -72,6 +72,8 @@ export type TransactionHistoryItem = {
   chainSpecificReturn?: ChainSpecificReturn<CoinType>;
   memo?: string;
   inMessageId?: string;
+  functionName?: string;
+  programId?: string;
 };
 
 export type ExtraTxHistoryPaginationParam = TxHistoryPaginationParam & {
@@ -105,6 +107,8 @@ export type TxHistoryItem = {
   inMessageId?: string;
   opType?: string;
   prefix?: string;
+  functionName?: string;
+  programId?: string;
 };
 
 export type TxHistoryResp = {

@@ -68,10 +68,16 @@ import { AssetType, type TokenV2 } from "core/types/Token";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import type { InteractiveTokenParams } from "core/types/TokenTransaction";
 import { type BalanceResp, type TokenBalanceParams } from "core/types/Balance";
-import { type CoinTxHistoryParams } from "core/types/NativeCoinTransaction";
-import { type TxHistoryResp } from "core/types/TransactionHistory";
+import {
+  type CoinTxHistoryParams,
+  type NativeCoinTxHistoryParams,
+} from "core/types/NativeCoinTransaction";
+import {
+  type TransactionHistoryResp,
+  type TxHistoryResp,
+} from "core/types/TransactionHistory";
 import { TransactionStatus } from "core/types/TransactionStatus";
-import { type AleoInfoApi } from "core/coins/ALEO/service/api/aleoInfoApi";
+import { AleoInfoApi } from "core/coins/ALEO/service/api/aleoInfoApi";
 
 const CREDITS_MAPPING_NAME = "account";
 
@@ -101,6 +107,7 @@ export class AleoService extends CoinServiceBasic {
     this.config = config;
     this.chainId = config.chainId;
     this.aleoStorage = AleoStorage.getInstance();
+    this.aleoInfoApi = new AleoInfoApi(config.aleoInfoApi);
     this.rpcService = createAleoRpcService(
       config.rpcList.map((item) => ({
         url: item,
@@ -1878,11 +1885,13 @@ export class AleoService extends CoinServiceBasic {
     return -1;
   }
 
-  supportCoinTxHistory(): boolean {
+  supportNativeCoinTxHistory(): boolean {
     return true;
   }
 
-  async getCoinTxHistory(params: CoinTxHistoryParams): Promise<TxHistoryResp> {
+  async getNativeCoinTxHistory(
+    params: NativeCoinTxHistoryParams,
+  ): Promise<TransactionHistoryResp> {
     const { pageSize, pageNum } = params.pagination;
     console.log("aleo getCoinTxHistory", pageSize, pageNum);
     const hist = await this.aleoInfoApi.getTransferHistory(
@@ -1905,6 +1914,8 @@ export class AleoService extends CoinServiceBasic {
               ? TransactionStatus.SUCCESS
               : TransactionStatus.FAILED,
           height: item.height,
+          functionName: item.functionName,
+          programId: item.programId,
         };
       }),
       pagination: {

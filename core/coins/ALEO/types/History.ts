@@ -27,6 +27,8 @@ export interface AleoOnChainHistoryItem {
   addressType: AleoTxAddressType;
   amount?: string;
   status: AleoTxStatus;
+  from?: string;
+  to?: string;
 }
 
 export interface AleoLocalHistoryItem {

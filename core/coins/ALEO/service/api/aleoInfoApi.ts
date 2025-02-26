@@ -19,9 +19,18 @@ export type TransferHistoryItem = {
   functionName: string;
 };
 
-export type TransferHistoryRes = {
+type AleoInfoTransferHistoryResp = {
+  transfer_count: number;
+  transactions: TransferHistoryItem[];
+  address_trunc?: string;
+  address?: string;
+};
+
+type AleoInfoTransferHistoryRes = {
   transferCount: number;
   transactions: TransferHistoryItem[];
+  addressTrunc?: string;
+  address?: string;
 };
 
 export class AleoInfoApi {
@@ -35,18 +44,23 @@ export class AleoInfoApi {
     address: string,
     offset: number,
     limit: number,
-  ): Promise<TransferHistoryRes> {
+  ): Promise<AleoInfoTransferHistoryRes> {
     console.log("getTransferHistory", address, limit, offset);
-    const res = await this.reqInstance.get(`/transfer`, {
-      params: {
-        a: address,
-        limit,
-        offset,
-        requestType: "fetch",
+    const res: AleoInfoTransferHistoryResp = await this.reqInstance.get(
+      `/transfer`,
+      {
+        params: {
+          a: address,
+          limit,
+          offset,
+          requestType: "fetch",
+        },
       },
-    });
-    const ret: TransferHistoryRes =
-      camelcaseKeys(res?.data ?? {}, { deep: true }) ?? [];
+    );
+
+    const ret: AleoInfoTransferHistoryRes =
+      camelcaseKeys(res ?? {}, { deep: true }) ?? [];
+    console.log("      aleo ret", ret);
     return ret;
   }
 }

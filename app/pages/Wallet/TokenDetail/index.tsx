@@ -112,20 +112,20 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
   const amount = useMemo(() => BigInt(item.amount ?? 0n), [item.amount]);
 
   const addressLabel = useMemo(() => {
-    let fromTo = "";
+    let ret = "";
     let addr = "";
+    const isSend = item.addressType === AleoTxAddressType.SEND;
+    const fromTo = isSend ? "To" : "From"; // if send , show to address
+
     if (item.functionName === AleoTransferMethod.PUBLIC) {
       if (item.type === AleoHistoryType.LOCAL) {
         addr = item.inputs[0];
+      } else {
+        addr = isSend ? item.to ?? "" : item.from ?? "";
       }
-
-      if (item.addressType === AleoTxAddressType.SEND) {
-        fromTo = `To ${addr}`;
-      } else if (item.addressType === AleoTxAddressType.RECEIVE) {
-        fromTo = `From ${addr}`;
-      }
+      ret = `${fromTo} ${addr}`;
     }
-    return fromTo;
+    return ret;
   }, [item]);
 
   const status = useMemo(() => {
@@ -370,7 +370,7 @@ const TokenDetailScreen = () => {
     getMore: aleoGetMore,
     loading: aleoLoading,
     loadingLocalTxs,
-    loadingOnChainHistory,
+    loadingOnChainTxs,
   } = useAleoTxHistory({
     uniqueId,
     address,
@@ -731,7 +731,7 @@ const TokenDetailScreen = () => {
               <Spinner w={6} h={6} alignSelf={"center"} mt={10} />
             )}
             {renderTxHistory}
-            {loadingOnChainHistory && (
+            {loadingOnChainTxs && (
               <Flex mt={6} mb={4} alignSelf={"center"}>
                 <Spinner w={10} h={10} />
               </Flex>
