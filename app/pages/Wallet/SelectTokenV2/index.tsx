@@ -87,7 +87,7 @@ const SelectTokenScreenV2 = () => {
             )}`,
           );
         } else {
-          navigate(`/send_aleo`);
+          navigate(`/send_aleo?token=${serializeToken(token)}`);
         }
       }
     },

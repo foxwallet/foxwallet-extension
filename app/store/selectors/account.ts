@@ -91,6 +91,7 @@ export const allChainConfigsSelector = createAppSelector(
   (chainConfigs) => {
     const innerConfigs = INNER_CHAIN_CONFIG;
     const configs: ChainBaseConfig[] = [];
+    const configsInner: ChainBaseConfig[] = [];
     for (const chainConfig of chainConfigs) {
       configs.push(mergeLocalChainConfig(chainConfig.uniqueId, chainConfig));
     }
@@ -98,10 +99,11 @@ export const allChainConfigsSelector = createAppSelector(
       if (configs.some((item) => item.uniqueId === innerConfig.uniqueId)) {
         continue;
       }
-      configs.push({
+      configsInner.push({
         ...innerConfig,
       });
     }
+    configs.unshift(...configsInner);
     return configs;
   },
 );

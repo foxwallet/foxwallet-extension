@@ -6,8 +6,10 @@ import {
 import { BaseProvider } from "./BaseProvider";
 import { hexToUint8Array, uint8ArrayToHex } from "@/common/utils/buffer";
 import { DecryptPermission } from "@/database/types/dapp";
+import { CoinType } from "core/types";
 
 export class AleoProvider extends BaseProvider {
+  chain = CoinType.ALEO;
   #publicKey: string | null;
   #network: string | null;
   _readyState: string;
@@ -139,7 +141,7 @@ export class AleoProvider extends BaseProvider {
     return { signature };
   }
 
-  send<T>(method: ContentServerMethod, payload: any) {
+  send<T>(method: ContentServerMethod<CoinType.ALEO>, payload: any) {
     return super.send<T>(method, payload, {
       address: this.#publicKey,
       network: this.#network ? this.convertNetworkToChainId(this.#network) : "",

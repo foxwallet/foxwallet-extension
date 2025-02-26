@@ -200,7 +200,19 @@
     "token_approve": "Token Approve",
     "bridge": "Bridge",
     "receive": "Receive",
-    "copyContractAddressMsg": "This is token's contract address, not receiving address, do not transfer to this address."
+    "copyContractAddressMsg": "This is token's contract address, not receiving address, do not transfer to this address.",
+    "failed": "Failed"
+  },
+  "TransactionDetail": {
+    "hash": "Hash",
+    "from": "From",
+    "to": "To",
+    "value": "Value",
+    "time": "Time",
+    "nonce": "Nonce",
+    "confirmations": "Confirmations",
+    "network": "Network",
+    "gasFee": "Gas Fee"
   },
   "Tx": {
     "successToast": "Transaction Successful!",
@@ -229,6 +241,7 @@
     "symbol": "Currency symbol",
     "rpc": "RPC URL",
     "rpcHint": "Input RPC URL",
+    "chainId": "Chain ID",
     "manageWallet": "Manage Wallet",
     "defaultChainRemind": "Default chain can't be unselected",
     "selectNetwork": "Select Network",
@@ -293,6 +306,7 @@
     "inputs": "Inputs",
     "gasFee": "Gas Fee",
     "requestTx": "Request send transaction",
+    "addChain": "Request add {{CHAIN}}",
     "message": "Message",
     "requestSignMessage": "Request sign message",
     "noDecrypt": "No decrypt permission.",
@@ -328,7 +342,9 @@
     "noSearchResult": "No search result",
     "pleaseWait": "Please wait",
     "copy": "Copy",
-    "reminder": "Reminder"
+    "reminder": "Reminder",
+    "success": "Success",
+    "failed": "Failed"
   },
   "Error": {
     "invalidPassword": "Invalid password",

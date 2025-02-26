@@ -54,6 +54,8 @@ export const contentWalletServer = new ContentWalletServer(
 
 const contentServerHandler = new ContentServerHandler(contentWalletServer);
 
+export { contentServerHandler };
+
 const popupConnection = new Connection(
   popupServerHandler,
   PortName.POPUP_TO_BACKGROUND,

@@ -191,6 +191,7 @@
     "inputs": "输入",
     "gasFee": "手续费",
     "requestTx": "请求发送交易",
+    "addChain": "添加{{CHAIN}}",
     "message": "信息",
     "requestSignMessage": "请求签名消息",
     "noDecrypt": "没有解密权限。",

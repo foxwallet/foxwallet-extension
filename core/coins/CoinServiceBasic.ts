@@ -6,10 +6,16 @@ import {
 import { type CoinType } from "core/types";
 import {
   type AuthParams,
+  type CoinTxDetailParams,
+  type CoinTxDetailRes,
+  type CoinTxHistoryParams,
   type EstimateGasParam,
   type NativeCoinSendTxParams,
   type NativeCoinSendTxRes,
+  type NativeCoinTxDetailParams,
+  type NativeCoinTxDetailRes,
   type NativeCoinTxHistoryParams,
+  type TransactionStatusInfo,
 } from "core/types/NativeCoinTransaction";
 import {
   type FeeDataEIP1559,
@@ -18,7 +24,10 @@ import {
   type GasFeeType,
   type GasGradeData,
 } from "core/types/GasFee";
-import type { TransactionHistoryResp } from "core/types/TransactionHistory";
+import type {
+  TransactionHistoryResp,
+  TxHistoryResp,
+} from "core/types/TransactionHistory";
 import { type TokenMetaV2, type TokenV2 } from "core/types/Token";
 import {
   type TokenTxHistoryParams,
@@ -27,6 +36,8 @@ import {
   type TokenSendTxParams,
   type TokenSendTxRes,
   type InteractiveTokenParams,
+  type TokenTxDetailReq,
+  type TokenTxDetailRes,
 } from "core/types/TokenTransaction";
 import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
 import { ExplorerLanguages } from "core/types/ExplorerLanguages";
@@ -285,5 +296,76 @@ export abstract class CoinServiceBasic {
     console.error(
       "resetChainData not implemented for " + this.baseConfig.chainName,
     );
+  }
+
+  supportGetTxStatus(): boolean {
+    return false;
+  }
+
+  supportNativeCoinTxDetail(): boolean {
+    return false;
+  }
+
+  async getNativeCoinTxDetail(
+    _params: NativeCoinTxDetailParams,
+  ): Promise<NativeCoinTxDetailRes<CoinType> | undefined> {
+    console.error(
+      "getNativeCoinTxDetail not implemented for " + this.baseConfig.chainName,
+    );
+    return undefined;
+  }
+
+  supportTokenTxDetail(): boolean {
+    return false;
+  }
+
+  async getTokenTxDetail(
+    _params: TokenTxDetailReq,
+  ): Promise<TokenTxDetailRes<CoinType> | undefined> {
+    console.error(
+      "getTokenTxDetail not implemented for " + this.baseConfig.chainName,
+    );
+    return undefined;
+  }
+
+  supportCoinTxHistory(): boolean {
+    return false;
+  }
+
+  async getCoinTxHistory(_params: CoinTxHistoryParams): Promise<TxHistoryResp> {
+    console.error(
+      "getCoinTxHistory not implemented for " + this.baseConfig.chainName,
+    );
+    return {
+      txs: [],
+      pagination: {
+        pageSize: 0,
+        pageNum: 0,
+        totalCount: 0,
+        endReach: true,
+      },
+    };
+  }
+
+  supportCoinTxDetail(): boolean {
+    return false;
+  }
+
+  async getCoinTxDetail(
+    _params: CoinTxDetailParams,
+  ): Promise<CoinTxDetailRes<CoinType> | undefined> {
+    console.error(
+      "getCoinTxDetail not implemented for " + this.baseConfig.chainName,
+    );
+    return undefined;
+  }
+
+  async getTxStatus(
+    _params: CoinTxDetailParams,
+  ): Promise<TransactionStatusInfo | undefined> {
+    console.error(
+      "getTxStatus not implemented for " + this.baseConfig.chainName,
+    );
+    return undefined;
   }
 }

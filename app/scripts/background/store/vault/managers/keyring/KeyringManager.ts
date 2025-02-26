@@ -530,7 +530,10 @@ export class KeyringManager {
       for (const wallet of hdWallets) {
         for (let groupAccount of wallet.groupAccounts) {
           for (let account of groupAccount.accounts) {
-            if (account.address === address && account.coinType === coinType) {
+            if (
+              account.address.toLowerCase() === address.toLowerCase() &&
+              account.coinType === coinType
+            ) {
               const encryptedPrivateKey = account.privateKey;
               const privateKey = decryptStr(token, encryptedPrivateKey);
               return privateKey;
@@ -543,7 +546,10 @@ export class KeyringManager {
       for (const wallet of simpleWallets) {
         for (let groupAccount of wallet.groupAccounts) {
           for (let account of groupAccount.accounts) {
-            if (account.address === address && account.coinType === coinType) {
+            if (
+              account.address.toLowerCase() === address.toLowerCase() &&
+              account.coinType === coinType
+            ) {
               const encryptedPrivateKey = account.privateKey;
               const privateKey = decryptStr(token, encryptedPrivateKey);
               return privateKey;

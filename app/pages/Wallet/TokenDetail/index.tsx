@@ -1,10 +1,9 @@
 import {
-  IconAleo,
-  IconChevronRight,
   IconCopyBlack,
   IconEmptyTxPlaceholder,
   IconReceiveBlack,
   IconSendBlack,
+  IconTokenPlaceHolder,
 } from "@/components/Custom/Icon";
 import { TokenNum } from "@/components/Wallet/TokenNum";
 import { useCoinService } from "@/hooks/useCoinService";
@@ -22,11 +21,12 @@ import {
 } from "@chakra-ui/react";
 import {
   type AleoHistoryItem,
+  AleoHistoryType,
   AleoTxAddressType,
 } from "core/coins/ALEO/types/History";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import type React from "react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
@@ -45,7 +45,7 @@ import {
   NATIVE_TOKEN_PROGRAM_ID,
   NATIVE_TOKEN_TOKEN_ID,
 } from "core/coins/ALEO/constants";
-import { serializeToken } from "@/common/utils/string";
+import { serializeData, serializeToken } from "@/common/utils/string";
 import { useBalance } from "@/hooks/useBalance";
 import { AssetType, type TokenV2 } from "core/types/Token";
 import { useSafeParams } from "@/hooks/useSafeParams";
@@ -56,20 +56,26 @@ import { type TransactionHistoryItem } from "core/types/TransactionHistory";
 import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 import { usePopupSelector } from "@/hooks/useStore";
 import { showCopyContractAddressDialog } from "@/components/Wallet/CopyContractAddressDialog";
+import { AleoTxStatus } from "core/coins/ALEO/types/Transaction";
+import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
+import { TransactionStatus } from "core/types/TransactionStatus";
 
 interface AleoTokenTxHistoryItemProps {
   item: AleoHistoryItem;
   uniqueId: InnerChainUniqueId;
   token: TokenV2;
+  address: string;
 }
 
 const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
   uniqueId,
   item,
   token,
+  address,
 }) => {
   const { t } = useTranslation();
   const { coinService } = useCoinService(uniqueId);
+  const navigate = useNavigate();
 
   const timeOfItem = dayjs(item.timestamp);
   const isCurrentYear = dayjs().year() === timeOfItem.year();
@@ -77,7 +83,7 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
     isCurrentYear ? "MM-DD LT" : "YYYY-MM-DD LT",
   );
 
-  const onClick = useCallback(() => {
+  const onClick2 = useCallback(() => {
     if (!item.txId) {
       return;
     }
@@ -85,61 +91,63 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
     void browser.tabs.create({ url });
   }, [coinService, item.txId]);
 
-  const txLabel = useMemo(
-    () => `${item.functionName.split("_").join(" ")}`,
-    [item.functionName],
-  );
-  const amount = useMemo(() => BigInt(item.amount || 0n), [item.amount]);
+  const onClick = useCallback(() => {
+    navigate(
+      `/transaction_detail/${uniqueId}/${address}?token=${serializeToken(
+        token,
+      )}&txItem=${serializeData(item)}`,
+    );
+  }, [address, item, navigate, token, uniqueId]);
 
-  const { borderColor } = useThemeStyle();
+  const txTitle = useMemo(() => {
+    return t(`TokenDetail:${item.addressType}`);
+  }, [item.addressType, t]);
+  const txPublicInfo = useMemo(() => {
+    const prefix = "transfer_";
+    const functionName = item.functionName.startsWith(prefix)
+      ? item.functionName.slice(prefix.length)
+      : item.functionName;
+    return `(${functionName.split("_").join(" ")})`;
+  }, [item.functionName]);
+  const amount = useMemo(() => BigInt(item.amount ?? 0n), [item.amount]);
+
+  const addressLabel = useMemo(() => {
+    let ret = "";
+    let addr = "";
+    const isSend = item.addressType === AleoTxAddressType.SEND;
+    const fromTo = isSend ? "To" : "From"; // if send , show to address
+
+    if (item.functionName === AleoTransferMethod.PUBLIC) {
+      if (item.type === AleoHistoryType.LOCAL) {
+        addr = item.inputs[0];
+      } else {
+        addr = isSend ? item.to ?? "" : item.from ?? "";
+      }
+      ret = `${fromTo} ${addr}`;
+    }
+    return ret;
+  }, [item]);
+
+  const status = useMemo(() => {
+    return item.status === AleoTxStatus.FINALIZD ||
+      item.status === AleoTxStatus.COMPLETED
+      ? undefined
+      : item.status.toLowerCase();
+  }, [item.status]);
 
   return (
-    <Flex
-      align={"center"}
-      justify={"space-between"}
-      borderColor={borderColor}
-      borderBottomWidth={"1px"}
-      py={2.5}
-      mt={2.5}
-      as={"button"}
+    <TxHistoryItem
+      isSend={item.addressType === AleoTxAddressType.SEND}
+      timeStr={timeStr}
+      txTitle={txTitle}
+      txTitle2={txPublicInfo}
+      addressLabel={addressLabel}
+      status={status}
+      amount={amount}
+      decimals={token.decimals}
+      symbol={token.symbol}
       onClick={onClick}
-    >
-      <Flex align={"center"}>
-        <Box bg={"#E6E8EC"} p={1} borderRadius={"50px"}>
-          {item.addressType === AleoTxAddressType.RECEIVE ? (
-            <IconReceiveBlack />
-          ) : (
-            <IconSendBlack />
-          )}
-        </Box>
-        <Flex direction={"column"} ml={2.5} alignItems={"flex-start"}>
-          <Flex align={"center"}>
-            <Flex fontWeight={"bold"} fontSize={12}>
-              <Text maxWidth={150} textOverflow={"ellipsis"} textAlign={"left"}>
-                {txLabel}
-              </Text>
-            </Flex>
-            {!!item.amount && (
-              <Box fontWeight={"bold"} fontSize={12} ml={1}>
-                <TokenNum
-                  amount={amount}
-                  decimals={token.decimals}
-                  symbol={token.symbol}
-                />
-              </Box>
-            )}
-          </Flex>
-          <Flex color={"gray.500"} fontSize={10} align={"center"}>
-            <Text mr={2}>{item.status}</Text>
-            <Text>{timeStr}</Text>
-          </Flex>
-        </Flex>
-      </Flex>
-      <Flex alignItems={"center"}>
-        <Text fontSize={10}>{t("TokenDetail:jump_explorer")}</Text>
-        <IconChevronRight />
-      </Flex>
-    </Flex>
+    />
   );
 };
 
@@ -150,14 +158,11 @@ interface TokenTxHistoryItemProps {
   address: string;
 }
 
-const TokenTxHistoryItem: React.FC<TokenTxHistoryItemProps> = ({
-  uniqueId,
-  item,
-  token,
-  address,
-}) => {
+const TokenTxHistoryItem = (props: TokenTxHistoryItemProps) => {
+  const { uniqueId, item, token, address } = props;
   const { t } = useTranslation();
   const { coinService } = useCoinService(uniqueId);
+  const navigate = useNavigate();
 
   const timeOfItem = dayjs(item.timestamp);
   const isCurrentYear = dayjs().year() === timeOfItem.year();
@@ -166,14 +171,14 @@ const TokenTxHistoryItem: React.FC<TokenTxHistoryItemProps> = ({
   );
 
   const onClick = useCallback(() => {
-    if (!item.id) {
-      return;
-    }
-    const url = coinService.getTxDetailUrl(item.id);
-    void browser.tabs.create({ url });
-  }, [coinService, item.id]);
+    navigate(
+      `/transaction_detail/${uniqueId}/${address}?token=${serializeToken(
+        token,
+      )}&txItem=${serializeData(item)}`,
+    );
+  }, [address, item, navigate, token, uniqueId]);
 
-  const txLabel = useMemo(() => {
+  const txTitle = useMemo(() => {
     if (item.label) {
       return t(`TokenDetail:${item.label}`);
     } else {
@@ -185,8 +190,63 @@ const TokenTxHistoryItem: React.FC<TokenTxHistoryItemProps> = ({
     }
     return "";
   }, [address, item, t]);
-  const amount = useMemo(() => item.value || 0n, [item]);
+  const amount = useMemo(() => item.value ?? 0n, [item]);
 
+  const isSend = useMemo(() => {
+    return item.from === address;
+  }, [address, item]);
+
+  const addressLabel = useMemo(() => {
+    return isSend ? `To ${item.to}` : `From ${item.from}`;
+  }, [isSend, item]);
+
+  const status = useMemo(() => {
+    return item.status === TransactionStatus.SUCCESS
+      ? undefined
+      : item.status.toLowerCase();
+  }, [item.status]);
+
+  return (
+    <TxHistoryItem
+      isSend={isSend}
+      timeStr={timeStr}
+      txTitle={txTitle}
+      addressLabel={addressLabel}
+      status={status}
+      amount={amount}
+      decimals={token.decimals}
+      symbol={token.symbol}
+      onClick={onClick}
+    />
+  );
+};
+
+type TxHistoryItemProps = {
+  isSend: boolean;
+  timeStr?: string;
+  onClick?: () => void;
+  txTitle?: string;
+  txTitle2?: string;
+  addressLabel?: string;
+  status?: string;
+  amount: bigint;
+  decimals: number;
+  symbol: string;
+};
+
+const TxHistoryItem = (props: TxHistoryItemProps) => {
+  const {
+    isSend,
+    timeStr,
+    txTitle,
+    txTitle2,
+    addressLabel,
+    amount,
+    status,
+    onClick,
+    decimals,
+    symbol,
+  } = props;
   const { borderColor } = useThemeStyle();
 
   return (
@@ -202,34 +262,75 @@ const TokenTxHistoryItem: React.FC<TokenTxHistoryItemProps> = ({
     >
       <Flex align={"center"}>
         <Box bg={"#E6E8EC"} p={1} borderRadius={"50px"}>
-          {item.to === address ? <IconReceiveBlack /> : <IconSendBlack />}
+          {isSend ? <IconSendBlack /> : <IconReceiveBlack />}
         </Box>
         <Flex direction={"column"} ml={2.5} alignItems={"flex-start"}>
           <Flex align={"center"}>
-            <Flex fontWeight={"bold"} fontSize={12}>
-              <Text maxWidth={150} textOverflow={"ellipsis"} textAlign={"left"}>
-                {txLabel}
-              </Text>
-            </Flex>
-            {!!item.value && (
-              <Box fontWeight={"bold"} fontSize={12} ml={1}>
-                <TokenNum
-                  amount={amount}
-                  decimals={token.decimals}
-                  symbol={token.symbol}
-                />
-              </Box>
+            {txTitle && (
+              <Flex fontWeight={"bold"} fontSize={12}>
+                <Text
+                  maxWidth={150}
+                  textOverflow={"ellipsis"}
+                  textAlign={"left"}
+                >
+                  {txTitle}
+                </Text>
+              </Flex>
+            )}
+            {txTitle2 && (
+              <Flex
+                h={"14px"}
+                pl={1}
+                alignItems={"center"}
+                justifyContent={"center"}
+              >
+                <Text fontSize={"11px"}>{txTitle2}</Text>
+              </Flex>
+            )}
+            {status && (
+              <Flex
+                h={"14px"}
+                bg={"#EF466F"}
+                px={1.5}
+                ml={1}
+                borderRadius={"7px"}
+                alignItems={"center"}
+                justifyContent={"center"}
+              >
+                <Text fontSize={"10px"} textColor={"white"}>
+                  {status}
+                </Text>
+              </Flex>
             )}
           </Flex>
-          <Flex color={"gray.500"} fontSize={10} align={"center"}>
-            <Text mr={2}>{item.status}</Text>
-            <Text>{timeStr}</Text>
-          </Flex>
+          {addressLabel && (
+            <Flex color={"gray.500"} fontSize={10} align={"center"}>
+              <Flex flexDirection={"row"}>
+                <MiddleEllipsisText text={addressLabel} width={180} />
+              </Flex>
+            </Flex>
+          )}
         </Flex>
       </Flex>
-      <Flex alignItems={"center"}>
-        <Text fontSize={10}>{t("TokenDetail:jump_explorer")}</Text>
-        <IconChevronRight />
+      <Flex
+        direction={"column"}
+        justifyContent={"center"}
+        alignItems={"flex-end"}
+      >
+        {amount >= 0n && (
+          <Box fontWeight={"bold"} fontSize={12} ml={1}>
+            <TokenNum
+              amount={amount}
+              decimals={decimals}
+              symbol={symbol}
+              textColor={isSend ? "#00D856" : "#EF466F"}
+              extraPreText={amount === 0n ? "" : isSend ? "- " : "+ "}
+            />
+          </Box>
+        )}
+        <Text color={"gray.500"} fontSize={10}>
+          {timeStr}
+        </Text>
       </Flex>
     </Flex>
   );
@@ -269,7 +370,7 @@ const TokenDetailScreen = () => {
     getMore: aleoGetMore,
     loading: aleoLoading,
     loadingLocalTxs,
-    loadingOnChainHistory,
+    loadingOnChainTxs,
   } = useAleoTxHistory({
     uniqueId,
     address,
@@ -306,8 +407,7 @@ const TokenDetailScreen = () => {
     evmLoading,
     isAleo,
   ]);
-  console.log("      history");
-  console.log({ ...history });
+  // console.log("      history", history);
 
   useEffect(() => {
     if (reachBottom) {
@@ -391,41 +491,36 @@ const TokenDetailScreen = () => {
         );
   }, [address, isAleo, navigate, tokenInfo, uniqueId]);
 
-  const renderAleoTxHistoryItem = useCallback(
-    (item: AleoHistoryItem, index: number) => {
-      return (
-        <AleoTxHistoryItem
-          key={`${item.txId}${index}`}
-          item={item}
-          uniqueId={uniqueId}
-          token={tokenInfo}
-        />
-      );
-    },
-    [uniqueId, tokenInfo],
-  );
-
-  const renderTxHistoryItem = useCallback(
-    (item: TransactionHistoryItem, index: number) => {
-      return (
-        <TokenTxHistoryItem
-          key={`${item.id}${index}`}
-          item={item}
-          uniqueId={uniqueId}
-          token={tokenInfo}
-          address={address}
-        />
-      );
-    },
-    [address, tokenInfo, uniqueId],
-  );
-
   const renderTxHistory = useMemo(() => {
     if (isAleo) {
-      (history as AleoHistoryItem[])?.map(renderAleoTxHistoryItem);
+      return (history as AleoHistoryItem[])?.map(
+        (item: AleoHistoryItem, index: number) => {
+          return (
+            <AleoTxHistoryItem
+              key={`${item.txId}${index}`}
+              item={item}
+              uniqueId={uniqueId}
+              token={tokenInfo}
+              address={address}
+            />
+          );
+        },
+      );
     }
-    return (history as TransactionHistoryItem[])?.map(renderTxHistoryItem);
-  }, [history, isAleo, renderTxHistoryItem, renderAleoTxHistoryItem]);
+    return (history as TransactionHistoryItem[])?.map(
+      (item: TransactionHistoryItem, index: number) => {
+        return (
+          <TokenTxHistoryItem
+            key={`${item.id}${index}`}
+            item={item}
+            uniqueId={uniqueId}
+            token={tokenInfo}
+            address={address}
+          />
+        );
+      },
+    );
+  }, [isAleo, history, uniqueId, tokenInfo, address]);
 
   const onCopyAddress = useCallback(() => {
     onCopy();
@@ -452,8 +547,12 @@ const TokenDetailScreen = () => {
     <PageWithHeader title={t("TokenDetail:title")}>
       <Flex direction={"column"} px={5} py={2.5}>
         <Flex align={"center"}>
-          <Image src={tokenInfo.icon} mr={2.5} w={6} h={6} borderRadius={12} />
-          <Flex direction={"column"}>
+          {tokenInfo.icon ? (
+            <Image src={tokenInfo.icon} w={6} h={6} borderRadius={12} />
+          ) : (
+            <IconTokenPlaceHolder w={6} h={6} />
+          )}
+          <Flex direction={"column"} ml={2.5}>
             <Flex>
               <Text fontSize={13} fontWeight={"bold"}>
                 {tokenInfo.symbol}
@@ -535,6 +634,7 @@ const TokenDetailScreen = () => {
                         amount={balance?.publicBalance}
                         decimals={tokenInfo.decimals}
                         symbol={tokenInfo.symbol}
+                        precision={6}
                       />
                     ) : (
                       <Text>*****</Text>
@@ -550,6 +650,7 @@ const TokenDetailScreen = () => {
                           amount={balance?.privateBalance}
                           decimals={tokenInfo.decimals}
                           symbol={tokenInfo.symbol}
+                          precision={6}
                         />
                       ) : (
                         <Text>*****</Text>
@@ -566,21 +667,22 @@ const TokenDetailScreen = () => {
                           amount={balance?.total}
                           decimals={tokenInfo.decimals}
                           symbol={tokenInfo.symbol}
+                          precision={6}
                         />
                       ) : (
                         <Text>*****</Text>
                       )}
-                      {!!recordStr && !!tokenRecords[0] && (
-                        <Flex>
-                          (<Text>{recordStr}</Text>&nbsp;
-                          <TokenNum
-                            amount={recordAmount}
-                            decimals={tokenInfo.decimals}
-                            symbol={tokenInfo.symbol}
-                          />
-                          )
-                        </Flex>
-                      )}
+                      {/* {!!recordStr && !!tokenRecords[0] && ( */}
+                      {/*  <Flex> */}
+                      {/*    (<Text>{recordStr}</Text>&nbsp; */}
+                      {/*    <TokenNum */}
+                      {/*      amount={recordAmount} */}
+                      {/*      decimals={tokenInfo.decimals} */}
+                      {/*      symbol={tokenInfo.symbol} */}
+                      {/*    /> */}
+                      {/*    ) */}
+                      {/*  </Flex> */}
+                      {/* )} */}
                     </Flex>
                   </Flex>
                 </Flex>
@@ -621,7 +723,7 @@ const TokenDetailScreen = () => {
           <Flex
             ref={listRef}
             direction={"column"}
-            maxH={310}
+            maxH={isAleo ? 270 : 330}
             overflowY="auto"
             sx={HIDE_SCROLL_BAR_CSS}
           >
@@ -629,7 +731,7 @@ const TokenDetailScreen = () => {
               <Spinner w={6} h={6} alignSelf={"center"} mt={10} />
             )}
             {renderTxHistory}
-            {loadingOnChainHistory && (
+            {loadingOnChainTxs && (
               <Flex mt={6} mb={4} alignSelf={"center"}>
                 <Spinner w={10} h={10} />
               </Flex>

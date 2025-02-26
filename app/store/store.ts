@@ -15,7 +15,7 @@ import { appStorageInstance } from "@/common/utils/indexeddb";
 import { logger } from "../common/utils/logger";
 import { migrations, version } from "./migrations";
 
-type FullModel = ExtraModelsFromLoading<RootModel>;
+export type FullModel = ExtraModelsFromLoading<RootModel>;
 
 const persistConfig: PersistConfig<RootState> = {
   key: "root",

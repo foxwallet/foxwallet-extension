@@ -1,8 +1,25 @@
 export enum InnerChainUniqueId {
   ALEO_MAINNET = "aleo_mainnet",
   ETHEREUM = "ethereum",
+  ARBITRUM = "arbitrum",
+  ARBITRUM_NOVA = "arbitrum-nova",
+  AREON = "areon",
+  AVAX = "avax",
+  BAHAMUT = "bahamut",
+  BASE = "base",
+  BITGERT = "bitgert",
+  BITLAYER = "bitlayer",
+  BOBA = "boba",
+  BLAST = "blast",
+  CELO = "celo",
   BNB = "bnb",
   FILECOIN_EVM = "filecoin-evm",
+  POLYGON = "polygon",
+  POLYGON_ZKEVM = "polygon-zkevm",
+  NEAR = "near",
+  OKX = "okx",
+  OPTIMISM = "optimism",
+
   SEPOLIA = "sepolia",
   // TODO other evm
 
@@ -14,7 +31,9 @@ export enum InnerChainUniqueId {
 
 export const InnerChainUniqueIdValues = Object.values(InnerChainUniqueId);
 
-export type ChainUniqueId = InnerChainUniqueId;
+export type EthCustomRPCUniqueId = `${InnerChainUniqueId.ETHEREUM}-${number}`;
+
+export type ChainUniqueId = InnerChainUniqueId | EthCustomRPCUniqueId;
 
 export enum ChainAssembleMode {
   ALL = "all",

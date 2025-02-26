@@ -68,6 +68,19 @@ import { AssetType, type TokenV2 } from "core/types/Token";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import type { InteractiveTokenParams } from "core/types/TokenTransaction";
 import { type BalanceResp, type TokenBalanceParams } from "core/types/Balance";
+import {
+  type CoinTxDetailParams,
+  type CoinTxHistoryParams,
+  type NativeCoinTxHistoryParams,
+  type TransactionStatusInfo,
+} from "core/types/NativeCoinTransaction";
+import {
+  type TransactionHistoryResp,
+  type TxHistoryResp,
+} from "core/types/TransactionHistory";
+import { TransactionStatus } from "core/types/TransactionStatus";
+import { AleoInfoApi } from "core/coins/ALEO/service/api/aleoInfoApi";
+import { parseAleoFeeFuture } from "core/coins/ALEO/utils/utils";
 
 const CREDITS_MAPPING_NAME = "account";
 
@@ -83,6 +96,7 @@ const GET_SPENT_TAGS_SIZE = 500;
 export class AleoService extends CoinServiceBasic {
   config: AleoConfig;
   chainId: string;
+  aleoInfoApi: AleoInfoApi;
   private aleoStorage: IAleoStorage;
   private rpcService: AleoRpcService;
   private apiService: AleoApiService;
@@ -96,6 +110,7 @@ export class AleoService extends CoinServiceBasic {
     this.config = config;
     this.chainId = config.chainId;
     this.aleoStorage = AleoStorage.getInstance();
+    this.aleoInfoApi = new AleoInfoApi(config.aleoInfoApi);
     this.rpcService = createAleoRpcService(
       config.rpcList.map((item) => ({
         url: item,
@@ -125,14 +140,15 @@ export class AleoService extends CoinServiceBasic {
   }
 
   validateAddress(address: string): boolean {
-    try {
-      const addressObj = Address.from_string(address);
-      console.log("===> addressObj: ", addressObj, !!addressObj);
-      return !!addressObj;
-    } catch (err) {
-      logger.log("===> isValidAddress failed: ", err, address);
-      return false;
-    }
+    // try {
+    //   const addressObj = Address.from_string(address);
+    //   console.log("===> addressObj: ", addressObj, !!addressObj);
+    //   return !!addressObj;
+    // } catch (err) {
+    //   logger.log("===> isValidAddress failed: ", err, address);
+    //   return false;
+    // }
+    return true;
   }
 
   private async getSpentTagsInRange(tags: string[]) {
@@ -1862,5 +1878,218 @@ export class AleoService extends CoinServiceBasic {
 
   gasUnit(): string {
     return "ALEO";
+  }
+
+  async getLatestBlockNumber(): Promise<number> {
+    const height = await this.rpcService.getLatestHeight();
+    if (height) {
+      return height;
+    }
+    return -1;
+  }
+
+  supportNativeCoinTxHistory(): boolean {
+    return true;
+  }
+
+  async getNativeCoinTxHistory(
+    params: NativeCoinTxHistoryParams,
+  ): Promise<TransactionHistoryResp> {
+    const { pageSize, pageNum } = params.pagination;
+    console.log("aleo getCoinTxHistory", pageSize, pageNum);
+    const hist = await this.aleoInfoApi.getTransferHistory(
+      params.address,
+      pageSize * pageNum,
+      pageSize,
+    );
+    return {
+      txs: hist.transactions.map((item) => {
+        return {
+          id: item.transactionId,
+          from: item.transferFrom?.address ?? "",
+          to: item.transferTo?.address ?? "",
+          value: BigInt(item.credits),
+          timestamp: item.timestamp * 1000,
+          status:
+            item.state === "Pending"
+              ? TransactionStatus.PENDING
+              : item.state === "Accepted"
+              ? TransactionStatus.SUCCESS
+              : TransactionStatus.FAILED,
+          height: item.height,
+          functionName: item.functionName,
+          programId: item.programId,
+        };
+      }),
+      pagination: {
+        pageSize,
+        pageNum,
+        endReach: hist.transactions.length < pageSize,
+        totalCount: hist.transferCount,
+      },
+    };
+  }
+
+  // 现在解析 aleo 的交易有比较大的难度
+  // 首先需要不同交易类型，交易结构不同
+  // 其次一些字段如 ciphertext1qgqt3mdf8k73wkhc60duh04qypmsk9qn6ugftdsl0se22gcntl405pg4w2w23w7208phvujuxvxslgac44dluu74njq25xl63ujm36sqpv52qya5 解密遇到了困难，没有找到解析方法
+  // 另外只能通过自己的 viewkey 解开自己的 record，无法解析其他人的 record
+  // 因此目前 aleo 采用本地的交易历史，仅通过接口拿取交易的 fee 信息
+  // 后续支持交易历史，但是不能隐私交易不能显示完全的交易信息
+  supportGetTxStatus(): boolean {
+    return true;
+  }
+
+  async getTxStatus(
+    params: CoinTxDetailParams,
+  ): Promise<TransactionStatusInfo | undefined> {
+    try {
+      const {
+        txId,
+        filter: { address, addressType },
+      } = params;
+
+      const [tx, latestHeight] = await Promise.all([
+        this.walletService.getTransaction(txId),
+        this.rpcService.getLatestHeight(),
+      ]);
+      if (!tx) {
+        return undefined;
+      }
+      if (tx.status === -1) {
+        return {
+          fee: 0n,
+          height: -1,
+          timestamp: -1,
+          confirmations: 0,
+          call: "",
+          status: TransactionStatus.PENDING,
+          chainSpecific: {
+            aleoStatus: AleoTxStatus.COMPLETED,
+          },
+        };
+      }
+      let fee = 0n;
+      if (tx.origin_data.fee?.transition.function === "fee_public") {
+        const baseFeeStr =
+          tx.origin_data.fee?.transition.inputs?.[0]?.value || "0u64";
+        const priorityFeeStr =
+          tx.origin_data.fee?.transition.inputs?.[1]?.value || "0u64";
+        fee =
+          BigInt(baseFeeStr.slice(0, -3)) + BigInt(priorityFeeStr.slice(0, -3));
+      } else if (tx.origin_data.fee?.transition.function === "fee_private") {
+        const baseFeeStr =
+          tx.origin_data.fee?.transition.inputs?.[1]?.value || "0u64";
+        const priorityFeeStr =
+          tx.origin_data.fee?.transition.inputs?.[2]?.value || "0u64";
+        fee =
+          BigInt(baseFeeStr.slice(0, -3)) + BigInt(priorityFeeStr.slice(0, -3));
+      }
+      const { height, timestamp } = tx;
+      let confirmations = 0;
+      if (height && latestHeight) {
+        confirmations = latestHeight - height + 1;
+      }
+      let program;
+      let fn;
+      const executionTransitions = tx.origin_data.execution?.transitions;
+      let executionTransition;
+      const feeTransition = tx.origin_data.fee?.transition;
+      if (tx.status === "accepted" && executionTransitions) {
+        const length = executionTransitions.length;
+        executionTransition = executionTransitions[length - 1];
+        program = executionTransition?.program;
+        fn = executionTransition?.function;
+      }
+      let from;
+      let to;
+      let value;
+      if (addressType === "sender") {
+        from = address ?? "";
+        to = "";
+      } else if (addressType === "receiver") {
+        from = "";
+        to = address ?? "";
+      }
+      if (program === NATIVE_TOKEN_PROGRAM_ID) {
+        switch (fn) {
+          case "transfer_public": {
+            if (executionTransition && feeTransition) {
+              from =
+                feeTransition.function === "fee_public"
+                  ? parseAleoFeeFuture(feeTransition.outputs?.[0]?.value)
+                  : "";
+
+              to = executionTransition.inputs?.[0]?.value;
+              value = BigInt(
+                executionTransition.inputs?.[1].value?.slice(0, -3) ?? 0,
+              );
+            }
+            break;
+          }
+          case "transfer_public_to_private": {
+            if (feeTransition) {
+              from =
+                feeTransition.function === "fee_public"
+                  ? parseAleoFeeFuture(feeTransition.outputs?.[0]?.value)
+                  : "";
+            }
+            value = BigInt(
+              executionTransition?.inputs?.[1]?.value?.slice(0, -3) ?? 0,
+            );
+            break;
+          }
+          case "transfer_private_to_public": {
+            if (feeTransition) {
+              from =
+                feeTransition.function === "fee_public"
+                  ? parseAleoFeeFuture(feeTransition.outputs?.[0]?.value)
+                  : "";
+            }
+            if (executionTransition) {
+              to = executionTransition.inputs?.[1]?.value;
+              value = BigInt(
+                executionTransition.inputs?.[2].value?.slice(0, -3) ?? 0,
+              );
+            }
+            break;
+          }
+        }
+      }
+      let call;
+      if (program && fn) {
+        call = `${program}-${fn}}`;
+      }
+      let status = TransactionStatus.PENDING;
+      let aleoStatus = AleoTxStatus.QUEUED;
+      if (tx.status === "accepted") {
+        status = TransactionStatus.SUCCESS;
+        aleoStatus =
+          tx.height > 0 ? AleoTxStatus.FINALIZD : AleoTxStatus.COMPLETED;
+      } else if (tx.status === "rejected") {
+        status = TransactionStatus.FAILED;
+        aleoStatus = AleoTxStatus.FAILED;
+      } else if (tx.status === "") {
+        status = TransactionStatus.PENDING;
+        aleoStatus = AleoTxStatus.COMPLETED;
+      }
+      return {
+        fee,
+        height: height === 0 ? -1 : height,
+        timestamp: timestamp * 1000,
+        confirmations,
+        call,
+        status,
+        from,
+        to,
+        value,
+        chainSpecific: {
+          aleoStatus,
+        },
+      };
+    } catch (err) {
+      console.error("getTxStatus error: ", err);
+      return undefined;
+    }
   }
 }

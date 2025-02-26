@@ -39,6 +39,7 @@
     "@metamask/browser-passworder": "^4.1.0",
     "@provablehq/wasm-mainnet": "file:./@provablehq/mainnet/wasm",
     "@provablehq/wasm-testnet": "file:./@provablehq/testnet/wasm",
+    "@metamask/eth-sig-util": "^8.1.2",
     "@rematch/core": "^2.2.0",
     "@rematch/loading": "^2.1.2",
     "@rematch/persist": "^2.1.2",
@@ -69,6 +70,7 @@
     "fuse.js": "6.5.3",
     "gas-price-oracle": "^0.5.2",
     "i18next": "^23.4.9",
+    "json-with-bigint": "^2.4.1",
     "localforage": "^1.10.0",
     "lodash": "^4.17.21",
     "mitt": "^3.0.1",
@@ -94,6 +96,7 @@
     "swr": "^2.2.2",
     "typescript-memoize": "^1.1.1",
     "use-debounce": "^9.0.4",
+    "uuid": "^11.0.3",
     "valid-url": "^1.0.9",
     "webextension-polyfill": "^0.10.0"
   },

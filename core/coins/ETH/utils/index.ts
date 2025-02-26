@@ -1,8 +1,10 @@
 import EthConstants, { FUNC_SIG } from "../constants";
-import { utils as ethUtils } from "ethers";
+import { BigNumber, utils as ethUtils } from "ethers";
 import { TxLabel } from "core/types/TransactionHistory";
 import { type ParamType } from "@ethersproject/abi";
 import commonABI from "core/assets/abi/commonABI.json";
+import { type Log } from "@ethersproject/abstract-provider";
+import { type TokenTransferLogInfo } from "core/types/NativeCoinTransaction";
 
 // @ts-expect-error json?
 const commonABIInterface = new ethUtils.Interface(commonABI);
@@ -116,3 +118,27 @@ export function getTxLabelEVM(data: string, to: string): TxLabel | undefined {
   }
   return undefined;
 }
+
+export const parseTokenTransferLogInfo = (
+  log: Log,
+): TokenTransferLogInfo | undefined => {
+  if (
+    log.topics.length < 3 ||
+    log.topics[0] !== EthConstants.TOKEN_TRANSFER_TOPIC
+  ) {
+    return undefined;
+  }
+  const value = log.data === "0x" ? 0n : BigNumber.from(log.data).toBigInt();
+  let tokenId;
+  if (log.topics.length >= 4) {
+    // ERC721 or ERC1155
+    tokenId = BigNumber.from(log.topics[3]).toBigInt();
+  }
+  return {
+    token: log.address,
+    from: "0x" + log.topics[1].substring(26),
+    to: "0x" + log.topics[2].substring(26),
+    value,
+    tokenId,
+  };
+};

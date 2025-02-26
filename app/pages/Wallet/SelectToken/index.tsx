@@ -5,31 +5,36 @@ import {
   IconSearch,
 } from "@/components/Custom/Icon";
 import { TokenItemWithBalance } from "@/components/Wallet/TokenItem";
-import { useAssetList } from "@/hooks/useAssetList";
 import { useLocationParams } from "@/hooks/useLocationParams";
 import { PageWithHeader } from "@/layouts/Page";
 import { Flex, Input, InputGroup, InputLeftElement } from "@chakra-ui/react";
 import { type InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import type React from "react";
 import { useMemo, useCallback, useState } from "react";
 import { useFuseSearch } from "@/hooks/useFuseSearch";
 import { EmptyView } from "@/components/Custom/EmptyView";
 import { Content } from "@/layouts/Content";
 import { type TokenV2 } from "core/types/Token";
+import { useSafeTokenInfo } from "@/hooks/useSafeTokenInfo";
+import { useSafeParams } from "@/hooks/useSafeParams";
+import { useGroupAccountAssets } from "@/hooks/useGroupAccountAssets";
 
 const SelectTokenScreen = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { uniqueId, address } = useParams();
+  const { uniqueId, address } = useSafeParams();
 
   const nextPage = useLocationParams("page");
-  const currTokenStr = useLocationParams("currToken");
-  const currToken: TokenV2 | undefined = currTokenStr
-    ? JSON.parse(currTokenStr)
-    : undefined;
-  const { assets } = useAssetList(uniqueId as InnerChainUniqueId, address!);
+  const { tokenInfo: currToken } = useSafeTokenInfo(uniqueId, address);
+
+  const { assets: allAssets } = useGroupAccountAssets();
+  const assets = useMemo(() => {
+    return allAssets.filter((item) => {
+      return item.uniqueId === uniqueId;
+    });
+  }, [allAssets, uniqueId]);
 
   const [searchStr, setSearchStr] = useState("");
 
@@ -70,7 +75,12 @@ const SelectTokenScreen = () => {
       title={t("SelectToken:title")}
       enableBack
       onBack={() => {
-        navigate(`/${nextPage}?token=${currToken?.tokenId}`);
+        // navigate(`/${nextPage}?token=${currToken?.tokenId}`);
+        if (currToken) {
+          navigate(`/${nextPage}?token=${serializeToken(currToken)}`, {
+            replace: true,
+          });
+        }
         return false;
       }}
     >
@@ -105,9 +115,9 @@ const SelectTokenScreen = () => {
                     token={token}
                     onClick={onTokenClick}
                     uniqueId={uniqueId as InnerChainUniqueId}
-                    address={address!}
+                    address={address}
                     leftElement={
-                      token.tokenId === currToken?.tokenId ? (
+                      token.contractAddress === currToken.contractAddress ? (
                         <IconCheckCircle w={4} h={4} mr={2} />
                       ) : (
                         <IconCheckCircleBlack w={4} h={4} mr={2} />

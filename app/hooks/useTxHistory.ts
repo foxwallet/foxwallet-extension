@@ -5,7 +5,6 @@ import {
 import { useCoinService } from "./useCoinService";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
-import { type Pagination } from "core/coins/ALEO/types/Pagination";
 import {
   type AleoHistoryItem,
   AleoHistoryType,
@@ -17,16 +16,11 @@ import {
 import { isEqual, uniqBy } from "lodash";
 import { AleoTxStatus } from "core/coins/ALEO/types/Transaction";
 import { useTransactionSettledToast } from "@/components/Wallet/TransactionSettledToast/useTransactionSettledToast";
-import {
-  ALPHA_TOKEN_PROGRAM_ID,
-  BETA_STAKING_PROGRAM_ID,
-  NATIVE_TOKEN_TOKEN_ID,
-} from "core/coins/ALEO/constants";
+import { NATIVE_TOKEN_TOKEN_ID } from "core/coins/ALEO/constants";
 import { AssetType, type TokenV2 } from "core/types/Token";
 import { type AleoService } from "core/coins/ALEO/service/AleoService";
 import type { TxHistoryPaginationParam } from "core/types/Pagination";
 import {
-  type ExtraTxHistoryPaginationParam,
   type TransactionHistoryItem,
   type TransactionHistoryResp,
 } from "core/types/TransactionHistory";
@@ -129,14 +123,16 @@ export const useTxHistory = ({
   const [currPagination, setCurrPagination] =
     useState<TxHistoryPaginationParam>({
       pageNum: 0,
-      pageSize: 0,
+      pageSize: 100,
     });
   const [newPagination, setNewPagination] = useState<TxHistoryPaginationParam>({
     pageNum: 0,
-    pageSize: 0,
+    pageSize: 100,
   });
 
-  const key = `/tx_history/${uniqueId}/${address}?page=${currPagination.pageNum}&limit=${currPagination.pageSize}`;
+  const key = isAleo
+    ? undefined
+    : `/tx_history/${token.contractAddress}/${uniqueId}/${address}?page=${currPagination.pageNum}&limit=${currPagination.pageSize}`;
   const fetchTxHistory = useCallback(async () => {
     if (!isAleo) {
       try {
@@ -167,17 +163,21 @@ export const useTxHistory = ({
   }, [isAleo, token, coinService, address, currPagination]);
 
   const {
+    data: txs,
     error: onTxHistoryError,
     mutate: getTxHistory,
     isLoading: loadingTxHistory,
   } = useSWR(key, fetchTxHistory, {
     refreshInterval,
-    onSuccess: (curr) => {
-      setTxHistory((prev) => {
-        return uniqBy([...prev, ...curr], "id");
-      });
-    },
   });
+
+  useEffect(() => {
+    if (Array.isArray(txs) && txs.length > 0) {
+      setTxHistory((prev) => {
+        return uniqBy([...prev, ...txs], "id");
+      });
+    }
+  }, [txs]);
 
   const getMore = useCallback(() => {
     if (!endReach) {
@@ -185,14 +185,20 @@ export const useTxHistory = ({
     }
   }, [endReach, newPagination]);
 
+  const sortedHistory = txHistory
+    .sort((a, b) => b.timestamp - a.timestamp)
+    .filter((item, index, array) => {
+      return index === 0 || item.timestamp !== array[index - 1].timestamp;
+    });
+
   const ret = useMemo(() => {
     return {
-      history: txHistory,
+      history: sortedHistory,
       loading: loadingTxHistory,
       error: onTxHistoryError,
       getMore,
     };
-  }, [getMore, loadingTxHistory, onTxHistoryError, txHistory]);
+  }, [getMore, loadingTxHistory, onTxHistoryError, sortedHistory]);
 
   return ret;
 };
@@ -213,6 +219,7 @@ export const useAleoTxHistory = ({
     return uniqueId === InnerChainUniqueId.ALEO_MAINNET;
   }, [uniqueId]);
 
+  // local txs
   const localTxKey = `/localTxs/${uniqueId}/${address}/${token.tokenId}`;
   const getLocalTxs = useCallback(async () => {
     if (isAleo) {
@@ -230,8 +237,10 @@ export const useAleoTxHistory = ({
     error: localTxsError,
     isLoading: loadingLocalTxs,
   } = useSWR(localTxKey, getLocalTxs, { refreshInterval });
+  console.log("      localTxs", localTxs);
 
-  const privateTxsKey = `/privateTxs/${uniqueId}/${address}/${token.tokenId}`;
+  // private txs
+  const privateTxsKey = `/privateTxs/${token.contractAddress}/${uniqueId}/${address}/${token.tokenId}`;
   const getPrivateTxs = useCallback(async () => {
     if (isAleo) {
       const res = await (coinService as AleoService).getPrivateTxHistory(
@@ -249,53 +258,75 @@ export const useAleoTxHistory = ({
     isLoading: loadingPrivateTxs,
   } = useSWR(privateTxsKey, getPrivateTxs, { refreshInterval });
 
-  const [pagination, setPagination] = useState<Pagination>({});
-  const key = `/onchain_history/${uniqueId}/${address}?page=${pagination.cursor}&limit=${pagination.limit}`;
+  // on chain txs by api.aleo.info
+  const [endReach, setEndReach] = useState(false);
+  const [currPagination, setCurrPagination] =
+    useState<TxHistoryPaginationParam>({
+      pageNum: 0,
+      pageSize: 100,
+    });
+  const [newPagination, setNewPagination] = useState<TxHistoryPaginationParam>({
+    pageNum: 0,
+    pageSize: 100,
+  });
+  const key = isAleo
+    ? `/onChainTxs/${token.contractAddress}/${uniqueId}/${address}?page=${currPagination.pageNum}&limit=${currPagination.pageSize}`
+    : undefined;
+
   const fetchOnChainHistory = useCallback(async () => {
-    if (isAleo) {
-      if (
-        token.programId === ALPHA_TOKEN_PROGRAM_ID ||
-        token.programId === BETA_STAKING_PROGRAM_ID
-      ) {
-        return await (coinService as AleoService).getTokenOnChainHistory({
+    try {
+      let res: TransactionHistoryResp | undefined;
+      if (token.type === AssetType.COIN) {
+        res = await coinService.getNativeCoinTxHistory({
           address,
-          pagination,
+          pagination: currPagination,
+        });
+      } else {
+        res = await coinService.getTokenTxHistory({
+          address,
           token,
+          pagination: currPagination,
         });
       }
-      const res = await (coinService as AleoService).getOnChainHistory({
-        address,
-        pagination,
-      });
-      return res;
+      if (res) {
+        setNewPagination(res.pagination);
+        setEndReach(res.pagination.endReach);
+        return res.txs;
+      }
+    } catch (e) {
+      logger.log("===> fetchTxHistory failed: ");
+      return [];
     }
-    return [];
-  }, [isAleo, token, coinService, address, pagination]);
+  }, [token, coinService, address, currPagination]);
 
   const [onChainHistory, setOnChainHistory] = useState<
-    AleoOnChainHistoryItem[]
+    TransactionHistoryItem[]
   >([]);
+
   const {
-    error: onChainHistoryError,
+    data: onChainTxs,
+    error: onChainError,
     mutate: getOnChainHistory,
-    isLoading: loadingOnChainHistory,
+    isLoading: loadingOnChainTxs,
   } = useSWR(key, fetchOnChainHistory, {
     refreshInterval,
-    onSuccess: (curr) => {
-      setOnChainHistory((prev) => {
-        return uniqBy([...prev, ...curr], "txId");
-      });
-    },
   });
 
-  const getMore = useCallback(() => {
-    if (onChainHistory.length > 0) {
-      setPagination({
-        cursor: onChainHistory[onChainHistory.length - 1].height.toString(),
+  useEffect(() => {
+    if (Array.isArray(onChainTxs) && onChainTxs.length > 0) {
+      setOnChainHistory((prev) => {
+        return uniqBy([...prev, ...onChainTxs], "id");
       });
     }
-  }, [onChainHistory]);
+  }, [onChainTxs]);
 
+  const getMore = useCallback(() => {
+    if (!endReach) {
+      setCurrPagination(newPagination);
+    }
+  }, [endReach, newPagination]);
+
+  // organize data
   const [history, setHistory] = useState<AleoHistoryItem[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -331,8 +362,33 @@ export const useAleoTxHistory = ({
       privateFinalizedTxs.push(item);
     }
 
+    const onChainFinalizedTxs: AleoOnChainHistoryItem[] = onChainHistory.map(
+      (tx) => {
+        const type =
+          tx.from === address
+            ? AleoTxAddressType.SEND
+            : AleoTxAddressType.RECEIVE;
+        // debugger;
+        const item: AleoOnChainHistoryItem = {
+          addressType: type,
+          functionName: tx.functionName ?? "",
+          height: tx.height,
+          programId: tx.programId ?? "",
+          status: AleoTxStatus.FINALIZD, // todo 需要确认
+          timestamp: tx.timestamp,
+          txId: tx.id,
+          txType: AleoTxType.EXECUTION, // todo 需要确认
+          type: AleoHistoryType.ON_CHAIN,
+          from: tx.from,
+          to: tx.to,
+          amount: String(tx.value),
+        };
+        return item;
+      },
+    );
+
     const completedTxs = uniqBy(
-      [...completedLocalTxs, ...privateFinalizedTxs, ...onChainHistory],
+      [...completedLocalTxs, ...privateFinalizedTxs, ...onChainFinalizedTxs],
       "txId",
     );
 
@@ -356,15 +412,15 @@ export const useAleoTxHistory = ({
       }
       return prev;
     });
-  }, [localTxs, onChainHistory, privateTxs]);
+  }, [address, localTxs, onChainHistory, privateTxs]);
 
   return {
     loading:
-      loadingLocalTxs || loadingPrivateTxs || loadingOnChainHistory || loading,
+      loadingLocalTxs || loadingPrivateTxs || loadingOnChainTxs || loading,
     loadingLocalTxs,
     loadingPrivateTxs,
-    loadingOnChainHistory,
-    error: localTxsError || privateTxsError || onChainHistoryError,
+    loadingOnChainTxs,
+    error: localTxsError || privateTxsError || onChainError,
     history,
     getMore,
   };

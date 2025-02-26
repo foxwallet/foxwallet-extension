@@ -34,7 +34,9 @@ export const FOX_DAPP_REQUEST = "fox_dapp_request";
 
 export const FOX_DAPP_RESP = "fox_dapp_response";
 
-export const DAPP_CONNECTION_EXPIRE_TIME = 1000 * 60 * 30;
+export const FOX_DAPP_EMIT = "fox_dapp_emit";
+
+export const DAPP_CONNECTION_EXPIRE_TIME = 1000 * 60 * 60 * 12;
 
 export const HELP_CENTER_URL = "https://hc.foxwallet.com";
 export const PRIVACY_POLICY_URL = "https://hc.foxwallet.com/privacy-policy";

@@ -23,6 +23,7 @@ import { useChainMode } from "@/hooks/useChainMode";
 import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
 import { useSearchNetworks } from "@/hooks/useSearchNetworks";
 import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
+import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 
 interface Props {
   isOpen: boolean;
@@ -142,7 +143,7 @@ const CopyAddressDrawer = (props: Props) => {
 
   const renderNetworks = useMemo(() => {
     return (
-      <Box overflowY="auto">
+      <Box overflowY="auto" sx={HIDE_SCROLL_BAR_CSS}>
         <VStack spacing={"10px"}>
           {displayChains.map((item, index) => {
             return (

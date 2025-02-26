@@ -13,27 +13,77 @@ import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
+import { CoinType } from "core/types";
+import { getDefaultChainUniqueId } from "core/constants/chain";
 
 function SignMessageScreen() {
   const { getMatchAccountsWithUniqueId } = useGroupAccount();
-  const selectedAccount = useMemo(() => {
-    return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_MAINNET)[0];
-  }, [getMatchAccountsWithUniqueId]);
   const { requestId } = useParams();
   const { popupServerClient } = useClient();
   const { dappRequest, loading } = useDappRequest(requestId);
+  const coinType = useMemo(
+    () => dappRequest?.coinType ?? CoinType.ETH,
+    [dappRequest],
+  );
+
+  const selectedAccount = useMemo(() => {
+    return getMatchAccountsWithUniqueId(
+      getDefaultChainUniqueId(coinType, {}),
+    )[0];
+  }, [coinType, getMatchAccountsWithUniqueId]);
+
   const { t } = useTranslation();
+
+  const renderTypedMessageV1 = useCallback((msg: any) => {
+    return (
+      <Flex flexDir={"column"}>
+        {msg.map((obj: any, i: number) => (
+          <Flex justifyContent={"space-between"} key={`${obj.name}_${i}`}>
+            <Text fontWeight={"bold"}>{obj.name}</Text>
+            <Text key={obj.name}>{obj.value}</Text>
+          </Flex>
+        ))}
+      </Flex>
+    );
+  }, []);
+  const renderTypedMessageV3 = useCallback((obj: any, root = false) => {
+    return Object.keys(obj).map((key) => (
+      <Flex flexDir={"column"} key={key} ml={root ? 0 : 2}>
+        {obj[key] && typeof obj[key] === "object" ? (
+          <>
+            <Text fontWeight={"bold"} mt={2}>
+              {key}:
+            </Text>
+            {renderTypedMessageV3(obj[key])}
+          </>
+        ) : (
+          <Flex>
+            <Text fontWeight={"bold"}>{key + ": "}</Text>
+            <Text>{`${obj[key]}`}</Text>
+          </Flex>
+        )}
+      </Flex>
+    ));
+  }, []);
 
   const dappRequestInfo = useMemo(() => {
     if (!dappRequest) {
       return null;
     }
     const { payload } = dappRequest;
-    const message = payload.message;
+    const { message, method } = payload;
+    const renderTypeDataV1 = [
+      "eth_signTypedData",
+      "eth_signTypedData_v1",
+    ].includes(method);
+    const renderTypeDataV3 = [
+      "eth_signTypedData_v4",
+      "eth_signTypedData_v3",
+    ].includes(method);
     return (
       <Flex
         direction={"column"}
-        w={"full"}
+        alignSelf={"stretch"}
         borderRadius={"lg"}
         borderStyle={"solid"}
         borderWidth={"1px"}
@@ -44,12 +94,23 @@ function SignMessageScreen() {
         overflowY={"auto"}
       >
         <Text>{t("Dapp:message")}:</Text>
-        <Text maxW={"full"} fontWeight={"bold"} mt={2}>
-          {hexToString(message)}
-        </Text>
+        {typeof message === "string" ? (
+          <Text maxW={"full"} fontWeight={"bold"} mt={2}>
+            {hexToString(message)}
+          </Text>
+        ) : renderTypeDataV3 ? (
+          <>
+            <Text fontWeight={"bold"} mt={2} mb={2}>
+              primary type:{message.primaryType}
+            </Text>
+            {renderTypedMessageV3(message.message, true)}
+          </>
+        ) : (
+          renderTypedMessageV1(message)
+        )}
       </Flex>
     );
-  }, [dappRequest, t]);
+  }, [dappRequest, renderTypedMessageV1, renderTypedMessageV3, t]);
 
   const onConfirm = useCallback(() => {
     if (requestId && selectedAccount?.account.address) {
@@ -66,7 +127,7 @@ function SignMessageScreen() {
         error: ERROR_CODE.USER_CANCEL,
       });
     }
-  }, []);
+  }, [popupServerClient, requestId]);
 
   return (
     <Content>

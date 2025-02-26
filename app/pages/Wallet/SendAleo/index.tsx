@@ -19,17 +19,16 @@ import { useDataRef } from "@/hooks/useDataRef";
 import { showErrorToast } from "@/components/Custom/ErrorToast";
 import { useTranslation } from "react-i18next";
 import { AleoTxType } from "core/coins/ALEO/types/History";
-import { type Token } from "core/coins/ALEO/types/Token";
 import {
   ALPHA_TOKEN_PROGRAM_ID,
   BETA_STAKING_PROGRAM_ID,
   NATIVE_TOKEN_PROGRAM_ID,
 } from "core/coins/ALEO/constants";
-import { useLocationParams } from "@/hooks/useLocationParams";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { type AleoService } from "core/coins/ALEO/service/AleoService";
 import { type TokenV2 } from "core/types/Token";
+import { useSafeTokenInfo } from "@/hooks/useSafeTokenInfo";
 
 function SendScreen() {
   const navigate = useNavigate();
@@ -53,13 +52,12 @@ function SendScreen() {
   const [transferRecord, setTransferRecord] = useState<
     RecordDetailWithSpent | undefined
   >();
-  const tokenStr = useLocationParams("token");
-  const token: TokenV2 | undefined = tokenStr
-    ? JSON.parse(tokenStr)
-    : undefined;
-  const [transferToken, setTransferToken] = useState<TokenV2 | undefined>(
-    token,
+
+  const { tokenInfo } = useSafeTokenInfo(
+    uniqueId,
+    selectedAccount.account.address,
   );
+  const [transferToken, setTransferToken] = useState<TokenV2>(tokenInfo);
 
   const onStep1Submit = useCallback(
     ({
@@ -230,6 +228,7 @@ function SendScreen() {
       case 1: {
         return (
           <TransferInfoStep
+            transferToken={transferToken}
             receiverAddress={receiverAddress}
             setReceiverAddress={(str: string) => {
               setReceiverAddress(str);
@@ -255,7 +254,7 @@ function SendScreen() {
             amountNum={transferAmount!}
             transferMethod={transferMethod}
             transferRecord={transferRecord}
-            token={transferToken!}
+            token={transferToken}
             onConfirm={onStep2Submit}
           />
         );

@@ -12,7 +12,7 @@ export type TokenMap = {
 };
 
 export type UserTokensMap = {
-  [uniqueId in InnerChainUniqueId]?: TokenMap;
+  [uniqueId in ChainUniqueId]?: TokenMap;
 };
 
 export type LastUpdateTimestamp = {
