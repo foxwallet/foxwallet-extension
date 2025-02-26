@@ -158,10 +158,14 @@ const TransactionDetailScreen = () => {
           isSend = tx.addressType === AleoTxAddressType.SEND;
           if (tx.type === AleoHistoryType.LOCAL) {
             if (isSend) {
+              from = address;
               to = tx.inputs[0];
             } else {
               from = tx.inputs[0];
             }
+          } else {
+            from = tx.from;
+            to = tx.to;
           }
           isSuccess =
             tx.status === AleoTxStatus.FINALIZD ||

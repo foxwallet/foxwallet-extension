@@ -33,37 +33,69 @@ export const useTransactionDetail = (params: TransactionDetailReq) => {
   } = params;
   const { coinService } = useCoinService(uniqueId);
 
+  const isAleo = uniqueId === InnerChainUniqueId.ALEO_MAINNET;
+
   const key = useMemo(() => {
     return `/transaction_detail/${uniqueId}/${txId}`;
   }, [txId, uniqueId]);
 
   const fetchDetail = useCallback(async () => {
     let res;
-    if (token.type === AssetType.COIN) {
-      if (!coinService.supportNativeCoinTxDetail() || !txId) {
-        return undefined;
+
+    if (isAleo) {
+      if (!coinService.supportGetTxStatus() || !txId) {
+        return;
       }
-      res = await coinService.getNativeCoinTxDetail({
+      const res = await coinService.getTxStatus({
         txId,
-        filter: { address },
+        filter: filter ?? { address },
         auth,
       });
-    } else {
-      if (!coinService.supportTokenTxDetail() || !txId) {
-        return undefined;
+      if (res) {
+        const {
+          fee,
+          height,
+          confirmations,
+          timestamp,
+          status,
+          from,
+          to,
+          value,
+        } = res;
+        return {
+          fees: fee,
+          height,
+          confirmations,
+          timestamp,
+        };
       }
-      res = await coinService.getTokenTxDetail({
-        txId,
-        token,
-        filter: { address },
-      });
+    } else {
+      if (token.type === AssetType.COIN) {
+        if (!coinService.supportNativeCoinTxDetail() || !txId) {
+          return undefined;
+        }
+        res = await coinService.getNativeCoinTxDetail({
+          txId,
+          filter: filter ?? { address },
+          auth,
+        });
+      } else {
+        if (!coinService.supportTokenTxDetail() || !txId) {
+          return undefined;
+        }
+        res = await coinService.getTokenTxDetail({
+          txId,
+          token,
+          filter: filter ?? { address },
+        });
+      }
     }
-    console.log("      res", res);
+    // console.log("      res", res);
     return res;
-  }, [address, auth, coinService, token, txId]);
+  }, [address, auth, coinService, filter, isAleo, token, txId]);
 
   const {
-    data,
+    data: evmData,
     error,
     mutate: getTransactionDetail,
     isLoading,
@@ -73,12 +105,12 @@ export const useTransactionDetail = (params: TransactionDetailReq) => {
 
   const res = useMemo(() => {
     return {
-      data,
+      data: evmData,
       error,
       getTransactionDetail,
       isLoading,
     };
-  }, [data, error, getTransactionDetail, isLoading]);
+  }, [evmData, error, getTransactionDetail, isLoading]);
 
   return res;
 };
