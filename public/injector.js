@@ -1,6 +1,6 @@
 var la = Object.defineProperty;
 var ma = (r, e, t) => e in r ? la(r, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : r[e] = t;
-var Ae = (r, e, t) => (ma(r, typeof e != "symbol" ? e + "" : e, t), t), An = (r, e, t) => {
+var Ee = (r, e, t) => (ma(r, typeof e != "symbol" ? e + "" : e, t), t), An = (r, e, t) => {
   if (!e.has(r))
     throw TypeError("Cannot " + t);
 };
@@ -40,19 +40,19 @@ class Gn {
     wt(this, Lt, void 0);
     wt(this, Pe, void 0);
     wt(this, bt, void 0);
-    Ae(this, "chain");
-    Ae(this, "onMessage", (e) => {
+    Ee(this, "chain");
+    Ee(this, "onMessage", (e) => {
       const { id: t, error: a, data: f } = e.detail, y = Ie(this, bt).get(t);
       y && (y(a, f), Ie(this, bt).delete(t));
     });
-    Ae(this, "on", (e, t) => (Ie(this, Pe).on(e, t), () => Ie(this, Pe).off(e, t)));
-    Ae(this, "removeListener", (e, t) => {
+    Ee(this, "on", (e, t) => (Ie(this, Pe).on(e, t), () => Ie(this, Pe).off(e, t)));
+    Ee(this, "removeListener", (e, t) => {
       Ie(this, Pe).off(e, t);
     });
-    Ae(this, "off", (e, t) => {
+    Ee(this, "off", (e, t) => {
       Ie(this, Pe).off(e, t);
     });
-    Ae(this, "removeAllListeners", () => {
+    Ee(this, "removeAllListeners", () => {
       Ie(this, Pe).all.clear();
     });
     Fe(this, Lt, !0), Fe(this, Pe, Ta()), Fe(this, bt, /* @__PURE__ */ new Map()), this.emit = this.emit.bind(this), window.addEventListener(ca, this.onMessage), this.onDappEmit = this.onDappEmit.bind(this), window.addEventListener(fa, this.onDappEmit);
@@ -95,10 +95,10 @@ var ze, He;
 class Ma extends Gn {
   constructor() {
     super();
-    Ae(this, "chain", Rt.ALEO);
+    Ee(this, "chain", Rt.ALEO);
     wt(this, ze, void 0);
     wt(this, He, void 0);
-    Ae(this, "_readyState");
+    Ee(this, "_readyState");
     Fe(this, ze, null), Fe(this, He, null), this._readyState = "Installed";
   }
   get publicKey() {
@@ -188,16 +188,6 @@ class Ma extends Gn {
   }
 }
 ze = new WeakMap(), He = new WeakMap();
-class En extends Error {
-  constructor(t, a) {
-    super();
-    Ae(this, "code");
-    this.code = t, this.message = a;
-  }
-  toString() {
-    return `${this.message} (${this.code})`;
-  }
-}
 const wa = {
   DEFAULT_GAS_LIMIT: 21e3,
   TOKEN_TRANSFER_TOPIC: "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
@@ -1171,32 +1161,32 @@ _n.exports;
       p192: null,
       p25519: null
     };
-    function Ee(c, n) {
+    function Ae(c, n) {
       this.name = c, this.p = new y(n, 16), this.n = this.p.bitLength(), this.k = new y(1).iushln(this.n).isub(this.p), this.tmp = this._tmp();
     }
-    Ee.prototype._tmp = function() {
+    Ae.prototype._tmp = function() {
       var n = new y(null);
       return n.words = new Array(Math.ceil(this.n / 13)), n;
-    }, Ee.prototype.ireduce = function(n) {
+    }, Ae.prototype.ireduce = function(n) {
       var s = n, u;
       do
         this.split(s, this.tmp), s = this.imulK(s), s = s.iadd(this.tmp), u = s.bitLength();
       while (u > this.n);
       var l = u < this.n ? -1 : s.ucmp(this.p);
       return l === 0 ? (s.words[0] = 0, s.length = 1) : l > 0 ? s.isub(this.p) : s.strip !== void 0 ? s.strip() : s._strip(), s;
-    }, Ee.prototype.split = function(n, s) {
+    }, Ae.prototype.split = function(n, s) {
       n.iushrn(this.n, 0, s);
-    }, Ee.prototype.imulK = function(n) {
+    }, Ae.prototype.imulK = function(n) {
       return n.imul(this.k);
     };
     function Ye() {
-      Ee.call(
+      Ae.call(
         this,
         "k256",
         "ffffffff ffffffff ffffffff ffffffff ffffffff ffffffff fffffffe fffffc2f"
       );
     }
-    f(Ye, Ee), Ye.prototype.split = function(n, s) {
+    f(Ye, Ae), Ye.prototype.split = function(n, s) {
       for (var u = 4194303, l = Math.min(n.length, 9), d = 0; d < l; d++)
         s.words[d] = n.words[d];
       if (s.length = l, n.length <= 9) {
@@ -1218,29 +1208,29 @@ _n.exports;
       return n.words[n.length - 1] === 0 && (n.length--, n.words[n.length - 1] === 0 && n.length--), n;
     };
     function et() {
-      Ee.call(
+      Ae.call(
         this,
         "p224",
         "ffffffff ffffffff ffffffff ffffffff 00000000 00000000 00000001"
       );
     }
-    f(et, Ee);
+    f(et, Ae);
     function Et() {
-      Ee.call(
+      Ae.call(
         this,
         "p192",
         "ffffffff ffffffff ffffffff fffffffe ffffffff ffffffff"
       );
     }
-    f(Et, Ee);
+    f(Et, Ae);
     function St() {
-      Ee.call(
+      Ae.call(
         this,
         "25519",
         "7fffffffffffffff ffffffffffffffff ffffffffffffffff ffffffffffffffed"
       );
     }
-    f(St, Ee), St.prototype.imulK = function(n) {
+    f(St, Ae), St.prototype.imulK = function(n) {
       for (var s = 0, u = 0; u < n.length; u++) {
         var l = (n.words[u] | 0) * 19 + s, d = l & 67108863;
         l >>>= 26, n.words[u] = d, s = l;
@@ -1388,9 +1378,9 @@ _n.exports;
 })(_n);
 var xa = _n.exports;
 const Aa = /* @__PURE__ */ Zn(xa), Ea = "logger/5.7.0";
-let Sn = !1, Cn = !1;
+let En = !1, Sn = !1;
 const Gt = { debug: 1, default: 2, info: 2, warning: 3, error: 4, off: 5 };
-let On = Gt.default, fn = null;
+let Cn = Gt.default, fn = null;
 function Sa() {
   try {
     const r = [];
@@ -1410,7 +1400,7 @@ function Sa() {
   }
   return null;
 }
-const Rn = Sa();
+const On = Sa();
 var hn;
 (function(r) {
   r.DEBUG = "DEBUG", r.INFO = "INFO", r.WARNING = "WARNING", r.ERROR = "ERROR", r.OFF = "OFF";
@@ -1419,7 +1409,7 @@ var Ne;
 (function(r) {
   r.UNKNOWN_ERROR = "UNKNOWN_ERROR", r.NOT_IMPLEMENTED = "NOT_IMPLEMENTED", r.UNSUPPORTED_OPERATION = "UNSUPPORTED_OPERATION", r.NETWORK_ERROR = "NETWORK_ERROR", r.SERVER_ERROR = "SERVER_ERROR", r.TIMEOUT = "TIMEOUT", r.BUFFER_OVERRUN = "BUFFER_OVERRUN", r.NUMERIC_FAULT = "NUMERIC_FAULT", r.MISSING_NEW = "MISSING_NEW", r.INVALID_ARGUMENT = "INVALID_ARGUMENT", r.MISSING_ARGUMENT = "MISSING_ARGUMENT", r.UNEXPECTED_ARGUMENT = "UNEXPECTED_ARGUMENT", r.CALL_EXCEPTION = "CALL_EXCEPTION", r.INSUFFICIENT_FUNDS = "INSUFFICIENT_FUNDS", r.NONCE_EXPIRED = "NONCE_EXPIRED", r.REPLACEMENT_UNDERPRICED = "REPLACEMENT_UNDERPRICED", r.UNPREDICTABLE_GAS_LIMIT = "UNPREDICTABLE_GAS_LIMIT", r.TRANSACTION_REPLACED = "TRANSACTION_REPLACED", r.ACTION_REJECTED = "ACTION_REJECTED";
 })(Ne || (Ne = {}));
-const Nn = "0123456789abcdef";
+const Rn = "0123456789abcdef";
 class O {
   constructor(e) {
     Object.defineProperty(this, "version", {
@@ -1430,7 +1420,7 @@ class O {
   }
   _log(e, t) {
     const a = e.toLowerCase();
-    Gt[a] == null && this.throwArgumentError("invalid log level name", "logLevel", e), !(On > Gt[a]) && console.log.apply(console, t);
+    Gt[a] == null && this.throwArgumentError("invalid log level name", "logLevel", e), !(Cn > Gt[a]) && console.log.apply(console, t);
   }
   debug(...e) {
     this._log(O.levels.DEBUG, e);
@@ -1442,7 +1432,7 @@ class O {
     this._log(O.levels.WARNING, e);
   }
   makeError(e, t, a) {
-    if (Cn)
+    if (Sn)
       return this.makeError("censored error", t, {});
     t || (t = O.errors.UNKNOWN_ERROR), a || (a = {});
     const f = [];
@@ -1452,7 +1442,7 @@ class O {
         if (E instanceof Uint8Array) {
           let N = "";
           for (let B = 0; B < E.length; B++)
-            N += Nn[E[B] >> 4], N += Nn[E[B] & 15];
+            N += Rn[E[B] >> 4], N += Rn[E[B] & 15];
           f.push(x + "=Uint8Array(0x" + N + ")");
         } else
           f.push(x + "=" + JSON.stringify(E));
@@ -1514,9 +1504,9 @@ class O {
     e || this.throwArgumentError(t, a, f);
   }
   checkNormalize(e) {
-    Rn && this.throwError("platform missing String.prototype.normalize", O.errors.UNSUPPORTED_OPERATION, {
+    On && this.throwError("platform missing String.prototype.normalize", O.errors.UNSUPPORTED_OPERATION, {
       operation: "String.prototype.normalize",
-      form: Rn
+      form: On
     });
   }
   checkSafeUint53(e, t) {
@@ -1551,14 +1541,14 @@ class O {
   static setCensorship(e, t) {
     if (!e && t && this.globalLogger().throwError("cannot permanently disable censorship", O.errors.UNSUPPORTED_OPERATION, {
       operation: "setCensorship"
-    }), Sn) {
+    }), En) {
       if (!e)
         return;
       this.globalLogger().throwError("error censorship permanent", O.errors.UNSUPPORTED_OPERATION, {
         operation: "setCensorship"
       });
     }
-    Cn = !!e, Sn = !!t;
+    Sn = !!e, En = !!t;
   }
   static setLogLevel(e) {
     const t = Gt[e.toLowerCase()];
@@ -1566,7 +1556,7 @@ class O {
       O.globalLogger().warn("invalid log level - " + e);
       return;
     }
-    On = t;
+    Cn = t;
   }
   static from(e) {
     return new O(e);
@@ -1584,7 +1574,7 @@ function Ot(r) {
     return Ot(new Uint8Array(Array.prototype.slice.apply(r, e)));
   }), r;
 }
-function Dn(r) {
+function Nn(r) {
   return typeof r == "number" && r == r && r % 1 === 0;
 }
 function kn(r) {
@@ -1592,11 +1582,11 @@ function kn(r) {
     return !1;
   if (r.constructor === Uint8Array)
     return !0;
-  if (typeof r == "string" || !Dn(r.length) || r.length < 0)
+  if (typeof r == "string" || !Nn(r.length) || r.length < 0)
     return !1;
   for (let e = 0; e < r.length; e++) {
     const t = r[e];
-    if (!Dn(t) || t < 0 || t >= 256)
+    if (!Nn(t) || t < 0 || t >= 256)
       return !1;
   }
   return !0;
@@ -1667,8 +1657,8 @@ function Qn(r, e) {
 }
 const Na = "bignumber/5.7.0";
 var Zt = Aa.BN;
-const Ve = new O(Na), bn = {}, Fn = 9007199254740991;
-let Pn = !1;
+const Ve = new O(Na), bn = {}, Dn = 9007199254740991;
+let Fn = !1;
 class be {
   constructor(e, t) {
     e !== bn && Ve.throwError("cannot call constructor directly; use BigNumber.from", O.errors.UNSUPPORTED_OPERATION, {
@@ -1764,7 +1754,7 @@ class be {
     });
   }
   toString() {
-    return arguments.length > 0 && (arguments[0] === 10 ? Pn || (Pn = !0, Ve.warn("BigNumber.toString does not accept any parameters; base-10 is assumed")) : arguments[0] === 16 ? Ve.throwError("BigNumber.toString does not accept any parameters; use bigNumber.toHexString()", O.errors.UNEXPECTED_ARGUMENT, {}) : Ve.throwError("BigNumber.toString does not accept parameters", O.errors.UNEXPECTED_ARGUMENT, {})), D(this).toString(10);
+    return arguments.length > 0 && (arguments[0] === 10 ? Fn || (Fn = !0, Ve.warn("BigNumber.toString does not accept any parameters; base-10 is assumed")) : arguments[0] === 16 ? Ve.throwError("BigNumber.toString does not accept any parameters; use bigNumber.toHexString()", O.errors.UNEXPECTED_ARGUMENT, {}) : Ve.throwError("BigNumber.toString does not accept parameters", O.errors.UNEXPECTED_ARGUMENT, {})), D(this).toString(10);
   }
   toHexString() {
     return this._hex;
@@ -1778,7 +1768,7 @@ class be {
     if (typeof e == "string")
       return e.match(/^-?0x[0-9a-f]+$/i) ? new be(bn, Nt(e)) : e.match(/^-?[0-9]+$/) ? new be(bn, Nt(new Zt(e))) : Ve.throwArgumentError("invalid BigNumber string", "value", e);
     if (typeof e == "number")
-      return e % 1 && Re("underflow", "BigNumber.from", e), (e >= Fn || e <= -Fn) && Re("overflow", "BigNumber.from", e), be.from(String(e));
+      return e % 1 && Re("underflow", "BigNumber.from", e), (e >= Dn || e <= -Dn) && Re("overflow", "BigNumber.from", e), be.from(String(e));
     const t = e;
     if (typeof t == "bigint")
       return be.from(t.toString());
@@ -1892,17 +1882,17 @@ class Yt {
   }
 }
 const Bt = "abi/5.7.0", F = new O(Bt), ht = {};
-let Ln = { calldata: !0, memory: !0, storage: !0 }, Ba = { calldata: !0, memory: !0 };
+let Pn = { calldata: !0, memory: !0, storage: !0 }, Ba = { calldata: !0, memory: !0 };
 function Ht(r, e) {
   if (r === "bytes" || r === "string") {
-    if (Ln[e])
+    if (Pn[e])
       return !0;
   } else if (r === "address") {
     if (e === "payable")
       return !0;
   } else if ((r.indexOf("[") >= 0 || r === "tuple") && Ba[e])
     return !0;
-  return (Ln[e] || e === "payable") && F.throwArgumentError("invalid modifier", "name", e), !1;
+  return (Pn[e] || e === "payable") && F.throwArgumentError("invalid modifier", "name", e), !1;
 }
 function Ua(r, e) {
   let t = r;
@@ -2247,7 +2237,7 @@ class Be extends Le {
     return e && e._isFragment && e.type === "function";
   }
 }
-function Bn(r) {
+function Ln(r) {
   const e = r.format();
   return (e === "Error(string)" || e === "Panic(uint256)") && F.throwArgumentError(`cannot specify user defined ${e} error`, "fragment", r), r;
 }
@@ -2274,11 +2264,11 @@ class Xe extends je {
       name: Ft(e.name),
       inputs: e.inputs ? e.inputs.map(ve.fromObject) : []
     };
-    return Bn(new Xe(ht, t));
+    return Ln(new Xe(ht, t));
   }
   static fromString(e) {
     let t = { type: "error" }, a = e.match(Pt);
-    return a || F.throwArgumentError("invalid error signature", "value", e), t.name = a[1].trim(), t.name && Ft(t.name), t.inputs = Dt(a[2], !1), Bn(Xe.fromObject(t));
+    return a || F.throwArgumentError("invalid error signature", "value", e), t.name = a[1].trim(), t.name && Ft(t.name), t.inputs = Dt(a[2], !1), Ln(Xe.fromObject(t));
   }
   static isErrorFragment(e) {
     return e && e._isFragment && e.type === "error";
@@ -2467,7 +2457,7 @@ var na = { exports: {} };
       return function(w, k) {
         return new i(p, g, k).update(w)[M]();
       };
-    }, Ee = function(p, g, M) {
+    }, Ae = function(p, g, M) {
       return function(w, k, S, I) {
         return n["cshake" + p].update(w, k, S, I)[M]();
       };
@@ -2496,12 +2486,12 @@ var na = { exports: {} };
         return M.create(k).update(w);
       }, et(M, Mt, p, g);
     }, he = function(p, g) {
-      var M = xt[p], w = Ee(p, g, "hex");
+      var M = xt[p], w = Ae(p, g, "hex");
       return w.create = function(k, S, I) {
         return !S && !I ? n["shake" + p].create(k) : new i(p, g, k).bytepad([S, I], M);
       }, w.update = function(k, S, I, v) {
         return w.create(S, I, v).update(k);
-      }, et(w, Ee, p, g);
+      }, et(w, Ae, p, g);
     }, Ue = function(p, g) {
       var M = xt[p], w = Ye(p, g, "hex");
       return w.create = function(k, S, I) {
@@ -2657,7 +2647,7 @@ function Qt(r) {
   return "0x" + ja.keccak_256(Ce(r));
 }
 const Wa = "address/5.7.0", Ct = new O(Wa);
-function Un(r) {
+function Bn(r) {
   De(r, 20) || Ct.throwArgumentError("invalid address", "address", r), r = r.toLowerCase();
   const e = r.substring(2).split(""), t = new Uint8Array(40);
   for (let f = 0; f < 40; f++)
@@ -2676,12 +2666,12 @@ for (let r = 0; r < 10; r++)
   In[String(r)] = String(r);
 for (let r = 0; r < 26; r++)
   In[String.fromCharCode(65 + r)] = String(10 + r);
-const Vn = Math.floor(Ka(Ga));
+const Un = Math.floor(Ka(Ga));
 function Za(r) {
   r = r.toUpperCase(), r = r.substring(4) + r.substring(0, 2) + "00";
   let e = r.split("").map((a) => In[a]).join("");
-  for (; e.length >= Vn; ) {
-    let a = e.substring(0, Vn);
+  for (; e.length >= Un; ) {
+    let a = e.substring(0, Un);
     e = parseInt(a, 10) % 97 + e.substring(a.length);
   }
   let t = String(98 - parseInt(e, 10) % 97);
@@ -2692,11 +2682,11 @@ function Za(r) {
 function wn(r) {
   let e = null;
   if (typeof r != "string" && Ct.throwArgumentError("invalid address", "address", r), r.match(/^(0x)?[0-9a-fA-F]{40}$/))
-    r.substring(0, 2) !== "0x" && (r = "0x" + r), e = Un(r), r.match(/([A-F].*[a-f])|([a-f].*[A-F])/) && e !== r && Ct.throwArgumentError("bad address checksum", "address", r);
+    r.substring(0, 2) !== "0x" && (r = "0x" + r), e = Bn(r), r.match(/([A-F].*[a-f])|([a-f].*[A-F])/) && e !== r && Ct.throwArgumentError("bad address checksum", "address", r);
   else if (r.match(/^XE[0-9]{2}[0-9A-Za-z]{30,31}$/)) {
     for (r.substring(2, 4) !== Za(r) && Ct.throwArgumentError("bad icap checksum", "address", r), e = Da(r.substring(4)); e.length < 40; )
       e = "0" + e;
-    e = Un("0x" + e);
+    e = Bn("0x" + e);
   } else
     Ct.throwArgumentError("invalid address", "address", r);
   return e;
@@ -3170,7 +3160,7 @@ class Mi extends Yt {
 }
 class wi extends Yt {
 }
-class zn extends Yt {
+class Vn extends Yt {
   static isIndexed(e) {
     return !!(e && e._isIndexed);
   }
@@ -3179,7 +3169,7 @@ const _i = {
   "0x08c379a0": { signature: "Error(string)", name: "Error", inputs: ["string"], reason: !0 },
   "0x4e487b71": { signature: "Panic(uint256)", name: "Panic", inputs: ["uint256"] }
 };
-function Hn(r, e) {
+function zn(r, e) {
   const t = new Error(`deferred error during ABI decoding triggered accessing ${r}`);
   return t.error = e, t;
 }
@@ -3439,9 +3429,9 @@ class ki {
     e.inputs.forEach((L, ke) => {
       if (L.indexed)
         if (_ == null)
-          E[ke] = new zn({ _isIndexed: !0, hash: null });
+          E[ke] = new Vn({ _isIndexed: !0, hash: null });
         else if (T[ke])
-          E[ke] = new zn({ _isIndexed: !0, hash: _[B++] });
+          E[ke] = new Vn({ _isIndexed: !0, hash: _[B++] });
         else
           try {
             E[ke] = _[B++];
@@ -3459,7 +3449,7 @@ class ki {
         we instanceof Error ? Object.defineProperty(E, L.name, {
           enumerable: !0,
           get: () => {
-            throw Hn(`property ${JSON.stringify(L.name)}`, we);
+            throw zn(`property ${JSON.stringify(L.name)}`, we);
           }
         }) : E[L.name] = we;
       }
@@ -3469,7 +3459,7 @@ class ki {
       ke instanceof Error && Object.defineProperty(E, L, {
         enumerable: !0,
         get: () => {
-          throw Hn(`index ${L}`, ke);
+          throw zn(`index ${L}`, ke);
         }
       });
     }
@@ -29855,36 +29845,45 @@ const vi = [
   }
 ];
 new ki(vi);
-const qn = (r) => Number.isSafeInteger(r) && r > 0 && r <= wa.MAX_SAFE_CHAIN_ID, Ii = (r) => {
+const Hn = (r) => Number.isSafeInteger(r) && r > 0 && r <= wa.MAX_SAFE_CHAIN_ID, Ii = (r) => {
   if (typeof r == "number")
-    return { valid: qn(r), chainId: r };
+    return { valid: Hn(r), chainId: r };
   if (typeof r == "string")
     try {
       let e;
       return r.toLowerCase().startsWith("0x") ? e = parseInt(r, 16) : e = parseInt(r, 10), {
-        valid: qn(e),
+        valid: Hn(e),
         chainId: e
       };
     } catch {
       return { valid: !1, chainId: 0 };
     }
   return { valid: !1, chainId: r };
-}, jn = (r) => {
+};
+class qn extends Error {
+  constructor(t, a) {
+    super();
+    Ee(this, "code");
+    this.code = t, this.message = a;
+  }
+  toString() {
+    return `${this.message} (${this.code})`;
+  }
+}
+const jn = (r) => {
   if (!r)
     return "1";
   const { chainId: e, valid: t } = Ii(r);
   return t ? `${e}` : "1";
 };
 class Xt extends Gn {
-  //TODO fix
   constructor() {
     super();
-    Ae(this, "chain", Rt.ETH);
-    Ae(this, "address", null);
-    Ae(this, "ready");
-    Ae(this, "_chainId");
-    Ae(this, "isDebug");
-    Ae(this, "config");
+    Ee(this, "chain", Rt.ETH);
+    Ee(this, "address", null);
+    Ee(this, "ready");
+    Ee(this, "_chainId");
+    Ee(this, "isDebug");
     this._setInitialChainId();
   }
   _setInitialChainId() {
@@ -29953,7 +29952,7 @@ class Xt extends Gn {
       case "eth_chainId":
         return this.eth_chainId(t);
       case "eth_sign":
-        throw new En(
+        throw new qn(
           4200,
           "Fox does not support eth_sign. Please use other sign method instead."
         );
@@ -29986,7 +29985,7 @@ class Xt extends Gn {
       case "eth_newPendingTransactionFilter":
       case "eth_uninstallFilter":
       case "eth_subscribe":
-        throw new En(
+        throw new qn(
           4200,
           `Fox does not support calling ${t.method}. Please use your own solution`
         );

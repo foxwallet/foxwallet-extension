@@ -21,6 +21,7 @@ import { formatCustomEthRpcUniqueId } from "core/helper/ChainUniqueId";
 import { CoinType } from "core/types";
 import { ExplorerLanguages } from "core/types/ExplorerLanguages";
 import { timeout } from "@/common/utils/timeout";
+import EVMPlaceHolder from "core/assets/images/chains/placeholder.webp";
 
 function RequestParsedPart({
   dappRequest,
@@ -68,6 +69,7 @@ function RequestParsedPart({
         : null;
     const newChainConfig: ETHConfig = {
       coinType: CoinType.ETH,
+      logo: EVMPlaceHolder,
       uniqueId,
       chainId: chainIdRes.chainId.toString(),
       chainName: confirm.chainName,
@@ -79,7 +81,6 @@ function RequestParsedPart({
       },
       explorerUrls: {
         [ExplorerLanguages.EN]: firstValidBlockExplorerUrl || "",
-        [ExplorerLanguages.ZH]: firstValidBlockExplorerUrl || "",
       },
     };
 

@@ -41,4 +41,14 @@ export interface ChainBaseConfig {
   coingeckoPlatformId?: string;
   safeConfirmations?: number;
   autoAdd?: boolean;
+  oneInch?: {
+    nativeAddress: string;
+  };
+  sushi?: {
+    nativeAddress: string;
+  };
+  lifi?: {
+    chainId?: string;
+    nativeAddress?: string;
+  };
 }

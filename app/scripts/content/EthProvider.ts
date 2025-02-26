@@ -25,7 +25,6 @@ export class FoxWeb3Provider extends BaseProvider {
   ready: boolean;
   _chainId: string;
   isDebug: boolean;
-  config: unknown; //TODO fix
   constructor() {
     super();
     this._setInitialChainId();
@@ -243,9 +242,6 @@ export class FoxWeb3Provider extends BaseProvider {
     const newAccounts = await this.send("eth_requestAccounts", payload);
     // handle newAccounts
     console.log("newAccounts", newAccounts);
-    // Utils.emitConnectEvent(this.chain, this.config, {
-    //   address: data[0],
-    // });
     this.emitConnect(await this.eth_chainId({}));
     this.emitChainChanged(await this.eth_chainId({}));
     if ((newAccounts as string[])[0]) {
