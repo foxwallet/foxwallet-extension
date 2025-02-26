@@ -3,7 +3,7 @@ import { IconFoxWallet, IconLogo } from "@/components/Custom/Icon";
 import { useClient } from "@/hooks/useClient";
 import { useDappRequest } from "@/hooks/useDappRequest";
 import { Content } from "@/layouts/Content";
-import { Button, Flex, keyframes, Text } from "@chakra-ui/react";
+import { Button, Flex, Text, keyframes } from "@chakra-ui/react";
 import BaseCheckbox from "../../../components/Custom/Checkbox";
 
 import { useCallback, useMemo, useState } from "react";
@@ -14,8 +14,7 @@ import { AccountInfo } from "@/components/Dapp/AccountInfo";
 import { useTranslation } from "react-i18next";
 import { DecryptPermission } from "@/database/types/dapp";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
-import { CoinType } from "core/types";
-import { getDefaultChainUniqueId } from "core/constants/chain";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 
 const shakeAnimation = keyframes`
   10%, 90% {
@@ -35,23 +34,16 @@ const shakeAnimation = keyframes`
   }
 `;
 
-function ConnectDappScreen() {
+function ConnectAleoDappScreen() {
   const navigate = useNavigate();
   const { getMatchAccountsWithUniqueId } = useGroupAccount();
-  const { requestId } = useParams();
-  const { dappRequest, loading } = useDappRequest(requestId);
-  const coinType = useMemo(
-    () => dappRequest?.coinType ?? CoinType.ETH,
-    [dappRequest],
-  );
-
   const selectedAccount = useMemo(() => {
-    return getMatchAccountsWithUniqueId(
-      getDefaultChainUniqueId(coinType, {}),
-    )[0];
-  }, [coinType, getMatchAccountsWithUniqueId]);
+    return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_MAINNET)[0];
+  }, [getMatchAccountsWithUniqueId]);
 
+  const { requestId } = useParams();
   const { popupServerClient } = useClient();
+  const { dappRequest, loading } = useDappRequest(requestId);
   const [showShakeAnimation, setShowShakeAnimation] = useState(false);
   const needCheck = useMemo(() => {
     return (
@@ -62,15 +54,22 @@ function ConnectDappScreen() {
   const [checked, setChecked] = useState(false);
   const { t } = useTranslation();
 
+  const permissionExplain = useMemo(() => {
+    return {
+      [DecryptPermission.NoDecrypt]: t("Dapp:noDecrypt"),
+      [DecryptPermission.UponRequest]: t("Dapp:uponRequest"),
+      [DecryptPermission.AutoDecrypt]: t("Dapp:autoDecrypt"),
+      [DecryptPermission.OnChainHistory]: t("Dapp:onChainHistory"),
+    };
+  }, [t]);
+
   const dappRequestInfo = useMemo(() => {
     if (!dappRequest) {
       return null;
     }
-    const { coinType } = dappRequest;
+    const { payload } = dappRequest;
+    const { decryptPermission, network, programs } = payload;
 
-    if (coinType !== CoinType.ETH) {
-      return null;
-    }
     return (
       <Flex
         direction={"column"}
@@ -87,11 +86,23 @@ function ConnectDappScreen() {
       >
         <Flex justify={"space-between"}>
           <Text>{t("Dapp:network")}</Text>
-          <Text fontWeight={"bold"}>EVM</Text>
+          <Text fontWeight={"bold"}>{network}</Text>
+        </Flex>
+        <Flex justify={"space-between"} mt={2}>
+          <Text>{t("Dapp:permission")}</Text>
+          <Text fontWeight={"bold"} maxW={210} wordBreak={"break-all"}>
+            {permissionExplain[decryptPermission as DecryptPermission] ?? ""}
+          </Text>
+        </Flex>
+        <Flex justify={"space-between"} mt={2}>
+          <Text>{t("Dapp:programs")}</Text>
+          <Text fontWeight={"bold"} maxW={210} wordBreak={"break-all"}>
+            {(programs ?? []).join(",\n")}
+          </Text>
         </Flex>
       </Flex>
     );
-  }, [dappRequest, t]);
+  }, [dappRequest, permissionExplain, t]);
 
   const onConnect = useCallback(() => {
     if (needCheck && !checked) {
@@ -199,4 +210,4 @@ function ConnectDappScreen() {
   );
 }
 
-export default ConnectDappScreen;
+export default ConnectAleoDappScreen;

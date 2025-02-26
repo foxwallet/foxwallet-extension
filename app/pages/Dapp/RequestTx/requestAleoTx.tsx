@@ -1,85 +1,38 @@
 import { ERROR_CODE } from "@/common/types/error";
-import { hexToString } from "@/common/utils/hex";
 import { IconFoxWallet, IconLogo } from "@/components/Custom/Icon";
 import { ResponsiveFlex } from "@/components/Custom/ResponsiveFlex";
 import { AccountInfo } from "@/components/Dapp/AccountInfo";
 import { DappInfo } from "@/components/Dapp/DappInfo";
+import { TokenNum } from "@/components/Wallet/TokenNum";
 import { useClient } from "@/hooks/useClient";
+import { useCoinService } from "@/hooks/useCoinService";
 import { useDappRequest } from "@/hooks/useDappRequest";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { Content } from "@/layouts/Content";
 import { Button, Flex, Text } from "@chakra-ui/react";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router-dom";
-import { CoinType } from "core/types";
-import { getDefaultChainUniqueId } from "core/constants/chain";
+import { useParams } from "react-router-dom";
 
-function SignMessageScreen() {
+function RequestAleoTxScreen() {
   const { getMatchAccountsWithUniqueId } = useGroupAccount();
+  const selectedAccount = useMemo(() => {
+    return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_MAINNET)[0];
+  }, [getMatchAccountsWithUniqueId]);
   const { requestId } = useParams();
   const { popupServerClient } = useClient();
   const { dappRequest, loading } = useDappRequest(requestId);
-  const coinType = useMemo(
-    () => dappRequest?.coinType ?? CoinType.ETH,
-    [dappRequest],
-  );
-
-  const selectedAccount = useMemo(() => {
-    return getMatchAccountsWithUniqueId(
-      getDefaultChainUniqueId(coinType, {}),
-    )[0];
-  }, [coinType, getMatchAccountsWithUniqueId]);
-
   const { t } = useTranslation();
-
-  const renderTypedMessageV1 = useCallback((msg: any) => {
-    return (
-      <Flex flexDir={"column"}>
-        {msg.map((obj: any, i: number) => (
-          <Flex justifyContent={"space-between"} key={`${obj.name}_${i}`}>
-            <Text fontWeight={"bold"}>{obj.name}</Text>
-            <Text key={obj.name}>{obj.value}</Text>
-          </Flex>
-        ))}
-      </Flex>
-    );
-  }, []);
-  const renderTypedMessageV3 = useCallback((obj: any, root = false) => {
-    return Object.keys(obj).map((key) => (
-      <Flex flexDir={"column"} key={key} ml={root ? 0 : 2}>
-        {obj[key] && typeof obj[key] === "object" ? (
-          <>
-            <Text fontWeight={"bold"} mt={2}>
-              {key}:
-            </Text>
-            {renderTypedMessageV3(obj[key])}
-          </>
-        ) : (
-          <Flex>
-            <Text fontWeight={"bold"}>{key + ": "}</Text>
-            <Text>{`${obj[key]}`}</Text>
-          </Flex>
-        )}
-      </Flex>
-    ));
-  }, []);
+  const { nativeCurrency } = useCoinService(InnerChainUniqueId.ALEO_MAINNET);
 
   const dappRequestInfo = useMemo(() => {
     if (!dappRequest) {
       return null;
     }
     const { payload } = dappRequest;
-    const { message, method } = payload;
-    const renderTypeDataV1 = [
-      "eth_signTypedData",
-      "eth_signTypedData_v1",
-    ].includes(method);
-    const renderTypeDataV3 = [
-      "eth_signTypedData_v4",
-      "eth_signTypedData_v3",
-    ].includes(method);
+    const { chainId, programId, functionName, inputs, baseFee, priorityFee } =
+      payload;
     return (
       <Flex
         direction={"column"}
@@ -89,33 +42,41 @@ function SignMessageScreen() {
         borderWidth={"1px"}
         borderColor={"gray.50"}
         flex={1}
-        p={2}
-        maxH={[200, 300, 400, 500]}
+        maxH={200}
         overflowY={"auto"}
+        p={2}
       >
-        <Text>{t("Dapp:message")}:</Text>
-        {typeof message === "string" ? (
-          <Text maxW={"full"} fontWeight={"bold"} mt={2}>
-            {hexToString(message)}
+        <Flex justify={"space-between"}>
+          <Text>{t("Dapp:network")}</Text>
+          <Text>{chainId}</Text>
+        </Flex>
+        <Flex justify={"space-between"}>
+          <Text>{t("Dapp:program")}</Text>
+          <Text maxW={"70%"} wordBreak={"break-all"}>
+            {programId}-{functionName}
           </Text>
-        ) : renderTypeDataV3 ? (
-          <>
-            <Text fontWeight={"bold"} mt={2} mb={2}>
-              primary type:{message.primaryType}
-            </Text>
-            {renderTypedMessageV3(message.message, true)}
-          </>
-        ) : (
-          renderTypedMessageV1(message)
-        )}
+        </Flex>
+        <Flex justify={"space-between"}>
+          <Text>{t("Dapp:inputs")}</Text>
+          <Text maxW={"70%"}>{inputs.join(",")}</Text>
+        </Flex>
+        <Flex justify={"space-between"}>
+          <Text>{t("Dapp:gasFee")}</Text>
+          <TokenNum
+            amount={BigInt(baseFee) + BigInt(priorityFee)}
+            decimals={nativeCurrency.decimals}
+            symbol={nativeCurrency.symbol}
+          />
+        </Flex>
       </Flex>
     );
-  }, [dappRequest, renderTypedMessageV1, renderTypedMessageV3, t]);
+  }, [dappRequest, t, nativeCurrency]);
 
-  const onConfirm = useCallback(() => {
+  const onConnect = useCallback(() => {
     if (requestId && selectedAccount?.account.address) {
       void popupServerClient.onRequestFinish({
         requestId,
+        data: selectedAccount.account.address,
       });
     }
   }, [popupServerClient, requestId, selectedAccount?.account.address]);
@@ -150,7 +111,7 @@ function SignMessageScreen() {
           <DappInfo siteInfo={dappRequest.siteInfo} />
         )}
         <Text mt={3} mb={3}>
-          {t("Dapp:requestSignMessage")}
+          {t("Dapp:requestTx")}
         </Text>
         <AccountInfo account={selectedAccount} />
         <Text mt={3} mb={3}>
@@ -175,7 +136,7 @@ function SignMessageScreen() {
               >
                 {t("Common:cancel")}
               </Button>
-              <Button onClick={onConfirm} flex={1} ml={"2"}>
+              <Button onClick={onConnect} flex={1} ml={"2"}>
                 {t("Common:confirm")}
               </Button>
             </Flex>
@@ -186,4 +147,4 @@ function SignMessageScreen() {
   );
 }
 
-export default SignMessageScreen;
+export default RequestAleoTxScreen;

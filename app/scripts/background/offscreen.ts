@@ -102,7 +102,7 @@ export async function syncBlocks() {
   return initResp;
 }
 
-export async function sendTransaction(params: AleoSendTxParams) {
+export async function sendAleoTransaction(params: AleoSendTxParams) {
   try {
     stopCheckSyncing();
     console.log("===> sendTransaction closeOffscreenTxDocument");

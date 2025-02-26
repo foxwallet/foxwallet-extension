@@ -14,7 +14,9 @@ export enum InnerChainUniqueId {
 
 export const InnerChainUniqueIdValues = Object.values(InnerChainUniqueId);
 
-export type ChainUniqueId = InnerChainUniqueId;
+export type EthCustomRPCUniqueId = `${InnerChainUniqueId.ETHEREUM}-${number}`;
+
+export type ChainUniqueId = InnerChainUniqueId | EthCustomRPCUniqueId;
 
 export enum ChainAssembleMode {
   ALL = "all",

@@ -1,7 +1,7 @@
 import { useCoinService } from "@/hooks/useCoinService";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { type FeeData, type GasFee, type GasFeeType } from "core/types/GasFee";
-import { type CoinType } from "core/types";
+import { CoinType } from "core/types";
 import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import { AssetType, type TokenV2 } from "core/types/Token";
 import { type EstimateGasExtraOption } from "core/types/NativeCoinTransaction";
@@ -16,6 +16,7 @@ export type GasFeeReq<T extends CoinType> = {
   token?: TokenV2;
   option?: EstimateGasExtraOption<T>;
   refreshInterval?: number;
+  data?: string;
 };
 
 export const useGasFee = <T extends CoinType>(params: GasFeeReq<T>) => {
@@ -27,9 +28,10 @@ export const useGasFee = <T extends CoinType>(params: GasFeeReq<T>) => {
     token,
     option,
     refreshInterval = 1 * 60 * 1000,
+    data,
   } = params;
 
-  const { coinService } = useCoinService(uniqueId);
+  const { coinService, chainConfig } = useCoinService(uniqueId);
 
   const key = useMemo(() => {
     return `/balance/${[
@@ -37,15 +39,19 @@ export const useGasFee = <T extends CoinType>(params: GasFeeReq<T>) => {
       from,
       to,
       value,
+      data,
       token?.contractAddress,
       token?.tokenId,
       token?.programId,
     ]
       .filter((item) => !!item)
       .join("/")}`;
-  }, [from, to, token, uniqueId, value]);
+  }, [from, to, token, uniqueId, value, data]);
 
   const isValidData = useMemo(() => {
+    if (chainConfig.coinType === CoinType.ETH) {
+      return true;
+    }
     if (value === undefined) {
       return false;
     }
@@ -54,8 +60,8 @@ export const useGasFee = <T extends CoinType>(params: GasFeeReq<T>) => {
       coinService.validateAddress(from) &&
       coinService.validateAddress(to)
     );
-  }, [coinService, from, to, value]);
-  // console.log("      isValidData", isValidData);
+  }, [chainConfig.coinType, coinService, from, to, value]);
+  console.log("isValidData", isValidData);
 
   const fetchGas = useCallback(async () => {
     if (!isValidData) {
@@ -72,14 +78,14 @@ export const useGasFee = <T extends CoinType>(params: GasFeeReq<T>) => {
       } else {
         return (await coinService.estimateGasFee({
           // @ts-expect-error value is sure to exist
-          tx: { from, to, value },
+          tx: { from, to, value, data },
         })) as GasFee<T>;
       }
     } catch (err) {
       console.error(err);
       return undefined;
     }
-  }, [coinService, from, isValidData, option, to, token, value]);
+  }, [coinService, from, isValidData, option, to, token, value, data]);
 
   const {
     data: gasFee,

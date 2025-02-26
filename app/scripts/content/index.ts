@@ -1,10 +1,15 @@
-import { FOX_DAPP_REQUEST, FOX_DAPP_RESP } from "@/common/constants";
+import {
+  FOX_DAPP_EMIT,
+  FOX_DAPP_REQUEST,
+  FOX_DAPP_RESP,
+} from "@/common/constants";
 import { PortName } from "../../common/types/port";
 import { KeepAliveClient } from "../../common/utils/client";
 import { logger } from "../../common/utils/logger";
 import { ContentClient } from "./ContentClient";
-import { RequestParams } from './type';
+import { EmitData, RequestParams } from "./type";
 import { getSiteInfo } from "./host";
+import { CoinType } from "core/types";
 
 const inject = () => {
   const script = document.createElement("script");
@@ -19,19 +24,27 @@ const inject = () => {
 const keepAliveClient = new KeepAliveClient(PortName.CONTENT_TO_BACKGROUND);
 logger.log("===> Content script init success");
 
-const contentClient = new ContentClient();
+const emitRepeater = (emitData: EmitData) => {
+  window.dispatchEvent(
+    new CustomEvent(FOX_DAPP_EMIT, {
+      detail: emitData,
+    }),
+  );
+};
+
+const contentClient = new ContentClient(emitRepeater);
 
 // @ts-ignore custom event
 window.addEventListener(
   FOX_DAPP_REQUEST,
-  async (event: { detail: RequestParams }) => {
+  async (event: { detail: RequestParams<CoinType> }) => {
     const detail = event.detail;
     if (!detail) {
       throw new Error("Invalid event detail");
     }
-    const { id, method, payload, metadata } = detail;
+    const { id, coinType, method, payload, metadata } = detail;
     const siteInfo = getSiteInfo();
-    const result = await contentClient.send(method, payload, {
+    const result = await contentClient.send(method, payload, coinType, {
       siteInfo,
       ...metadata,
     });

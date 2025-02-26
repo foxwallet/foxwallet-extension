@@ -193,10 +193,16 @@ export interface IPopupServer {
   }: SetSelectedAccountProps): Promise<OneMatchGroupAccount>;
 }
 
-export interface ConnectProps {
+export interface ALEOConnectProps {
   decryptPermission: DecryptPermission;
   network: string;
   programs?: string[];
+}
+
+export interface ConnectProps {
+  coinType: CoinType;
+  network?: string;
+  chainId?: string;
 }
 
 export interface DecrtptProps {
@@ -266,6 +272,7 @@ export interface RequestTxResp {
 
 export interface SignMessageProps {
   message: string;
+  method?: string;
 }
 
 export interface SignMessageResp {
@@ -315,8 +322,6 @@ export interface RequestTxHistoryResp {
   transactions: TxHistoryBody[];
 }
 
-export type ContentServerMethod = keyof IContentServer;
-
 export interface RequestFinfishProps {
   requestId: string;
   error?: string;
@@ -329,57 +334,168 @@ export interface SiteMetadata {
   address: string | null;
 }
 
-export interface IContentServer {
+export type ServerMethodContext = {
+  coinType: CoinType;
+  siteMetadata?: SiteMetadata;
+};
+
+export type ETHSignPersonalMessageResult = {};
+
+export interface IALEOContentServer {
   connect: (
-    params: ConnectProps,
-    siteMetadata?: SiteMetadata,
+    params: ALEOConnectProps,
+    serverMethodContext: ServerMethodContext,
   ) => Promise<string | null>;
-  disconnect: (params: {}, siteMetadata?: SiteMetadata) => Promise<boolean>;
+  disconnect: (
+    params: {},
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<boolean>;
   decrypt: (
     params: DecrtptProps,
-    siteMetadata?: SiteMetadata,
+    serverMethodContext: ServerMethodContext,
   ) => Promise<string>;
   requestRecords: (
     params: RequestRecordsProps,
-    siteMetadata?: SiteMetadata,
+    serverMethodContext: ServerMethodContext,
   ) => Promise<RequestRecordsResp>;
   requestRecordPlaintexts: (
     params: RequestRecordsProps,
-    siteMetadata?: SiteMetadata,
+    serverMethodContext: ServerMethodContext,
   ) => Promise<RequestRecordsPlaintextResp>;
   requestTransaction: (
     params: RequestTxProps,
-    siteMetadata?: SiteMetadata,
+    serverMethodContext: ServerMethodContext,
   ) => Promise<RequestTxResp>;
   signMessage: (
     params: SignMessageProps,
-    siteMetadata?: SiteMetadata,
+    serverMethodContext: ServerMethodContext,
   ) => Promise<SignMessageResp>;
   requestExecution: (
     params: RequestTxProps,
-    siteMetadata?: SiteMetadata,
+    serverMethodContext: ServerMethodContext,
   ) => Promise<RequestTxResp>;
   requestBulkTransactions: (
     params: RequestBulkTxsProps,
-    siteMetadata?: SiteMetadata,
+    serverMethodContext: ServerMethodContext,
   ) => Promise<RequestBulkTxsResp>;
   requestDeploy: (
     params: RequestDeployProps,
-    siteMetadata?: SiteMetadata,
+    serverMethodContext: ServerMethodContext,
   ) => Promise<RequestDeployResp>;
   transactionStatus: (
     params: TransactionStatusProps,
-    siteMetadata?: SiteMetadata,
+    serverMethodContext: ServerMethodContext,
   ) => Promise<TransactionStatusResp>;
   getExecution: (
     params: TransactionStatusProps,
-    siteMetadata?: SiteMetadata,
+    serverMethodContext: ServerMethodContext,
   ) => Promise<TransactionStatusResp>;
   requestTransactionHistory: (
     params: RequestTxHistoryProps,
-    siteMetadata?: SiteMetadata,
+    serverMethodContext: ServerMethodContext,
   ) => Promise<RequestTxHistoryResp>;
 }
+
+export type ETHRequestParams<T> = {
+  id?: string;
+  method: string;
+  params: T;
+};
+
+export type ETHSignPersonalMessageParams = {
+  data: string;
+};
+
+export interface IETHContentServer {
+  eth_accounts: (
+    payload: ETHRequestParams<{}>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<string[]>;
+  eth_requestAccounts: (
+    payload: ETHRequestParams<{}>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<string[]>;
+  // net_version: (
+  //   payload: ETHRequestParams<{}>,
+  //   serverMethodContext: ServerMethodContext,
+  // ) => Promise<string>;
+  // eth_chainId: (
+  //   payload: ETHRequestParams<{}>,
+  //   serverMethodContext: ServerMethodContext,
+  // ) => Promise<string>;
+  wallet_getPermissions: (
+    payload: ETHRequestParams<{}>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  wallet_requestPermissions: (
+    payload: ETHRequestParams<[{ eth_accounts: {} }]>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  wallet_revokePermissions: (
+    payload: ETHRequestParams<[{ eth_accounts: {} }]>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  personal_sign: (
+    payload: ETHRequestParams<[string, string]>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  personal_ecRecover: (
+    payload: ETHRequestParams<[string, string]>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  eth_signTypedData_v3: (
+    payload: ETHRequestParams<[any, string]>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  eth_signTypedData_v4: (
+    payload: ETHRequestParams<[any, string]>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  eth_signTypedData: (
+    payload: ETHRequestParams<[any, string]>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  eth_sendTransaction: (
+    payload: ETHRequestParams<[any]>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  wallet_watchAsset: (
+    payload: ETHRequestParams<any>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  wallet_addEthereumChain: (
+    payload: ETHRequestParams<any>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  wallet_switchEthereumChain: (
+    payload: ETHRequestParams<[{ chainId: string }]>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  _setGlobalChainId: (
+    payload: string,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  _getGlobalChainId: (
+    payload: any,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  proxyRPCCall: (
+    payload: any,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+}
+
+export type IContentServer<T extends CoinType> = T extends CoinType.ALEO
+  ? IALEOContentServer
+  : T extends CoinType.ETH
+  ? IETHContentServer
+  : never;
+
+export type ContentServerMethod<T extends CoinType> = T extends CoinType.ALEO
+  ? keyof IALEOContentServer
+  : T extends CoinType.ETH
+  ? keyof IETHContentServer
+  : never;
 
 export async function executeServerMethod<T>(
   promise: Promise<T>,
@@ -393,13 +509,13 @@ export async function executeServerMethod<T>(
       .catch((error) => {
         logger.error("executeServerMethod error: ", error);
         return {
-          error: error.message,
+          error: error,
           data: null,
         };
       });
   } catch (err: any) {
     return {
-      error: err.message,
+      error: err,
       data: null,
     };
   }

@@ -179,7 +179,7 @@ export const GlobalModal = () => {
       popupEvents.off("showDialog");
       popupEvents.off("changeColorMode");
     };
-  }, []);
+  }, [setColorMode]);
 
   if (!Dialog) {
     return null;

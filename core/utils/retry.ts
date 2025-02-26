@@ -1,4 +1,5 @@
 import { sleep } from "./sleep";
+import axios from "axios";
 
 /**
  * @deprecated
@@ -10,8 +11,52 @@ export enum AutoSwitchServiceType {
 
 export const isNetworkError = (err: any) => {
   if (err?.message && typeof err.message === "string") {
-    const msg = err.message;
-    return msg === "Network Error" || msg.startsWith("network error");
+    const msg = err.message.toLowerCase();
+    return (
+      axios.isAxiosError(err) ||
+      msg === "network error" || // filecoin
+      msg.includes("notok") ||
+      msg.includes("timeout") ||
+      msg.includes("timed out") ||
+      msg.includes("could not detect network") || // ethers.js
+      msg.includes("access forbidden") ||
+      msg.includes("bad result") || // ethers.js
+      msg.includes("bad response") || // ethers.js
+      msg.includes("bad status") || // coreum
+      msg.includes("doesn't exist") || // goplus rpc
+      msg.includes("does not exist") || // zksync era
+      msg.includes("missing response") || // ethers.js
+      msg.includes("missing revert data") || // ethers.js
+      msg.includes("missing permission") || // filecoin
+      msg.includes("not supported") || // filecoin
+      msg.includes("not allowed") || // ethers.js
+      msg.includes("not available") || // solana
+      msg.includes("request failed") || // solana
+      msg.includes("429") || // solana
+      msg.includes("rate limit") || // blockscout
+      msg.includes("plan limit") || // solana
+      msg.includes("request limit") || // solana
+      msg.includes("frequency limit") || // tron grid
+      msg.includes("credits limit") || // solana
+      msg.includes("free tier limit") || // solana
+      msg.includes("too many requests") || // solana
+      msg.includes("method unavailable") || // solana
+      msg.includes("method not found") || // solana
+      msg.includes("status code 403") || // blockscout
+      msg.includes("unable to perform request") || // solana
+      msg.includes("underlying network changed") || // filecoin evm
+      msg.includes("tipset height in future") || // filecoin evm
+      msg.includes("invalid opcode: invalid") || // ethers.js
+      /.*status code:? 5[0-9][0-9].*/.test(msg) || // blockbook
+      /.*error:? 5[0-9][0-9].*/.test(msg) || // solana
+      msg.includes("unrecognized token") || // solana
+      msg.includes("token not valid") || // solana
+      msg.includes("node is behind by") || // solana
+      msg.includes("remote error") || // zksync era
+      msg.includes("exceeded the quota usage") || // zksync era
+      msg.includes("failed to serve request") || // zksync era
+      msg.includes("resourceexhausted") // zkfair
+    );
   }
   return false;
 };

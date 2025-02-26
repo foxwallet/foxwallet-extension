@@ -90,7 +90,7 @@ import {
 } from "ethereumjs-util";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { isSameAddress } from "core/utils/address";
-import { hexValue } from "ethers/lib/utils";
+import { hexValue, parseTransaction } from "ethers/lib/utils";
 import { type TransactionHistoryResp } from "core/types/TransactionHistory";
 import {
   type BlockBookService,
@@ -107,6 +107,12 @@ import { MemoizeExpiring } from "typescript-memoize";
 import { GasPriceOracle } from "gas-price-oracle";
 import { type GasPrice } from "gas-price-oracle/lib/services";
 import { TransactionStatus } from "core/types/TransactionStatus";
+import { isNotEmpty } from "core/utils/is";
+
+export type RawTxWrap = {
+  id: string;
+  rawTx: string;
+};
 
 export class EthService extends CoinServiceBasic {
   config: ETHConfig;
@@ -242,6 +248,37 @@ export class EthService extends CoinServiceBasic {
     return await this.sendTransactionRequest(txReq, privateKey, from, gasFee);
   }
 
+  async getNativeCoinRawTx(
+    params: NativeCoinSendTxParams<CoinType.ETH>,
+  ): Promise<RawTxWrap> {
+    const {
+      tx: { from, to, value, gasFee, data, nonce },
+      signer: { privateKey },
+    } = params;
+
+    const txReq: TransactionRequest = {
+      from,
+      to,
+      value,
+      data,
+      nonce,
+    };
+
+    if (this.isFilecoinAddress(to)) {
+      const destination = Address.fromString(to).toBytes();
+      const txn = await this.populateFilForwarderTx({
+        from,
+        to: destination,
+        value,
+      });
+      txReq.to = txn.to;
+      txReq.value = txn.value ?? 0n;
+      txReq.data = txn.data;
+    }
+
+    return await this.getSignedTxRaw(txReq, privateKey, from, gasFee);
+  }
+
   // 在 validateAddress 操作后使用，用于区分 eth 地址和 fil 地址
   private isFilecoinAddress(to: string) {
     if (
@@ -339,7 +376,7 @@ export class EthService extends CoinServiceBasic {
       // See: https://eips.ethereum.org/EIPS/eip-1559
       const baseFeePerGas = FixedNumber.from(block.baseFeePerGas);
       const maxPriorityFeePerGas = await this.getMaxPriorityFeePerGas();
-      if (!maxPriorityFeePerGas) {
+      if (!isNotEmpty(maxPriorityFeePerGas)) {
         return undefined;
       }
       let multiplier = FixedNumber.from("1.27");
@@ -422,7 +459,7 @@ export class EthService extends CoinServiceBasic {
       if (option.type === GasFeeType.EIP1559) {
         const { gasLimit, maxPriorityFeePerGas, maxFeePerGas } =
           option as GasFeeEIP1559;
-        if (gasLimit && maxPriorityFeePerGas && maxFeePerGas) {
+        if (gasLimit && isNotEmpty(maxPriorityFeePerGas) && maxFeePerGas) {
           return {
             gasLimit,
             maxPriorityFeePerGas,
@@ -492,7 +529,7 @@ export class EthService extends CoinServiceBasic {
     if (
       feeData.eip1559 &&
       feeData.maxFeePerGas &&
-      feeData.maxPriorityFeePerGas
+      isNotEmpty(feeData.maxPriorityFeePerGas)
     ) {
       const maxPriorityFeePerGas = BigNumber.from(feeData.maxPriorityFeePerGas);
       const maxFeePerGas = BigNumber.from(feeData.maxFeePerGas);
@@ -539,6 +576,89 @@ export class EthService extends CoinServiceBasic {
       address,
     );
     console.log("signedTx: ", signedTx);
+    const txResp: TransactionResponse =
+      await this.rpcService.sendTransaction(signedTx);
+    console.log("txResp: ", txResp);
+
+    await Promise.allSettled(
+      this.rpcService.proxyAllInstances().map(async (rpc) => {
+        if (rpc !== this.rpcService.proxyCurrInstance()) {
+          await rpc.sendTransaction(signedTx);
+        }
+      }),
+    );
+
+    let gasFeeResp: SerializeGasFee<CoinType.ETH>;
+    const { maxFeePerGas, maxPriorityFeePerGas, gasLimit, gasPrice } = txResp;
+    if (maxFeePerGas) {
+      gasFeeResp = {
+        gasLimit: gasLimit.toNumber(),
+        maxFeePerGas: maxFeePerGas.toString(),
+        maxPriorityFeePerGas: maxPriorityFeePerGas?.toString() ?? "0",
+        estimateGas: gasLimit.mul(maxPriorityFeePerGas ?? 0).toString(),
+        type: GasFeeType.EIP1559,
+      };
+    } else {
+      gasFeeResp = {
+        gasLimit: gasLimit.toNumber(),
+        gasPrice: gasPrice?.toString() ?? "0",
+        estimateGas: gasLimit.mul(gasPrice ?? 0).toString(),
+        type: GasFeeType.LEGACY,
+      };
+    }
+    return {
+      id: txResp.hash,
+      from: txResp.from,
+      to: txResp.to ?? "0x",
+      value: txResp.value.toBigInt(),
+      nonce: txResp.nonce,
+      data: txResp.data,
+      gasFee: gasFeeResp,
+      timestamp: +Date.now(),
+      chainSpecificReturn: {
+        wait: txResp.wait,
+      },
+    };
+  }
+
+  async getSignedTxRaw(
+    txReq: TransactionRequest,
+    privateKey: string,
+    address: string,
+    gasFee?: GasFee<CoinType.ETH>,
+  ): Promise<RawTxWrap> {
+    if (gasFee?.type === GasFeeType.LEGACY) {
+      if (gasFee.gasLimit) {
+        txReq.gasLimit = gasFee.gasLimit;
+      }
+      txReq.gasPrice = gasFee.gasPrice;
+    } else if (gasFee?.type === GasFeeType.EIP1559) {
+      if (gasFee.gasLimit) {
+        txReq.gasLimit = gasFee.gasLimit;
+      }
+      txReq.maxFeePerGas = gasFee.maxFeePerGas;
+      txReq.maxPriorityFeePerGas = gasFee.maxPriorityFeePerGas;
+    }
+    const signedTx = await this.signTransactionRequest(
+      txReq,
+      privateKey,
+      address,
+    );
+    console.log("signedTx: ", signedTx);
+    const transaction = parseTransaction(signedTx);
+    if (!transaction.hash) {
+      throw new Error("Transaction wrong");
+    }
+    return {
+      id: transaction.hash,
+      rawTx: signedTx,
+    };
+  }
+
+  async sendSignedTxRaw(
+    tx: RawTxWrap,
+  ): Promise<NativeCoinSendTxRes<CoinType.ETH>> {
+    const { rawTx: signedTx } = tx;
     const txResp: TransactionResponse =
       await this.rpcService.sendTransaction(signedTx);
     console.log("txResp: ", txResp);

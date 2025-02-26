@@ -9,7 +9,20 @@ const MainPage = lazy(async () => await import("../pages/Main"));
 const SendAleo = lazy(async () => await import("../pages/Wallet/SendAleo"));
 const Receive = lazy(async () => await import("../pages/Wallet/Receive"));
 const ConnectDapp = lazy(async () => await import("../pages/Dapp/ConnectDapp"));
+const ConnectAleoDapp = lazy(
+  async () => await import("../pages/Dapp/ConnectDapp/ConnectAleoDappScreen"),
+);
+const RequestAleoTx = lazy(
+  async () => await import("../pages/Dapp/RequestTx/requestAleoTx"),
+);
 const RequestTx = lazy(async () => await import("../pages/Dapp/RequestTx"));
+const SignAleoMessage = lazy(
+  async () => await import("../pages/Dapp/SignMessage/SignAleoMessage"),
+);
+const AddChain = lazy(async () => await import("../pages/Dapp/AddChain"));
+const AddTokenConfirm = lazy(
+  async () => await import("../pages/Dapp/AddTokenConfirm"),
+);
 const SignMessage = lazy(async () => await import("../pages/Dapp/SignMessage"));
 const Deployment = lazy(async () => await import("../pages/Dapp/Deployment"));
 const TokenDetail = lazy(
@@ -135,12 +148,32 @@ export const routesConfig: RouteObject[] = [
         element: <ConnectDapp />,
       },
       {
+        path: "connect_aleo/:requestId",
+        element: <ConnectAleoDapp />,
+      },
+      {
         path: "request_tx/:requestId",
         element: <RequestTx />,
       },
       {
+        path: "request_aleo_tx/:requestId",
+        element: <RequestAleoTx />,
+      },
+      {
         path: "sign_message/:requestId",
         element: <SignMessage />,
+      },
+      {
+        path: "sign_aleo_message/:requestId",
+        element: <SignAleoMessage />,
+      },
+      {
+        path: "add_ethereum_chain/:requestId",
+        element: <AddChain />,
+      },
+      {
+        path: "add_ethereum_token/:requestId",
+        element: <AddTokenConfirm />,
       },
       {
         path: "request_deploy/:requestId",
