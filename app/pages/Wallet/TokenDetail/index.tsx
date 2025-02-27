@@ -24,7 +24,10 @@ import {
   AleoHistoryType,
   AleoTxAddressType,
 } from "core/coins/ALEO/types/History";
-import { InnerChainUniqueId } from "core/types/ChainUniqueId";
+import {
+  type ChainUniqueId,
+  InnerChainUniqueId,
+} from "core/types/ChainUniqueId";
 import type React from "react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -62,7 +65,7 @@ import { TransactionStatus } from "core/types/TransactionStatus";
 
 interface AleoTokenTxHistoryItemProps {
   item: AleoHistoryItem;
-  uniqueId: InnerChainUniqueId;
+  uniqueId: ChainUniqueId;
   token: TokenV2;
   address: string;
 }
@@ -153,7 +156,7 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
 
 interface TokenTxHistoryItemProps {
   item: TransactionHistoryItem;
-  uniqueId: InnerChainUniqueId;
+  uniqueId: ChainUniqueId;
   token: TokenV2;
   address: string;
 }
