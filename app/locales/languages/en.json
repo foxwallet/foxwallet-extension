@@ -41,7 +41,8 @@
       "delete": "Delete wallet",
       "deleteRemind": "Please ensure the wallet is properly backed up as it can only be restored using the seed phrase or private key."
     },
-    "allNetworks": "ALL"
+    "allNetworks": "ALL",
+    "allEVMNetworks": "ALL EVM Networks"
   },
   "Onboard": {
     "Home": {
