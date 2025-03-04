@@ -219,12 +219,16 @@ export const useAleoTxHistory = ({
     return uniqueId === InnerChainUniqueId.ALEO_MAINNET;
   }, [uniqueId]);
 
-  const { programId: _programId, tokenId: _tokenId } = (
-    coinService as AleoService
-  ).parseContractAddress(token.contractAddress);
+  let tokenId = token.tokenId;
+  let programId = token.programId;
 
-  const tokenId = token.tokenId ?? _tokenId;
-  const programId = token.programId ?? _programId;
+  if (isAleo) {
+    const { programId: _programId, tokenId: _tokenId } = (
+      coinService as AleoService
+    ).parseContractAddress(token.contractAddress);
+    tokenId = token.tokenId ?? _tokenId;
+    programId = token.programId ?? _programId;
+  }
 
   // local txs
   const localTxKey = `/localTxs/${uniqueId}/${address}/${token.contractAddress}/${tokenId}/${programId}`;

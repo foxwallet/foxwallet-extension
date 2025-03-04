@@ -41,7 +41,7 @@ export type TokenMetaV2 = Currency & {
   // 以下 aleo
   tokenId?: string;
   official?: boolean;
-  programId?: InnerProgramId;
+  programId?: string;
 };
 
 export type TokenMarket = TokenMetaV2 & {
