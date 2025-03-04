@@ -126,6 +126,12 @@ const DetailInfoB = (props: InfoBProps) => {
   );
 };
 
+enum TxIconStatus {
+  Success = "Success",
+  Failed = "Failed",
+  Pending = "pending",
+}
+
 const TransactionDetailScreen = () => {
   const { t } = useTranslation();
   const { uniqueId, address } = useSafeParams();
@@ -140,8 +146,6 @@ const TransactionDetailScreen = () => {
 
   const {
     tx,
-    isSuccess,
-    isPending,
     from,
     to,
     txId,
@@ -149,17 +153,19 @@ const TransactionDetailScreen = () => {
     amountStr,
     isSend,
     nonce,
+    txStatusStr,
+    txStatus,
   } = useMemo(() => {
     if (!txItem) {
       return { isSuccess: false };
     }
     try {
       let tx;
-      let isSuccess = false;
       let txId, from, to, nonce;
       let amount;
       let isSend = false;
-      let isPending = false;
+      let txStatusStr = "";
+      let txStatus;
 
       if (isAleo) {
         tx = JSON.parse(txItem) as AleoHistoryItem;
@@ -179,24 +185,61 @@ const TransactionDetailScreen = () => {
           from = tx.from;
           to = tx.to;
         }
-        isSuccess =
-          tx.status === AleoTxStatus.FINALIZD ||
-          tx.status === AleoTxStatus.COMPLETED;
-        isPending =
-          tx.status === AleoTxStatus.QUEUED ||
-          tx.status === AleoTxStatus.GENERATING_TRANSACTION ||
-          tx.status === AleoTxStatus.GENERATING_PROVER_FILES ||
-          tx.status === AleoTxStatus.BROADCASTING;
+        switch (tx.status) {
+          case AleoTxStatus.FINALIZD:
+          case AleoTxStatus.COMPLETED: {
+            txStatus = TxIconStatus.Success;
+            txStatusStr = t("Common:success");
+            break;
+          }
+          case AleoTxStatus.QUEUED:
+          case AleoTxStatus.GENERATING_TRANSACTION:
+          case AleoTxStatus.GENERATING_PROVER_FILES:
+          case AleoTxStatus.BROADCASTING: {
+            txStatus = TxIconStatus.Pending;
+            txStatusStr = tx.status;
+            break;
+          }
+          case AleoTxStatus.REJECTED:
+          case AleoTxStatus.FAILED:
+          case AleoTxStatus.UNACCEPTED: {
+            txStatus = TxIconStatus.Failed;
+            txStatusStr = t("Common:failed");
+            break;
+          }
+          default: {
+            break;
+          }
+        }
       } else {
         tx = JSON.parse(txItem) as TransactionHistoryItem;
-        isSuccess = tx.status === TransactionStatus.SUCCESS;
-        isPending = tx.status === TransactionStatus.PENDING;
         txId = tx.id;
         from = tx.from;
         to = tx.to;
         amount = BigInt(tx.value ?? "0");
         isSend = tx.from === address;
         nonce = String(tx.nonce ?? "");
+
+        switch (tx.status) {
+          case TransactionStatus.SUCCESS: {
+            txStatus = TxIconStatus.Success;
+            txStatusStr = t("Common:success");
+            break;
+          }
+          case TransactionStatus.PENDING: {
+            txStatus = TxIconStatus.Pending;
+            txStatusStr = t("Common:pending");
+            break;
+          }
+          case TransactionStatus.FAILED: {
+            txStatus = TxIconStatus.Failed;
+            txStatusStr = t("Common:failed");
+            break;
+          }
+          default: {
+            break;
+          }
+        }
       }
 
       const timeOfItem = dayjs(tx.timestamp);
@@ -219,8 +262,6 @@ const TransactionDetailScreen = () => {
 
       return {
         tx,
-        isSuccess,
-        isPending,
         from,
         to,
         txId,
@@ -228,12 +269,14 @@ const TransactionDetailScreen = () => {
         amountStr,
         isSend,
         nonce,
+        txStatusStr,
+        txStatus,
       };
     } catch (e) {
       console.error(e);
       return { isSuccess: false };
     }
-  }, [address, isAleo, tokenInfo, txItem]);
+  }, [address, isAleo, t, tokenInfo, txItem]);
 
   const { data: txDetail } = useTransactionDetail({
     uniqueId,
@@ -321,19 +364,15 @@ const TransactionDetailScreen = () => {
     <PageWithHeader title="Transaction Detail">
       <Content>
         <Flex direction={"column"} alignItems={"center"}>
-          {isSuccess ? (
+          {txStatus === TxIconStatus.Success ? (
             <IconSuccess />
-          ) : isPending ? (
+          ) : txStatus === TxIconStatus.Pending ? (
             <IconProcessing />
           ) : (
             <IconFailed />
           )}
           <Text fontSize={"12px"} pt={1}>
-            {isSuccess
-              ? t("Common:success")
-              : isPending
-              ? t("Common:pending")
-              : t("Common:failed")}
+            {txStatusStr}
           </Text>
           {amountStr && (
             <Flex fontWeight={"bold"} fontSize={18} mt={"10px"}>
