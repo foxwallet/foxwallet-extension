@@ -101,6 +101,7 @@ function AddToken() {
         ).parseContractAddress(token.contractAddress);
         if (_programId === BETA_STAKING_PROGRAM_ID) {
           token.tokenId = BETA_STAKING_ALEO_TOKEN_ID;
+          token.programId = BETA_STAKING_PROGRAM_ID;
         }
       }
 
