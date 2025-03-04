@@ -65,7 +65,7 @@ export const useRecords = ({
       records,
       fetchRecords,
     };
-  }, [loading, records, fetchRecords]);
+  }, [coinType, loading, records, fetchRecords]);
 
   return res;
 };

@@ -412,13 +412,6 @@ const TokenDetailScreen = () => {
   ]);
   // console.log("      history", history);
 
-  useEffect(() => {
-    if (reachBottom) {
-      getMore();
-    }
-  }, [getMore, reachBottom]);
-
-  const { sendingAleoTx } = useIsSendingAleoTx();
   const { records, loading: loadingRecords } = useRecords({
     uniqueId,
     address,
@@ -426,57 +419,13 @@ const TokenDetailScreen = () => {
     programId: tokenInfo.programId,
   });
 
-  const tokenRecords = useMemo(() => {
-    switch (tokenInfo.programId) {
-      case NATIVE_TOKEN_PROGRAM_ID: {
-        return records;
-      }
-      case ALPHA_TOKEN_PROGRAM_ID: {
-        return records
-          .filter((record) => {
-            return record.parsedContent?.token === tokenInfo.tokenId;
-          })
-          .sort(
-            (record1, record2) =>
-              record2.parsedContent?.amount - record1.parsedContent?.amount,
-          );
-      }
-      case BETA_STAKING_PROGRAM_ID: {
-        return records;
-      }
-      default: {
-        console.error(`Unsupport programId ${tokenInfo.programId}`);
-        return [];
-      }
+  useEffect(() => {
+    if (reachBottom) {
+      getMore();
     }
-  }, [records, tokenInfo]);
+  }, [getMore, reachBottom]);
 
-  const recordStr = useMemo(() => {
-    if (!tokenRecords) {
-      return "";
-    }
-    if (tokenRecords.length === 0) {
-      return t("Send:noRecordExist");
-    }
-    return t("Send:recordStatistics", { COUNT: tokenRecords.length });
-  }, [t, tokenRecords]);
-
-  const recordAmount = useMemo(() => {
-    switch (tokenInfo.programId) {
-      case NATIVE_TOKEN_PROGRAM_ID: {
-        return tokenRecords[0]?.parsedContent?.microcredits;
-      }
-      case ALPHA_TOKEN_PROGRAM_ID: {
-        return tokenRecords[0]?.parsedContent?.amount;
-      }
-      case BETA_STAKING_PROGRAM_ID: {
-        return tokenRecords[0]?.parsedContent?.amount;
-      }
-      default: {
-        console.error(`Unsupport programId ${tokenInfo.programId}`);
-      }
-    }
-  }, [tokenInfo, tokenRecords]);
+  const { sendingAleoTx } = useIsSendingAleoTx();
 
   const onReceive = useCallback(() => {
     navigate(
@@ -594,7 +543,7 @@ const TokenDetailScreen = () => {
                 {tokenInfo.tokenId !== NATIVE_TOKEN_TOKEN_ID &&
                   tokenInfo.tokenId !== BETA_STAKING_ALEO_TOKEN_ID && (
                     <MiddleEllipsisText
-                      text={"tokenInfo.tokenId"}
+                      text={tokenInfo.tokenId ?? ""}
                       width={150}
                       style={{ color: "#777E90", fontSize: 10 }}
                     />

@@ -1546,9 +1546,9 @@ export class AleoService extends CoinServiceBasic {
     return `${programId}-${tokenId}`;
   };
 
-  private parseContractAddress = (tokenId: string) => {
-    const [programId, tokenIdStr] = tokenId.split("-");
-    return { programId, tokenId: tokenIdStr };
+  parseContractAddress = (contractAddress: string) => {
+    const [programId, tokenId] = contractAddress.split("-");
+    return { programId, tokenId };
   };
 
   async getTokenBalance(
@@ -2090,5 +2090,9 @@ export class AleoService extends CoinServiceBasic {
       console.error("getTxStatus error: ", err);
       return undefined;
     }
+  }
+
+  supportTokenTxHistory(): boolean {
+    return false;
   }
 }

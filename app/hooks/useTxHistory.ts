@@ -219,39 +219,46 @@ export const useAleoTxHistory = ({
     return uniqueId === InnerChainUniqueId.ALEO_MAINNET;
   }, [uniqueId]);
 
+  const { programId: _programId, tokenId: _tokenId } = (
+    coinService as AleoService
+  ).parseContractAddress(token.contractAddress);
+
+  const tokenId = token.tokenId ?? _tokenId;
+  const programId = token.programId ?? _programId;
+
   // local txs
-  const localTxKey = `/localTxs/${uniqueId}/${address}/${token.tokenId}`;
+  const localTxKey = `/localTxs/${uniqueId}/${address}/${token.contractAddress}/${tokenId}/${programId}`;
   const getLocalTxs = useCallback(async () => {
     if (isAleo) {
       const res = await (coinService as AleoService).getLocalTxHistory(
         address,
-        token.tokenId !== NATIVE_TOKEN_TOKEN_ID ? token.programId : undefined,
-        token.tokenId,
+        tokenId !== NATIVE_TOKEN_TOKEN_ID ? programId : undefined,
+        tokenId,
       );
       return res;
     }
     return [];
-  }, [isAleo, coinService, address, token]);
+  }, [isAleo, coinService, address, tokenId, programId]);
   const {
     data: localTxs,
     error: localTxsError,
     isLoading: loadingLocalTxs,
   } = useSWR(localTxKey, getLocalTxs, { refreshInterval });
-  console.log("      localTxs", localTxs);
+  // console.log("      localTxs", localTxs);
 
   // private txs
-  const privateTxsKey = `/privateTxs/${token.contractAddress}/${uniqueId}/${address}/${token.tokenId}`;
+  const privateTxsKey = `/privateTxs/${token.contractAddress}/${uniqueId}/${address}/${tokenId}/${programId}`;
   const getPrivateTxs = useCallback(async () => {
     if (isAleo) {
       const res = await (coinService as AleoService).getPrivateTxHistory(
         address,
-        token.tokenId !== NATIVE_TOKEN_TOKEN_ID ? token.programId : undefined,
-        token.tokenId,
+        tokenId !== NATIVE_TOKEN_TOKEN_ID ? programId : undefined,
+        tokenId,
       );
       return res;
     }
     return [];
-  }, [isAleo, coinService, address, token]);
+  }, [isAleo, coinService, address, tokenId, programId]);
   const {
     data: privateTxs,
     error: privateTxsError,
@@ -270,18 +277,22 @@ export const useAleoTxHistory = ({
     pageSize: 100,
   });
   const key = isAleo
-    ? `/onChainTxs/${token.contractAddress}/${uniqueId}/${address}?page=${currPagination.pageNum}&limit=${currPagination.pageSize}`
+    ? `/onChainTxs/${token.contractAddress}/${uniqueId}/${address}/${tokenId}/${programId}?page=${currPagination.pageNum}&limit=${currPagination.pageSize}`
     : undefined;
 
   const fetchOnChainHistory = useCallback(async () => {
     try {
       let res: TransactionHistoryResp | undefined;
-      if (token.type === AssetType.COIN) {
+
+      if (
+        token.type === AssetType.COIN &&
+        coinService.supportNativeCoinTxHistory()
+      ) {
         res = await coinService.getNativeCoinTxHistory({
           address,
           pagination: currPagination,
         });
-      } else {
+      } else if (coinService.supportTokenTxHistory()) {
         res = await coinService.getTokenTxHistory({
           address,
           token,

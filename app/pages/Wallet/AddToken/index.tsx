@@ -19,7 +19,10 @@ import {
   InputGroup,
   InputLeftElement,
 } from "@chakra-ui/react";
-import { BETA_STAKING_PROGRAM_ID } from "core/coins/ALEO/constants";
+import {
+  BETA_STAKING_ALEO_TOKEN_ID,
+  BETA_STAKING_PROGRAM_ID,
+} from "core/coins/ALEO/constants";
 import { isEqual } from "lodash";
 import type React from "react";
 import { useCallback, useMemo, useState } from "react";
@@ -29,6 +32,9 @@ import { type TokenV2 } from "core/types/Token";
 import { LoadingView } from "@/components/Custom/Loading";
 import { useSearchTokens } from "@/hooks/useSearchTokens";
 import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
+import type { AleoService } from "core/coins/ALEO/service/AleoService";
+import { useCoinService } from "@/hooks/useCoinService";
 
 function AddToken() {
   const { t } = useTranslation();
@@ -38,6 +44,7 @@ function AddToken() {
     return getMatchAccountsWithUniqueId(uniqueId)[0];
   }, [getMatchAccountsWithUniqueId, uniqueId]);
   const [searchText, setSearchText] = useState("");
+  const { coinService } = useCoinService(uniqueId);
 
   const recommendTokens = useRecommendTokens(uniqueId); // 推荐 数量适中
   // console.log("      recommendTokens", recommendTokens);
@@ -87,13 +94,23 @@ function AddToken() {
 
   const selectToken = useCallback(
     (token: TokenV2) => {
+      // betastaking.aleo 特殊处理
+      if (uniqueId === InnerChainUniqueId.ALEO_MAINNET) {
+        const { programId: _programId, tokenId: _tokenId } = (
+          coinService as AleoService
+        ).parseContractAddress(token.contractAddress);
+        if (_programId === BETA_STAKING_PROGRAM_ID) {
+          token.tokenId = BETA_STAKING_ALEO_TOKEN_ID;
+        }
+      }
+
       dispatch.tokens.selectToken({
         uniqueId,
         address: selectedAccount.account.address,
         token,
       });
     },
-    [dispatch.tokens, uniqueId, selectedAccount],
+    [uniqueId, dispatch.tokens, selectedAccount.account.address, coinService],
   );
 
   const unselectToken = useCallback(
