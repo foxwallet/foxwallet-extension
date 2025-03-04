@@ -344,7 +344,8 @@
     "copy": "Copy",
     "reminder": "Reminder",
     "success": "Success",
-    "failed": "Failed"
+    "failed": "Failed",
+    "pending": "Pending"
   },
   "Error": {
     "invalidPassword": "Invalid password",

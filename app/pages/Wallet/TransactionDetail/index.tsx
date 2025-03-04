@@ -17,6 +17,7 @@ import dayjs from "dayjs";
 import {
   IconCopyBlack,
   IconFailed,
+  IconProcessing,
   IconSuccess,
 } from "@/components/Custom/Icon";
 import { useTranslation } from "react-i18next";
@@ -137,87 +138,102 @@ const TransactionDetailScreen = () => {
     return uniqueId === InnerChainUniqueId.ALEO_MAINNET;
   }, [uniqueId]);
 
-  const { tx, isSuccess, from, to, txId, time, amountStr, isSend, nonce } =
-    useMemo(() => {
-      if (!txItem) {
-        return { isSuccess: false };
-      }
-      try {
-        let tx;
-        let isSuccess = false;
-        let txId, from, to, nonce;
-        let amount;
-        let isSend = false;
+  const {
+    tx,
+    isSuccess,
+    isPending,
+    from,
+    to,
+    txId,
+    time,
+    amountStr,
+    isSend,
+    nonce,
+  } = useMemo(() => {
+    if (!txItem) {
+      return { isSuccess: false };
+    }
+    try {
+      let tx;
+      let isSuccess = false;
+      let txId, from, to, nonce;
+      let amount;
+      let isSend = false;
+      let isPending = false;
 
-        if (isAleo) {
-          tx = JSON.parse(txItem) as AleoHistoryItem;
-          // console.log("      tx", tx);
+      if (isAleo) {
+        tx = JSON.parse(txItem) as AleoHistoryItem;
+        // console.log("      tx", tx);
 
-          txId = tx.txId;
-          amount = tx.amount ? BigInt(tx.amount) : undefined;
-          isSend = tx.addressType === AleoTxAddressType.SEND;
-          if (tx.type === AleoHistoryType.LOCAL) {
-            if (isSend) {
-              from = address;
-              to = tx.inputs[0];
-            } else {
-              from = tx.inputs[0];
-            }
+        txId = tx.txId;
+        amount = tx.amount ? BigInt(tx.amount) : undefined;
+        isSend = tx.addressType === AleoTxAddressType.SEND;
+        if (tx.type === AleoHistoryType.LOCAL) {
+          if (isSend) {
+            from = address;
+            to = tx.inputs[0];
           } else {
-            from = tx.from;
-            to = tx.to;
+            from = tx.inputs[0];
           }
-          isSuccess =
-            tx.status === AleoTxStatus.FINALIZD ||
-            tx.status === AleoTxStatus.COMPLETED;
         } else {
-          tx = JSON.parse(txItem) as TransactionHistoryItem;
-          isSuccess = tx.status === TransactionStatus.SUCCESS;
-          txId = tx.id;
           from = tx.from;
           to = tx.to;
-          amount = BigInt(tx.value ?? "0");
-          isSend = tx.from === address;
-          nonce = String(tx.nonce ?? "");
         }
-
-        const timeOfItem = dayjs(tx.timestamp);
-        const isCurrentYear = dayjs().year() === timeOfItem.year();
-        const time = timeOfItem.format(
-          isCurrentYear ? "MM-DD LT" : "YYYY-MM-DD LT",
-        );
-
-        const valueStr =
-          amount !== undefined
-            ? ethers.utils.formatUnits(
-                BigNumber.from(amount),
-                tokenInfo.decimals,
-              )
-            : "";
-        const addOrMinus =
-          amount === undefined ? "" : amount === 0n ? "" : isSend ? `- ` : `+ `;
-
-        const amountStr =
-          amount !== undefined
-            ? `${addOrMinus}${valueStr} ${tokenInfo.symbol}`
-            : "";
-
-        return {
-          tx,
-          isSuccess,
-          from,
-          to,
-          txId,
-          time,
-          amountStr,
-          isSend,
-          nonce,
-        };
-      } catch (e) {
-        console.error(e);
-        return { isSuccess: false };
+        isSuccess =
+          tx.status === AleoTxStatus.FINALIZD ||
+          tx.status === AleoTxStatus.COMPLETED;
+        isPending =
+          tx.status === AleoTxStatus.QUEUED ||
+          tx.status === AleoTxStatus.GENERATING_TRANSACTION ||
+          tx.status === AleoTxStatus.GENERATING_PROVER_FILES ||
+          tx.status === AleoTxStatus.BROADCASTING;
+      } else {
+        tx = JSON.parse(txItem) as TransactionHistoryItem;
+        isSuccess = tx.status === TransactionStatus.SUCCESS;
+        isPending = tx.status === TransactionStatus.PENDING;
+        txId = tx.id;
+        from = tx.from;
+        to = tx.to;
+        amount = BigInt(tx.value ?? "0");
+        isSend = tx.from === address;
+        nonce = String(tx.nonce ?? "");
       }
-    }, [address, isAleo, tokenInfo, txItem]);
+
+      const timeOfItem = dayjs(tx.timestamp);
+      const isCurrentYear = dayjs().year() === timeOfItem.year();
+      const time = timeOfItem.format(
+        isCurrentYear ? "MM-DD LT" : "YYYY-MM-DD LT",
+      );
+
+      const valueStr =
+        amount !== undefined
+          ? ethers.utils.formatUnits(BigNumber.from(amount), tokenInfo.decimals)
+          : "";
+      const addOrMinus =
+        amount === undefined ? "" : amount === 0n ? "" : isSend ? `- ` : `+ `;
+
+      const amountStr =
+        amount !== undefined
+          ? `${addOrMinus}${valueStr} ${tokenInfo.symbol}`
+          : "";
+
+      return {
+        tx,
+        isSuccess,
+        isPending,
+        from,
+        to,
+        txId,
+        time,
+        amountStr,
+        isSend,
+        nonce,
+      };
+    } catch (e) {
+      console.error(e);
+      return { isSuccess: false };
+    }
+  }, [address, isAleo, tokenInfo, txItem]);
 
   const { data: txDetail } = useTransactionDetail({
     uniqueId,
@@ -305,9 +321,19 @@ const TransactionDetailScreen = () => {
     <PageWithHeader title="Transaction Detail">
       <Content>
         <Flex direction={"column"} alignItems={"center"}>
-          {isSuccess ? <IconSuccess /> : <IconFailed />}
+          {isSuccess ? (
+            <IconSuccess />
+          ) : isPending ? (
+            <IconProcessing />
+          ) : (
+            <IconFailed />
+          )}
           <Text fontSize={"12px"} pt={1}>
-            {isSuccess ? t("Common:success") : t("Common:failed")}
+            {isSuccess
+              ? t("Common:success")
+              : isPending
+              ? t("Common:pending")
+              : t("Common:failed")}
           </Text>
           {amountStr && (
             <Flex fontWeight={"bold"} fontSize={18} mt={"10px"}>

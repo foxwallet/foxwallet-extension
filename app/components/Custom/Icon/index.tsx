@@ -87,6 +87,7 @@ import AllNetworks from "@/common/assets/image/icon_all_networks.svg";
 import TokenPlaceHolder from "@/common/assets/image/icon_token_placeholder.svg";
 import Success from "@/common/assets/image/icon_success.svg";
 import Failed from "@/common/assets/image/icon_failed.svg";
+import Processing from "@/common/assets/image/icon_processing.svg";
 
 const ThemeIconFill: (i: any) => ChakraComponent<any, any> = (icon: any) => {
   const ThemeIcon = (props: ChakraComponent<any, any>) => {
@@ -192,3 +193,4 @@ export const IconAllNetworks = ThemeIconFill(AllNetworks);
 export const IconTokenPlaceHolder = chakra(TokenPlaceHolder);
 export const IconSuccess = chakra(Success);
 export const IconFailed = chakra(Failed);
+export const IconProcessing = chakra(Processing);
