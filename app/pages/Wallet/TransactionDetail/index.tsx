@@ -187,15 +187,20 @@ const TransactionDetailScreen = () => {
           isCurrentYear ? "MM-DD LT" : "YYYY-MM-DD LT",
         );
 
-        const valueStr = amount
-          ? ethers.utils.formatUnits(BigNumber.from(amount), tokenInfo.decimals)
-          : "";
+        const valueStr =
+          amount !== undefined
+            ? ethers.utils.formatUnits(
+                BigNumber.from(amount),
+                tokenInfo.decimals,
+              )
+            : "";
+        const addOrMinus =
+          amount === undefined ? "" : amount === 0n ? "" : isSend ? `- ` : `+ `;
 
-        const addOrMinus = amount ? "" : isSend ? `- ` : `+ `;
-
-        const amountStr = amount
-          ? `${addOrMinus}${valueStr} ${tokenInfo.symbol}`
-          : "";
+        const amountStr =
+          amount !== undefined
+            ? `${addOrMinus}${valueStr} ${tokenInfo.symbol}`
+            : "";
 
         return {
           tx,
@@ -268,9 +273,9 @@ const TransactionDetailScreen = () => {
   const renderDetailB = useMemo(() => {
     return (
       <Flex direction={"column"} mt={1}>
-        {amountStr && (
-          <DetailInfoB title={t("TransactionDetail:value")} info={amountStr} />
-        )}
+        {/* {amountStr && ( */}
+        {/*  <DetailInfoB title={t("TransactionDetail:value")} info={amountStr} /> */}
+        {/* )} */}
         <DetailInfoB
           title={t("TransactionDetail:time")}
           info={time ?? "----"}
@@ -294,15 +299,7 @@ const TransactionDetailScreen = () => {
         />
       </Flex>
     );
-  }, [
-    amountStr,
-    chainConfig.chainName,
-    feeStr,
-    nonce,
-    t,
-    time,
-    txDetail?.confirmations,
-  ]);
+  }, [chainConfig.chainName, feeStr, nonce, t, time, txDetail?.confirmations]);
 
   return (
     <PageWithHeader title="Transaction Detail">
