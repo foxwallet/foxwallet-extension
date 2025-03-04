@@ -150,7 +150,7 @@
   },
   "Receive": {
     "title": "接收",
-    "scanToTransfer": "扫描转账",
+    "scanToTransfer": "扫码转账",
     "onlyTips": "仅支持ALEO相关资产",
     "walletAddr": "钱包地址"
   },
