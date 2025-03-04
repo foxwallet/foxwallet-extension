@@ -164,6 +164,18 @@ export const AccountInfoHeader = ({
     return t("Common:copy");
   }, [availableAccounts, t]);
 
+  const showSendingAleo = useMemo(() => {
+    if (sendingAleoTx) {
+      if (chainMode.mode === ChainAssembleMode.ALL) {
+        return true;
+      } else if (chainMode.uniqueId === InnerChainUniqueId.ALEO_MAINNET) {
+        return true;
+      }
+      return false;
+    }
+    return false;
+  }, [chainMode, sendingAleoTx]);
+
   return (
     <>
       <Box
@@ -275,7 +287,7 @@ export const AccountInfoHeader = ({
         {/* Action Item */}
         <ActionPanel chainMode={chainMode} />
       </Box>
-      {!!sendingAleoTx && (
+      {showSendingAleo && (
         <Flex
           bgColor={"green.50"}
           p={2}
