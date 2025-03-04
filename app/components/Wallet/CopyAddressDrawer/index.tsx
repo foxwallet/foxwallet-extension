@@ -47,7 +47,6 @@ export const CopyAddressChainItem = (props: ChainItemProps) => {
       w={"full"}
       h={"60px"}
       align={"center"}
-      cursor={"pointer"}
       borderRadius={"4px"}
       borderWidth={"1px"}
       borderColor={"#e6e8ec"}

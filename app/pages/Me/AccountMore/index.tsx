@@ -28,6 +28,7 @@ import {
   showAccountOptionDrawer,
 } from "@/components/Wallet/AccountOptionDrawer";
 import { useCurrWallet } from "@/hooks/useWallets";
+import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 
 const AccountMoreScreen = () => {
   const { t } = useTranslation();
@@ -127,7 +128,7 @@ const AccountMoreScreen = () => {
             py={2}
           />
         </InputGroup>
-        <Box overflowY="auto">
+        <Box overflowY="auto" maxH={450} sx={HIDE_SCROLL_BAR_CSS}>
           <VStack spacing={"10px"}>
             {displayChains.map((item) => {
               return (
