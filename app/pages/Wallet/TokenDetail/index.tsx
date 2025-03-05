@@ -86,14 +86,6 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
     isCurrentYear ? "MM-DD LT" : "YYYY-MM-DD LT",
   );
 
-  const onClick2 = useCallback(() => {
-    if (!item.txId) {
-      return;
-    }
-    const url = coinService.getTxDetailUrl(item.txId);
-    void browser.tabs.create({ url });
-  }, [coinService, item.txId]);
-
   const onClick = useCallback(() => {
     navigate(
       `/transaction_detail/${uniqueId}/${address}?token=${serializeToken(
@@ -112,7 +104,12 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
       : item.functionName;
     return `(${functionName.split("_").join(" ")})`;
   }, [item.functionName]);
-  const amount = useMemo(() => BigInt(item.amount ?? 0n), [item.amount]);
+  const amount = useMemo(() => {
+    if (item.functionName === "join" || item.functionName === "split") {
+      return 0n;
+    }
+    return BigInt(item.amount ?? 0n);
+  }, [item]);
 
   const addressLabel = useMemo(() => {
     let ret = "";

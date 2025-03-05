@@ -268,6 +268,7 @@ export const useAleoTxHistory = ({
     error: privateTxsError,
     isLoading: loadingPrivateTxs,
   } = useSWR(privateTxsKey, getPrivateTxs, { refreshInterval });
+  // console.log("      privateTxs", privateTxs);
 
   // on chain txs by api.aleo.info
   const [endReach, setEndReach] = useState(false);

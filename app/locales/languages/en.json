@@ -213,7 +213,8 @@
     "nonce": "Nonce",
     "confirmations": "Confirmations",
     "network": "Network",
-    "gasFee": "Gas Fee"
+    "gasFee": "Gas Fee",
+    "type": "Type"
   },
   "Tx": {
     "successToast": "Transaction Successful!",

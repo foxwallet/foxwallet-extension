@@ -155,6 +155,7 @@ const TransactionDetailScreen = () => {
     nonce,
     txStatusStr,
     txStatus,
+    txType,
   } = useMemo(() => {
     if (!txItem) {
       return { isSuccess: false };
@@ -166,6 +167,7 @@ const TransactionDetailScreen = () => {
       let isSend = false;
       let txStatusStr = "";
       let txStatus;
+      let txType;
 
       if (isAleo) {
         tx = JSON.parse(txItem) as AleoHistoryItem;
@@ -174,6 +176,13 @@ const TransactionDetailScreen = () => {
         txId = tx.txId;
         amount = tx.amount ? BigInt(tx.amount) : undefined;
         isSend = tx.addressType === AleoTxAddressType.SEND;
+
+        const prefix = "transfer_";
+        const functionName = tx.functionName.startsWith(prefix)
+          ? tx.functionName.slice(prefix.length)
+          : tx.functionName;
+        txType = `${functionName.split("_").join(" ")}`;
+
         if (tx.type === AleoHistoryType.LOCAL) {
           if (isSend) {
             from = address;
@@ -184,6 +193,11 @@ const TransactionDetailScreen = () => {
         } else {
           from = tx.from;
           to = tx.to;
+        }
+        if (tx.functionName === "join" || tx.functionName === "split") {
+          from = address;
+          to = address;
+          amount = 0n;
         }
         switch (tx.status) {
           case AleoTxStatus.FINALIZD:
@@ -219,6 +233,7 @@ const TransactionDetailScreen = () => {
         amount = BigInt(tx.value ?? "0");
         isSend = tx.from === address;
         nonce = String(tx.nonce ?? "");
+        txType = t(`TokenDetail:${tx.label}`);
 
         switch (tx.status) {
           case TransactionStatus.SUCCESS: {
@@ -271,6 +286,7 @@ const TransactionDetailScreen = () => {
         nonce,
         txStatusStr,
         txStatus,
+        txType,
       };
     } catch (e) {
       console.error(e);
@@ -336,6 +352,10 @@ const TransactionDetailScreen = () => {
         {/*  <DetailInfoB title={t("TransactionDetail:value")} info={amountStr} /> */}
         {/* )} */}
         <DetailInfoB
+          title={t("TransactionDetail:type")}
+          info={txType ?? "----"}
+        />
+        <DetailInfoB
           title={t("TransactionDetail:time")}
           info={time ?? "----"}
         />
@@ -358,7 +378,15 @@ const TransactionDetailScreen = () => {
         />
       </Flex>
     );
-  }, [chainConfig.chainName, feeStr, nonce, t, time, txDetail?.confirmations]);
+  }, [
+    chainConfig.chainName,
+    feeStr,
+    nonce,
+    t,
+    time,
+    txDetail?.confirmations,
+    txType,
+  ]);
 
   return (
     <PageWithHeader title="Transaction Detail">
