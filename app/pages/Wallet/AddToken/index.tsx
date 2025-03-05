@@ -169,6 +169,7 @@ function AddToken() {
                     onClick={() => {
                       unselectToken(token);
                     }}
+                    showPriceAndChange={false}
                   />
                   <Flex
                     cursor={"pointer"}
