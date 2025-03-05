@@ -125,11 +125,11 @@ export const MeTab = () => {
           icon={<IconContact w={4} h={4} />}
           onPress={onContact}
         />
-        <SettingItem
-          title={t("Setting:connectedSites")}
-          icon={<IconConnect w={4} h={4} />}
-          onPress={onConnectedSites}
-        />
+        {/* <SettingItem */}
+        {/*  title={t("Setting:connectedSites")} */}
+        {/*  icon={<IconConnect w={4} h={4} />} */}
+        {/*  onPress={onConnectedSites} */}
+        {/* /> */}
         <Divider h={"1px"} mb={2.5} />
         <SettingItem
           title={t("Setting:tutorial")}
