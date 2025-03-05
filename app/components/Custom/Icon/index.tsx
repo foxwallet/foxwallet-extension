@@ -89,6 +89,8 @@ import Success from "@/common/assets/image/icon_success.svg";
 import Failed from "@/common/assets/image/icon_failed.svg";
 import Processing from "@/common/assets/image/icon_processing.svg";
 import IconEth from "@/common/assets/image/icon_eth.svg";
+import Agree from "@/common/assets/image/icon_agree.svg";
+import Disagree from "@/common/assets/image/icon_disagree.svg";
 
 const ThemeIconFill: (i: any) => ChakraComponent<any, any> = (icon: any) => {
   const ThemeIcon = (props: ChakraComponent<any, any>) => {
@@ -196,3 +198,5 @@ export const IconSuccess = chakra(Success);
 export const IconFailed = chakra(Failed);
 export const IconProcessing = chakra(Processing);
 export const IconEVM = chakra(IconEth);
+export const IconAgree = chakra(Agree);
+export const IconDisagree = chakra(Disagree);

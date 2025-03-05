@@ -18,10 +18,15 @@ import { useNavigate } from "react-router-dom";
 import BaseCheckbox from "../../../components/Custom/Checkbox";
 import browser from "webextension-polyfill";
 import {
+  IconAgree,
+  IconCheckCircle,
+  IconCheckLineBlack,
   IconChevronDown,
   IconChevronRight,
+  IconDisagree,
   IconFoxWallet,
   IconLogo,
+  IconProcessing,
   OnboardLogo,
 } from "../../../components/Custom/Icon";
 import { LanguageLabels, SupportLanguages } from "@/locales/i18";
@@ -141,18 +146,26 @@ function OnboardHomeScreen() {
       </Flex>
       {/* Open new tab will dismiss the popup window, so check the policy advance */}
       {/* Make onboard progress in a new tab further(Need new design) */}
-      <BaseCheckbox
-        onStatusChange={(status) => {
-          setChecked(status);
+      <Flex
+        ml={6}
+        mb={4}
+        cursor={"pointer"}
+        alignItems={"center"}
+        // bg={"yellow"}
+        onClick={() => {
+          setChecked(!checked);
         }}
-        container={{
-          ml: 6,
-          mb: 4,
+        sx={{
           animation: showShakeAnimation
             ? `${shakeAnimation} 0.82s cubic-bezier(.36,.07,.19,.97) both`
             : "none",
         }}
       >
+        {checked ? (
+          <IconAgree ml={1} mr={2} w={3.5} h={3.5} />
+        ) : (
+          <IconDisagree ml={1} mr={2} w={3.5} h={3.5} />
+        )}
         <B3>
           {t("Agreement:content1")}
           <B3
@@ -181,7 +194,8 @@ function OnboardHomeScreen() {
             {t("Agreement:content3")}
           </B3>
         </B3>
-      </BaseCheckbox>
+      </Flex>
+
       <Button
         mx="6"
         mb="4"
