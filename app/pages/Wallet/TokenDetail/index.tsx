@@ -33,7 +33,6 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
-import browser from "webextension-polyfill";
 import { useAleoTxHistory, useTxHistory } from "@/hooks/useTxHistory";
 import { useIsSendingAleoTx } from "@/hooks/useSendingTxStatus";
 import { useRecords } from "@/hooks/useRecord";
@@ -77,7 +76,6 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
   address,
 }) => {
   const { t } = useTranslation();
-  const { coinService } = useCoinService(uniqueId);
   const navigate = useNavigate();
 
   const timeOfItem = dayjs(item.timestamp);

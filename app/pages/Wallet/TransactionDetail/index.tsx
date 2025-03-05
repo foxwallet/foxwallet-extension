@@ -176,12 +176,7 @@ const TransactionDetailScreen = () => {
         txId = tx.txId;
         amount = tx.amount ? BigInt(tx.amount) : undefined;
         isSend = tx.addressType === AleoTxAddressType.SEND;
-
-        const prefix = "transfer_";
-        const functionName = tx.functionName.startsWith(prefix)
-          ? tx.functionName.slice(prefix.length)
-          : tx.functionName;
-        txType = `${functionName.split("_").join(" ")}`;
+        txType = `${tx.functionName.split("_").join(" ")}`;
 
         if (tx.type === AleoHistoryType.LOCAL) {
           if (isSend) {
@@ -211,7 +206,7 @@ const TransactionDetailScreen = () => {
           case AleoTxStatus.GENERATING_PROVER_FILES:
           case AleoTxStatus.BROADCASTING: {
             txStatus = TxIconStatus.Pending;
-            txStatusStr = tx.status;
+            txStatusStr = t("Common:pending");
             break;
           }
           case AleoTxStatus.REJECTED:
