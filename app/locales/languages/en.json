@@ -353,7 +353,8 @@
     "reminder": "Reminder",
     "success": "Success",
     "failed": "Failed",
-    "pending": "Pending"
+    "pending": "Pending",
+    "loading":"Loading"
   },
   "Error": {
     "invalidPassword": "Invalid password",

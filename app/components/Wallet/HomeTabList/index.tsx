@@ -112,9 +112,9 @@ export const HomeTabList = ({ assets }: { assets: TokenV2[] | undefined }) => {
       {assets?.length === 0 && (
         <Flex alignItems={"center"} justify={"center"} direction={"column"}>
           <Spinner w={6} h={6} alignSelf={"center"} mt={10} />
-          <Text fontSize={"smaller"} mt={3}>
-            {t("Wallet:initWallet")}
-          </Text>
+          {/* <Text fontSize={"smaller"} mt={3}> */}
+          {/*  {t("Common:loading")} */}
+          {/* </Text> */}
         </Flex>
       )}
       <AssetList assets={assets} />
