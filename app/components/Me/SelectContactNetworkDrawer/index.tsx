@@ -160,6 +160,7 @@ const SelectContactNetworkDrawer = (props: Props) => {
     searchStr,
     supportChainsWithSelect,
   );
+  // console.log("      searchRes", searchRes);
 
   const displayList = useMemo(() => {
     return debounceSearchStr ? searchRes : supportChainsWithSelect;

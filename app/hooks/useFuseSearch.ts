@@ -44,7 +44,7 @@ export const useFuseSearch = <T>(
     } else {
       setSearchList(EMPTY_LIST);
     }
-  }, [delaySearchStr, afterSearchStrChange]);
+  }, [delaySearchStr, afterSearchStrChange, dataList]);
 
   return { searchRes: searchList, searching, delaySearchStr };
 };
