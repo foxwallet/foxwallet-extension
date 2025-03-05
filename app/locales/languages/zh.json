@@ -175,14 +175,14 @@
     "title": "设置",
     "guide": "指导",
     "community": "社区",
-    "securityTips": "安全提示",
+    "securityTips": "安全建议",
     "settings": "设置",
-    "account": "帐户",
+    "account": "管理帐户",
     "switchWallet": "切换钱包",
     "tutorial": "教程",
-    "networks": "网络",
-    "contacts": "联系人",
-    "connectedSites": "连接的站点"
+    "networks": "管理网络",
+    "contacts": "地址簿",
+    "connectedSites": "已连接网站"
   },
   "Error": {
     "invalidPassword": "无效的密码",
