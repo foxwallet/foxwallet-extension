@@ -40,7 +40,9 @@
       "dupAccountName": "ڈپلیکیٹ اکاؤنٹ کا نام",
       "delete": "پرس کو حذف کریں۔",
       "deleteRemind": "براہ کرم یقینی بنائیں کہ بٹوے کا صحیح طریقے سے بیک اپ لیا گیا ہے کیونکہ اسے صرف بیج کے فقرے یا نجی کلید کا استعمال کرتے ہوئے بحال کیا جا سکتا ہے۔"
-    }
+    },
+    "allNetworks": "سب",
+    "allEVMNetworks": "تمام ای وی ایم نیٹ ورکس"
   },
   "Onboard": {
     "Home": {
@@ -50,7 +52,8 @@
     "Upgrade": {
       "reminderTips": "موجودہ براؤزر ورژن بہت پرانا ہے، براہ کرم FoxWallet ایکسٹینشن والیٹ استعمال کرنے کے لیے تازہ ترین ورژن میں اپ گریڈ کریں۔",
       "upgradeBtn": "اپ گریڈ"
-    }
+    },
+    "defaultWalletName": "پرس"
   },
   "Agreement": {
     "content1": "میں FoxWallet سے اتفاق کرتا ہوں۔",
@@ -99,7 +102,14 @@
     "remind": "یاد دلانا",
     "account": "کھاتہ",
     "ok": "ٹھیک ہے",
-    "wrongPassword": "غلط پاس ورڈ"
+    "wrongPassword": "غلط پاس ورڈ",
+    "noSearchResult": "تلاش کا کوئی نتیجہ نہیں ہے",
+    "pleaseWait": "براہ کرم انتظار کریں",
+    "copy": "کاپی",
+    "reminder": "یاد دہانی",
+    "success": "کامیابی",
+    "failed": "ناکام",
+    "pending": "زیر التوا"
   },
   "Send": {
     "title": "بھیجیں",
@@ -140,13 +150,20 @@
     "feeHint": "آپ گیس کی فیس ادا کرنے کے لیے یا تو پبلک بیلنس یا درج ذیل نجی ریکارڈ میں سے کوئی بھی استعمال کر سکتے ہیں۔",
     "sendingAleoTx": "ایلیو ٹرانزیکشن بھیج رہا ہے۔",
     "insufficientBalance": "ناکافی توازن",
-    "insufficientFee": "فیس ادا کرنے کے لیے ناکافی بیلنس"
+    "insufficientFee": "فیس ادا کرنے کے لیے ناکافی بیلنس",
+    "next": "اگلا",
+    "value": "قیمت",
+    "invalidAmount": "غلط رقم",
+    "processing": "لین دین پروسیسنگ ہے ، براہ کرم انتظار کریں۔",
+    "sendingAleoHint": "آپ کے پاس جاری لین دین ہے ، براہ کرم انتظار کریں۔"
   },
   "PrivateKey": {
     "title": "نجی کلید",
     "enterPlaceholder": "نجی کلید درج کریں۔",
     "backupTips1": "براہ کرم اسے محفوظ جگہ پر رکھیں۔",
-    "backupTips2": "بیج کا جملہ یا نجی کلید آپ کے بٹوے کو بازیافت کرنے کا واحد طریقہ ہے۔ ایک بار کھو جانے کے بعد اسے دوبارہ حاصل نہیں کیا جا سکتا۔ انہیں اسکرین شاٹس یا سوشل میڈیا کے ذریعے محفوظ نہ کریں۔"
+    "backupTips2": "بیج کا جملہ یا نجی کلید آپ کے بٹوے کو بازیافت کرنے کا واحد طریقہ ہے۔ ایک بار کھو جانے کے بعد اسے دوبارہ حاصل نہیں کیا جا سکتا۔ انہیں اسکرین شاٹس یا سوشل میڈیا کے ذریعے محفوظ نہ کریں۔",
+    "coinType": "سکے کی قسم",
+    "selectCoinType": "سکے کی قسم منتخب کریں"
   },
   "Receive": {
     "title": "وصول کریں۔",
@@ -162,17 +179,33 @@
     "settings": "ترتیبات",
     "account": "کھاتہ",
     "switchWallet": "والیٹ سوئچ کریں۔",
-    "tutorial": "ٹیوٹوریل"
+    "tutorial": "ٹیوٹوریل",
+    "networks": "نیٹ ورک",
+    "contacts": "رابطے",
+    "connectedSites": "منسلک سائٹیں"
   },
   "Error": {
-    "invalidPassword": "غلط پاسورڈ"
+    "invalidPassword": "غلط پاسورڈ",
+    "invalidAddress": "غلط ایڈریس"
   },
   "TokenDetail": {
     "title": "ٹوکن کی تفصیل",
     "balance": "بقیہ",
     "tx_records": "لین دین کے ریکارڈز",
     "empty_tx": "لین دین کا کوئی ریکارڈ نہیں۔",
-    "jump_explorer": "ایکسپلورر"
+    "jump_explorer": "ایکسپلورر",
+    "myAddress": "میرا پتہ",
+    "public": "عوامی",
+    "private": "نجی",
+    "total": "کل",
+    "token_transfer": "ٹوکن کی منتقلی",
+    "send": "بھیجیں",
+    "contract_call": "اسمارٹ معاہدہ پر کال کریں",
+    "token_approve": "ٹوکن منظور کریں",
+    "bridge": "پل",
+    "receive": "وصول کریں",
+    "copyContractAddressMsg": "یہ ٹوکن کا معاہدہ ایڈریس ہے ، پتہ نہیں مل رہا ہے ، اس پتے پر منتقل نہ کریں۔",
+    "failed": "ناکام"
   },
   "Language": {
     "title": "زبان"
@@ -196,7 +229,8 @@
     "noDecrypt": "خفیہ کاری کی اجازت نہیں ہے۔",
     "uponRequest": "Dapp آپ کے ریکارڈ کو ڈکرپٹ کرنے کی درخواست کر سکتا ہے۔",
     "autoDecrypt": "Dapp درخواست کے بغیر ریکارڈ کو ڈکرپٹ کر سکتا ہے۔",
-    "onChainHistory": "Dapp آپ کی آن چین ہسٹری تک رسائی حاصل کر سکتا ہے۔"
+    "onChainHistory": "Dapp آپ کی آن چین ہسٹری تک رسائی حاصل کر سکتا ہے۔",
+    "addChain": "درخواست {{چین}} شامل کریں"
   },
   "Currency": {
     "title": "کرنسی"
@@ -249,5 +283,73 @@
   "ManageToken": {
     "title": "ٹوکن کا نظم کریں۔",
     "searchHint": "تلاش ٹوکن (ID، نام، علامت)"
+  },
+  "GasSetting": {
+    "fast": "تیز",
+    "middle": "وسط",
+    "slow": "سست",
+    "selectGasFee": "گیس فیس منتخب کریں",
+    "advanced": "اعلی درجے کی ترتیب",
+    "maxPriorityFeeTitle": "ترجیحی فیس",
+    "maxPriorityFeeRemind": "ترجیحی فیس زیادہ سے زیادہ فیس سے زیادہ نہیں ہونی چاہئے",
+    "maxPriorityLowRemind": "ترجیحی فیس بہت کم",
+    "maxPriorityHighRemind": "ترجیحی فیس بہت زیادہ ہے",
+    "maxFeeTitle": "زیادہ سے زیادہ فیس",
+    "maxFeeHighRemind": "زیادہ سے زیادہ فیس بہت زیادہ ہے",
+    "maxFeeLowRemind": "زیادہ سے زیادہ فیس بہت کم",
+    "gasLimitTitle": "گیس کی حد"
+  },
+  "TransactionDetail": {
+    "hash": "ہیش",
+    "from": "سے",
+    "to": "to",
+    "value": "قیمت",
+    "time": "وقت",
+    "nonce": "نونس",
+    "confirmations": "تصدیق",
+    "network": "نیٹ ورک",
+    "gasFee": "گیس کی فیس",
+    "type": "قسم"
+  },
+  "Networks": {
+    "title": "نیٹ ورک",
+    "searchHint": "سرچ نیٹ ورکس",
+    "manageNetworks": "نیٹ ورکس کا انتظام کریں",
+    "networkDetail": "نیٹ ورک کی تفصیل",
+    "networkName": "نیٹ ورک کا نام",
+    "networkNameHint": "ان پٹ نیٹ ورک کا نام",
+    "symbol": "کرنسی کی علامت",
+    "rpc": "آر پی سی یو آر ایل",
+    "rpcHint": "ان پٹ آر پی سی یو آر ایل",
+    "chainId": "چین ID",
+    "manageWallet": "پرس کا انتظام کریں",
+    "defaultChainRemind": "ڈیفالٹ چین غیر منتخب نہیں ہوسکتا",
+    "selectNetwork": "نیٹ ورک کو منتخب کریں",
+    "selectToken": "ٹوکن منتخب کریں",
+    "pkWalletRemind": "نجی کلیدی پرس صرف معاون نیٹ ورکس کو دکھاتا ہے۔ تمام نیٹ ورکس کو استعمال کرنے کے لئے ، بیج کے مرحلے کے پرس میں سوئچ کریں۔"
+  },
+  "Contacts": {
+    "title": "رابطے",
+    "searchHint": "تلاش کا پتہ",
+    "addContact": "رابطہ شامل کریں",
+    "editContact": "رابطہ میں ترمیم کریں",
+    "contactInfo": "رابطہ کی معلومات",
+    "enterContactName": "رابطہ کا نام درج کریں",
+    "enterAddress": "ایڈریس درج کریں",
+    "confirmCreate": "تخلیق کی تصدیق کریں",
+    "confirmUpdate": "تازہ کاری کی تصدیق کریں",
+    "selectNetwork": "نیٹ ورک کو منتخب کریں",
+    "networkName": "نیٹ ورک کا نام",
+    "remove": "ہٹا دیں",
+    "copyAddress": "کاپی ایڈریس",
+    "editAddress": "ایڈریس میں ترمیم کریں",
+    "deleteHint": "اس پتے کو ہٹانے کی تصدیق کریں؟",
+    "alreadyExist": "یہ پتہ پہلے ہی آپ کی رابطہ فہرست میں ہے",
+    "invalidAddress": "غلط ایڈریس"
+  },
+  "SelectToken": {
+    "title": "ٹوکن منتخب کریں",
+    "searchToken": "ٹوکن تلاش کریں",
+    "searchHint": "تلاش ٹوکن (علامت ، پتہ)"
   }
 }

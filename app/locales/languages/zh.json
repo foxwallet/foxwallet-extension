@@ -40,7 +40,9 @@
       "dupAccountName": "帐户名重复",
       "delete": "删除钱包",
       "deleteRemind": "请确保钱包已正确备份，因为只能使用种子短语或私钥来恢复钱包。"
-    }
+    },
+    "allNetworks": "全部",
+    "allEVMNetworks": "所有EVM网络"
   },
   "Onboard": {
     "Home": {
@@ -50,7 +52,8 @@
     "Upgrade": {
       "reminderTips": "当前浏览器版本过旧，请升级至最新版本以使用 FoxWallet。",
       "upgradeBtn": "升级"
-    }
+    },
+    "defaultWalletName": "钱包-"
   },
   "Agreement": {
     "content1": "我同意 FoxWallet 的 ",
@@ -74,7 +77,14 @@
     "remind": "提醒",
     "account": "帐户",
     "ok": "好的",
-    "wrongPassword": "密码错误"
+    "wrongPassword": "密码错误",
+    "noSearchResult": "没有搜索结果",
+    "pleaseWait": "请稍等",
+    "copy": "复制",
+    "reminder": "提醒",
+    "success": "成功",
+    "failed": "失败的",
+    "pending": "待办的"
   },
   "Password": {
     "title": "密码",
@@ -140,13 +150,20 @@
     "feeHint": "您可以使用公共余额或以下任何隐私记录来支付手续费。",
     "sendingAleoTx": "正在发送aleo交易",
     "insufficientBalance": "余额不足",
-    "insufficientFee": "余额不足以支付费用"
+    "insufficientFee": "余额不足以支付费用",
+    "next": "下一个",
+    "value": "价值",
+    "invalidAmount": "无效的金额",
+    "processing": "交易正在处理，请等待。",
+    "sendingAleoHint": "您正在进行的交易，请等待。"
   },
   "PrivateKey": {
     "title": "私钥",
     "enterPlaceholder": "输入私钥",
     "backupTips1": "请将其保存在安全的地方。",
-    "backupTips2": "助记词或私钥是恢复钱包的唯一方法。一旦丢失，将无法找回。不要通过屏幕截图或社交媒体保存它们。"
+    "backupTips2": "助记词或私钥是恢复钱包的唯一方法。一旦丢失，将无法找回。不要通过屏幕截图或社交媒体保存它们。",
+    "coinType": "硬币类型",
+    "selectCoinType": "选择硬币类型"
   },
   "Receive": {
     "title": "接收",
@@ -162,17 +179,33 @@
     "settings": "设置",
     "account": "帐户",
     "switchWallet": "切换钱包",
-    "tutorial": "教程"
+    "tutorial": "教程",
+    "networks": "网络",
+    "contacts": "联系人",
+    "connectedSites": "连接的站点"
   },
   "Error": {
-    "invalidPassword": "无效的密码"
+    "invalidPassword": "无效的密码",
+    "invalidAddress": "无效的地址"
   },
   "TokenDetail": {
     "title": "代币详情",
     "balance": "余额",
     "tx_records": "交易记录",
     "empty_tx": "无交易记录",
-    "jump_explorer": "浏览器"
+    "jump_explorer": "浏览器",
+    "myAddress": "我的地址",
+    "public": "民众",
+    "private": "私人的",
+    "total": "全部的",
+    "token_transfer": "令牌转移",
+    "send": "发送",
+    "contract_call": "致电智能合约",
+    "token_approve": "令牌批准",
+    "bridge": "桥",
+    "receive": "收到",
+    "copyContractAddressMsg": "这是令牌的合同地址，未接收地址，请勿转移到此地址。",
+    "failed": "失败的"
   },
   "Language": {
     "title": "语言"
@@ -250,5 +283,73 @@
   "ManageToken": {
     "title": "管理代币",
     "searchHint": "搜索（ID、名称、符号）"
+  },
+  "GasSetting": {
+    "fast": "快速地",
+    "middle": "中间",
+    "slow": "慢的",
+    "selectGasFee": "选择汽油费",
+    "advanced": "高级设置",
+    "maxPriorityFeeTitle": "优先费",
+    "maxPriorityFeeRemind": "优先费用不应高于最高费用",
+    "maxPriorityLowRemind": "优先费太低",
+    "maxPriorityHighRemind": "优先费太高",
+    "maxFeeTitle": "最高费用",
+    "maxFeeHighRemind": "最大费用太高",
+    "maxFeeLowRemind": "最大费用太低",
+    "gasLimitTitle": "气限"
+  },
+  "TransactionDetail": {
+    "hash": "哈希",
+    "from": "从",
+    "to": "到",
+    "value": "价值",
+    "time": "时间",
+    "nonce": "nonce",
+    "confirmations": "确认",
+    "network": "网络",
+    "gasFee": "汽油费",
+    "type": "类型"
+  },
+  "Networks": {
+    "title": "网络",
+    "searchHint": "搜索网络",
+    "manageNetworks": "管理网络",
+    "networkDetail": "网络细节",
+    "networkName": "网络名称",
+    "networkNameHint": "输入网络名称",
+    "symbol": "货币符号",
+    "rpc": "RPC URL",
+    "rpcHint": "输入RPC URL",
+    "chainId": "连锁ID",
+    "manageWallet": "管理钱包",
+    "defaultChainRemind": "默认链不能未被选",
+    "selectNetwork": "选择网络",
+    "selectToken": "选择令牌",
+    "pkWalletRemind": "私钥钱包仅显示受支持的网络。要使用所有网络，请切换到种子相钱包。"
+  },
+  "Contacts": {
+    "title": "联系人",
+    "searchHint": "搜索地址",
+    "addContact": "添加联系人",
+    "editContact": "编辑联系人",
+    "contactInfo": "联系信息",
+    "enterContactName": "输入联系人名称",
+    "enterAddress": "输入地址",
+    "confirmCreate": "确认创建",
+    "confirmUpdate": "确认更新",
+    "selectNetwork": "选择网络",
+    "networkName": "网络名称",
+    "remove": "消除",
+    "copyAddress": "复制地址",
+    "editAddress": "编辑地址",
+    "deleteHint": "确认删除此地址？",
+    "alreadyExist": "此地址已经在您的联系人列表中",
+    "invalidAddress": "无效的地址"
+  },
+  "SelectToken": {
+    "title": "选择令牌",
+    "searchToken": "搜索令牌",
+    "searchHint": "搜索令牌（符号，地址）"
   }
 }
