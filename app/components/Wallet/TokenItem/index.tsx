@@ -1,16 +1,10 @@
 import { type ChakraProps, Flex, Image, Text } from "@chakra-ui/react";
 import { TokenNum } from "../TokenNum";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { usePopupSelector } from "@/hooks/useStore";
-import Hover from "@/components/Custom/Hover";
 import { type ChainUniqueId } from "core/types/ChainUniqueId";
-import {
-  BETA_STAKING_PROGRAM_ID,
-  NATIVE_TOKEN_PROGRAM_ID,
-} from "core/coins/ALEO/constants";
 import { type TokenV2 } from "core/types/Token";
 import { IconTokenPlaceHolder } from "@/components/Custom/Icon";
-import { useBalance } from "@/hooks/useBalance";
 import { commaCurrency, commaInteger } from "@/common/utils/comma";
 import { formatPrice } from "@/common/utils/num";
 
@@ -69,6 +63,23 @@ export const TokenItemWithBalance = ({
     onClick(token);
   }, [onClick, token]);
 
+  const [tokenImageOK, setTokenImageOK] = useState(true);
+
+  const tokenImage = useMemo(() => {
+    if (!token.icon || !tokenImageOK) {
+      return <IconTokenPlaceHolder w={8} h={8} />;
+    }
+    return (
+      <Image
+        src={token.icon}
+        w={8}
+        h={8}
+        borderRadius={16}
+        onError={() => setTokenImageOK(false)}
+      />
+    );
+  }, [token.icon, tokenImageOK]);
+
   return (
     <Flex
       py={3}
@@ -83,11 +94,7 @@ export const TokenItemWithBalance = ({
     >
       <Flex align={"center"}>
         {leftElement}
-        {token.icon ? (
-          <Image src={token.icon} w={8} h={8} borderRadius={16} />
-        ) : (
-          <IconTokenPlaceHolder w={8} h={8} />
-        )}
+        {tokenImage}
         <Flex flexDir={"column"} ml={2.5}>
           <Text fontSize={13} fontWeight={600}>
             {token.symbol}
