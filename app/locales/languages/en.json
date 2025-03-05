@@ -4,6 +4,7 @@
     "backupTips": "You haven't backed up your wallet yet",
     "backupBtnTitle": "Backup now",
     "tabAsset": "Asset",
+    "initWallet": "Initializing wallet, please wait",
     "Create": {
       "title": "Create Wallet",
       "explain": "Create a new HD wallet.",
