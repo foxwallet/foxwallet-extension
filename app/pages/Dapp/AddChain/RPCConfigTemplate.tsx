@@ -380,14 +380,25 @@ const RPCConfigTemplate: React.FC<IProps> = (props: IProps) => {
       nativeCurrency,
     };
 
-    const chainIdRes = parseEthChainId(confirm.chainId);
-    const uniqueId = formatCustomEthRpcUniqueId(chainIdRes.chainId);
     const validRPCUrls =
       confirm.rpcUrls && Array.isArray(confirm.rpcUrls)
         ? confirm.rpcUrls.filter((rpcUrl: string) =>
             validUrl.isHttpsUri(rpcUrl),
           )
         : [];
+    if (confirm.uniqueId) {
+      const newChainConfig: ETHConfig = {
+        ...(props.defaultConf as ETHConfig),
+        chainName: confirm.chainName,
+        nativeCurrency: confirm.nativeCurrency,
+        rpcList: validRPCUrls,
+      };
+      submitNew?.(newChainConfig);
+      return;
+    }
+
+    const chainIdRes = parseEthChainId(confirm.chainId);
+    const uniqueId = formatCustomEthRpcUniqueId(chainIdRes.chainId);
     const newChainConfig: ETHConfig = {
       coinType: CoinType.ETH,
       logo: EVMPlaceHolder,
