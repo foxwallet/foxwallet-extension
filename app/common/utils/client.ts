@@ -113,7 +113,7 @@ export class PopupServerClient implements IClient, IPopupServer {
     if (callback) {
       const { error, data } = payload;
       if (error) {
-        callback(new Error(error), null);
+        callback(new Error(error?.message ?? error), null);
       } else {
         callback(null, data);
       }

@@ -44,7 +44,7 @@ export type ServerMessage<T = any> =
   | MsgContentToBackground<CoinType, T>;
 
 export interface ServerPayload<T = any> {
-  error: null | string;
+  error: null | Error;
   data: T | null;
 }
 
