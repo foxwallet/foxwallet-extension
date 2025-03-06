@@ -12,7 +12,6 @@ import { useCallback, useMemo } from "react";
 import { ChainAssembleMode } from "core/types/ChainUniqueId";
 import { type OneMatchAccount } from "@/scripts/background/store/vault/types/keyring";
 import { matchAccountsWithUnqiueId } from "@/store/accountV2";
-import { AleoConfig } from "core/coins/ALEO/types/AleoConfig";
 import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
 
 export const useChainMode = () => {
