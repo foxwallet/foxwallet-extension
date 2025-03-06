@@ -306,7 +306,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
     if (!canSubmit) {
       return;
     }
-    if (!amountNum) {
+    if (amountNum === null) {
       return;
     }
     onConfirm({

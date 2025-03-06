@@ -407,13 +407,6 @@ const TokenDetailScreen = () => {
   ]);
   // console.log("      history", history);
 
-  const { records, loading: loadingRecords } = useRecords({
-    uniqueId,
-    address,
-    recordFilter: RecordFilter.UNSPENT,
-    programId: tokenInfo.programId,
-  });
-
   useEffect(() => {
     if (reachBottom) {
       getMore();
