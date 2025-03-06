@@ -1,61 +1,59 @@
-import { Content } from "@/layouts/Content";
-import { PageWithHeader } from "@/layouts/Page";
-import { useTranslation } from "react-i18next";
-import { Box } from "@chakra-ui/react";
 import type React from "react";
-import { useMemo, useCallback, useState } from "react";
-import { useDebounce } from "use-debounce";
-import { useParams } from "react-router-dom";
+import { useCallback } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { useCoinService } from "@/hooks/useCoinService";
 import { type InnerChainUniqueId } from "core/types/ChainUniqueId";
-import { BaseInput } from "@/components/Custom/Input";
+import RPCConfigTemplate from "@/pages/Dapp/AddChain/RPCConfigTemplate";
+import type { ChainBaseConfig } from "core/types/ChainBaseConfig";
+import { usePopupDispatch } from "@/hooks/useStore";
+import { coinServiceEntry } from "core/coins/CoinServiceEntry";
+import { isEthCustomRPC } from "core/coins/ETH/utils";
+import { showErrorToast } from "@/components/Custom/ErrorToast";
+import { useTranslation } from "react-i18next";
 
 const NetworkDetailScreen = () => {
   const { uniqueId } = useParams();
+  const { t } = useTranslation();
+
+  const navigate = useNavigate();
   const { nativeCurrency, chainConfig, coinService } = useCoinService(
     uniqueId as InnerChainUniqueId,
   );
-  const { t } = useTranslation();
 
-  const [rpcUrl, setRpcUrl] = useState<string>("");
-  const [debounceRpcUrl] = useDebounce(rpcUrl, 500);
+  const dispatch = usePopupDispatch();
 
-  const onRpcUrlChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      setRpcUrl(event.target.value);
+  const onConfirm = useCallback(
+    (newChainConfig: ChainBaseConfig) => {
+      if (newChainConfig.rpcList?.length === 0) {
+        void showErrorToast({ message: t("Networks:invalidRpc") });
+        return;
+      }
+      dispatch.multiChain.changeChainConfig({
+        chainConfig: { ...chainConfig, ...newChainConfig },
+      });
+      coinServiceEntry.rmCachedInstance(newChainConfig.uniqueId);
+      navigate(-1);
     },
-    [],
+    [chainConfig, dispatch.multiChain, navigate, t],
   );
 
-  // todo: rpc manage
+  const onDelete = useCallback(() => {
+    if (isEthCustomRPC(chainConfig.uniqueId)) {
+      dispatch.multiChain.removeChainConfig({
+        chainConfig,
+      });
+      coinServiceEntry.rmCachedInstance(chainConfig.uniqueId);
+      navigate(-1);
+    }
+  }, [chainConfig, dispatch.multiChain, navigate]);
 
   return (
-    <PageWithHeader title={t("Networks:networkDetail")}>
-      <Content>
-        <Box overflowY="auto" maxHeight={"calc(100vh - 90px)"}>
-          <BaseInput
-            title={t("Networks:networkName")}
-            container={{ mt: "2" }}
-            value={chainConfig.chainName}
-            isDisabled={true}
-          />
-          <BaseInput
-            title={t("Networks:symbol")}
-            container={{ mt: "2" }}
-            value={chainConfig.nativeCurrency.symbol}
-            isDisabled={true}
-          />
-          <BaseInput
-            title={t("Networks:rpc")}
-            placeholder={t("Networks:rpcHint")}
-            container={{ mt: "2" }}
-            value={rpcUrl}
-            onChange={onRpcUrlChange}
-            // isInvalid={true}
-          />
-        </Box>
-      </Content>
-    </PageWithHeader>
+    <RPCConfigTemplate
+      defaultConf={chainConfig}
+      onCancel={() => navigate(-1)}
+      submitNew={onConfirm}
+      onDelete={onDelete}
+    />
   );
 };
 

@@ -17,9 +17,7 @@ import { ERROR_CODE } from "@/common/types/error";
 import { matchAccountsWithUnqiueId } from "@/store/accountV2";
 import { DAPP_CONNECTION_EXPIRE_TIME } from "@/common/constants";
 import { getDefaultChainUniqueId } from "core/constants/chain";
-import {
-  InnerChainUniqueId,
-} from "core/types/ChainUniqueId";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { EthService } from "core/coins/ETH/service/EthService";
 import RPCServer from "@/scripts/background/servers/RPCServer";
 import { nanoid } from "nanoid";
@@ -33,7 +31,7 @@ import {
 import * as ethUtils from "ethereumjs-util";
 import { hexToBuffer } from "@/common/utils/hex";
 import { parseEthChainId, stripHexPrefix } from "core/coins/ETH/utils";
-import {errorCodes, ProviderError} from "@/scripts/content/ErrorCode";
+import { errorCodes, ProviderError } from "@/scripts/content/ErrorCode";
 import { BigNumber } from "ethers";
 import { GasFeeEIP1559, GasFeeLegacy, GasFeeType } from "core/types/GasFee";
 import { contentServerHandler } from "@/scripts/background";
@@ -45,7 +43,7 @@ import { ChainBaseConfig } from "core/types/ChainBaseConfig";
 import { getChainConfigsByFilter } from "@/hooks/useGroupAccount";
 import { RematchRootState } from "@rematch/core";
 import { RootModel } from "@/store";
-import {appStorageInstance} from "@/common/utils/indexeddb";
+import { appStorageInstance } from "@/common/utils/indexeddb";
 
 export type SIGN_LEGACY_TX_PAYLOAD = {
   type: string;
@@ -138,7 +136,7 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
       throw new ProviderError(errorCodes.rpc.internal, "get origin failed");
     }
     try {
-      const {siteInfo} = siteMetadata;
+      const { siteInfo } = siteMetadata;
       const groupAccount =
         await this.accountSettingStorage.getSelectedGroupAccount();
       if (groupAccount) {
@@ -178,12 +176,18 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
       const message = typeof e === "string" ? e : (e as Error).message;
       if (message) {
         if (message === ERROR_CODE.USER_CANCEL) {
-          throw new ProviderError(errorCodes.provider.userRejectedRequest, "User rejected the request.");
+          throw new ProviderError(
+            errorCodes.provider.userRejectedRequest,
+            "User rejected the request.",
+          );
         } else {
           throw new ProviderError(errorCodes.rpc.internal, message);
         }
       }
-      throw new ProviderError(errorCodes.rpc.internal, e?.toString() ?? "Error");
+      throw new ProviderError(
+        errorCodes.rpc.internal,
+        e?.toString() ?? "Error",
+      );
     }
   };
 
@@ -210,12 +214,21 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
       const message = typeof e === "string" ? e : (e as Error).message;
       if (message) {
         if (message === ERROR_CODE.USER_CANCEL) {
-          throw new ProviderError(errorCodes.provider.userRejectedRequest, "User rejected the request.");
+          throw new ProviderError(
+            errorCodes.provider.userRejectedRequest,
+            "User rejected the request.",
+          );
         } else {
-          throw new ProviderError(errorCodes.provider.userRejectedRequest, message);
+          throw new ProviderError(
+            errorCodes.provider.userRejectedRequest,
+            message,
+          );
         }
       }
-      throw new ProviderError(errorCodes.rpc.internal, e?.toString() ?? "Error");
+      throw new ProviderError(
+        errorCodes.rpc.internal,
+        e?.toString() ?? "Error",
+      );
     }
   };
 
@@ -255,7 +268,7 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
       if (!context.siteMetadata || !context.siteMetadata.siteInfo) {
         throw new ProviderError(errorCodes.rpc.internal, "get origin failed");
       }
-      const {siteInfo} = context.siteMetadata!;
+      const { siteInfo } = context.siteMetadata!;
       const address = await this.popupServer.createConnectPopup(
         {
           coinType: CoinType.ETH,
@@ -263,7 +276,10 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
         siteInfo,
       );
       if (!address) {
-        throw new ProviderError(errorCodes.provider.userRejectedRequest, "User rejected the request.");
+        throw new ProviderError(
+          errorCodes.provider.userRejectedRequest,
+          "User rejected the request.",
+        );
       }
       const id = payload.id?.toString() ?? nanoid();
       const result = Object.keys(payload.params[0]).map((permissionName) => {
@@ -297,12 +313,18 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
       const message = typeof e === "string" ? e : (e as Error).message;
       if (message) {
         if (message === ERROR_CODE.USER_CANCEL) {
-          throw new ProviderError(errorCodes.provider.userRejectedRequest, "User rejected the request.");
+          throw new ProviderError(
+            errorCodes.provider.userRejectedRequest,
+            "User rejected the request.",
+          );
         } else {
           throw new ProviderError(errorCodes.rpc.internal, message);
         }
       }
-      throw new ProviderError(errorCodes.rpc.internal, e?.toString() ?? "Error");
+      throw new ProviderError(
+        errorCodes.rpc.internal,
+        e?.toString() ?? "Error",
+      );
     }
   };
 
@@ -315,7 +337,7 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
       if (!connectedAddress[0]) {
         return null;
       }
-      const {siteInfo} = context.siteMetadata!;
+      const { siteInfo } = context.siteMetadata!;
       if (!payload.params[0].eth_accounts) {
         return null;
       }
@@ -333,12 +355,18 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
       const message = typeof e === "string" ? e : (e as Error).message;
       if (message) {
         if (message === ERROR_CODE.USER_CANCEL) {
-          throw new ProviderError(errorCodes.provider.userRejectedRequest, "User rejected the request.");
+          throw new ProviderError(
+            errorCodes.provider.userRejectedRequest,
+            "User rejected the request.",
+          );
         } else {
           throw new ProviderError(errorCodes.rpc.internal, message);
         }
       }
-      throw new ProviderError(errorCodes.rpc.internal, e?.toString() ?? "Error");
+      throw new ProviderError(
+        errorCodes.rpc.internal,
+        e?.toString() ?? "Error",
+      );
     }
   };
 
@@ -373,7 +401,7 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
         address = p1;
         message = p2;
       }
-      message = this.autoFixPersonalSignMessage({message});
+      message = this.autoFixPersonalSignMessage({ message });
       const agreed = await this.popupServer.createSignMessagePopup(
         {
           message,
@@ -383,7 +411,10 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
         context.siteMetadata!.siteInfo,
       );
       if (!agreed) {
-        throw new ProviderError(errorCodes.provider.userRejectedRequest, "User rejected the request.");
+        throw new ProviderError(
+          errorCodes.provider.userRejectedRequest,
+          "User rejected the request.",
+        );
       }
       const instance = this.coinService.getInstance(
         InnerChainUniqueId.ETHEREUM,
@@ -405,38 +436,20 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
       const message = typeof e === "string" ? e : (e as Error).message;
       if (message) {
         if (message === ERROR_CODE.USER_CANCEL) {
-          throw new ProviderError(errorCodes.provider.userRejectedRequest, "User rejected the request.");
+          throw new ProviderError(
+            errorCodes.provider.userRejectedRequest,
+            "User rejected the request.",
+          );
         } else {
           throw new ProviderError(errorCodes.rpc.internal, message);
         }
       }
-      throw new ProviderError(errorCodes.rpc.internal, e?.toString() ?? "Error");
+      throw new ProviderError(
+        errorCodes.rpc.internal,
+        e?.toString() ?? "Error",
+      );
     }
   };
-
-  // signPersonalMessage = async (
-  //   payload: ETHRequestParams<ETHSignPersonalMessageParams>,
-  //   { siteMetadata }: ServerMethodContext,
-  // ) => {
-  //   logger.error("signPersonalMessage", payload);
-  //   const { address, siteInfo } = this.checkSiteMetadata(siteMetadata);
-  //   await this.getIsConnected(address, siteInfo);
-  //   // const signature = await this.popupServer.createAleoSignMessagePopup(
-  //   //   payload,
-  //   //   address,
-  //   //   siteInfo,
-  //   // );
-  //   // const pk = await this.keyringManager.getPrivateKeyByAddress({
-  //   //   coinType: CoinType.ETH,
-  //   //   address,
-  //   // });
-  //   // // const signWallet = (coinService as EthService).getSignWallet(
-  //   // //   pk,
-  //   // //   connectedAccount.account.address
-  //   // // );
-  //   // const result = await signWallet.signMessage(message);
-  //   return {};
-  // };
 
   personal_ecRecover = async (
     payload: ETHRequestParams<[string, string]>,
@@ -457,7 +470,10 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
       if (message) {
         throw new ProviderError(errorCodes.rpc.internal, message);
       }
-      throw new ProviderError(errorCodes.rpc.internal, e?.toString() ?? "Error");
+      throw new ProviderError(
+        errorCodes.rpc.internal,
+        e?.toString() ?? "Error",
+      );
     }
   };
 
@@ -494,11 +510,11 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
         data = p2;
       }
       const message = typeof data === "string" ? JSON.parse(data) : data;
-      const {chainId} = message.domain || {};
+      const { chainId } = message.domain || {};
       // const currentChainId = await this.net_version({}, serverMethodContext);
       let currentNetwork = serverMethodContext.siteMetadata?.network;
       if (currentNetwork) {
-        const {valid, chainId: currentChainId} =
+        const { valid, chainId: currentChainId } =
           parseEthChainId(currentNetwork);
         if (
           valid &&
@@ -507,7 +523,8 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
           !isNaN(chainId) &&
           Number(chainId) !== Number(currentChainId)
         ) {
-          throw new ProviderError(errorCodes.rpc.invalidParams,
+          throw new ProviderError(
+            errorCodes.rpc.invalidParams,
             "Provided chainId does not match the currently active chain",
           );
         }
@@ -546,7 +563,10 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
         serverMethodContext.siteMetadata!.siteInfo,
       );
       if (!agreed) {
-        throw new ProviderError(errorCodes.provider.userRejectedRequest, "User rejected the request.");
+        throw new ProviderError(
+          errorCodes.provider.userRejectedRequest,
+          "User rejected the request.",
+        );
       }
       console.log("_ethSignTypedData", toSign);
       const pk = await this.keyringManager.getPrivateKeyByAddress({
@@ -567,12 +587,18 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
       const message = typeof e === "string" ? e : (e as Error).message;
       if (message) {
         if (message === ERROR_CODE.USER_CANCEL) {
-          throw new ProviderError(errorCodes.provider.userRejectedRequest, "User rejected the request.");
+          throw new ProviderError(
+            errorCodes.provider.userRejectedRequest,
+            "User rejected the request.",
+          );
         } else {
           throw new ProviderError(errorCodes.rpc.internal, message);
         }
       }
-      throw new ProviderError(errorCodes.rpc.internal, e?.toString() ?? "Error");
+      throw new ProviderError(
+        errorCodes.rpc.internal,
+        e?.toString() ?? "Error",
+      );
     }
   };
 
@@ -584,12 +610,17 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
     try {
       const payload: SIGN_EIP11559_TX_PAYLOAD | SIGN_LEGACY_TX_PAYLOAD =
         _payload.params[0];
-      const {siteInfo} = siteMetadata!;
+      const { siteInfo } = siteMetadata!;
       if (!payload || !payload.from) {
-        throw new ProviderError(errorCodes.rpc.invalidParams, "Invalid payload");
+        throw new ProviderError(
+          errorCodes.rpc.invalidParams,
+          "Invalid payload",
+        );
       }
-      const {from, to, data} = payload;
-      const value = payload.value ? BigNumber.from(payload.value).toBigInt() : 0n;
+      const { from, to, data } = payload;
+      const value = payload.value
+        ? BigNumber.from(payload.value).toBigInt()
+        : 0n;
       const gasLimit = Number(payload.gas || payload.gasLimit || "0");
       // By default we use EIP1559
       const type =
@@ -650,7 +681,10 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
       const message = typeof e === "string" ? e : (e as Error).message;
       if (message) {
         if (message === ERROR_CODE.USER_CANCEL) {
-          throw new ProviderError(errorCodes.provider.userRejectedRequest, "User rejected the request.");
+          throw new ProviderError(
+            errorCodes.provider.userRejectedRequest,
+            "User rejected the request.",
+          );
         } else {
           throw new ProviderError(errorCodes.rpc.internal, message);
         }
@@ -669,7 +703,10 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
         serverMethodContext,
       );
       if (!connectedAddress[0]) {
-        throw new ProviderError(errorCodes.rpc.internal, "no connected address");
+        throw new ProviderError(
+          errorCodes.rpc.internal,
+          "no connected address",
+        );
       }
       const groupAccount =
         await this.accountSettingStorage.getSelectedGroupAccount();
@@ -681,9 +718,12 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
         getDefaultChainUniqueId(CoinType.ETH, {}),
       )[0];
       if (selectedAccount.address.toLowerCase() !== connectedAddress[0]) {
-        throw new ProviderError(errorCodes.rpc.internal, "no connected address");
+        throw new ProviderError(
+          errorCodes.rpc.internal,
+          "no connected address",
+        );
       }
-      const {siteMetadata} = serverMethodContext;
+      const { siteMetadata } = serverMethodContext;
       let options = payload.params.options;
 
       const token = {
@@ -704,10 +744,9 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
       const network = siteMetadata.network;
       const chainIdRequest = parseEthChainId(network || "0x1");
 
-      const state = await appStorageInstance.getItem("persist:root") as RematchRootState<
-        RootModel,
-        FullModel
-      >;
+      const state = (await appStorageInstance.getItem(
+        "persist:root",
+      )) as RematchRootState<RootModel, FullModel>;
 
       const existChainConfigs = getChainConfigsByFilter({
         state,
@@ -723,10 +762,13 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
         );
       }
 
-      const {uniqueId} = existChainConfigs[0];
+      const { uniqueId } = existChainConfigs[0];
       const instance = this.coinService.getInstance(uniqueId) as EthService;
 
-      if (!instance.validateAddress(token.contract) || !instance.supportToken()) {
+      if (
+        !instance.validateAddress(token.contract) ||
+        !instance.supportToken()
+      ) {
         throw new Error("Invalid parameter");
       }
 
@@ -745,7 +787,7 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
       }
       // select the token
       const confirmToken = await this.popupServer.createRequestETHAddTokenPopup(
-        {...payload, uniqueId},
+        { ...payload, uniqueId },
         siteMetadata,
       );
       if (!confirmToken) {
@@ -759,7 +801,10 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
       const message = typeof e === "string" ? e : (e as Error).message;
       if (message) {
         if (message === ERROR_CODE.USER_CANCEL) {
-          throw new ProviderError(errorCodes.provider.userRejectedRequest, "User rejected the request.");
+          throw new ProviderError(
+            errorCodes.provider.userRejectedRequest,
+            "User rejected the request.",
+          );
         } else {
           throw new ProviderError(errorCodes.rpc.internal, message);
         }
@@ -781,18 +826,20 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
       if (!siteMetadata) {
         throw new ProviderError(errorCodes.rpc.internal, "no site info");
       }
-      const {params} = payload;
-      const {chainId, chainName, nativeCurrency, rpcUrls, blockExplorerUrls} =
+      const { params } = payload;
+      const { chainId, chainName, nativeCurrency, rpcUrls, blockExplorerUrls } =
         params[0];
       const chainIdRequest = parseEthChainId(chainId);
       if (!chainIdRequest.valid) {
-        throw new ProviderError(errorCodes.rpc.invalidParams, "invalid chainId");
+        throw new ProviderError(
+          errorCodes.rpc.invalidParams,
+          "invalid chainId",
+        );
       }
 
-      const state = await appStorageInstance.getItem("persist:root") as RematchRootState<
-        RootModel,
-        FullModel
-      >;
+      const state = (await appStorageInstance.getItem(
+        "persist:root",
+      )) as RematchRootState<RootModel, FullModel>;
 
       const existChainConfigs = getChainConfigsByFilter({
         state,
@@ -822,7 +869,10 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
       const message = typeof e === "string" ? e : (e as Error).message;
       if (message) {
         if (message === ERROR_CODE.USER_CANCEL) {
-          throw new ProviderError(errorCodes.provider.userRejectedRequest, "User rejected the request.");
+          throw new ProviderError(
+            errorCodes.provider.userRejectedRequest,
+            "User rejected the request.",
+          );
         } else {
           throw new ProviderError(errorCodes.rpc.internal, message);
         }
@@ -840,16 +890,18 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
       if (!switchToChainId) {
         throw new ProviderError(errorCodes.rpc.invalidParams, "chainId");
       }
-      const {valid, chainId} = parseEthChainId(switchToChainId);
+      const { valid, chainId } = parseEthChainId(switchToChainId);
 
       if (!valid) {
-        throw new ProviderError(errorCodes.rpc.invalidParams, "Invalid chainId");
+        throw new ProviderError(
+          errorCodes.rpc.invalidParams,
+          "Invalid chainId",
+        );
       }
 
-      const state = await appStorageInstance.getItem("persist:root") as RematchRootState<
-        RootModel,
-        FullModel
-      >;
+      const state = (await appStorageInstance.getItem(
+        "persist:root",
+      )) as RematchRootState<RootModel, FullModel>;
 
       // check the chainId is in config
       const existChainConfigs = getChainConfigsByFilter({
@@ -876,7 +928,10 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
       const message = typeof e === "string" ? e : (e as Error).message;
       if (message) {
         if (message === ERROR_CODE.USER_CANCEL) {
-          throw new ProviderError(errorCodes.provider.userRejectedRequest, "User rejected the request.");
+          throw new ProviderError(
+            errorCodes.provider.userRejectedRequest,
+            "User rejected the request.",
+          );
         } else {
           throw new ProviderError(errorCodes.rpc.internal, message);
         }
@@ -932,10 +987,9 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
     if (!valid) {
       throw new ProviderError(errorCodes.rpc.invalidParams, "Invalid network");
     }
-    const state = await appStorageInstance.getItem("persist:root") as RematchRootState<
-      RootModel,
-      FullModel
-    >;
+    const state = (await appStorageInstance.getItem(
+      "persist:root",
+    )) as RematchRootState<RootModel, FullModel>;
     const existChainConfigs = getChainConfigsByFilter({
       state,
       filter: (item: ChainBaseConfig) =>
