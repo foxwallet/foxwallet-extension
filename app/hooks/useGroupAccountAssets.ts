@@ -53,7 +53,7 @@ export const useUserAssets = () => {
         symbol: nativeCurrency.symbol,
         type: AssetType.COIN,
         uniqueId,
-        icon: chainConfig.nativeCurrency.logo,
+        icon: chainConfig.nativeCurrency.logo ?? chainConfig.logo,
       };
       const nativeToken =
         uniqueId === InnerChainUniqueId.ALEO_MAINNET
