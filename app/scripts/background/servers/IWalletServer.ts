@@ -169,6 +169,8 @@ export interface IPopupServer {
 
   rescanAleo(): Promise<boolean>;
 
+  resetChain(): Promise<boolean>;
+
   sendAleoTransaction(params: AleoSendTxProps): Promise<void>;
 
   isSendingAleoTransaction(): Promise<boolean>;

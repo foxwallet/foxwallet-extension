@@ -193,6 +193,10 @@ export class PopupServerClient implements IClient, IPopupServer {
     return await this.#send("rescanAleo", {});
   }
 
+  async resetChain(): Promise<boolean> {
+    return await this.#send("resetChain", {});
+  }
+
   async sendAleoTransaction(params: AleoSendTxProps): Promise<void> {
     await this.#send("sendAleoTransaction", params);
   }

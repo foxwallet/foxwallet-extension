@@ -48,7 +48,8 @@ const SettingsScreen = () => {
     try {
       const { confirmed } = await showConfirmResyncDialog();
       if (confirmed) {
-        return await popupServerClient.rescanAleo();
+        // return await popupServerClient.rescanAleo();
+        return await popupServerClient.resetChain();
       }
     } catch (err) {
       console.error(err);
