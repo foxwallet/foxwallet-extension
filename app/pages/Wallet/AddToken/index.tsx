@@ -3,7 +3,7 @@ import {
   IconRemoveCircle,
   IconSearch,
 } from "@/components/Custom/Icon";
-import { TokenItem, TokenItemWithBalance } from "@/components/Wallet/TokenItem";
+import { TokenItemWithBalance } from "@/components/Wallet/TokenItem";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
 import {
@@ -200,12 +200,15 @@ function AddToken() {
                 pr={5}
                 _hover={{ bg: "gray.50", borderRadius: "lg" }}
               >
-                <TokenItem
+                <TokenItemWithBalance
+                  uniqueId={uniqueId}
+                  address={selectedAccount.account.address}
                   token={token}
                   onClick={() => {
                     selectToken(token);
                   }}
-                  hideId={token.programId === BETA_STAKING_PROGRAM_ID}
+                  showPriceAndChange={false}
+                  showBalnaceAndValue={false}
                 />
                 <Flex
                   cursor={"pointer"}

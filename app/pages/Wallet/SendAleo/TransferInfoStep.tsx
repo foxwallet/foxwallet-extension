@@ -5,7 +5,7 @@ import { BaseInputGroup } from "@/components/Custom/Input";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import { showSelectRecordDialog } from "@/components/Send/SelectRecord";
 import { showSelectTransferMethodDialog } from "@/components/Send/SelectTransferMethod";
-import { TokenItem } from "@/components/Wallet/TokenItem";
+import { TokenItemWithBalance } from "@/components/Wallet/TokenItem";
 import { TokenNum } from "@/components/Wallet/TokenNum";
 import { useCoinService } from "@/hooks/useCoinService";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
@@ -29,6 +29,7 @@ import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { parseUnits } from "ethers/lib/utils";
+import type React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -357,7 +358,9 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
         <Flex justify={"space-between"} mt={2} align={"center"}>
           <Text>{t("Send:transferToken")}</Text>
           <Flex align={"center"}>
-            <TokenItem
+            <TokenItemWithBalance
+              uniqueId={uniqueId}
+              address={selectedAccount.account.address}
               token={tokenInfo}
               onClick={() => {
                 navigate(
@@ -369,7 +372,8 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
                   },
                 );
               }}
-              hideId
+              showPriceAndChange={false}
+              showBalnaceAndValue={false}
               style={{ pr: 1 }}
             />
             <IconChevronRight w={4} h={4} />
