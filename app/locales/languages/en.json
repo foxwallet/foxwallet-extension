@@ -328,7 +328,8 @@
   },
   "ManageToken": {
     "title": "Manage Token",
-    "searchHint": "Search token(Symbol, Address)"
+    "searchHint": "Search token(Symbol, Address)",
+    "pleaseWait": "Searching, this might take a while"
   },
   "Common": {
     "confirm": "Confirm",

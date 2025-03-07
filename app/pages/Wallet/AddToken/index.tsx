@@ -10,6 +10,7 @@ import {
   matchedAndUnMatchedTokens,
   useAllTokens,
   useRecommendTokens,
+  useTokens,
 } from "@/hooks/useToken";
 import { PageWithHeader } from "@/layouts/Page";
 import {
@@ -18,6 +19,7 @@ import {
   Input,
   InputGroup,
   InputLeftElement,
+  Text,
 } from "@chakra-ui/react";
 import {
   BETA_STAKING_ALEO_TOKEN_ID,
@@ -25,7 +27,7 @@ import {
 } from "core/coins/ALEO/constants";
 import { isEqual } from "lodash";
 import type React from "react";
-import { useCallback, useMemo, useState } from "react";
+import { useEffect, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSafeParams } from "@/hooks/useSafeParams";
 import { type TokenV2 } from "core/types/Token";
@@ -35,6 +37,7 @@ import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import type { AleoService } from "core/coins/ALEO/service/AleoService";
 import { useCoinService } from "@/hooks/useCoinService";
+import { useDebounce } from "use-debounce";
 
 function AddToken() {
   const { t } = useTranslation();
@@ -45,6 +48,8 @@ function AddToken() {
   }, [getMatchAccountsWithUniqueId, uniqueId]);
   const [searchText, setSearchText] = useState("");
   const { coinService } = useCoinService(uniqueId);
+  const [searchingByRpc, setSearchingByRpc] = useState(false);
+  const dispatch = usePopupDispatch();
 
   const recommendTokens = useRecommendTokens(uniqueId); // 推荐 数量适中
   // console.log("      recommendTokens", recommendTokens);
@@ -52,24 +57,107 @@ function AddToken() {
   const rawAllTokens = useAllTokens(uniqueId); // 所有 数量很多
   // console.log("      rawAllTokens", rawAllTokens);
 
-  const {
-    searchRes,
-    searching: loading,
-    delaySearchStr,
-  } = useSearchTokens(searchText, rawAllTokens);
+  // const { tokens } = useTokens(InnerChainUniqueId.ALEO_MAINNET, "paleo");
+  // console.log("      tokens", tokens);
+
+  const { searchRes: searchInRawAllTokens, searching: loadingInRawAllTokens } =
+    useSearchTokens(searchText, rawAllTokens);
+
+  const [delaySearchStr] = useDebounce(searchText, 500);
+  const [searchResByRpc, setSearchResByRpc] = useState<TokenV2 | undefined>(
+    undefined,
+  );
+
+  const searchByRpc = useCallback(
+    async (contractAddress: string): Promise<TokenV2 | undefined> => {
+      if (!coinService.validateContractAddress(contractAddress)) {
+        return undefined;
+      }
+      if (!coinService.supportToken()) {
+        return;
+      }
+      try {
+        console.log("searchByRpc start", contractAddress);
+        setSearchingByRpc(true);
+        const token = await coinService.getTokenMeta({ contractAddress });
+        console.log("------- searchByRpc", token);
+        if (token && token.contractAddress && token.symbol) {
+          try {
+            const tokenBalance = await coinService.getTokenBalance({
+              address: selectedAccount.account.address,
+              token,
+            });
+            if (tokenBalance?.total) {
+              dispatch.coinBalanceV2.updateCoinBalance({
+                uniqueId,
+                address: selectedAccount.account.address,
+                contractAddress: token.contractAddress,
+                balanceItem: {
+                  total: tokenBalance.total,
+                  privateBalance: tokenBalance.privateBalance,
+                  publicBalance: tokenBalance.publicBalance,
+                },
+              });
+            }
+          } catch (err) {
+            console.log(err);
+          }
+
+          return token as TokenV2;
+        }
+        return undefined;
+      } catch (err) {
+        console.log("searchByRpc failed", err);
+        return undefined;
+      } finally {
+        setSearchingByRpc(false);
+      }
+    },
+    [
+      coinService,
+      dispatch.coinBalanceV2,
+      selectedAccount.account.address,
+      uniqueId,
+    ],
+  );
+
+  useEffect(() => {
+    const searchAddressByRpc = async () => {
+      if (
+        searchInRawAllTokens.length === 0 &&
+        coinService.validateAddress(delaySearchStr)
+      ) {
+        const rpcRes = await searchByRpc(delaySearchStr);
+        setSearchResByRpc(rpcRes);
+      } else {
+        setSearchResByRpc(undefined);
+      }
+    };
+    searchAddressByRpc();
+  }, [coinService, delaySearchStr, searchByRpc, searchInRawAllTokens.length]);
+
+  const loading = useMemo(() => {
+    return loadingInRawAllTokens || searchingByRpc;
+  }, [loadingInRawAllTokens, searchingByRpc]);
 
   const userTokens = usePopupSelector(
     (state) =>
       state.tokens.userTokens?.[uniqueId]?.[selectedAccount?.account.address],
     isEqual,
   );
-  console.log("      userTokens", userTokens);
-  const dispatch = usePopupDispatch();
 
   // 需要区分用户已添加/没有添加的数据
   const targetTokens = useMemo(() => {
-    return searchText ? [...searchRes] : recommendTokens;
-  }, [searchText, searchRes, recommendTokens]);
+    if (searchText) {
+      if (searchResByRpc) {
+        return [...searchInRawAllTokens, searchResByRpc];
+      } else {
+        return [...searchInRawAllTokens];
+      }
+    } else {
+      return recommendTokens;
+    }
+  }, [searchText, searchInRawAllTokens, searchResByRpc, recommendTokens]);
 
   // 区分结果
   const { matchedTokens, unMatchedTokens } = useMemo(() => {
@@ -141,7 +229,19 @@ function AddToken() {
           py={2}
         />
       </InputGroup>
-      {loading && <LoadingView w={12} h={12} alignSelf={"center"} mt={2} />}
+      {loading && (
+        <Flex
+          alignItems={"center"}
+          justifyContent={"center"}
+          flexDir={"column"}
+        >
+          <LoadingView w={8} h={8} alignSelf={"center"} mt={2} />
+          <Text mt={2} fontSize={10}>
+            {t("ManageToken:pleaseWait")}
+          </Text>
+        </Flex>
+      )}
+      {}
       <Flex
         flexDir={"column"}
         maxH={"500px"}
