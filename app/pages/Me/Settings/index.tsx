@@ -79,12 +79,12 @@ const SettingsScreen = () => {
           icon={<IconCurrency w={4} h={4} />}
           onPress={onCurrency}
         /> */}
-        <SettingItem
-          title={t("Reset:account")}
-          icon={<IconReset w={"16px"} h={"16px"} />}
-          noNext
-          onPress={onResetAleoStatus}
-        />
+        {/* <SettingItem */}
+        {/*  title={t("Reset:account")} */}
+        {/*  icon={<IconReset w={"16px"} h={"16px"} />} */}
+        {/*  noNext */}
+        {/*  onPress={onResetAleoStatus} */}
+        {/* /> */}
         <SettingItem
           title={t("About:title")}
           icon={<IconAbout w={4} h={4} />}
