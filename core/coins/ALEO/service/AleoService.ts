@@ -175,6 +175,7 @@ export class AleoService extends CoinServiceBasic {
     ]);
     const { referenceHeight, serverHeight } = nodeStatus;
     const maxHeight = Math.max(referenceHeight ?? 0, serverHeight ?? 0);
+    // console.log("      recordRanges", recordRanges, nodeStatus);
 
     const finishHeight = recordRanges
       .map((item) => {
@@ -184,11 +185,19 @@ export class AleoService extends CoinServiceBasic {
       .reduce((prev, curr) => {
         return prev + curr[1] - curr[0] + 1;
       }, 0);
-    return Math.min(
-      // add some buffer to avoid always 99%
-      Math.floor(((finishHeight + 20) / maxHeight) * 100),
-      100,
-    );
+    // console.log("      finishHeight", finishHeight);
+
+    const realProgress = Math.floor((finishHeight / maxHeight) * 100);
+    // console.log("      realProgress", realProgress);
+
+    // 99%时视为100%, 否则会持续显示99%
+    return realProgress < 99 ? realProgress : 100;
+
+    // return Math.min(
+    //   // add some buffer to avoid always 99%
+    //   // Math.floor(((finishHeight + 20) / maxHeight) * 100),
+    //   100,
+    // );
   }
 
   private syncRecords = async (
