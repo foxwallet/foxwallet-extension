@@ -27,7 +27,6 @@ import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
 import { useTransactionDetail } from "@/hooks/useTransactionDetail";
 import { useCoinService } from "@/hooks/useCoinService";
 import browser from "webextension-polyfill";
-import { AleoTxStatus } from "core/coins/ALEO/types/Transaction";
 import { simplifyAleoTxStatus } from "core/coins/ALEO/utils/utils";
 
 type InfoAProps = {
