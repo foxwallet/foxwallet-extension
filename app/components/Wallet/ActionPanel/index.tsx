@@ -6,7 +6,12 @@ import {
 } from "core/types/ChainUniqueId";
 import { Box, Flex, type FlexProps, Spinner, Text } from "@chakra-ui/react";
 import React, { useMemo } from "react";
-import { IconJoinSplit, IconReceive, IconSend } from "@/components/Custom/Icon";
+import {
+  IconJoinSplit,
+  IconReceive,
+  IconSend,
+  IconStake,
+} from "@/components/Custom/Icon";
 import {
   SelectJoinSplitOption,
   showSelectJoinSplitDialog,
@@ -18,6 +23,7 @@ import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { useBalance } from "@/hooks/useBalance";
 import { useCoinService } from "@/hooks/useCoinService";
 import { useFaucetActionOption } from "@/hooks/useFaucetActionOption";
+import { showDownloadDialog } from "@/components/Custom/DownloadDialog";
 
 export interface ActionButtonProps {
   title: string;
@@ -173,6 +179,13 @@ const SingleChainActionPanel = ({ uniqueId }: { uniqueId: ChainUniqueId }) => {
               navigate("/join");
             }
           }
+        },
+      });
+      initOptions.push({
+        title: t("Stake:title"),
+        icon: <IconStake w={9} h={9} />,
+        onPress: async () => {
+          await showDownloadDialog();
         },
       });
     }
