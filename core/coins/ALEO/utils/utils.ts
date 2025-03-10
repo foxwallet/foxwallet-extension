@@ -1,4 +1,6 @@
 import { BigNumber } from "ethers";
+import { AleoTxStatus } from "core/coins/ALEO/types/Transaction";
+import { t } from "i18next";
 
 export function parseWalletCoreResp<T>(rawStr: string): {
   error: string;
@@ -71,3 +73,43 @@ export const parseAleoFeeFuture = (futureStr?: string): string => {
 //     return null;
 //   }
 // };
+
+export enum SimplifiedAleoTxStatus {
+  Success = "Success",
+  Failed = "Failed",
+  Pending = "pending",
+}
+
+export const simplifyAleoTxStatus = (status: AleoTxStatus) => {
+  let txStatusStr = "";
+  let txStatus = SimplifiedAleoTxStatus.Failed;
+
+  switch (status) {
+    case AleoTxStatus.FINALIZD:
+    case AleoTxStatus.COMPLETED: {
+      txStatus = SimplifiedAleoTxStatus.Success;
+      txStatusStr = t("Common:success");
+      break;
+    }
+    case AleoTxStatus.QUEUED:
+    case AleoTxStatus.GENERATING_TRANSACTION:
+    case AleoTxStatus.GENERATING_PROVER_FILES:
+    case AleoTxStatus.BROADCASTING: {
+      txStatus = SimplifiedAleoTxStatus.Pending;
+      txStatusStr = t("Common:pending");
+      break;
+    }
+    case AleoTxStatus.REJECTED:
+    case AleoTxStatus.FAILED:
+    case AleoTxStatus.UNACCEPTED: {
+      txStatus = SimplifiedAleoTxStatus.Failed;
+      txStatusStr = t("Common:failed");
+      break;
+    }
+    default: {
+      break;
+    }
+  }
+
+  return { txStatus, txStatusStr };
+};
