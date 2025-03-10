@@ -24,6 +24,7 @@ import { useBalance } from "@/hooks/useBalance";
 import { type TokenV2 } from "core/types/Token";
 import { type AleoService } from "core/coins/ALEO/service/AleoService";
 import { type Balance } from "@/hooks/useAleoBalance";
+import { type InnerProgramId } from "core/coins/ALEO/types/ProgramId";
 
 interface GasFeeProps {
   receiverAddress: string;
@@ -110,7 +111,10 @@ export const GasFeeStep = (props: GasFeeProps) => {
       try {
         const { baseFee, priorityFee } = await (
           coinService as AleoService
-        ).getGasFee(token.programId ?? NATIVE_TOKEN_PROGRAM_ID, method);
+        ).getGasFee(
+          (token.programId ?? NATIVE_TOKEN_PROGRAM_ID) as InnerProgramId,
+          method,
+        );
         setFeeInfo({ baseFee, priorityFee });
       } catch (err) {
         setFeeInfo(null);
@@ -271,6 +275,12 @@ export const GasFeeStep = (props: GasFeeProps) => {
       },
       [AleoTransferMethod.PRIVATE_TO_PUBLIC]: {
         title: t("Send:privateToPublic"),
+      },
+      [AleoTransferMethod.SPLIT]: {
+        title: t("JoinSplit:split"),
+      },
+      [AleoTransferMethod.JOIN]: {
+        title: t("JoinSplit:join"),
       },
     };
   }, [t]);
