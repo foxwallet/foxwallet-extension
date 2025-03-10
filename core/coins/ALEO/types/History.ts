@@ -1,4 +1,5 @@
 import { type AleoTxStatus } from "./Transaction";
+import { type AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
 
 export enum AleoHistoryType {
   ON_CHAIN = "on_chain",
@@ -15,21 +16,12 @@ export enum AleoTxType {
   DEPLOYMENT = "deployment",
 }
 
-export enum AleoTxFunctionNameType {
-  Join = "join",
-  Split = "split",
-  Public = "transfer_public",
-  Private = "transfer_private",
-  PublicToPrivate = "transfer_public_to_private",
-  PrivateToPublic = "transfer_private_to_public",
-}
-
 export interface AleoOnChainHistoryItem {
   type: AleoHistoryType.ON_CHAIN;
   txType: AleoTxType;
   txId: string;
   programId: string;
-  functionName: AleoTxFunctionNameType;
+  functionName: AleoTransferMethod;
   height: number;
   timestamp: number;
   addressType: AleoTxAddressType;
@@ -46,7 +38,7 @@ export interface AleoLocalHistoryItem {
   txId?: string;
   error?: string;
   programId: string;
-  functionName: AleoTxFunctionNameType;
+  functionName: AleoTransferMethod;
   inputs: string[];
   timestamp: number;
   addressType: AleoTxAddressType.SEND;

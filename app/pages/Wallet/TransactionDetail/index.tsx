@@ -10,7 +10,6 @@ import {
   type AleoHistoryItem,
   AleoHistoryType,
   AleoTxAddressType,
-  AleoTxFunctionNameType,
 } from "core/coins/ALEO/types/History";
 import type { TransactionHistoryItem } from "core/types/TransactionHistory";
 import { TransactionStatus } from "core/types/TransactionStatus";
@@ -28,6 +27,7 @@ import { useTransactionDetail } from "@/hooks/useTransactionDetail";
 import { useCoinService } from "@/hooks/useCoinService";
 import browser from "webextension-polyfill";
 import { simplifyAleoTxStatus } from "core/coins/ALEO/utils/utils";
+import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
 
 type InfoAProps = {
   title: string;
@@ -181,28 +181,28 @@ const TransactionDetailScreen = () => {
 
         if (tx.type === AleoHistoryType.LOCAL) {
           switch (tx.functionName) {
-            case AleoTxFunctionNameType.PublicToPrivate: {
+            case AleoTransferMethod.PUBLIC_TO_PRIVATE: {
               from = address;
               to = tx.inputs[0];
               break;
             }
-            case AleoTxFunctionNameType.PrivateToPublic: {
+            case AleoTransferMethod.PRIVATE_TO_PUBLIC: {
               from = address;
               to = tx.inputs[1];
               break;
             }
-            case AleoTxFunctionNameType.Public: {
+            case AleoTransferMethod.PUBLIC: {
               from = address;
               to = tx.inputs[0];
               break;
             }
-            case AleoTxFunctionNameType.Private: {
+            case AleoTransferMethod.PRIVATE: {
               from = address;
               to = tx.inputs[1];
               break;
             }
-            case AleoTxFunctionNameType.Split:
-            case AleoTxFunctionNameType.Join: {
+            case AleoTransferMethod.SPLIT:
+            case AleoTransferMethod.JOIN: {
               from = address;
               to = address;
               amount = 0n;

@@ -35,16 +35,11 @@ import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import { useAleoTxHistory, useTxHistory } from "@/hooks/useTxHistory";
 import { useIsSendingAleoTx } from "@/hooks/useSendingTxStatus";
-import { useRecords } from "@/hooks/useRecord";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
 import { useBottomReach } from "@/hooks/useBottomReach";
-import { RecordFilter } from "@/scripts/background/servers/IWalletServer";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import {
-  ALPHA_TOKEN_PROGRAM_ID,
   BETA_STAKING_ALEO_TOKEN_ID,
-  BETA_STAKING_PROGRAM_ID,
-  NATIVE_TOKEN_PROGRAM_ID,
   NATIVE_TOKEN_TOKEN_ID,
 } from "core/coins/ALEO/constants";
 import { serializeData, serializeToken } from "@/common/utils/string";
@@ -58,13 +53,12 @@ import { type TransactionHistoryItem } from "core/types/TransactionHistory";
 import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 import { usePopupSelector } from "@/hooks/useStore";
 import { showCopyContractAddressDialog } from "@/components/Wallet/CopyContractAddressDialog";
-import { AleoTxStatus } from "core/coins/ALEO/types/Transaction";
-import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
 import { TransactionStatus } from "core/types/TransactionStatus";
 import {
   SimplifiedAleoTxStatus,
   simplifyAleoTxStatus,
 } from "core/coins/ALEO/utils/utils";
+import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
 
 interface AleoTokenTxHistoryItemProps {
   item: AleoHistoryItem;
