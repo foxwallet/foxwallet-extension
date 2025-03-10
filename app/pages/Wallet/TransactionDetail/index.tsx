@@ -219,13 +219,19 @@ const TransactionDetailScreen = () => {
         txStatus = simplifiedStatus;
       } else {
         tx = JSON.parse(txItem) as TransactionHistoryItem;
+        // console.log("      tx", tx);
+
         txId = tx.id;
         from = tx.from;
         to = tx.to;
         amount = BigInt(tx.value ?? "0");
         isSend = tx.from === address;
         nonce = String(tx.nonce ?? "");
-        txType = t(`TokenDetail:${tx.label}`);
+        txType = tx.label
+          ? t(`TokenDetail:${tx.label}`)
+          : isSend
+          ? t(`TokenDetail:send`)
+          : t(`TokenDetail:receive`);
 
         switch (tx.status) {
           case TransactionStatus.SUCCESS: {

@@ -388,7 +388,7 @@ export const SendDataStep = (props: SendDataStepProps) => {
   ]);
 
   const onGasSetting = useCallback(() => {
-    if (supportCustomGasFee) {
+    if (supportCustomGasFee && amountStr) {
       onStep3({ amountStr, currGasFee: gasFee });
     }
   }, [amountStr, gasFee, onStep3, supportCustomGasFee]);
