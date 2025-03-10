@@ -10,6 +10,7 @@ import {
   type AleoHistoryItem,
   AleoHistoryType,
   AleoTxAddressType,
+  AleoTxFunctionNameType,
 } from "core/coins/ALEO/types/History";
 import type { TransactionHistoryItem } from "core/types/TransactionHistory";
 import { TransactionStatus } from "core/types/TransactionStatus";
@@ -180,20 +181,38 @@ const TransactionDetailScreen = () => {
         txType = `${tx.functionName.split("_").join(" ")}`;
 
         if (tx.type === AleoHistoryType.LOCAL) {
-          if (isSend) {
-            from = address;
-            to = tx.inputs[0];
-          } else {
-            from = tx.inputs[0];
+          switch (tx.functionName) {
+            case AleoTxFunctionNameType.PublicToPrivate: {
+              from = address;
+              to = tx.inputs[0];
+              break;
+            }
+            case AleoTxFunctionNameType.PrivateToPublic: {
+              from = address;
+              to = tx.inputs[1];
+              break;
+            }
+            case AleoTxFunctionNameType.Public: {
+              from = address;
+              to = tx.inputs[0];
+              break;
+            }
+            case AleoTxFunctionNameType.Private: {
+              from = address;
+              to = tx.inputs[1];
+              break;
+            }
+            case AleoTxFunctionNameType.Split:
+            case AleoTxFunctionNameType.Join: {
+              from = address;
+              to = address;
+              amount = 0n;
+              break;
+            }
           }
         } else {
           from = tx.from;
           to = tx.to;
-        }
-        if (tx.functionName === "join" || tx.functionName === "split") {
-          from = address;
-          to = address;
-          amount = 0n;
         }
 
         const { txStatus: simplifiedStatus } = simplifyAleoTxStatus(tx.status);

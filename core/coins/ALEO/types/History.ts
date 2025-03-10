@@ -1,4 +1,3 @@
-import { Token } from "./Token";
 import { type AleoTxStatus } from "./Transaction";
 
 export enum AleoHistoryType {
@@ -16,12 +15,21 @@ export enum AleoTxType {
   DEPLOYMENT = "deployment",
 }
 
+export enum AleoTxFunctionNameType {
+  Join = "join",
+  Split = "split",
+  Public = "transfer_public",
+  Private = "transfer_private",
+  PublicToPrivate = "transfer_public_to_private",
+  PrivateToPublic = "transfer_private_to_public",
+}
+
 export interface AleoOnChainHistoryItem {
   type: AleoHistoryType.ON_CHAIN;
   txType: AleoTxType;
   txId: string;
   programId: string;
-  functionName: string;
+  functionName: AleoTxFunctionNameType;
   height: number;
   timestamp: number;
   addressType: AleoTxAddressType;
@@ -38,7 +46,7 @@ export interface AleoLocalHistoryItem {
   txId?: string;
   error?: string;
   programId: string;
-  functionName: string;
+  functionName: AleoTxFunctionNameType;
   inputs: string[];
   timestamp: number;
   addressType: AleoTxAddressType.SEND;
