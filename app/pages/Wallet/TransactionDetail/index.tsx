@@ -27,7 +27,10 @@ import { useTransactionDetail } from "@/hooks/useTransactionDetail";
 import { useCoinService } from "@/hooks/useCoinService";
 import browser from "webextension-polyfill";
 import { simplifyAleoTxStatus } from "core/coins/ALEO/utils/utils";
-import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
+import {
+  AleoRecordMethod,
+  AleoTransferMethod,
+} from "core/coins/ALEO/types/TransferMethod";
 
 type InfoAProps = {
   title: string;
@@ -201,8 +204,8 @@ const TransactionDetailScreen = () => {
               to = tx.inputs[1];
               break;
             }
-            case AleoTransferMethod.SPLIT:
-            case AleoTransferMethod.JOIN: {
+            case AleoRecordMethod.SPLIT:
+            case AleoRecordMethod.JOIN: {
               from = address;
               to = address;
               amount = 0n;

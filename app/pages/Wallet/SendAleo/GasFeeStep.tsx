@@ -15,7 +15,10 @@ import {
 } from "core/coins/ALEO/constants";
 import { AleoFeeMethod } from "core/coins/ALEO/types/FeeMethod";
 import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
-import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
+import {
+  AleoRecordMethod,
+  AleoTransferMethod,
+} from "core/coins/ALEO/types/TransferMethod";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { type AleoGasFee } from "core/types/GasFee";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -276,10 +279,10 @@ export const GasFeeStep = (props: GasFeeProps) => {
       [AleoTransferMethod.PRIVATE_TO_PUBLIC]: {
         title: t("Send:privateToPublic"),
       },
-      [AleoTransferMethod.SPLIT]: {
+      [AleoRecordMethod.SPLIT]: {
         title: t("JoinSplit:split"),
       },
-      [AleoTransferMethod.JOIN]: {
+      [AleoRecordMethod.JOIN]: {
         title: t("JoinSplit:join"),
       },
     };

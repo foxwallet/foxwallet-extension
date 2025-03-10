@@ -1,5 +1,5 @@
 import { type AleoTxStatus } from "./Transaction";
-import { type AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
+import { type AleoCreditMethod } from "core/coins/ALEO/types/TransferMethod";
 
 export enum AleoHistoryType {
   ON_CHAIN = "on_chain",
@@ -21,7 +21,7 @@ export interface AleoOnChainHistoryItem {
   txType: AleoTxType;
   txId: string;
   programId: string;
-  functionName: AleoTransferMethod;
+  functionName: AleoCreditMethod;
   height: number;
   timestamp: number;
   addressType: AleoTxAddressType;
@@ -38,7 +38,7 @@ export interface AleoLocalHistoryItem {
   txId?: string;
   error?: string;
   programId: string;
-  functionName: AleoTransferMethod;
+  functionName: AleoCreditMethod;
   inputs: string[];
   timestamp: number;
   addressType: AleoTxAddressType.SEND;
