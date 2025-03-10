@@ -42,7 +42,8 @@
       "deleteRemind": "Yalnızca çekirdek ifade veya özel anahtar kullanılarak geri yüklenebileceği için lütfen cüzdanın düzgün şekilde yedeklendiğinden emin olun."
     },
     "allNetworks": "TÜM",
-    "allEVMNetworks": "Tüm EVM ağları"
+    "allEVMNetworks": "Tüm EVM ağları",
+    "initWallet": "Cüzdanı başlat, lütfen bekleyin"
   },
   "Onboard": {
     "Home": {
@@ -109,7 +110,8 @@
     "reminder": "Hatırlatma",
     "success": "Başarı",
     "failed": "Arızalı",
-    "pending": "Askıda olması"
+    "pending": "Askıda olması",
+    "loading": "Yükleme"
   },
   "Send": {
     "title": "Göndermek",
@@ -282,7 +284,8 @@
   },
   "ManageToken": {
     "title": "Tokenı Yönet",
-    "searchHint": "Arama jetonu(Kimlik, Ad, Sembol)"
+    "searchHint": "Arama jetonu(Kimlik, Ad, Sembol)",
+    "pleaseWait": "Arama, bu biraz zaman alabilir"
   },
   "GasSetting": {
     "fast": "Hızlı",
@@ -326,7 +329,12 @@
     "defaultChainRemind": "Varsayılan zincir seçilmez",
     "selectNetwork": "Ağ'ı seçin",
     "selectToken": "Token'i seçin",
-    "pkWalletRemind": "Özel anahtar cüzdan yalnızca desteklenen ağları görüntüler. Tüm ağları kullanmak için bir tohum fazı cüzdanına geçin."
+    "pkWalletRemind": "Özel anahtar cüzdan yalnızca desteklenen ağları görüntüler. Tüm ağları kullanmak için bir tohum fazı cüzdanına geçin.",
+    "unavailable": "müsait olmayan",
+    "loading": "Yükleme ...",
+    "height": "Yükseklik: {{yükseklik}}",
+    "deleteWarning": "Silinmiş RPC yapılandırması kurtarılamıyor",
+    "invalidRpc": "RPC URL'si boş"
   },
   "Contacts": {
     "title": "Kontaklar",

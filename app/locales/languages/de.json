@@ -42,7 +42,8 @@
       "deleteRemind": "Bitte stellen Sie sicher, dass das Wallet ordnungsgemäß gesichert ist, da es nur mit der Seed-Phrase oder dem privaten Schlüssel wiederhergestellt werden kann."
     },
     "allNetworks": "ALLE",
-    "allEVMNetworks": "Alle EVM -Netzwerke"
+    "allEVMNetworks": "Alle EVM -Netzwerke",
+    "initWallet": "Initialisierungsbrieftasche, bitte warten Sie"
   },
   "Onboard": {
     "Home": {
@@ -109,7 +110,8 @@
     "reminder": "Erinnerung",
     "success": "Erfolg",
     "failed": "Fehlgeschlagen",
-    "pending": "Ausstehend"
+    "pending": "Ausstehend",
+    "loading": "Laden"
   },
   "Send": {
     "title": "Schicken",
@@ -282,7 +284,8 @@
   },
   "ManageToken": {
     "title": "Token verwalten",
-    "searchHint": "Suchtoken (ID, Name, Symbol)"
+    "searchHint": "Suchtoken (ID, Name, Symbol)",
+    "pleaseWait": "Durch die Suche kann dies eine Weile dauern"
   },
   "GasSetting": {
     "fast": "Schnell",
@@ -326,7 +329,12 @@
     "defaultChainRemind": "Die Standardkette kann nicht nicht ausgewählt werden",
     "selectNetwork": "Wählen Sie Netzwerk",
     "selectToken": "Wählen Sie Token",
-    "pkWalletRemind": "Private Schlüsselbrieftasche zeigt nur die unterstützten Netzwerke an. Um alle Netzwerke zu verwenden, wechseln Sie zu einer Samenphasen -Brieftasche."
+    "pkWalletRemind": "Private Schlüsselbrieftasche zeigt nur die unterstützten Netzwerke an. Um alle Netzwerke zu verwenden, wechseln Sie zu einer Samenphasen -Brieftasche.",
+    "unavailable": "nicht verfügbar",
+    "loading": "Laden...",
+    "height": "Höhe: {{Höhe}}",
+    "deleteWarning": "Die gelöschte RPC -Konfiguration kann nicht wiederhergestellt werden",
+    "invalidRpc": "RPC -URL ist leer"
   },
   "Contacts": {
     "title": "Kontakte",

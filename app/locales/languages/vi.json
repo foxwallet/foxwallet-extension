@@ -42,7 +42,8 @@
       "deleteRemind": "Vui lòng đảm bảo ví được sao lưu đúng cách vì nó chỉ có thể được khôi phục bằng cụm từ hạt giống hoặc khóa riêng."
     },
     "allNetworks": "TẤT CẢ",
-    "allEVMNetworks": "Tất cả các mạng EVM"
+    "allEVMNetworks": "Tất cả các mạng EVM",
+    "initWallet": "Khởi tạo ví, vui lòng đợi"
   },
   "Onboard": {
     "Home": {
@@ -109,7 +110,8 @@
     "reminder": "Lời nhắc nhở",
     "success": "Thành công",
     "failed": "Thất bại",
-    "pending": "Chưa giải quyết"
+    "pending": "Chưa giải quyết",
+    "loading": "Đang tải"
   },
   "Send": {
     "title": "Gửi",
@@ -282,7 +284,8 @@
   },
   "ManageToken": {
     "title": "Quản lý mã thông báo",
-    "searchHint": "Mã thông báo tìm kiếm (ID, Tên, Ký hiệu)"
+    "searchHint": "Mã thông báo tìm kiếm (ID, Tên, Ký hiệu)",
+    "pleaseWait": "Tìm kiếm, điều này có thể mất một lúc"
   },
   "GasSetting": {
     "fast": "Nhanh",
@@ -326,7 +329,12 @@
     "defaultChainRemind": "Chuỗi mặc định không thể được chọn",
     "selectNetwork": "Chọn Mạng",
     "selectToken": "Chọn mã thông báo",
-    "pkWalletRemind": "Ví khóa riêng chỉ hiển thị các mạng được hỗ trợ. Để sử dụng tất cả các mạng, chuyển sang ví pha hạt giống."
+    "pkWalletRemind": "Ví khóa riêng chỉ hiển thị các mạng được hỗ trợ. Để sử dụng tất cả các mạng, chuyển sang ví pha hạt giống.",
+    "unavailable": "không có sẵn",
+    "loading": "Đang tải...",
+    "height": "Chiều cao: {{chiều cao}}",
+    "deleteWarning": "Không thể phục hồi được cấu hình RPC",
+    "invalidRpc": "URL RPC trống"
   },
   "Contacts": {
     "title": "Liên hệ",

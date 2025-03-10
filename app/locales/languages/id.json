@@ -42,7 +42,8 @@
       "deleteRemind": "Harap pastikan dompet dicadangkan dengan benar karena hanya dapat dipulihkan menggunakan frase awal atau kunci pribadi."
     },
     "allNetworks": "SEMUA",
-    "allEVMNetworks": "Semua jaringan EVM"
+    "allEVMNetworks": "Semua jaringan EVM",
+    "initWallet": "Menginisialisasi dompet, harap tunggu"
   },
   "Onboard": {
     "Home": {
@@ -109,7 +110,8 @@
     "reminder": "Pengingat",
     "success": "Kesuksesan",
     "failed": "Gagal",
-    "pending": "Tertunda"
+    "pending": "Tertunda",
+    "loading": "Memuat"
   },
   "Send": {
     "title": "Mengirim",
@@ -282,7 +284,8 @@
   },
   "ManageToken": {
     "title": "Kelola Token",
-    "searchHint": "Token pencarian (ID, Nama, Simbol)"
+    "searchHint": "Token pencarian (ID, Nama, Simbol)",
+    "pleaseWait": "Mencari, ini mungkin memakan waktu cukup lama"
   },
   "GasSetting": {
     "fast": "Cepat",
@@ -326,7 +329,12 @@
     "defaultChainRemind": "Rantai default tidak bisa dipilih",
     "selectNetwork": "Pilih Jaringan",
     "selectToken": "Pilih token",
-    "pkWalletRemind": "Dompet kunci pribadi hanya menampilkan jaringan yang didukung. Untuk menggunakan semua jaringan, beralih ke dompet fase benih."
+    "pkWalletRemind": "Dompet kunci pribadi hanya menampilkan jaringan yang didukung. Untuk menggunakan semua jaringan, beralih ke dompet fase benih.",
+    "unavailable": "tidak tersedia",
+    "loading": "Memuat...",
+    "height": "Tinggi: {{height}}",
+    "deleteWarning": "Konfigurasi RPC yang dihapus tidak dapat dipulihkan",
+    "invalidRpc": "URL RPC kosong"
   },
   "Contacts": {
     "title": "Kontak",
@@ -350,7 +358,7 @@
   "SelectToken": {
     "title": "Pilih token",
     "searchToken": "Token Cari",
-    "searchHint": "Token Cari (simbol, alamat)",
+    "searchHint": "Token Cari (simbol, alamat)"
   },
   "Stake": {
     "title": "Mempertaruhkan",

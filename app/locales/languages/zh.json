@@ -42,7 +42,8 @@
       "deleteRemind": "请确保钱包已正确备份，因为只能使用种子短语或私钥来恢复钱包。"
     },
     "allNetworks": "全部",
-    "allEVMNetworks": "所有EVM网络"
+    "allEVMNetworks": "所有EVM网络",
+    "initWallet": "初始化钱包，请等待"
   },
   "Onboard": {
     "Home": {
@@ -84,7 +85,8 @@
     "reminder": "提醒",
     "success": "成功",
     "failed": "失败的",
-    "pending": "待办的"
+    "pending": "待办的",
+    "loading": "加载中"
   },
   "Password": {
     "title": "密码",
@@ -282,7 +284,8 @@
   },
   "ManageToken": {
     "title": "管理代币",
-    "searchHint": "搜索（ID、名称、符号）"
+    "searchHint": "搜索（ID、名称、符号）",
+    "pleaseWait": "搜索，这可能需要一段时间"
   },
   "GasSetting": {
     "fast": "快速地",
@@ -326,7 +329,12 @@
     "defaultChainRemind": "默认链不能未被选",
     "selectNetwork": "选择网络",
     "selectToken": "选择令牌",
-    "pkWalletRemind": "私钥钱包仅显示受支持的网络。要使用所有网络，请切换到种子相钱包。"
+    "pkWalletRemind": "私钥钱包仅显示受支持的网络。要使用所有网络，请切换到种子相钱包。",
+    "unavailable": "不可用",
+    "loading": "加载中...",
+    "height": "高度：{{height}}",
+    "deleteWarning": "删除的RPC配置无法恢复",
+    "invalidRpc": "RPC URL是空的"
   },
   "Contacts": {
     "title": "联系人",

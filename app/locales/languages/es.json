@@ -42,7 +42,8 @@
       "deleteRemind": "Asegúrese de que la billetera tenga una copia de seguridad adecuada, ya que solo se puede restaurar utilizando la frase inicial o la clave privada."
     },
     "allNetworks": "TODO",
-    "allEVMNetworks": "Todas las redes EVM"
+    "allEVMNetworks": "Todas las redes EVM",
+    "initWallet": "Inicializando la billetera, espere"
   },
   "Onboard": {
     "Home": {
@@ -109,7 +110,8 @@
     "reminder": "Recordatorio",
     "success": "Éxito",
     "failed": "Fallido",
-    "pending": "Pendiente"
+    "pending": "Pendiente",
+    "loading": "Cargando"
   },
   "Send": {
     "title": "Enviar",
@@ -282,7 +284,8 @@
   },
   "ManageToken": {
     "title": "Administrar token",
-    "searchHint": "Token de búsqueda (ID, nombre, símbolo)"
+    "searchHint": "Token de búsqueda (ID, nombre, símbolo)",
+    "pleaseWait": "Buscando, esto podría llevar un tiempo"
   },
   "GasSetting": {
     "fast": "Rápido",
@@ -326,7 +329,12 @@
     "defaultChainRemind": "La cadena predeterminada no se puede no seleccionar",
     "selectNetwork": "Seleccionar red",
     "selectToken": "Seleccionar token",
-    "pkWalletRemind": "La billetera de llave privada solo muestra las redes compatibles. Para usar todas las redes, cambie a una billetera de fase de semilla."
+    "pkWalletRemind": "La billetera de llave privada solo muestra las redes compatibles. Para usar todas las redes, cambie a una billetera de fase de semilla.",
+    "unavailable": "indisponible",
+    "loading": "Cargando...",
+    "height": "Altura: {{altura}}",
+    "deleteWarning": "La configuración de RPC eliminada no se puede recuperar",
+    "invalidRpc": "La URL de RPC está vacía"
   },
   "Contacts": {
     "title": "Contactos",
