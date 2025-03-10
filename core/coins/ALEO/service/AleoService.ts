@@ -153,14 +153,15 @@ export class AleoService extends CoinServiceBasic {
   }
 
   validateAddress(address: string): boolean {
-    try {
-      const addressObj = Address.from_string(address);
-      console.log("===> addressObj: ", addressObj, !!addressObj);
-      return !!addressObj;
-    } catch (err) {
-      logger.log("===> isValidAddress failed: ", err, address);
-      return false;
-    }
+    // try {
+    //   const addressObj = Address.from_string(address);
+    //   console.log("===> addressObj: ", addressObj, !!addressObj);
+    //   return !!addressObj;
+    // } catch (err) {
+    //   logger.log("===> isValidAddress failed: ", err, address);
+    //   return false;
+    // }
+    return true;
   }
 
   private async getSpentTagsInRange(tags: string[]) {
@@ -726,7 +727,7 @@ export class AleoService extends CoinServiceBasic {
           localId: txInfo.localId,
           status: txInfo.status,
           programId: txInfo.programId,
-          functionName: txInfo.functionName as AleoTransferMethod,
+          functionName: txInfo.functionName,
           inputs: txInfo.inputs,
           timestamp: txInfo.timestamp,
           addressType: AleoTxAddressType.SEND,
@@ -747,7 +748,7 @@ export class AleoService extends CoinServiceBasic {
               localId: txInfo.localId,
               status: txInfo.status,
               programId: txInfo.programId,
-              functionName: txInfo.functionName as AleoTransferMethod,
+              functionName: txInfo.functionName,
               inputs: txInfo.inputs,
               timestamp: txInfo.timestamp,
               addressType: AleoTxAddressType.SEND,
@@ -765,7 +766,7 @@ export class AleoService extends CoinServiceBasic {
               localId: txInfo.localId,
               status: txInfo.status,
               programId: txInfo.programId,
-              functionName: txInfo.functionName as AleoTransferMethod,
+              functionName: txInfo.functionName,
               inputs: txInfo.inputs,
               timestamp: txInfo.timestamp,
               addressType: AleoTxAddressType.SEND,
@@ -781,7 +782,7 @@ export class AleoService extends CoinServiceBasic {
               localId: txInfo.localId,
               status: AleoTxStatus.FINALIZD,
               programId: txInfo.programId,
-              functionName: txInfo.functionName as AleoTransferMethod,
+              functionName: txInfo.functionName,
               inputs: txInfo.inputs,
               timestamp: txInfo.timestamp,
               addressType: AleoTxAddressType.SEND,
@@ -817,7 +818,7 @@ export class AleoService extends CoinServiceBasic {
               localId: txInfo.localId,
               status: AleoTxStatus.UNACCEPTED,
               programId: txInfo.programId,
-              functionName: txInfo.functionName as AleoTransferMethod,
+              functionName: txInfo.functionName,
               inputs: txInfo.inputs,
               error: errorMsg,
               timestamp: txInfo.timestamp,
@@ -834,7 +835,7 @@ export class AleoService extends CoinServiceBasic {
               localId: txInfo.localId,
               status: txInfo.status,
               programId: txInfo.programId,
-              functionName: txInfo.functionName as AleoTransferMethod,
+              functionName: txInfo.functionName,
               inputs: txInfo.inputs,
               timestamp: txInfo.timestamp,
               addressType: AleoTxAddressType.SEND,
@@ -856,7 +857,7 @@ export class AleoService extends CoinServiceBasic {
           localId: txInfo.localId,
           status: txInfo.status,
           programId: txInfo.programId,
-          functionName: txInfo.functionName as AleoTransferMethod,
+          functionName: txInfo.functionName,
           inputs: txInfo.inputs,
           error: txInfo.error,
           timestamp: txInfo.timestamp,
@@ -876,7 +877,7 @@ export class AleoService extends CoinServiceBasic {
           txId: txInfo.transaction?.id,
           status: txInfo.status,
           programId: txInfo.programId,
-          functionName: txInfo.functionName as AleoTransferMethod,
+          functionName: txInfo.functionName,
           inputs: txInfo.inputs,
           timestamp: txInfo.timestamp,
           addressType: AleoTxAddressType.SEND,
@@ -1049,7 +1050,7 @@ export class AleoService extends CoinServiceBasic {
       type: AleoHistoryType.ON_CHAIN,
       txId: item.origin_data.id,
       programId,
-      functionName: funcName as AleoTransferMethod,
+      functionName: funcName,
       height: item.height,
       timestamp: item.timestamp,
       addressType: isSender
@@ -1887,7 +1888,7 @@ export class AleoService extends CoinServiceBasic {
       type: AleoHistoryType.ON_CHAIN,
       txId: item.origin_data.id,
       programId,
-      functionName: funcName as AleoTransferMethod,
+      functionName: funcName,
       height: item.height,
       timestamp: item.timestamp,
       addressType: isSender
