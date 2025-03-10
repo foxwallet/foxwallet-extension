@@ -27,6 +27,7 @@ import { useTransactionDetail } from "@/hooks/useTransactionDetail";
 import { useCoinService } from "@/hooks/useCoinService";
 import browser from "webextension-polyfill";
 import { AleoTxStatus } from "core/coins/ALEO/types/Transaction";
+import { simplifyAleoTxStatus } from "core/coins/ALEO/utils/utils";
 
 type InfoAProps = {
   title: string;
@@ -194,32 +195,10 @@ const TransactionDetailScreen = () => {
           to = address;
           amount = 0n;
         }
-        switch (tx.status) {
-          case AleoTxStatus.FINALIZD:
-          case AleoTxStatus.COMPLETED: {
-            txStatus = TxIconStatus.Success;
-            txStatusStr = t("Common:success");
-            break;
-          }
-          case AleoTxStatus.QUEUED:
-          case AleoTxStatus.GENERATING_TRANSACTION:
-          case AleoTxStatus.GENERATING_PROVER_FILES:
-          case AleoTxStatus.BROADCASTING: {
-            txStatus = TxIconStatus.Pending;
-            txStatusStr = t("Common:pending");
-            break;
-          }
-          case AleoTxStatus.REJECTED:
-          case AleoTxStatus.FAILED:
-          case AleoTxStatus.UNACCEPTED: {
-            txStatus = TxIconStatus.Failed;
-            txStatusStr = t("Common:failed");
-            break;
-          }
-          default: {
-            break;
-          }
-        }
+
+        const { txStatus: simplifiedStatus } = simplifyAleoTxStatus(tx.status);
+        txStatusStr = tx.status;
+        txStatus = simplifiedStatus;
       } else {
         tx = JSON.parse(txItem) as TransactionHistoryItem;
         txId = tx.id;

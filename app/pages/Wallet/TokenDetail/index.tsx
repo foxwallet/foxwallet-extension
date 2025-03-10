@@ -61,6 +61,10 @@ import { showCopyContractAddressDialog } from "@/components/Wallet/CopyContractA
 import { AleoTxStatus } from "core/coins/ALEO/types/Transaction";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
 import { TransactionStatus } from "core/types/TransactionStatus";
+import {
+  SimplifiedAleoTxStatus,
+  simplifyAleoTxStatus,
+} from "core/coins/ALEO/utils/utils";
 
 interface AleoTokenTxHistoryItemProps {
   item: AleoHistoryItem;
@@ -126,12 +130,7 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
     return ret;
   }, [item]);
 
-  const status = useMemo(() => {
-    return item.status === AleoTxStatus.FINALIZD ||
-      item.status === AleoTxStatus.COMPLETED
-      ? undefined
-      : item.status.toLowerCase();
-  }, [item.status]);
+  const { txStatus, txStatusStr } = simplifyAleoTxStatus(item.status);
 
   return (
     <TxHistoryItem
@@ -140,7 +139,9 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
       txTitle={txTitle}
       txTitle2={txPublicInfo}
       addressLabel={addressLabel}
-      status={status}
+      status={
+        txStatus === SimplifiedAleoTxStatus.Success ? undefined : txStatusStr
+      }
       amount={amount}
       decimals={token.decimals}
       symbol={token.symbol}
@@ -159,7 +160,6 @@ interface TokenTxHistoryItemProps {
 const TokenTxHistoryItem = (props: TokenTxHistoryItemProps) => {
   const { uniqueId, item, token, address } = props;
   const { t } = useTranslation();
-  const { coinService } = useCoinService(uniqueId);
   const navigate = useNavigate();
 
   const timeOfItem = dayjs(item.timestamp);
