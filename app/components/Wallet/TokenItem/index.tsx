@@ -7,6 +7,7 @@ import { type TokenV2 } from "core/types/Token";
 import { IconTokenPlaceHolder } from "@/components/Custom/Icon";
 import { commaCurrency, commaInteger } from "@/common/utils/comma";
 import { formatPrice } from "@/common/utils/num";
+import { useBalance } from "@/hooks/useBalance";
 
 const TokenImage = ({ icon }: { icon?: string }) => {
   const [tokenImageOK, setTokenImageOK] = useState(true);
@@ -61,6 +62,9 @@ export const TokenItemWithBalance = ({
     (state) => state.accountV2.showBalance,
   );
 
+  const { balance } = useBalance({ uniqueId, address, token });
+  // console.log("      balance", balance);
+
   const { price, change, value } = token;
   const priceStr = useMemo(() => {
     const formatStr = formatPrice(price).toString();
@@ -86,8 +90,6 @@ export const TokenItemWithBalance = ({
     }
     return `$${commaCurrency(value)}`;
   }, [value]);
-
-  // const { balance } = useBalance({ uniqueId, address, token });
 
   const onTokenDetail = useCallback(() => {
     onClick(token);
@@ -132,7 +134,7 @@ export const TokenItemWithBalance = ({
             // bg={"yellow"}
           >
             <TokenNum
-              amount={token?.total}
+              amount={balance?.total ?? token?.total}
               decimals={token.decimals}
               symbol={""}
             />
