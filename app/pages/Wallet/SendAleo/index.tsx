@@ -161,11 +161,12 @@ function SendScreen() {
                 break;
               }
               case ALPHA_TOKEN_PROGRAM_ID: {
-                inputs = [token.tokenId, to, `${amount}u128`];
+                // todo  token.tokenId ?? ""
+                inputs = [token.tokenId ?? "", to, `${amount}u128`];
                 break;
               }
               case ARCANE_PROGRAM_ID: {
-                inputs = [token.tokenId, to, `${amount}u128`];
+                inputs = [token.tokenId ?? "", to, `${amount}u128`];
                 break;
               }
             }
@@ -186,7 +187,7 @@ function SendScreen() {
                 break;
               }
               case ARCANE_PROGRAM_ID: {
-                inputs = [token.tokenId, to, `${amount}u128`, "false"];
+                inputs = [token.tokenId ?? "", to, `${amount}u128`, "false"];
                 break;
               }
             }
