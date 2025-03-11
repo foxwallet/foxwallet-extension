@@ -21,10 +21,7 @@ import { useMemo, useCallback, useState } from "react";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
 import { isEqual } from "lodash";
 import { getChainAddressBooksSelector } from "@/store/selectors/address";
-import type {
-  ChainUniqueId,
-  InnerChainUniqueId,
-} from "core/types/ChainUniqueId";
+import type { ChainUniqueId } from "core/types/ChainUniqueId";
 import { type AddressItemV2 } from "@/store/addressModel";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import { useChainConfigs } from "@/hooks/useGroupAccount";
@@ -33,6 +30,7 @@ import { showContactMoreDrawer } from "@/components/Me/ContactMoreDrawer";
 import { serializeData } from "@/common/utils/string";
 import { showContactDeleteDialog } from "@/components/Me/ContactDeleteDialog";
 import { useLocationParams } from "@/hooks/useLocationParams";
+import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 
 const maxLabelNumber = 3;
 
@@ -60,7 +58,6 @@ const ContactItem = ({
         const { confirmed } = await showContactDeleteDialog();
         if (confirmed) {
           dispatch.address.removeAddress({ id: item.id });
-          // navigate(-1);
         }
       } catch (err) {
         console.error(err);
@@ -123,10 +120,10 @@ const ContactItem = ({
         {/* name labels address */}
         <Flex flexDirection={"column"} ml={2}>
           <Flex alignItems={"center"}>
-            <Text fontWeight={"bold"} fontSize={"12px"}>
+            <Text fontWeight={"bold"} fontSize={"12px"} maxW={20} noOfLines={1}>
               {item.addressName}
             </Text>
-            <Flex ml={2} alignItems={"center"}>
+            <Flex ml={1} alignItems={"center"}>
               {label}
             </Flex>
           </Flex>
@@ -232,13 +229,7 @@ const ContactsScreen = () => {
             justify={"start"}
             h={"420px"}
             overflowY={"auto"}
-            css={{
-              "&::-webkit-scrollbar": {
-                display: "none", // WebKit: Chrome、Safari
-              },
-              scrollbarWidth: "none", // Firefox
-              msOverflowStyle: "none", // IE and Edge
-            }}
+            sx={HIDE_SCROLL_BAR_CSS}
           >
             {addressList.map((item, index) => {
               return (
