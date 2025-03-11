@@ -387,7 +387,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
                 );
               }}
               showPriceAndChange={false}
-              showBalnaceAndValue={false}
+              showBalanceAndValue={false}
               style={{ pr: 1 }}
             />
             <IconChevronRight w={4} h={4} />

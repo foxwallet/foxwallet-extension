@@ -110,7 +110,7 @@ const SelectTokenScreenV2 = () => {
                 onClick={onSelect}
                 hover
                 showPriceAndChange={action === NextAction.Send}
-                showBalnaceAndValue={action === NextAction.Send}
+                showBalanceAndValue={action === NextAction.Send}
               />
             );
           })}

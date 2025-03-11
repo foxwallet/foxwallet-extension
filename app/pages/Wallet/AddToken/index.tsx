@@ -240,7 +240,7 @@ function AddToken() {
                     selectToken(token);
                   }}
                   showPriceAndChange={false}
-                  showBalnaceAndValue={false}
+                  showBalanceAndValue={false}
                 />
                 <Flex
                   cursor={"pointer"}
