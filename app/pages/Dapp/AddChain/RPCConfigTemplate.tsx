@@ -32,6 +32,25 @@ import { Page } from "@/layouts/Page";
 import { Content } from "@/layouts/Content";
 import Hover from "@/components/Custom/Hover";
 import { showConfirmDialog } from "@/components/Custom/ConfirmDialog";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragOverlay,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core/dist/types";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 
 type IProps = {
   // 已有RPC，新增时为空
@@ -121,33 +140,55 @@ function RPCItem({
   const onRemoveClick = useCallback(() => {
     onRemove(rpcUrl);
   }, [onRemove, rpcUrl]);
+
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id: rpcUrl });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
   return (
-    <Flex
-      key={rpcUrl}
-      flexDirection={"column"}
-      backgroundColor={"#F9F9F9"}
-      my={1}
-      px={2}
-      py={2}
-    >
-      <Flex alignItems={"center"} justifyContent="space-between">
-        <Text noOfLines={1}>{rpcUrlToDisplay(rpcUrl)}</Text>
-        <Flex cursor={"pointer"} onClick={onRemoveClick}>
-          <IconRemoveCircle w={4} h={4} />
+    <div ref={setNodeRef} style={{ ...style, position: "relative" }}>
+      <Flex
+        key={rpcUrl}
+        flexDirection={"column"}
+        backgroundColor={"#F9F9F9"}
+        my={1}
+        px={2}
+        py={2}
+        {...attributes}
+        {...listeners}
+      >
+        <Flex alignItems={"center"} justifyContent="space-between">
+          <Text flex={1} overflow={"hidden"} mr={10}>
+            {rpcUrlToDisplay(rpcUrl)}
+          </Text>
+        </Flex>
+        <Flex alignItems={"center"} justifyContent="space-between">
+          <Text color={"#777E90"}>
+            {t("Networks:height", {
+              height:
+                itemHealth?.status === RPCStatus.SUCCESS
+                  ? itemHealth?.height.toString()
+                  : "...",
+            })}
+          </Text>
+          <Text color={latencyColor(itemHealth)}>
+            {latencyText(itemHealth)}
+          </Text>
         </Flex>
       </Flex>
-      <Flex alignItems={"center"} justifyContent="space-between">
-        <Text color={"#777E90"}>
-          {t("Networks:height", {
-            height:
-              itemHealth?.status === RPCStatus.SUCCESS
-                ? itemHealth?.height.toString()
-                : "...",
-          })}
-        </Text>
-        <Text color={latencyColor(itemHealth)}>{latencyText(itemHealth)}</Text>
+      <Flex
+        position={"absolute"}
+        right={2}
+        top={3}
+        cursor={"pointer"}
+        onClick={onRemoveClick}
+      >
+        <IconRemoveCircle w={4} h={4} />
       </Flex>
-    </Flex>
+    </div>
   );
 }
 
@@ -329,6 +370,9 @@ const RPCConfigTemplate: React.FC<IProps> = (props: IProps) => {
       // const newHealthMap: IMap<RPCHealth> = {};
       await Promise.all(
         rpcUrls.map(async (rpcUrl) => {
+          if (rpcHealthMap.get(rpcUrl)?.status === RPCStatus.SUCCESS) {
+            return;
+          }
           let height: number = -1;
           const startTime = new Date().getTime();
           try {
@@ -345,6 +389,9 @@ const RPCConfigTemplate: React.FC<IProps> = (props: IProps) => {
           }
           const latency = new Date().getTime() - startTime;
           setRPCHealthMap((prev) => {
+            if (prev.get(rpcUrl)?.status === RPCStatus.SUCCESS) {
+              return prev;
+            }
             return new Map(prev).set(rpcUrl, {
               height,
               latency,
@@ -359,6 +406,7 @@ const RPCConfigTemplate: React.FC<IProps> = (props: IProps) => {
         setRpcsChecked(true);
       }
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [getRPCHeight, rpcUrls]);
 
   const onConfirm = useCallback(async () => {
@@ -455,6 +503,31 @@ const RPCConfigTemplate: React.FC<IProps> = (props: IProps) => {
     }
   }, [onDelete, t]);
 
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (active.id !== over?.id) {
+      setRpcUrls((items) => {
+        const oldIndex = items.indexOf(active.id as string);
+        const newIndex = items.indexOf(over!.id as string);
+
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
+
+  const [dragging, setDragging] = useState<string | null>(null);
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setDragging(event.active.id as string); // Store the dragged item
+  };
+
   return (
     <Page>
       {!browserAdd && (
@@ -527,17 +600,40 @@ const RPCConfigTemplate: React.FC<IProps> = (props: IProps) => {
               setNewRPCUrl(event.target.value.trim());
             }}
           />
-          {rpcUrls.map((rpcUrl: string) => {
-            const itemHealth = rpcHealthMap.get(rpcUrl);
-            return (
-              <RPCItem
-                itemHealth={itemHealth}
-                key={rpcUrl}
-                rpcUrl={rpcUrl}
-                onRemove={onRemoveRpc}
-              />
-            );
-          })}
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+            modifiers={[restrictToVerticalAxis]}
+          >
+            <SortableContext
+              items={rpcUrls}
+              strategy={verticalListSortingStrategy}
+            >
+              {rpcUrls.map((rpcUrl: string) => {
+                const itemHealth = rpcHealthMap.get(rpcUrl);
+                return (
+                  <RPCItem
+                    itemHealth={itemHealth}
+                    key={rpcUrl}
+                    rpcUrl={rpcUrl}
+                    onRemove={onRemoveRpc}
+                  />
+                );
+              })}
+            </SortableContext>
+            <DragOverlay>
+              {dragging ? (
+                <RPCItem
+                  itemHealth={rpcHealthMap.get(dragging)}
+                  key={dragging}
+                  rpcUrl={dragging}
+                  onRemove={onRemoveRpc}
+                />
+              ) : null}
+            </DragOverlay>
+          </DndContext>
         </Flex>
         <Flex
           mt={3}

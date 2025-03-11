@@ -36,10 +36,16 @@ export class PopupServerHandler implements IHandler {
           logger.error("PopupServerHandler Invalid origin ", msg.origin);
           return;
         }
+        if(method === "isSendingAleoTransaction") {
+          debugger;
+        }
         const resp = this.wrapPopupResp(
           await executeServerMethod(this.popupServer[method](payload) as any),
           id,
         );
+        if(method === "isSendingAleoTransaction") {
+          debugger;
+        }
         port.postMessage(resp);
       } finally {
         release();
