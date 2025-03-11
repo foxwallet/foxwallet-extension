@@ -27,40 +27,38 @@ const TokenImage = ({
     }
   }, [icon]);
 
-  return useMemo(() => {
-    return (
-      <Flex w={9} h={9} position="relative">
-        {icon && tokenImageOK ? (
-          <Image
-            src={icon}
-            w={8}
-            h={8}
-            borderRadius={16}
-            onError={() => {
-              setTokenImageOK(false);
-            }}
-          />
-        ) : (
-          <IconTokenPlaceHolder w={8} h={8} />
-        )}
-        {showChainLogo && chainLogoSrc && (
-          <Flex
-            justify={"center"}
-            alignItems={"center"}
-            bg={"white"}
-            w={4}
-            h={4}
-            bottom={0}
-            right={0}
-            position={"absolute"}
-            borderRadius={8}
-          >
-            <Image src={chainLogoSrc} w={3.5} h={3.5} borderRadius={8} />
-          </Flex>
-        )}
-      </Flex>
-    );
-  }, [icon, showChainLogo, tokenImageOK, chainLogoSrc]);
+  return (
+    <Flex w={9} h={9} position="relative">
+      {icon && tokenImageOK ? (
+        <Image
+          src={icon}
+          w={8}
+          h={8}
+          borderRadius={16}
+          onError={() => {
+            setTokenImageOK(false);
+          }}
+        />
+      ) : (
+        <IconTokenPlaceHolder w={8} h={8} />
+      )}
+      {showChainLogo && chainLogoSrc && (
+        <Flex
+          justify={"center"}
+          alignItems={"center"}
+          bg={"white"}
+          w={4}
+          h={4}
+          bottom={0}
+          right={0}
+          position={"absolute"}
+          borderRadius={8}
+        >
+          <Image src={chainLogoSrc} w={3.5} h={3.5} borderRadius={8} />
+        </Flex>
+      )}
+    </Flex>
+  );
 };
 
 export const TokenItemWithBalance = ({
