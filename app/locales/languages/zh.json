@@ -188,7 +188,8 @@
   },
   "Error": {
     "invalidPassword": "无效的密码",
-    "invalidAddress": "无效的地址"
+    "invalidAddress": "无效的地址",
+    "invalidPrivateKey": "无效的私钥"
   },
   "TokenDetail": {
     "title": "代币详情",

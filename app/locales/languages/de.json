@@ -188,7 +188,8 @@
   },
   "Error": {
     "invalidPassword": "Ungültiges Passwort",
-    "invalidAddress": "Ungültige Adresse"
+    "invalidAddress": "Ungültige Adresse",
+    "invalidPrivateKey": "Ungültiger privater Schlüssel"
   },
   "TokenDetail": {
     "title": "Token-Details",

@@ -188,7 +188,8 @@
   },
   "Error": {
     "invalidPassword": "غلط پاسورڈ",
-    "invalidAddress": "غلط ایڈریس"
+    "invalidAddress": "غلط ایڈریس",
+    "invalidPrivateKey": "غلط نجی کلید"
   },
   "TokenDetail": {
     "title": "ٹوکن کی تفصیل",

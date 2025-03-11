@@ -188,7 +188,8 @@
   },
   "Error": {
     "invalidPassword": "Mật khẩu không hợp lệ",
-    "invalidAddress": "Địa chỉ không hợp lệ"
+    "invalidAddress": "Địa chỉ không hợp lệ",
+    "invalidPrivateKey": "Khóa riêng không hợp lệ"
   },
   "TokenDetail": {
     "title": "Chi tiết mã thông báo",

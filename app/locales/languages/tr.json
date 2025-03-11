@@ -188,7 +188,8 @@
   },
   "Error": {
     "invalidPassword": "Geçersiz şifre",
-    "invalidAddress": "Geçersiz adres"
+    "invalidAddress": "Geçersiz adres",
+    "invalidPrivateKey": "Geçersiz Özel Anahtar"
   },
   "TokenDetail": {
     "title": "Jeton Detayı",

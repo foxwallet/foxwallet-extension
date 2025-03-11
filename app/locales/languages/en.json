@@ -360,7 +360,8 @@
   "Error": {
     "invalidPassword": "Invalid password",
     "invalidAddress": "Invalid address",
-    "invalidPassword": "Invalid password"
+    "invalidPassword": "Invalid password",
+    "invalidPrivateKey": "Invalid Private Key"
   },
   "Stake": {
     "title": "Stake",

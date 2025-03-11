@@ -188,7 +188,8 @@
   },
   "Error": {
     "invalidPassword": "Kata sandi salah",
-    "invalidAddress": "Alamat tidak valid"
+    "invalidAddress": "Alamat tidak valid",
+    "invalidPrivateKey": "Kunci pribadi tidak valid"
   },
   "TokenDetail": {
     "title": "Detail Token",

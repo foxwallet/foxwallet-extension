@@ -188,7 +188,8 @@
   },
   "Error": {
     "invalidPassword": "अवैध पासवर्ड",
-    "invalidAddress": "अमान्य पता"
+    "invalidAddress": "अमान्य पता",
+    "invalidPrivateKey": "अमान्य निजी कुंजी"
   },
   "TokenDetail": {
     "title": "टोकन विवरण",

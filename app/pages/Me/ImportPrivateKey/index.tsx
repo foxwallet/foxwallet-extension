@@ -83,7 +83,9 @@ const ImportPrivateKeyScreen = () => {
                   navigate("/");
                 } catch (err) {
                   if (err instanceof Error) {
-                    void showErrorToast({ message: err.message });
+                    void showErrorToast({
+                      message: t("Error:invalidPrivateKey"),
+                    });
                   }
                 }
               } else {

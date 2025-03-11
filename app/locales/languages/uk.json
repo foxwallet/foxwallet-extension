@@ -188,7 +188,8 @@
   },
   "Error": {
     "invalidPassword": "Невірний пароль",
-    "invalidAddress": "Недійсна адреса"
+    "invalidAddress": "Недійсна адреса",
+    "invalidPrivateKey": "Недійсний приватний ключ"
   },
   "TokenDetail": {
     "title": "Деталі маркера",

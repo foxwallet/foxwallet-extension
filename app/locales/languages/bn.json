@@ -188,7 +188,8 @@
   },
   "Error": {
     "invalidPassword": "অবৈধ পাসওয়ার্ড",
-    "invalidAddress": "অবৈধ ঠিকানা"
+    "invalidAddress": "অবৈধ ঠিকানা",
+    "invalidPrivateKey": "অবৈধ ব্যক্তিগত কী"
   },
   "TokenDetail": {
     "title": "টোকেন বিস্তারিত",

@@ -188,7 +188,8 @@
   },
   "Error": {
     "invalidPassword": "Contraseña invalida",
-    "invalidAddress": "Dirección no válida"
+    "invalidAddress": "Dirección no válida",
+    "invalidPrivateKey": "Clave privada no válida"
   },
   "TokenDetail": {
     "title": "Detalle del token",

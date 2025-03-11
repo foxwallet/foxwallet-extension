@@ -188,7 +188,8 @@
   },
   "Error": {
     "invalidPassword": "Неверный пароль",
-    "invalidAddress": "Неверный адрес"
+    "invalidAddress": "Неверный адрес",
+    "invalidPrivateKey": "Неверный частный ключ"
   },
   "TokenDetail": {
     "title": "Детали токена",

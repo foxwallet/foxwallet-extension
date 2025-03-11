@@ -188,7 +188,8 @@
   },
   "Error": {
     "invalidPassword": "စကားဝှက် မမှန်ကန်ပါ။",
-    "invalidAddress": "မမှန်ကန်သောလိပ်စာ"
+    "invalidAddress": "မမှန်ကန်သောလိပ်စာ",
+    "invalidPrivateKey": "မမှန်ကန်သောပုဂ္ဂလိကသော့ချက်"
   },
   "TokenDetail": {
     "title": "တိုကင်အသေးစိတ်",
