@@ -11,7 +11,7 @@ import {
 import { useCallback, useMemo } from "react";
 import { ChainAssembleMode } from "core/types/ChainUniqueId";
 import { type OneMatchAccount } from "@/scripts/background/store/vault/types/keyring";
-import { matchAccountsWithUnqiueId } from "@/store/accountV2";
+import { matchAccountsWithUniqueId } from "@/store/accountV2";
 import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
 
 export const useChainMode = () => {
@@ -40,7 +40,7 @@ export const useChainMode = () => {
     const result =
       chainMode.mode === ChainAssembleMode.ALL
         ? groupAccount.group.accounts
-        : matchAccountsWithUnqiueId(groupAccount, chainMode.uniqueId);
+        : matchAccountsWithUniqueId(groupAccount, chainMode.uniqueId);
 
     return result.map((account) => {
       const { accounts, ...group } = groupAccount.group;

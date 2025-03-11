@@ -14,7 +14,7 @@ import { CoinType } from "core/types";
 import { logger } from "@/common/utils/logger";
 import { openPopup } from "@/scripts/background/helper/popup";
 import { ERROR_CODE } from "@/common/types/error";
-import { matchAccountsWithUnqiueId } from "@/store/accountV2";
+import { matchAccountsWithUniqueId } from "@/store/accountV2";
 import { DAPP_CONNECTION_EXPIRE_TIME } from "@/common/constants";
 import { getDefaultChainUniqueId } from "core/constants/chain";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
@@ -140,7 +140,7 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
       const groupAccount =
         await this.accountSettingStorage.getSelectedGroupAccount();
       if (groupAccount) {
-        const selectedAccount = matchAccountsWithUnqiueId(
+        const selectedAccount = matchAccountsWithUniqueId(
           groupAccount,
           getDefaultChainUniqueId(CoinType.ETH, {}),
         )[0];
@@ -713,7 +713,7 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
       if (!groupAccount) {
         throw new ProviderError(errorCodes.rpc.internal, "no group account");
       }
-      const selectedAccount = matchAccountsWithUnqiueId(
+      const selectedAccount = matchAccountsWithUniqueId(
         groupAccount,
         getDefaultChainUniqueId(CoinType.ETH, {}),
       )[0];

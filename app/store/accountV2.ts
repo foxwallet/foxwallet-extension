@@ -266,7 +266,7 @@ export const accountV2 = createModel<RootModel>()({
   }),
 });
 
-export const matchAccountsWithUnqiueId = (
+export const matchAccountsWithUniqueId = (
   groupAccount: OneMatchGroupAccount,
   uniqueId: ChainUniqueId,
 ) => {
