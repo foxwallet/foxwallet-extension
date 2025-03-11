@@ -92,6 +92,8 @@ import Processing from "@/common/assets/image/icon_processing.svg";
 import IconEth from "@/common/assets/image/icon_eth.svg";
 import Agree from "@/common/assets/image/icon_agree.svg";
 import Disagree from "@/common/assets/image/icon_disagree.svg";
+import CopyStyle2 from "@/common/assets/image/icon_copy_style2.svg";
+import EditStyle2 from "@/common/assets/image/icon_edit_style2.svg";
 
 const ThemeIconFill: (i: any) => ChakraComponent<any, any> = (icon: any) => {
   const ThemeIcon = (props: ChakraComponent<any, any>) => {
@@ -126,6 +128,9 @@ export const IconCloseCircle = chakra(CloseCircle);
 export const IconArrowRight = ThemeIconFill(ArrowRight);
 export const IconLogo = chakra(LogoNew);
 export const IconCopy = ThemeIconFill(Copy);
+export const IconCopy2 = ThemeIconFill(CopyStyle2);
+export const IconEdit2 = ThemeIconFill(EditStyle2);
+
 export const IconReceive = chakra(Receive);
 export const IconSend = chakra(Send);
 export const IconStake = chakra(Stake);

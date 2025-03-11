@@ -4,9 +4,10 @@ import type React from "react";
 import { useCallback } from "react";
 import { BottomUpDrawer } from "@/components/Custom/BottomUpDrawer";
 import { useTranslation } from "react-i18next";
-import { IconDelete, IconExportPhrase } from "@/components/Custom/Icon";
+import { IconCopy2, IconDelete, IconEdit2 } from "@/components/Custom/Icon";
 import { type AddressItemV2 } from "@/store/addressModel";
 import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
+
 interface Props {
   isOpen: boolean;
   onCancel: () => void;
@@ -47,14 +48,14 @@ const ContactMoreDrawer = (props: Props) => {
         <Flex flexDirection={"column"}>
           {/* copy */}
           <Flex align={"center"} as={"button"} mb={4} onClick={onCopy}>
-            <IconExportPhrase />
+            <IconCopy2 />
             <Text ml={2.5} fontSize={12} fontWeight={500}>
               {t("Contacts:copyAddress")}
             </Text>
           </Flex>
           {/* edit */}
           <Flex align={"center"} as={"button"} mb={4} onClick={onEdit}>
-            <IconExportPhrase />
+            <IconEdit2 />
             <Text ml={2.5} fontSize={12} fontWeight={500}>
               {t("Contacts:editAddress")}
             </Text>

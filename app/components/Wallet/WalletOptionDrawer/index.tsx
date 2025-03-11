@@ -1,5 +1,5 @@
 import { Flex, Text } from "@chakra-ui/react";
-import { promisifyChooseDialogWrapper } from "../../../common/utils/dialog";
+import { promisifyChooseDialogWrapper } from "@/common/utils/dialog";
 import { useCallback, useMemo } from "react";
 import { BottomUpDrawer } from "@/components/Custom/BottomUpDrawer";
 import { useTranslation } from "react-i18next";
