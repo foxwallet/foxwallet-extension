@@ -38,6 +38,7 @@ import {
 } from "../types/History";
 import { Mutex } from "async-mutex";
 import {
+  Address,
   Future,
   hashBHP256,
   Plaintext,
