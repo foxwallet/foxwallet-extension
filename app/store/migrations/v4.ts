@@ -1,6 +1,6 @@
-import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { type RootState } from "../store";
 import { type MultiChainModel } from "../multiChain";
+import { DEFAULT_USER_SELECTED_CHAINS } from "core/constants/chain";
 
 export const migrationV4 = (state: RootState): RootState => {
   try {
@@ -14,7 +14,7 @@ export const migrationV4 = (state: RootState): RootState => {
     const walletIds = Object.keys(allWalletInfo);
     walletIds.forEach((walletId) => {
       multiChain.walletChainMap[walletId] = {
-        userSelectedChains: [InnerChainUniqueId.ALEO_MAINNET],
+        userSelectedChains: [...DEFAULT_USER_SELECTED_CHAINS],
       };
     });
 
