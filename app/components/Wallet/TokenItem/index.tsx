@@ -1,9 +1,9 @@
 import { type ChakraProps, Flex, Image, Text } from "@chakra-ui/react";
 import { TokenNum } from "../TokenNum";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { usePopupSelector } from "@/hooks/useStore";
 import { type ChainUniqueId } from "core/types/ChainUniqueId";
-import { type TokenV2 } from "core/types/Token";
+import { AssetType, type TokenV2 } from "core/types/Token";
 import { IconTokenPlaceHolder } from "@/components/Custom/Icon";
 import { commaCurrency, commaInteger } from "@/common/utils/comma";
 import { formatPrice } from "@/common/utils/num";
@@ -11,27 +11,24 @@ import { useBalance } from "@/hooks/useBalance";
 import { useCoinService } from "@/hooks/useCoinService";
 
 const TokenImage = ({
-  icon,
+  token,
+  uniqueId,
   showChainLogo,
-  chainLogoSrc,
 }: {
-  icon?: string;
+  token: TokenV2;
+  uniqueId: ChainUniqueId;
   showChainLogo: boolean;
-  chainLogoSrc?: string;
 }) => {
   const [tokenImageOK, setTokenImageOK] = useState(true);
-
-  useEffect(() => {
-    if (icon) {
-      setTokenImageOK(true);
-    }
-  }, [icon]);
+  const { nativeCurrency, chainConfig } = useCoinService(uniqueId);
 
   return (
     <Flex w={9} h={9} position="relative">
-      {icon && tokenImageOK ? (
+      {token.type === AssetType.COIN ? (
+        <Image src={nativeCurrency.logo} w={8} h={8} borderRadius={16} />
+      ) : token.icon && tokenImageOK ? (
         <Image
-          src={icon}
+          src={token.icon}
           w={8}
           h={8}
           borderRadius={16}
@@ -42,7 +39,7 @@ const TokenImage = ({
       ) : (
         <IconTokenPlaceHolder w={8} h={8} />
       )}
-      {showChainLogo && chainLogoSrc && (
+      {showChainLogo && (
         <Flex
           justify={"center"}
           alignItems={"center"}
@@ -54,7 +51,7 @@ const TokenImage = ({
           position={"absolute"}
           borderRadius={8}
         >
-          <Image src={chainLogoSrc} w={3.5} h={3.5} borderRadius={8} />
+          <Image src={chainConfig.logo} w={3.5} h={3.5} borderRadius={8} />
         </Flex>
       )}
     </Flex>
@@ -84,8 +81,6 @@ export const TokenItemWithBalance = ({
   showChainLogo?: boolean;
   style?: ChakraProps;
 }) => {
-  const { chainConfig } = useCoinService(uniqueId);
-
   const showBalanceGlobal = usePopupSelector(
     (state) => state.accountV2.showBalance,
   );
@@ -139,9 +134,9 @@ export const TokenItemWithBalance = ({
       <Flex align={"center"}>
         {leftElement}
         <TokenImage
-          icon={token.icon}
+          token={token}
+          uniqueId={uniqueId}
           showChainLogo={showChainLogo}
-          chainLogoSrc={chainConfig.logo}
         />
         <Flex flexDir={"column"} ml={2.5}>
           <Text fontSize={13} fontWeight={600}>
