@@ -18,13 +18,31 @@ import BitlayerLogo from "core/assets/images/chains/bitlayer.webp";
 import BtcLogo from "core/assets/images/chains/btc.webp";
 import BobaLogo from "core/assets/images/chains/boba.webp";
 import BlastLogo from "core/assets/images/chains/blast.webp";
+import BsquaredLogo from "core/assets/images/chains/bsquared.webp";
+import CagaLogo from "core/assets/images/chains/caga.webp";
 import CeloLogo from "core/assets/images/chains/celo.webp";
+import CoreLogo from "core/assets/images/chains/core.webp";
+import CronosLogo from "core/assets/images/chains/cronos.webp";
+import EOSLogo from "core/assets/images/chains/eos.webp";
+import FantomLogo from "core/assets/images/chains/fantom.webp";
+import GnosisLogo from "core/assets/images/chains/gnosis.webp";
+import InevmLogo from "core/assets/images/chains/inevm.webp";
+import JocLogo from "core/assets/images/chains/joc.webp";
+import KavaLogo from "core/assets/images/chains/kava.webp";
+import LineaLogo from "core/assets/images/chains/linea.webp";
+import LumiaLogo from "core/assets/images/chains/lumia.webp";
+import MantleLogo from "core/assets/images/chains/mantle.webp";
+import MorphLogo from "core/assets/images/chains/morph.webp";
 import PolygonLogo from "core/assets/images/chains/polygon.webp";
 import NEARLogo from "core/assets/images/chains/aurora.webp";
 import OKXLogo from "core/assets/images/chains/okx.webp";
 import OptimismLogo from "core/assets/images/chains/optimism.webp";
 import BNBLogo from "core/assets/images/chains/bnb.webp";
 import FILEVMLogo from "core/assets/images/chains/filecoin_evm.webp";
+import ScrollLogo from "core/assets/images/chains/scroll.webp";
+import TaikoLogo from "core/assets/images/chains/taiko.webp";
+import ZchainsLogo from "core/assets/images/chains/zchains.webp";
+import ZksyncLogo from "core/assets/images/chains/zksync.webp";
 import EVMPlaceHolder from "core/assets/images/chains/placeholder.webp";
 
 export const ETH_CHAIN_CONFIGS: { [key in string]: ETHConfig } = {
@@ -441,6 +459,34 @@ export const ETH_CHAIN_CONFIGS: { [key in string]: ETHConfig } = {
       },
     ],
   },
+  BSQUARED: {
+    coinType: CoinType.ETH,
+    uniqueId: InnerChainUniqueId.BSQUARED,
+    autoAdd: true,
+    logo: BsquaredLogo,
+    chainId: "223",
+    chainName: "B²",
+    chainRemark: {
+      [SupportLanguages.EN]: "BSquared",
+    },
+    nativeCurrency: {
+      name: "Bitcoin",
+      symbol: "BTC",
+      decimals: 18,
+      logo: BtcLogo,
+      coingeckoCoinId: "bitcoin",
+    },
+    rpcList: ReserveChainConfigs[InnerChainUniqueId.BSQUARED].rpcList,
+    blockscoutApiList:
+      ReserveChainConfigs[InnerChainUniqueId.BSQUARED].blockscoutApiList,
+    explorerUrls: {
+      [ExplorerLanguages.EN]: "https://explorer.bsquared.network/",
+    },
+    explorerPaths: {
+      tx: "/tx/{txid}",
+      address: "/address/{addr}",
+    },
+  },
   BNB: {
     coinType: CoinType.ETH,
     uniqueId: InnerChainUniqueId.BNB,
@@ -509,6 +555,43 @@ export const ETH_CHAIN_CONFIGS: { [key in string]: ETHConfig } = {
     ],
     checkApproval: "ApprovalManageScreen",
   },
+  CAGA: {
+    coinType: CoinType.ETH,
+    uniqueId: InnerChainUniqueId.CAGA,
+    autoAdd: true,
+    logo: CagaLogo,
+    chainId: "72888",
+    chainName: "CAGA",
+    nativeCurrency: {
+      name: "CAGA",
+      symbol: "CAGA",
+      decimals: 18,
+      logo: CagaLogo,
+      coingeckoCoinId: "crypto-asset-governance-alliance",
+    },
+    rpcList: ReserveChainConfigs[InnerChainUniqueId.CAGA].rpcList,
+    explorerUrls: {
+      [ExplorerLanguages.EN]: "https://explorer.cagamainnet.com/",
+    },
+    explorerPaths: {
+      tx: "/transaction/{txid}",
+      address: "/address/{addr}",
+    },
+    communities: [
+      {
+        name: "X(Twitter)",
+        url: "https://www.twitter.com/_cagacrypto",
+      },
+      {
+        name: "Discord",
+        url: "https://discord.gg/hsNNAXuENr",
+      },
+      {
+        name: "Telegram",
+        url: "https://t.me/cagacryptogroup",
+      },
+    ],
+  },
   CELO: {
     coinType: CoinType.ETH,
     uniqueId: InnerChainUniqueId.CELO,
@@ -539,6 +622,127 @@ export const ETH_CHAIN_CONFIGS: { [key in string]: ETHConfig } = {
       nativeAddress: "0x471EcE3750Da237f93B8E339c536989b8978a438",
       chainId: "42220",
     },
+  },
+  CORE: {
+    coinType: CoinType.ETH,
+    uniqueId: InnerChainUniqueId.CORE,
+    autoAdd: true,
+    logo: CoreLogo,
+    chainId: "1116",
+    chainName: "Core",
+    nativeCurrency: {
+      name: "CORE",
+      decimals: 18,
+      symbol: "CORE",
+      coingeckoCoinId: "coredaoorg",
+      logo: CoreLogo,
+    },
+    rpcList: ReserveChainConfigs[InnerChainUniqueId.CORE].rpcList,
+    blockscoutApiList:
+      ReserveChainConfigs[InnerChainUniqueId.CORE].blockscoutApiList,
+    explorerUrls: {
+      [ExplorerLanguages.EN]: "https://scan.coredao.org",
+      [ExplorerLanguages.ZH]: "https://scan.coredao.org",
+    },
+    explorerPaths: {
+      tx: "tx/{txid}",
+      address: "address/{addr}",
+      token: "address/{addr}/tokens/{token}/token-transfers#address-tabs",
+    },
+    checkApproval: "https://revoke.cash/address/{addr}?chainId={chainId}",
+  },
+  CRO: {
+    coinType: CoinType.ETH,
+    uniqueId: InnerChainUniqueId.CRO,
+    autoAdd: true,
+    logo: CronosLogo,
+    chainId: "25",
+    chainName: "Cronos",
+    nativeCurrency: {
+      name: "Cronos",
+      symbol: "CRO",
+      decimals: 18,
+      coingeckoCoinId: "crypto-com-chain",
+      logo: CronosLogo,
+    },
+    rpcList: ReserveChainConfigs[InnerChainUniqueId.CRO].rpcList,
+    blockscoutApiList:
+      ReserveChainConfigs[InnerChainUniqueId.CRO].blockscoutApiList,
+    explorerUrls: {
+      [ExplorerLanguages.EN]: "https://cronoscan.com/",
+    },
+    explorerPaths: {
+      tx: "/tx/{txid}",
+      address: "/address/{addr}",
+      token: "/token/{token}?a={addr}",
+    },
+    checkApproval: "https://revoke.cash/address/{addr}?chainId={chainId}",
+  },
+  EOS_EVM: {
+    coinType: CoinType.ETH,
+    uniqueId: InnerChainUniqueId.EOS_EVM,
+    autoAdd: true,
+    logo: EOSLogo,
+    chainId: "17777",
+    chainName: "EOS EVM",
+    nativeCurrency: {
+      name: "EOS",
+      symbol: "EOS",
+      decimals: 18,
+      coingeckoCoinId: "eos",
+      logo: EOSLogo,
+    },
+    rpcList: ReserveChainConfigs[InnerChainUniqueId.EOS_EVM].rpcList,
+    blockscoutApiList:
+      ReserveChainConfigs[InnerChainUniqueId.EOS_EVM].blockscoutApiList,
+    explorerUrls: {
+      [ExplorerLanguages.EN]: "https://explorer.evm.eosnetwork.com/",
+    },
+    explorerPaths: {
+      tx: "/tx/{txid}",
+      address: "/address/{addr}",
+      token: "/address/{addr}/tokens/{token}/token-transfers#address-tabs",
+    },
+    checkApproval: "https://revoke.cash/address/{addr}?chainId={chainId}",
+  },
+  FANTOM: {
+    coinType: CoinType.ETH,
+    uniqueId: InnerChainUniqueId.FANTOM,
+    autoAdd: true,
+    logo: FantomLogo,
+    chainId: "250",
+    chainName: "Fantom",
+    chainRemark: {
+      [SupportLanguages.EN]: "FTM",
+    },
+    nativeCurrency: {
+      name: "Fantom",
+      symbol: "FTM",
+      decimals: 18,
+      logo: FantomLogo,
+    },
+    rpcList: ReserveChainConfigs[InnerChainUniqueId.FANTOM].rpcList,
+    blockscoutApiList:
+      ReserveChainConfigs[InnerChainUniqueId.FANTOM].blockscoutApiList,
+    explorerUrls: {
+      [ExplorerLanguages.EN]: "https://ftmscan.com",
+    },
+    explorerPaths: {
+      tx: "/tx/{txid}",
+      address: "/address/{addr}",
+      token: "/token/{token}?a={addr}",
+    },
+    nft: {
+      markets: [
+        {
+          name: "Artion",
+          baseUrl: "https://artion.io",
+          collectionPath: "/explore?collections={addr}",
+          itemPath: "/explore/{addr}/{id}",
+        },
+      ],
+    },
+    checkApproval: "https://revoke.cash/address/{addr}?chainId={chainId}",
   },
   FILECOIN_EVM: {
     coinType: CoinType.ETH,
@@ -590,6 +794,250 @@ export const ETH_CHAIN_CONFIGS: { [key in string]: ETHConfig } = {
       {
         name: "Slack",
         url: "https://filecoin.io/slack",
+      },
+    ],
+  },
+  GNOSIS: {
+    coinType: CoinType.ETH,
+    uniqueId: InnerChainUniqueId.GNOSIS,
+    autoAdd: true,
+    logo: GnosisLogo,
+    chainId: "100",
+    chainName: "Gnosis",
+    chainRemark: {
+      [SupportLanguages.EN]: "xDAI",
+    },
+    nativeCurrency: {
+      name: "xDAI",
+      symbol: "xDAI",
+      decimals: 18,
+      coingeckoCoinId: "xdai",
+      logo: GnosisLogo,
+    },
+    rpcList: ReserveChainConfigs[InnerChainUniqueId.GNOSIS].rpcList,
+    blockscoutApiList:
+      ReserveChainConfigs[InnerChainUniqueId.GNOSIS].blockscoutApiList,
+    explorerUrls: {
+      [ExplorerLanguages.EN]: "https://blockscout.com/xdai/mainnet/",
+    },
+    explorerPaths: {
+      tx: "tx/{txid}",
+      address: "address/{addr}",
+      token: "address/{addr}/tokens/{token}/token-transfers#address-tabs",
+    },
+    checkApproval: "https://revoke.cash/address/{addr}?chainId={chainId}",
+  },
+  INEVM: {
+    coinType: CoinType.ETH,
+    uniqueId: InnerChainUniqueId.INEVM,
+    autoAdd: true,
+    logo: InevmLogo,
+    chainId: "2525",
+    chainName: "inEVM",
+    nativeCurrency: {
+      name: "INJ",
+      symbol: "INJ",
+      decimals: 18,
+      coingeckoCoinId: "injective",
+      logo: InevmLogo,
+    },
+    rpcList: ReserveChainConfigs[InnerChainUniqueId.INEVM].rpcList,
+    blockscoutApiList:
+      ReserveChainConfigs[InnerChainUniqueId.INEVM].blockscoutApiList,
+    explorerUrls: {
+      [ExplorerLanguages.EN]: "https://explorer.inevm.com/",
+    },
+    explorerPaths: {
+      tx: "/tx/{txid}",
+      address: "/address/{addr}",
+      token: "/address/{addr}/tokens/{token}/token-transfers#address-tabs",
+    },
+    checkApproval: "https://revoke.cash/address/{addr}?chainId={chainId}",
+  },
+  JOC: {
+    coinType: CoinType.ETH,
+    uniqueId: InnerChainUniqueId.JOC,
+    autoAdd: true,
+    logo: JocLogo,
+    chainId: "81",
+    chainName: "Japan Open Chain",
+    chainRemark: {
+      [SupportLanguages.EN]: "JOC",
+    },
+    nativeCurrency: {
+      name: "Japan Open Chain Token",
+      symbol: "JOC",
+      decimals: 18,
+      logo: JocLogo,
+      coingeckoCoinId: "japan-open-chain",
+    },
+    rpcList: ReserveChainConfigs[InnerChainUniqueId.JOC].rpcList,
+    blockscoutApiList:
+      ReserveChainConfigs[InnerChainUniqueId.JOC].blockscoutApiList,
+    explorerUrls: {
+      [ExplorerLanguages.EN]: "https://explorer.japanopenchain.org/",
+    },
+    explorerPaths: {
+      tx: "/tx/{txid}",
+      address: "/address/{addr}",
+      token: "/address/{addr}/tokens/{token}/token-transfers#address-tabs",
+    },
+    communities: [
+      {
+        name: "X(Twitter)",
+        url: "https://twitter.com/JapanOpenChain",
+      },
+      {
+        name: "Discord",
+        url: "https://discord.gg/5ugv7Zufde",
+      },
+    ],
+  },
+  KAVA: {
+    coinType: CoinType.ETH,
+    uniqueId: InnerChainUniqueId.KAVA,
+    autoAdd: true,
+    logo: KavaLogo,
+    chainId: "2222",
+    chainName: "Kava EVM",
+    nativeCurrency: {
+      name: "KAVA",
+      symbol: "KAVA",
+      decimals: 18,
+      logo: KavaLogo,
+    },
+    rpcList: ReserveChainConfigs[InnerChainUniqueId.KAVA].rpcList,
+    blockscoutApiList:
+      ReserveChainConfigs[InnerChainUniqueId.KAVA].blockscoutApiList,
+    explorerUrls: {
+      [ExplorerLanguages.EN]: "https://kavascan.com",
+    },
+    explorerPaths: {
+      tx: "/tx/{txid}",
+      address: "/address/{addr}",
+      token: "/address/{addr}/tokens/{token}/token-transfers#address-tabs",
+    },
+    checkApproval: "https://revoke.cash/address/{addr}?chainId={chainId}",
+  },
+  LINEA: {
+    coinType: CoinType.ETH,
+    uniqueId: InnerChainUniqueId.LINEA,
+    autoAdd: true,
+    logo: LineaLogo,
+    chainId: "59144",
+    chainName: "Linea",
+    nativeCurrency: {
+      name: "ETH",
+      symbol: "ETH",
+      decimals: 18,
+      logo: EthTokenLogo,
+      coingeckoCoinId: "ethereum",
+    },
+    rpcList: ReserveChainConfigs[InnerChainUniqueId.LINEA].rpcList,
+    blockscoutApiList:
+      ReserveChainConfigs[InnerChainUniqueId.LINEA].blockscoutApiList,
+    explorerUrls: {
+      [ExplorerLanguages.EN]: "https://lineascan.build/",
+    },
+    explorerPaths: {
+      tx: "/tx/{txid}",
+      address: "/address/{addr}",
+      token: "/address/{addr}/tokens/{token}/token-transfers#address-tabs",
+    },
+    checkApproval: "https://revoke.cash/address/{addr}?chainId={chainId}",
+  },
+  LUMIA: {
+    coinType: CoinType.ETH,
+    uniqueId: InnerChainUniqueId.LUMIA,
+    autoAdd: true,
+    logo: LumiaLogo,
+    chainId: "994873017",
+    chainName: "Lumia",
+    nativeCurrency: {
+      name: "LUMIA",
+      symbol: "LUMIA",
+      decimals: 18,
+      logo: LumiaLogo,
+    },
+    rpcList: ReserveChainConfigs[InnerChainUniqueId.LUMIA].rpcList,
+    blockscoutApiList:
+      ReserveChainConfigs[InnerChainUniqueId.LUMIA].blockscoutApiList,
+    explorerUrls: {
+      [ExplorerLanguages.EN]: "https://explorer.lumia.org/",
+    },
+    explorerPaths: {
+      tx: "/tx/{txid}",
+      address: "/address/{addr}",
+      token: "/address/{addr}/tokens/{token}/token-transfers#address-tabs",
+    },
+  },
+  MANTLE: {
+    coinType: CoinType.ETH,
+    uniqueId: InnerChainUniqueId.MANTLE,
+    autoAdd: true,
+    logo: MantleLogo,
+    chainId: "5000",
+    chainName: "Mantle",
+    chainRemark: {
+      [SupportLanguages.EN]: "MNT",
+    },
+    nativeCurrency: {
+      name: "MNT",
+      symbol: "MNT",
+      decimals: 18,
+      address: "0xDeadDeAddeAddEAddeadDEaDDEAdDeaDDeAD0000",
+      logo: MantleLogo,
+    },
+    rpcList: ReserveChainConfigs[InnerChainUniqueId.MANTLE].rpcList,
+    blockscoutApiList:
+      ReserveChainConfigs[InnerChainUniqueId.MANTLE].blockscoutApiList,
+    explorerUrls: {
+      [ExplorerLanguages.EN]: "https://explorer.mantle.xyz",
+      [ExplorerLanguages.ZH]: "https://explorer.mantle.xyz",
+    },
+    explorerPaths: {
+      tx: "/tx/{txid}",
+      address: "/address/{addr}",
+      token: "/address/{addr}/tokens/{token}/token-transfers#address-tabs",
+    },
+    checkApproval: "https://revoke.cash/address/{addr}?chainId={chainId}",
+  },
+  MORPH: {
+    coinType: CoinType.ETH,
+    uniqueId: InnerChainUniqueId.MORPH,
+    autoAdd: true,
+    logo: MorphLogo,
+    chainId: "2818",
+    chainName: "Morph",
+    nativeCurrency: {
+      name: "ETH",
+      symbol: "ETH",
+      decimals: 18,
+      logo: EthTokenLogo,
+    },
+    rpcList: ReserveChainConfigs[InnerChainUniqueId.MORPH].rpcList,
+    blockscoutApiList:
+      ReserveChainConfigs[InnerChainUniqueId.MORPH].blockscoutApiList,
+    explorerUrls: {
+      [ExplorerLanguages.EN]: "https://explorer.morphl2.io",
+    },
+    explorerPaths: {
+      tx: "/tx/{txid}",
+      address: "/address/{addr}",
+      token: "/address/{addr}/tokens/{token}/token-transfers#address-tabs",
+    },
+    communities: [
+      {
+        name: "X(Twitter)",
+        url: "https://x.com/Morphl2",
+      },
+      {
+        name: "Telegram",
+        url: "https://t.me/MorphL2official",
+      },
+      {
+        name: "Discord",
+        url: "https://discord.com/invite/L2Morph",
       },
     ],
   },
@@ -816,6 +1264,166 @@ export const ETH_CHAIN_CONFIGS: { [key in string]: ETHConfig } = {
       address: "/address/{addr}",
       token: "/token/{token}?a={addr}",
     },
+    checkApproval: "https://revoke.cash/address/{addr}?chainId={chainId}",
+  },
+  SCROLL: {
+    coinType: CoinType.ETH,
+    uniqueId: InnerChainUniqueId.SCROLL,
+    autoAdd: true,
+    logo: ScrollLogo,
+    chainId: "534352",
+    chainName: "Scroll",
+    nativeCurrency: {
+      name: "ETH",
+      symbol: "ETH",
+      decimals: 18,
+      logo: EthTokenLogo,
+      coingeckoCoinId: "ethereum",
+    },
+    rpcList: ReserveChainConfigs[InnerChainUniqueId.SCROLL].rpcList,
+    blockscoutApiList:
+      ReserveChainConfigs[InnerChainUniqueId.SCROLL].blockscoutApiList,
+    explorerUrls: {
+      [ExplorerLanguages.EN]: "https://scrollscan.com/",
+    },
+    explorerPaths: {
+      tx: "/tx/{txid}",
+      address: "/address/{addr}",
+      token: "/token/{token}?a={addr}",
+    },
+    checkApproval: "https://revoke.cash/address/{addr}?chainId={chainId}",
+  },
+  TAIKO: {
+    coinType: CoinType.ETH,
+    uniqueId: InnerChainUniqueId.TAIKO,
+    autoAdd: true,
+    logo: TaikoLogo,
+    chainId: "167000",
+    chainName: "Taiko",
+    nativeCurrency: {
+      name: "ETH",
+      symbol: "ETH",
+      decimals: 18,
+      logo: EthTokenLogo,
+      coingeckoCoinId: "ethereum",
+    },
+    rpcList: ReserveChainConfigs[InnerChainUniqueId.TAIKO].rpcList,
+    blockscoutApiList:
+      ReserveChainConfigs[InnerChainUniqueId.TAIKO].blockscoutApiList,
+    explorerUrls: {
+      [ExplorerLanguages.EN]: "https://taikoscan.io/",
+    },
+    explorerPaths: {
+      tx: "/tx/{txid}",
+      address: "/address/{addr}",
+      token: "/token/{token}?a={addr}",
+    },
+    checkApproval: "https://revoke.cash/address/{addr}?chainId={chainId}",
+    communities: [
+      {
+        name: "X(Twitter)",
+        url: "https://twitter.com/taikoxyz",
+      },
+      {
+        name: "Discord",
+        url: "https://discord.gg/taikoxyz",
+      },
+      {
+        name: "Youtube",
+        url: "https://www.youtube.com/@taikoxyz",
+      },
+    ],
+  },
+  ZCHAINS: {
+    coinType: CoinType.ETH,
+    uniqueId: InnerChainUniqueId.ZCHAINS,
+    autoAdd: true,
+    logo: ZchainsLogo,
+    chainId: "168168",
+    chainName: "ZChains",
+    chainRemark: {
+      [SupportLanguages.EN]: "ZCD",
+    },
+    coingeckoPlatformId: "zchains",
+    nativeCurrency: {
+      name: "ZCD",
+      symbol: "ZCD",
+      decimals: 18,
+      logo: ZchainsLogo,
+    },
+    rpcList: ReserveChainConfigs[InnerChainUniqueId.ZCHAINS].rpcList,
+    explorerUrls: {
+      [ExplorerLanguages.EN]: "https://scan.zchains.com/",
+    },
+    explorerPaths: {
+      tx: "/tx/{txid}",
+      address: "/address/{addr}",
+    },
+    communities: [
+      {
+        name: "X(Twitter)",
+        url: "https://x.com/zchains_io",
+      },
+      {
+        name: "Discord",
+        url: "https://discord.com/invite/HgTVFcqPcg",
+      },
+      {
+        name: "Telegram",
+        url: "https://t.me/zchains_io",
+      },
+    ],
+  },
+  ZKSYNC_ERA: {
+    coinType: CoinType.ETH,
+    uniqueId: InnerChainUniqueId.ZKSYNC_ERA,
+    autoAdd: true,
+    logo: ZksyncLogo,
+    chainId: "324",
+    chainName: "zkSync Era",
+    coingeckoPlatformId: "zksync",
+    nativeCurrency: {
+      name: "zkSync Ether",
+      decimals: 18,
+      symbol: "ETH",
+      logo: EthTokenLogo,
+      address: "0x000000000000000000000000000000000000800A",
+      coingeckoCoinId: "ethereum",
+    },
+    rpcList: ReserveChainConfigs[InnerChainUniqueId.ZKSYNC_ERA].rpcList,
+    blockscoutApiList:
+      ReserveChainConfigs[InnerChainUniqueId.ZKSYNC_ERA].blockscoutApiList,
+    apescanEnabled: true,
+    nft: {
+      supportCollectionWay: false,
+      markets: [
+        {
+          name: "Apescan",
+          baseUrl: "https://apescan.co/",
+          itemPath: "/#/NftOverview?id={id}&address={addr}",
+          collectionPath: "/#/nfts?address={addr}",
+        },
+        {
+          name: "Element",
+          baseUrl: "https://element.market",
+          itemPath: "/assets/zksync/{addr}/{id}",
+          collectionPath: "/assets/zksync/{addr}",
+        },
+      ],
+    },
+    explorerUrls: {
+      [ExplorerLanguages.EN]: "https://explorer.zksync.io/",
+    },
+    explorerPaths: {
+      tx: "/tx/{txid}",
+      address: "/address/{addr}",
+    },
+    minGasLimits: [
+      {
+        functionHash: FUNC_SIG.TOKEN_TRANSFER,
+        gasLimit: 52000,
+      },
+    ],
     checkApproval: "https://revoke.cash/address/{addr}?chainId={chainId}",
   },
 };
