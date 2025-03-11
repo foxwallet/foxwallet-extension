@@ -717,6 +717,7 @@ export const GasSettingStep = (props: GasSettingStepProps) => {
         direction={"column"}
         overflowY={"auto"}
         marginBottom={"10px"}
+        maxH={510}
         sx={HIDE_SCROLL_BAR_CSS}
         // bg={"yellow"}
       >
