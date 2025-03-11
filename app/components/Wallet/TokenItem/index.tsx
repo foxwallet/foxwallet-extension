@@ -8,8 +8,17 @@ import { IconTokenPlaceHolder } from "@/components/Custom/Icon";
 import { commaCurrency, commaInteger } from "@/common/utils/comma";
 import { formatPrice } from "@/common/utils/num";
 import { useBalance } from "@/hooks/useBalance";
+import { useCoinService } from "@/hooks/useCoinService";
 
-const TokenImage = ({ icon }: { icon?: string }) => {
+const TokenImage = ({
+  icon,
+  showChainLogo,
+  chainLogoSrc,
+}: {
+  icon?: string;
+  showChainLogo: boolean;
+  chainLogoSrc?: string;
+}) => {
   const [tokenImageOK, setTokenImageOK] = useState(true);
 
   useEffect(() => {
@@ -19,22 +28,39 @@ const TokenImage = ({ icon }: { icon?: string }) => {
   }, [icon]);
 
   return useMemo(() => {
-    if (icon && tokenImageOK) {
-      return (
-        <Image
-          src={icon}
-          w={8}
-          h={8}
-          borderRadius={16}
-          onError={() => {
-            setTokenImageOK(false);
-          }}
-        />
-      );
-    } else {
-      return <IconTokenPlaceHolder w={8} h={8} />;
-    }
-  }, [icon, tokenImageOK]);
+    return (
+      <Flex w={9} h={9} position="relative">
+        {icon && tokenImageOK ? (
+          <Image
+            src={icon}
+            w={8}
+            h={8}
+            borderRadius={16}
+            onError={() => {
+              setTokenImageOK(false);
+            }}
+          />
+        ) : (
+          <IconTokenPlaceHolder w={8} h={8} />
+        )}
+        {showChainLogo && chainLogoSrc && (
+          <Flex
+            justify={"center"}
+            alignItems={"center"}
+            bg={"white"}
+            w={4}
+            h={4}
+            bottom={0}
+            right={0}
+            position={"absolute"}
+            borderRadius={8}
+          >
+            <Image src={chainLogoSrc} w={3.5} h={3.5} borderRadius={8} />
+          </Flex>
+        )}
+      </Flex>
+    );
+  }, [icon, showChainLogo, tokenImageOK, chainLogoSrc]);
 };
 
 export const TokenItemWithBalance = ({
@@ -46,6 +72,7 @@ export const TokenItemWithBalance = ({
   leftElement,
   showPriceAndChange = true,
   showBalanceAndValue = true,
+  showChainLogo = true,
   style,
 }: {
   uniqueId: ChainUniqueId;
@@ -56,8 +83,11 @@ export const TokenItemWithBalance = ({
   hover?: boolean;
   showPriceAndChange?: boolean;
   showBalanceAndValue?: boolean;
+  showChainLogo?: boolean;
   style?: ChakraProps;
 }) => {
+  const { chainConfig } = useCoinService(uniqueId);
+
   const showBalanceGlobal = usePopupSelector(
     (state) => state.accountV2.showBalance,
   );
@@ -110,7 +140,11 @@ export const TokenItemWithBalance = ({
     >
       <Flex align={"center"}>
         {leftElement}
-        <TokenImage icon={token.icon} />
+        <TokenImage
+          icon={token.icon}
+          showChainLogo={showChainLogo}
+          chainLogoSrc={chainConfig.logo}
+        />
         <Flex flexDir={"column"} ml={2.5}>
           <Text fontSize={13} fontWeight={600}>
             {token.symbol}
