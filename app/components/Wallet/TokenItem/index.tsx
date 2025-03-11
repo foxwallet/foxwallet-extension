@@ -45,7 +45,7 @@ export const TokenItemWithBalance = ({
   hover,
   leftElement,
   showPriceAndChange = true,
-  showBalnaceAndValue = true,
+  showBalanceAndValue = true,
   style,
 }: {
   uniqueId: ChainUniqueId;
@@ -55,7 +55,7 @@ export const TokenItemWithBalance = ({
   leftElement?: React.ReactNode;
   hover?: boolean;
   showPriceAndChange?: boolean;
-  showBalnaceAndValue?: boolean;
+  showBalanceAndValue?: boolean;
   style?: ChakraProps;
 }) => {
   const showBalanceGlobal = usePopupSelector(
@@ -125,7 +125,7 @@ export const TokenItemWithBalance = ({
           )}
         </Flex>
       </Flex>
-      {showBalnaceAndValue &&
+      {showBalanceAndValue &&
         (showBalanceGlobal ? (
           <Flex
             direction={"column"}
