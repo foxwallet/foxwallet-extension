@@ -13,10 +13,7 @@ import {
 } from "@/scripts/background/servers/IWalletServer";
 import { groupBy, uniqBy } from "lodash";
 import { type AleoRpcService, createAleoRpcService } from "./instances/rpc";
-import {
-  type AleoCreditMethod,
-  type AleoTransferMethod,
-} from "../types/TransferMethod";
+import { type AleoCreditMethod } from "../types/TransferMethod";
 import {
   type AleoLocalTxInfo,
   type AleoTransaction,
@@ -41,7 +38,6 @@ import {
 } from "../types/History";
 import { Mutex } from "async-mutex";
 import {
-  Address,
   Future,
   hashBHP256,
   Plaintext,
@@ -153,15 +149,14 @@ export class AleoService extends CoinServiceBasic {
   }
 
   validateAddress(address: string): boolean {
-    // try {
-    //   const addressObj = Address.from_string(address);
-    //   console.log("===> addressObj: ", addressObj, !!addressObj);
-    //   return !!addressObj;
-    // } catch (err) {
-    //   logger.log("===> isValidAddress failed: ", err, address);
-    //   return false;
-    // }
-    return true;
+    try {
+      const addressObj = Address.from_string(address);
+      console.log("===> addressObj: ", addressObj, !!addressObj);
+      return !!addressObj;
+    } catch (err) {
+      logger.log("===> isValidAddress failed: ", err, address);
+      return false;
+    }
   }
 
   private async getSpentTagsInRange(tags: string[]) {
