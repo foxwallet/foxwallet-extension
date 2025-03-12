@@ -1,6 +1,4 @@
-import { H1 } from "@/common/theme/components/text";
 import {
-  IconCheckLine,
   IconCloseLine,
   IconEyeClose,
   IconEyeOn,
@@ -8,15 +6,7 @@ import {
 } from "@/components/Custom/Icon";
 import { BaseInputGroup } from "@/components/Custom/Input";
 import { useAuth } from "@/hooks/useAuth";
-import {
-  Box,
-  Button,
-  Flex,
-  Image,
-  InputRightElement,
-  Text,
-  useToast,
-} from "@chakra-ui/react";
+import { Box, Button, Flex, Image, InputRightElement } from "@chakra-ui/react";
 import { useCallback, useState, type KeyboardEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import WALLET_LOGO from "@/common/assets/image/logo.png";

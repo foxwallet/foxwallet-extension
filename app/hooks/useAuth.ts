@@ -23,24 +23,30 @@ export const useAuth = () => {
     }
   }, [popupServerClient, dispatch]);
 
-  const login = useCallback(async (password: string) => {
-    const res = await popupServerClient.login({ password });
-    if (res) {
-      dispatch.user.setHasAuth({ hasAuth: true });
-      // console.log("resyncAllWalletsToStore called");
-      await dispatch.accountV2.resyncAllWalletsToStore();
-    }
-    return res;
-  }, []);
+  const login = useCallback(
+    async (password: string) => {
+      const res = await popupServerClient.login({ password });
+      if (res) {
+        dispatch.user.setHasAuth({ hasAuth: true });
+        // console.log("resyncAllWalletsToStore called");
+        await dispatch.accountV2.resyncAllWalletsToStore();
+      }
+      return res;
+    },
+    [dispatch.accountV2, dispatch.user, popupServerClient],
+  );
 
   const lock = useCallback(async () => {
     await popupServerClient.lock();
     dispatch.user.setHasAuth({ hasAuth: false });
-  }, []);
+  }, [dispatch.user, popupServerClient]);
 
-  const checkPassword = useCallback(async (password: string) => {
-    return await popupServerClient.checkPassword(password);
-  }, []);
+  const checkPassword = useCallback(
+    async (password: string) => {
+      return await popupServerClient.checkPassword(password);
+    },
+    [popupServerClient],
+  );
 
   useEffect(() => {
     void getAuth();
