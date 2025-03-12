@@ -1,11 +1,11 @@
 import {
+  IconAllNetworks,
   IconArrowRight,
   IconCopy,
   IconEyeClose,
   IconEyeOn,
   IconLoading,
   IconLock,
-  IconLogo,
 } from "@/components/Custom/Icon";
 import {
   Box,
@@ -201,7 +201,7 @@ export const AccountInfoHeader = ({
             onClick={changeNetwork}
           >
             {isAllMode ? (
-              <IconLogo w={5} h={5} />
+              <IconAllNetworks w={5} h={5} />
             ) : (
               <Image
                 src={availableChains[0].logo}
