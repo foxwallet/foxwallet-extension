@@ -127,11 +127,6 @@ export const AccountInfoHeader = ({
     }
   }, [availableAccounts, availableChains, chainMode, isAllMode, showToast]);
 
-  // const { balance } = useBalance({
-  //   uniqueId,
-  //   address: availableAccounts[0].account.address,
-  // });
-
   const bgGradient = useColorModeValue(
     "linear(to-br, #ECFFF2, #FFFFFF, #ECFFF2)",
     "linear(to-br, #14321A, #000000, #14321A)",
@@ -175,6 +170,19 @@ export const AccountInfoHeader = ({
     }
     return false;
   }, [chainMode, sendingAleoTx]);
+
+  const aleoAccountAddress = useMemo(() => {
+    if (chainMode.mode === ChainAssembleMode.ALL) {
+      const aleoAccount = availableAccounts.find((account) => {
+        return account.account.coinType === CoinType.ALEO;
+      });
+      return aleoAccount?.account.address;
+    } else if (chainMode.uniqueId === InnerChainUniqueId.ALEO_MAINNET) {
+      return availableAccounts[0].account.address;
+    } else {
+      return undefined;
+    }
+  }, [availableAccounts, chainMode]);
 
   return (
     <>
@@ -256,15 +264,10 @@ export const AccountInfoHeader = ({
           </Flex>
         )}
         {/* value */}
-        <Flex direction={"row"} align={"center"} justify={"center"} mt={2}>
+        <Flex direction={"row"} align={"center"} justify={"center"} mt={3}>
           <Flex align={"center"}>
             <Box fontSize={24} fontWeight={600}>
               {showBalance ? (
-                // <TokenNum
-                //   amount={balance?.total ?? 0n}
-                //   decimals={nativeCurrency.decimals}
-                //   symbol={nativeCurrency.symbol}
-                // />
                 <Text ml={3}>{`$${totalUsdValue}`}</Text>
               ) : (
                 "*****"
@@ -297,7 +300,11 @@ export const AccountInfoHeader = ({
           mt={2}
           mx={6}
           onClick={() => {
-            navigate(`/token_detail/${InnerChainUniqueId.ALEO_MAINNET}`);
+            if (aleoAccountAddress) {
+              navigate(
+                `/token_detail/${InnerChainUniqueId.ALEO_MAINNET}/${aleoAccountAddress}`,
+              );
+            }
           }}
         >
           <IconLoading
