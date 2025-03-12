@@ -59,6 +59,7 @@ import {
   simplifyAleoTxStatus,
 } from "core/coins/ALEO/utils/utils";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
+import { TokenImage } from "@/components/Wallet/TokenItem";
 
 interface AleoTokenTxHistoryItemProps {
   item: AleoHistoryItem;
@@ -480,12 +481,17 @@ const TokenDetailScreen = () => {
   return (
     <PageWithHeader title={t("TokenDetail:title")}>
       <Flex direction={"column"} px={5} py={2.5}>
-        <Flex align={"center"}>
-          {tokenInfo.icon ? (
-            <Image src={tokenInfo.icon} w={6} h={6} borderRadius={12} />
-          ) : (
-            <IconTokenPlaceHolder w={6} h={6} />
-          )}
+        <Flex alignItems={"center"}>
+          <TokenImage
+            token={tokenInfo}
+            uniqueId={uniqueId}
+            imageStyle={{
+              width: 6,
+              height: 6,
+              backgroundColor: "green",
+              borderRadius: 12,
+            }}
+          />
           <Flex direction={"column"} ml={2.5}>
             <Flex>
               <Text fontSize={13} fontWeight={"bold"}>

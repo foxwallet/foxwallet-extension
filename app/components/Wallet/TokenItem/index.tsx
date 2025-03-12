@@ -1,4 +1,10 @@
-import { type ChakraProps, Flex, Image, Text } from "@chakra-ui/react";
+import {
+  type ChakraProps,
+  Flex,
+  Image,
+  type ImageProps,
+  Text,
+} from "@chakra-ui/react";
 import { TokenNum } from "../TokenNum";
 import { useCallback, useMemo, useState } from "react";
 import { usePopupSelector } from "@/hooks/useStore";
@@ -10,35 +16,58 @@ import { formatPrice } from "@/common/utils/num";
 import { useBalance } from "@/hooks/useBalance";
 import { useCoinService } from "@/hooks/useCoinService";
 
-const TokenImage = ({
+export const TokenImage = ({
+  token,
+  uniqueId,
+  imageStyle,
+}: {
+  token: TokenV2;
+  uniqueId: ChainUniqueId;
+  imageStyle?: ImageProps;
+}) => {
+  const [tokenImageOK, setTokenImageOK] = useState(true);
+  const { nativeCurrency } = useCoinService(uniqueId);
+
+  return token.type === AssetType.COIN ? (
+    <Image
+      src={nativeCurrency.logo}
+      w={8}
+      h={8}
+      borderRadius={16}
+      {...imageStyle}
+    />
+  ) : token.icon && tokenImageOK ? (
+    <Image
+      src={token.icon}
+      w={8}
+      h={8}
+      borderRadius={16}
+      onError={() => {
+        setTokenImageOK(false);
+      }}
+      {...imageStyle}
+    />
+  ) : (
+    <IconTokenPlaceHolder w={8} h={8} {...imageStyle} />
+  );
+};
+
+const TokenImageWithChainLogo = ({
   token,
   uniqueId,
   showChainLogo,
+  imageStyle,
 }: {
   token: TokenV2;
   uniqueId: ChainUniqueId;
   showChainLogo: boolean;
+  imageStyle?: ImageProps;
 }) => {
-  const [tokenImageOK, setTokenImageOK] = useState(true);
-  const { nativeCurrency, chainConfig } = useCoinService(uniqueId);
+  const { chainConfig } = useCoinService(uniqueId);
 
   return (
     <Flex w={9} h={9} position="relative">
-      {token.type === AssetType.COIN ? (
-        <Image src={nativeCurrency.logo} w={8} h={8} borderRadius={16} />
-      ) : token.icon && tokenImageOK ? (
-        <Image
-          src={token.icon}
-          w={8}
-          h={8}
-          borderRadius={16}
-          onError={() => {
-            setTokenImageOK(false);
-          }}
-        />
-      ) : (
-        <IconTokenPlaceHolder w={8} h={8} />
-      )}
+      <TokenImage token={token} uniqueId={uniqueId} imageStyle={imageStyle} />
       {showChainLogo && (
         <Flex
           justify={"center"}
@@ -133,7 +162,7 @@ export const TokenItemWithBalance = ({
     >
       <Flex align={"center"}>
         {leftElement}
-        <TokenImage
+        <TokenImageWithChainLogo
           token={token}
           uniqueId={uniqueId}
           showChainLogo={showChainLogo}
