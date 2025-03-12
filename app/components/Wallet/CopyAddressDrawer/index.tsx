@@ -19,11 +19,13 @@ import { type OneMatchAccount } from "@/scripts/background/store/vault/types/key
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import Hover from "@/components/Custom/Hover";
-import { useChainMode } from "@/hooks/useChainMode";
 import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
 import { useSearchNetworks } from "@/hooks/useSearchNetworks";
 import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
 import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
+import { useUserSelectedChains } from "@/hooks/useUserSelectedChains";
+import { ChainAssembleMode } from "core/types/ChainUniqueId";
+import { type SingleChainDisplayData } from "@/components/Wallet/ChangeNetworkDrawer";
 
 interface Props {
   isOpen: boolean;
@@ -110,9 +112,9 @@ const CopyAddressDrawer = (props: Props) => {
   const { isOpen, onCancel, onConfirm } = props;
   const { t } = useTranslation();
   const { showToast } = useCopyToast();
-  const { availableChains } = useChainMode();
   const [searchStr, setSearchStr] = useState("");
   const [debounceSearchStr] = useDebounce(searchStr, 500);
+  const { selectedChainsWithoutAll } = useUserSelectedChains();
 
   const onKeywordChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -124,12 +126,12 @@ const CopyAddressDrawer = (props: Props) => {
 
   const { searchRes, searching: loading } = useSearchNetworks(
     searchStr,
-    availableChains,
+    selectedChainsWithoutAll,
   );
 
   const displayChains = useMemo(() => {
-    return debounceSearchStr ? searchRes : availableChains;
-  }, [debounceSearchStr, availableChains, searchRes]);
+    return debounceSearchStr ? searchRes : selectedChainsWithoutAll;
+  }, [debounceSearchStr, selectedChainsWithoutAll, searchRes]);
 
   const onCopyAddress = useCallback(
     async (data: OneMatchAccount) => {

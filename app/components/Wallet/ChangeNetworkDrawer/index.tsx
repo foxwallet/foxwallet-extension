@@ -67,13 +67,8 @@ const ChangeNetworkDrawer = (props: Props) => {
   const { t } = useTranslation();
   const [searchStr, setSearchStr] = useState("");
   const [debounceSearchStr] = useDebounce(searchStr, 500);
-  const { selectedChains: selectedChainsWithAll } = useUserSelectedChains();
-
-  const selectedChainsWithoutAll = useMemo(() => {
-    return selectedChainsWithAll.filter(
-      (i) => i.mode === ChainAssembleMode.SINGLE,
-    ) as SingleChainDisplayData[];
-  }, [selectedChainsWithAll]);
+  const { selectedChains: selectedChainsWithAll, selectedChainsWithoutAll } =
+    useUserSelectedChains();
 
   const selectedChains = useMemo(() => {
     return isForAddToken ? selectedChainsWithoutAll : selectedChainsWithAll;
