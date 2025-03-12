@@ -232,7 +232,8 @@
     "switchWallet": "Switch Wallet",
     "networks": "Networks",
     "contacts": "Contacts",
-    "connectedSites": "Connected Sites"
+    "connectedSites": "Connected Sites",
+    "resetApplication": "Reset Application"
   },
   "Networks": {
     "title": "Networks",
@@ -324,7 +325,15 @@
   },
   "Reset": {
     "remind": "All of your history for this account will be reset and network will be resynced. Please confrim to proceed.",
-    "account": "Reset account"
+    "account": "Reset Aleo account",
+    "explain": "Wallet won't unlock? You can ERASE your app data and setup a new wallet",
+    "resetApp": "Reset Application",
+    "confirmDelete": "Confirm Deletion",
+    "warningTitle": "Are you sure you want to erase your app data？",
+    "warningTitle2": "Confirm reset application",
+    "warningContent1": "Your wallets, accounts and assets data will be permanently deleted from this app. ",
+    "warningContent2": "You can only restore this wallet with your seed phrase, FoxWallet does not own your seed phrase. ",
+    "warningStrong": "This action cannot be undone."
   },
   "ManageToken": {
     "title": "Manage Token",

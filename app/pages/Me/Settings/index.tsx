@@ -13,12 +13,13 @@ import { usePopupSelector } from "@/hooks/useStore";
 import { Content } from "@/layouts/Content";
 import { PageWithHeader } from "@/layouts/Page";
 import { LanguageLabels } from "@/locales/i18";
-import { CoinType } from "core/types";
 import { isEqual } from "lodash";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@chakra-ui/react";
+import { Button, Flex, Text } from "@chakra-ui/react";
+import { showResetApplicationDialog } from "@/components/Wallet/ResetApplicationDialog";
+import { useWallets } from "@/hooks/useWallets";
 
 const SettingsScreen = () => {
   const { t } = useTranslation();
@@ -31,6 +32,7 @@ const SettingsScreen = () => {
     isEqual,
   );
   const { popupServerClient } = useClient();
+  const { deleteAllWallets } = useWallets();
 
   const onModifyPassword = useCallback(() => {
     navigate("/change_password");
@@ -48,13 +50,24 @@ const SettingsScreen = () => {
     try {
       const { confirmed } = await showConfirmResyncDialog();
       if (confirmed) {
-        // return await popupServerClient.rescanAleo();
-        return await popupServerClient.resetChain();
+        return await popupServerClient.rescanAleo();
+        // return await popupServerClient.resetChain();
       }
     } catch (err) {
       console.error(err);
     }
   }, [popupServerClient]);
+
+  const onReset = useCallback(async () => {
+    try {
+      const { confirmed } = await showResetApplicationDialog();
+      if (confirmed) {
+        await deleteAllWallets();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }, [deleteAllWallets]);
 
   const onAbout = useCallback(() => {
     navigate("/about");
@@ -98,6 +111,22 @@ const SettingsScreen = () => {
         >
           {t("Setting:switchWallet")}
         </Button>
+        <Flex
+          w={"full"}
+          h={10}
+          alignItems={"center"}
+          justifyContent={"center"}
+          mt={4}
+        >
+          <Text
+            onClick={onReset}
+            cursor={"pointer"}
+            textDecoration={"underline"}
+            textColor={"#EF466F"}
+          >
+            {t("Setting:resetApplication")}
+          </Text>
+        </Flex>
       </Content>
     </PageWithHeader>
   );

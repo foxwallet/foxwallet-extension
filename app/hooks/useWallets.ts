@@ -59,10 +59,19 @@ export const useWallets = () => {
     [dispatch.accountV2],
   );
 
+  const deleteAllWallets = useCallback(async () => {
+    let resWallet = walletList;
+    while (resWallet.length > 0) {
+      console.log("      resWallet.length", resWallet.length);
+      resWallet = await dispatch.accountV2.deleteWallet(resWallet[0].walletId);
+    }
+  }, [dispatch.accountV2, walletList]);
+
   return {
     walletList,
     addAccount,
     deleteWallet,
+    deleteAllWallets,
   };
 };
 

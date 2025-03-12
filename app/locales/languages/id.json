@@ -184,7 +184,8 @@
     "tutorial": "tutorial",
     "networks": "Jaringan",
     "contacts": "Kontak",
-    "connectedSites": "Situs yang terhubung"
+    "connectedSites": "Situs yang terhubung",
+    "resetApplication": "Reset aplikasi"
   },
   "Error": {
     "invalidPassword": "Kata sandi salah",
@@ -253,7 +254,15 @@
   },
   "Reset": {
     "remind": "Semua riwayat Anda untuk akun ini akan disetel ulang dan jaringan akan disinkronkan ulang. Harap konfirmasi untuk melanjutkan.",
-    "account": "Setel ulang akun"
+    "account": "Setel ulang akun",
+    "explain": "Dompet tidak akan membuka kunci? Anda dapat menghapus data aplikasi Anda dan menyiapkan dompet baru",
+    "resetApp": "Reset aplikasi",
+    "confirmDelete": "Konfirmasi penghapusan",
+    "warningTitle": "Apakah Anda yakin ingin menghapus data aplikasi Anda？",
+    "warningTitle2": "Konfirmasi aplikasi reset",
+    "warningContent1": "Dompet, akun, dan data aset Anda akan dihapus secara permanen dari aplikasi ini.",
+    "warningContent2": "Anda hanya dapat mengembalikan dompet ini dengan frasa benih Anda, FoxWallet tidak memiliki frasa benih Anda.",
+    "warningStrong": "Tindakan ini tidak bisa dibatalkan."
   },
   "JoinSplit": {
     "title": "Gabung & Pisahkan",

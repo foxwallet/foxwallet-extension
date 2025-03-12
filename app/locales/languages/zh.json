@@ -184,7 +184,8 @@
     "tutorial": "教程",
     "networks": "管理网络",
     "contacts": "地址簿",
-    "connectedSites": "已连接网站"
+    "connectedSites": "已连接网站",
+    "resetApplication": "重置应用"
   },
   "Error": {
     "invalidPassword": "无效的密码",
@@ -253,7 +254,15 @@
   },
   "Reset": {
     "remind": "您此帐户的所有历史记录都将被重置，网络将重新同步。请确认后再继续。",
-    "account": "重置账户"
+    "account": "重置账户",
+    "explain": "无法解锁？您可以清除应用数据并创建新钱包",
+    "resetApp": "重置应用",
+    "confirmDelete": "确认删除",
+    "warningTitle": "您确定要删除所有的数据吗？",
+    "warningTitle2": "确认重置",
+    "warningContent1": "您的钱包、账户和资产数据将从此应用中永久删除。",
+    "warningContent2": "你只能使用助记词还原这个钱包，FoxWallet 不存储有你的助记词和私钥信息。",
+    "warningStrong": "此操作无法撤销。"
   },
   "JoinSplit": {
     "title": "合并&拆分",

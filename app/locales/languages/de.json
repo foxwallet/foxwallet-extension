@@ -184,7 +184,8 @@
     "tutorial": "Anleitung",
     "networks": "Netzwerke",
     "contacts": "Kontakte",
-    "connectedSites": "Verbundene Websites"
+    "connectedSites": "Verbundene Websites",
+    "resetApplication": "Anwendung zurücksetzen"
   },
   "Error": {
     "invalidPassword": "Ungültiges Passwort",
@@ -253,7 +254,15 @@
   },
   "Reset": {
     "remind": "Ihr gesamter Verlauf für dieses Konto wird zurückgesetzt und das Netzwerk wird erneut synchronisiert. Bitte bestätigen Sie, um fortzufahren.",
-    "account": "Konto zurücksetzen"
+    "account": "Konto zurücksetzen",
+    "explain": "Brieftasche wird nicht freigeschaltet? Sie können Ihre App -Daten löschen und eine neue Brieftasche einrichten",
+    "resetApp": "Anwendung zurücksetzen",
+    "confirmDelete": "Bestätigen Sie die Löschung",
+    "warningTitle": "Sind Sie sicher, dass Sie Ihre App -Daten löschen möchten?",
+    "warningTitle2": "RESET -Anwendung bestätigen",
+    "warningContent1": "Ihre Brieftaschen, Konten und Vermögensdaten werden dauerhaft aus dieser App gelöscht.",
+    "warningContent2": "Sie können diese Brieftasche nur mit Ihrem Samenphrase wiederherstellen. Foxwallet besitzt Ihren Samenphrase nicht.",
+    "warningStrong": "Diese Aktion kann nicht rückgängig gemacht werden."
   },
   "JoinSplit": {
     "title": "Beitreten und teilen",

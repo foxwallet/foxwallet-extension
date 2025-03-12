@@ -184,7 +184,8 @@
     "tutorial": "Tutorial",
     "networks": "Redes",
     "contacts": "Contactos",
-    "connectedSites": "Sitios conectados"
+    "connectedSites": "Sitios conectados",
+    "resetApplication": "Restablecer la aplicación"
   },
   "Error": {
     "invalidPassword": "Contraseña invalida",
@@ -253,7 +254,15 @@
   },
   "Reset": {
     "remind": "Se restablecerá todo el historial de esta cuenta y se resincronizará la red. Por favor confirme para continuar.",
-    "account": "Restablecer cuenta"
+    "account": "Restablecer cuenta",
+    "explain": "¿La billetera no se desbloqueará? Puede borrar los datos de su aplicación y configurar una nueva billetera",
+    "resetApp": "Restablecer la aplicación",
+    "confirmDelete": "Confirmar la eliminación",
+    "warningTitle": "¿Estás seguro de que quieres borrar los datos de tu aplicación？",
+    "warningTitle2": "Confirmar la aplicación de reinicio",
+    "warningContent1": "Sus datos de billeteras, cuentas y activos se eliminarán permanentemente de esta aplicación.",
+    "warningContent2": "Solo puede restaurar esta billetera con su frase de semillas, Foxwallet no posee su frase de semillas.",
+    "warningStrong": "Esta acción no se puede deshacer."
   },
   "JoinSplit": {
     "title": "Unirse y dividir",

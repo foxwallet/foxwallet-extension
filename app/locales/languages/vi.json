@@ -184,7 +184,8 @@
     "tutorial": "Hướng dẫn",
     "networks": "Mạng",
     "contacts": "Liên hệ",
-    "connectedSites": "Các trang web được kết nối"
+    "connectedSites": "Các trang web được kết nối",
+    "resetApplication": "Đặt lại ứng dụng"
   },
   "Error": {
     "invalidPassword": "Mật khẩu không hợp lệ",
@@ -253,7 +254,15 @@
   },
   "Reset": {
     "remind": "Tất cả lịch sử của bạn đối với tài khoản này sẽ được đặt lại và mạng sẽ được đồng bộ hóa lại. Hãy xác nhận để tiếp tục.",
-    "account": "Cài đặt lại tài khoản"
+    "account": "Cài đặt lại tài khoản",
+    "explain": "Ví sẽ không mở khóa? Bạn có thể xóa dữ liệu ứng dụng của mình và thiết lập ví mới",
+    "resetApp": "Đặt lại ứng dụng",
+    "confirmDelete": "Xác nhận xóa",
+    "warningTitle": "Bạn có chắc là bạn muốn xóa dữ liệu ứng dụng của mình？",
+    "warningTitle2": "Xác nhận ứng dụng đặt lại",
+    "warningContent1": "Ví, tài khoản và dữ liệu tài sản của bạn sẽ bị xóa vĩnh viễn khỏi ứng dụng này.",
+    "warningContent2": "Bạn chỉ có thể khôi phục ví này với cụm từ hạt giống của mình, Foxwallet không sở hữu cụm từ hạt giống của bạn.",
+    "warningStrong": "Hành động này không thể được hoàn tác."
   },
   "JoinSplit": {
     "title": "Tham gia & Chia tách",

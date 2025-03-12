@@ -184,7 +184,8 @@
     "tutorial": "öğretici",
     "networks": "Ağlar",
     "contacts": "Kontaklar",
-    "connectedSites": "Bağlı Siteler"
+    "connectedSites": "Bağlı Siteler",
+    "resetApplication": "Uygulama Sıfırla"
   },
   "Error": {
     "invalidPassword": "Geçersiz şifre",
@@ -253,7 +254,15 @@
   },
   "Reset": {
     "remind": "Bu hesaba ilişkin tüm geçmişiniz sıfırlanacak ve ağ yeniden senkronize edilecek. Devam etmek için lütfen onaylayın.",
-    "account": "Hesabı sıfırla"
+    "account": "Hesabı sıfırla",
+    "explain": "Cüzdan kilidini açmayacak mı? Uygulama verilerinizi silebilir ve yeni bir cüzdan ayarlayabilirsiniz",
+    "resetApp": "Uygulama Sıfırla",
+    "confirmDelete": "Silinimi onaylayın",
+    "warningTitle": "Uygulama verilerinizi silmek istediğinden emin misiniz?",
+    "warningTitle2": "Sıfırlama uygulamasını onaylayın",
+    "warningContent1": "Cüzdanlarınız, hesaplarınız ve varlık verileriniz bu uygulamadan kalıcı olarak silinecektir.",
+    "warningContent2": "Bu cüzdanı sadece tohum ifadenizle geri yükleyebilirsiniz, Foxwallet tohum ifadenize sahip değildir.",
+    "warningStrong": "Bu eylem geri alınamaz."
   },
   "JoinSplit": {
     "title": "Katıl ve Böl",
