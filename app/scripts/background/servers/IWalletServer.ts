@@ -181,6 +181,8 @@ export interface IPopupServer {
 
   getHDMnemonic(walletId: string): Promise<string>;
 
+  resetWallet(): Promise<boolean>;
+
   deleteWallet(walletId: string): Promise<DisplayKeyring>;
 
   getPrivateKey(params: GetPrivateKeyProps): Promise<string>;

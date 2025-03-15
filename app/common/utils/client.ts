@@ -217,6 +217,10 @@ export class PopupServerClient implements IClient, IPopupServer {
     return await this.#send("getHDMnemonic", walletId);
   }
 
+  async resetWallet(): Promise<boolean> {
+    return await this.#send("resetWallet", {});
+  }
+
   async deleteWallet(walletId: string): Promise<DisplayKeyring> {
     return await this.#send("deleteWallet", walletId);
   }

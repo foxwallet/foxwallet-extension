@@ -5,7 +5,6 @@ import {
   type DisplayWallet,
   type OneMatchGroupAccount,
 } from "@/scripts/background/store/vault/types/keyring";
-import { CoinType } from "core/types";
 import { getClients } from "@/hooks/useClient";
 import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import {
@@ -13,7 +12,6 @@ import {
   chainUniqueIdToCoinType,
 } from "core/helper/CoinType";
 import { isEqual } from "lodash";
-import { type RootState } from "@/store/store";
 
 type WalletBackupedMnemonicMap = { [walletId in string]: boolean };
 
@@ -262,6 +260,19 @@ export const accountV2 = createModel<RootModel>()({
       const walletList = [...hdWallets, ...simpleWallets];
       dispatch.accountV2._setAllWalletInfo({ walletList });
       return [...walletList];
+    },
+    async resetWallet() {
+      const clients = getClients();
+      try {
+        await Promise.all([
+          clients.popupServerClient.resetWallet(),
+          dispatch.accountV2.getSelectedGroupAccount(),
+        ]);
+        dispatch.accountV2._setAllWalletInfo({ walletList: [] });
+        return true;
+      } catch (e) {
+        return false;
+      }
     },
   }),
 });

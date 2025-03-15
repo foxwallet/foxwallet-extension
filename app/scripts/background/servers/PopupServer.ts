@@ -768,7 +768,7 @@ export class PopupWalletServer implements IPopupServer {
       }
     }
     await this.authManager.initPassword(params.password);
-    await this.keyringManager.reset();
+    await this.keyringManager.resetWallet();
     return true;
   }
 
@@ -1049,6 +1049,18 @@ export class PopupWalletServer implements IPopupServer {
 
   async getHDMnemonic(walletId: string): Promise<string> {
     return await this.keyringManager.getHDMnemonic(walletId);
+  }
+
+  async resetWallet(): Promise<boolean> {
+    try {
+      await Promise.all([
+        this.accountSettingStorage.removeSelectedAccount(),
+        this.keyringManager.resetWallet(),
+      ]);
+      return true;
+    }catch (err) {
+      return false;
+    }
   }
 
   async deleteWallet(walletId: string): Promise<DisplayKeyring> {
