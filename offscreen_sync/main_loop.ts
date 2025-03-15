@@ -587,6 +587,8 @@ export class MainLoop {
 
   async loop(): Promise<void> {
     while (true) {
+      await sleep(2000);
+
       if (!this.onLine) {
         console.log("===> network not available", this.onLine);
         this.setNetworkListener();
@@ -601,7 +603,6 @@ export class MainLoop {
           await this.accountSettingStorage.getSelectedGroupAccount();
         if (!groupAccount) {
           console.error("selected groupAccount not found");
-          await sleep(2000);
           continue;
         }
 
@@ -611,14 +612,13 @@ export class MainLoop {
         const address = aleoAccount[0]?.address;
         if (!address) {
           console.error("selected aleoAccount not found");
-          await sleep(2000);
           continue;
         }
 
         const selectedAccount = await this.aleoStorage.getAccountInfo(address);
         if (!selectedAccount) {
           console.error("selected account not found");
-          await sleep(5000);
+          await sleep(3000);
           continue;
         }
 
@@ -627,7 +627,6 @@ export class MainLoop {
         );
         if (!accountToSync) {
           console.error("selected accountViewKey not found");
-          await sleep(2000);
           continue;
         }
 
@@ -635,9 +634,10 @@ export class MainLoop {
         const lastHeight = await this.getLatestHeight(chainId);
         if (!lastHeight) {
           // fetch height failed, sleep & retry
-          await sleep(10000);
+          await sleep(8000);
           continue;
         }
+
         await this.initWorker();
         const batchMap = await this.initAccountsSyncTask(
           chainId,
@@ -645,13 +645,13 @@ export class MainLoop {
           lastHeight,
         );
         console.log(
-          "===> syncTaskQuene: ",
+          "===> syncTaskQueue: ",
           JSON.stringify(this.syncTaskQuene),
           JSON.stringify(batchMap),
         );
         if (this.syncTaskQuene.length === 0) {
           // no task, sleep & retry
-          await sleep(10000);
+          await sleep(8000);
           continue;
         }
         await this.executeSyncBlocks(batchMap);
@@ -663,14 +663,12 @@ export class MainLoop {
           origin: MessageOrigin.OFFSCREEN_TO_BACKGROUND,
           payload: { error: errMsg, data: null },
         });
-        // sleep & retry
-        await sleep(2000);
       }
     }
   }
 
   /*
-  async loop2(): Promise<void> {
+  async loopOld(): Promise<void> {
     this.onLine = navigator.onLine;
     if (!this.onLine) {
       console.log("===> network not available", this.onLine);
