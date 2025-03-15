@@ -32,7 +32,7 @@ function Lock() {
   const { showToast } = useWrongPasswordToast();
   const [errTimes, setErrTimes] = useState(0);
   const navigate = useNavigate();
-  const { deleteAllWallets, resetWallet } = useWallets();
+  const { resetWallet } = useWallets();
 
   const onPasswordChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -80,7 +80,6 @@ function Lock() {
     try {
       const { confirmed } = await showResetApplicationDialog();
       if (confirmed) {
-        // await deleteAllWallets();
         const res = await resetWallet();
         if (res) {
           navigate("/onboard/home");
@@ -89,7 +88,7 @@ function Lock() {
     } catch (err) {
       console.error(err);
     }
-  }, [resetWallet]);
+  }, [navigate, resetWallet]);
 
   return (
     <Flex

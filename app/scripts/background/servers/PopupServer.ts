@@ -768,7 +768,6 @@ export class PopupWalletServer implements IPopupServer {
       }
     }
     await this.authManager.initPassword(params.password);
-    await this.keyringManager.resetWallet();
     return true;
   }
 
