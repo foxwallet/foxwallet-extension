@@ -135,7 +135,7 @@ export const AccountInfoHeader = ({
 
   const changeNetwork = useCallback(async () => {
     await showChangeNetworkDrawer({
-      title: groupAccount.wallet.walletName,
+      title: wallet.selectedWallet?.walletName ?? "",
       chainMode,
       onWallet: () => {
         navigate("/manage_wallet");
@@ -150,7 +150,7 @@ export const AccountInfoHeader = ({
         });
       },
     });
-  }, [chainMode, dispatch.wallet, groupAccount.wallet, navigate]);
+  }, [chainMode, dispatch.wallet, groupAccount, navigate, wallet]);
 
   const copyAddressHint: string = useMemo(() => {
     if (availableAccounts.length === 1) {

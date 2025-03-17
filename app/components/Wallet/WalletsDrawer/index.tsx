@@ -115,6 +115,7 @@ const WalletsDrawer = (props: Props) => {
           justifyContent={"center"}
           alignItems={"center"}
           onClick={handleManageWallet}
+          cursor={"pointer"}
         >
           <H6>{selectedWallet?.walletName}</H6>
           <IconArrowRight w={18} h={18} ml={0.5} />
