@@ -51,6 +51,11 @@ export const accountV2 = createModel<RootModel>()({
     ...DEFAULT_ACCOUNT_MODEL,
   },
   reducers: {
+    _reset() {
+      return {
+        ...DEFAULT_ACCOUNT_MODEL,
+      };
+    },
     _setSelectedGroupAccount(
       state,
       payload: { groupAccount: OneMatchGroupAccount },
@@ -264,11 +269,13 @@ export const accountV2 = createModel<RootModel>()({
     async resetWallet() {
       const clients = getClients();
       try {
-        await Promise.all([
-          clients.popupServerClient.resetWallet(),
-          dispatch.accountV2.getSelectedGroupAccount(),
-        ]);
-        dispatch.accountV2._setAllWalletInfo({ walletList: [] });
+        await clients.popupServerClient.resetWallet();
+        dispatch.accountV2._reset();
+        dispatch.address._resetNameTags();
+        dispatch.multiChain._reset();
+        dispatch.tokens._reset();
+        dispatch.user._reset();
+        dispatch.wallet._reset();
         return true;
       } catch (e) {
         return false;
