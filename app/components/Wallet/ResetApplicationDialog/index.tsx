@@ -64,7 +64,7 @@ const ResetApplicationDialog = (props: Props) => {
             colorScheme="secondary"
             onClick={onConfirmDelete}
           >
-            {t("Common:delete")}
+            {step === 1 ? t("Common:confirm") : t("Reset:confirmDelete")}
           </Button>
           <Button flex={1} ml="2" onClick={onCancel}>
             {t("Common:cancel")}
