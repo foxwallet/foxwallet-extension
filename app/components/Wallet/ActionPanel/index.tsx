@@ -133,7 +133,10 @@ const SingleChainActionPanel = ({ uniqueId }: { uniqueId: ChainUniqueId }) => {
   });
 
   const buttonDisabled = useMemo(() => {
-    if (uniqueId !== InnerChainUniqueId.ALEO_MAINNET) {
+    if (
+      uniqueId !== InnerChainUniqueId.ALEO_MAINNET &&
+      uniqueId !== InnerChainUniqueId.ALEO_TESTNET
+    ) {
       return false;
     } else {
       return sendingAleoTx ?? balance === undefined;
@@ -159,7 +162,10 @@ const SingleChainActionPanel = ({ uniqueId }: { uniqueId: ChainUniqueId }) => {
         },
       },
     ];
-    if (uniqueId === InnerChainUniqueId.ALEO_MAINNET) {
+    if (
+      uniqueId === InnerChainUniqueId.ALEO_MAINNET ||
+      uniqueId === InnerChainUniqueId.ALEO_TESTNET
+    ) {
       initOptions.push({
         title: t("JoinSplit:title"),
         icon: <IconJoinSplit w={9} h={9} />,
@@ -168,9 +174,9 @@ const SingleChainActionPanel = ({ uniqueId }: { uniqueId: ChainUniqueId }) => {
           const { confirmed, data } = await showSelectJoinSplitDialog();
           if (confirmed && data) {
             if (data === SelectJoinSplitOption.SPLIT) {
-              navigate("/split");
+              navigate(`/split/${uniqueId}`);
             } else {
-              navigate("/join");
+              navigate(`/join/${uniqueId}`);
             }
           }
         },

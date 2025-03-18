@@ -81,6 +81,7 @@ import {
 import { TransactionStatus } from "core/types/TransactionStatus";
 import { AleoInfoApi } from "core/coins/ALEO/service/api/aleoInfoApi";
 import { parseAleoFeeFuture } from "core/coins/ALEO/utils/utils";
+import { aleoChainIdToUniqueId } from "../utils/chainId";
 
 const CREDITS_MAPPING_NAME = "account";
 
@@ -1654,7 +1655,7 @@ export class AleoService extends CoinServiceBasic {
         decimals,
         name,
         type: AssetType.TOKEN,
-        uniqueId: InnerChainUniqueId.ALEO_MAINNET,
+        uniqueId: aleoChainIdToUniqueId(this.chainId),
         icon: logo,
         official,
         programId,

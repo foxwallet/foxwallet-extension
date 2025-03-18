@@ -27,37 +27,40 @@ export type AssetIdentifier = {
   needUpdate?: boolean;
 };
 
-export const useTokens = (uniqueId: ChainUniqueId, keyword?: string) => {
-  const { coinService } = useCoinService(uniqueId);
+/**
+ * @deprecated
+ */
+// export const useTokens = (uniqueId: ChainUniqueId, keyword?: string) => {
+//   const { coinService } = useCoinService(uniqueId);
 
-  const key = keyword
-    ? `/all_tokens/${uniqueId}/${keyword}`
-    : `/all_tokens/${uniqueId}`;
-  const fetchTokens = useCallback(async () => {
-    if (keyword) {
-      return await coinService.searchTokens(keyword);
-    }
-    return await coinService.getAllTokens();
-  }, [coinService, keyword]);
+//   const key = keyword
+//     ? `/all_tokens/${uniqueId}/${keyword}`
+//     : `/all_tokens/${uniqueId}`;
+//   const fetchTokens = useCallback(async () => {
+//     if (keyword) {
+//       return await coinService.searchTokens(keyword);
+//     }
+//     return await coinService.getAllTokens();
+//   }, [coinService, keyword]);
 
-  const {
-    data: tokens,
-    error,
-    mutate: getTokens,
-    isLoading: loadingTokens,
-  } = useSWR(key, fetchTokens);
+//   const {
+//     data: tokens,
+//     error,
+//     mutate: getTokens,
+//     isLoading: loadingTokens,
+//   } = useSWR(key, fetchTokens);
 
-  const res = useMemo(() => {
-    return {
-      tokens,
-      error,
-      getTokens,
-      loadingTokens,
-    };
-  }, [tokens, error, getTokens, loadingTokens]);
+//   const res = useMemo(() => {
+//     return {
+//       tokens,
+//       error,
+//       getTokens,
+//       loadingTokens,
+//     };
+//   }, [tokens, error, getTokens, loadingTokens]);
 
-  return res;
-};
+//   return res;
+// };
 
 export const useInteractiveTokens = (
   uniqueId: ChainUniqueId,
@@ -111,7 +114,10 @@ export const matchedAndUnMatchedTokens = (
 
   if (standardTokens && standardTokens.length > 0) {
     let contractAddressSet: Set<string>;
-    if (uniqueId === InnerChainUniqueId.ALEO_MAINNET) {
+    if (
+      uniqueId === InnerChainUniqueId.ALEO_MAINNET ||
+      uniqueId === InnerChainUniqueId.ALEO_TESTNET
+    ) {
       contractAddressSet = new Set(
         standardTokens.map((token) => {
           if (token.contractAddress) {

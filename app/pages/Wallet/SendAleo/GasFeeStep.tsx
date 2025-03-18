@@ -16,7 +16,7 @@ import {
 import { AleoFeeMethod } from "core/coins/ALEO/types/FeeMethod";
 import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
-import { InnerChainUniqueId } from "core/types/ChainUniqueId";
+import { type InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { type AleoGasFee } from "core/types/GasFee";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -26,6 +26,7 @@ import { type AleoService } from "core/coins/ALEO/service/AleoService";
 import { type Balance } from "@/hooks/useAleoBalance";
 
 interface GasFeeProps {
+  uniqueId: InnerChainUniqueId;
   receiverAddress: string;
   amountNum: bigint;
   transferMethod: AleoTransferMethod;
@@ -51,6 +52,7 @@ export const GasFeeStep = (props: GasFeeProps) => {
     transferRecord,
     onConfirm,
     token,
+    uniqueId,
   } = props;
 
   const recordAmount =
@@ -61,9 +63,8 @@ export const GasFeeStep = (props: GasFeeProps) => {
   const { getMatchAccountsWithUniqueId } = useGroupAccount();
   // TODO: get uniqueId from chain mode or page params
   const selectedAccount = useMemo(() => {
-    return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_MAINNET)[0];
-  }, [getMatchAccountsWithUniqueId]);
-  const uniqueId = InnerChainUniqueId.ALEO_MAINNET;
+    return getMatchAccountsWithUniqueId(uniqueId)[0];
+  }, [getMatchAccountsWithUniqueId, uniqueId]);
 
   const { coinService, nativeCurrency, chainConfig } = useCoinService(uniqueId);
 

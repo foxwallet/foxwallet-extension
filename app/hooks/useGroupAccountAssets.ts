@@ -56,7 +56,8 @@ export const useUserAssets = () => {
         icon: chainConfig.logo,
       };
       const nativeToken =
-        uniqueId === InnerChainUniqueId.ALEO_MAINNET
+        uniqueId === InnerChainUniqueId.ALEO_MAINNET ||
+        uniqueId === InnerChainUniqueId.ALEO_TESTNET
           ? { ...ALEO_NATIVE_TOKEN, ...coin }
           : coin;
       return [nativeToken, ...tokens];
@@ -130,7 +131,8 @@ export const useUserAssetsWithPriceBalanceAndValue = () => {
           });
         } else {
           if (
-            uniqueId === InnerChainUniqueId.ALEO_MAINNET &&
+            (uniqueId === InnerChainUniqueId.ALEO_MAINNET ||
+              uniqueId === InnerChainUniqueId.ALEO_TESTNET) &&
             programId &&
             tokenId
           ) {

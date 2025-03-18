@@ -28,7 +28,7 @@ export const ImportPrivateKeyStep = ({ onConfirm }: Props) => {
   const [currCoinType, setCurrCoinType] = useState<CoinType>(CoinType.ALEO);
   const allChains = useAllChainList();
   const { chainConfig: aleoConfig } = useCoinService(
-    InnerChainUniqueId.ALEO_MAINNET,
+    InnerChainUniqueId.ALEO_MAINNET, // use mainnet as default
   );
   const [privateKey, setPrivateKey] = useState("");
 

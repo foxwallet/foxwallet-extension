@@ -12,7 +12,7 @@ import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
 import { type AleoGasFee } from "core/types/GasFee";
 import { nanoid } from "nanoid";
 import { useCallback, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { TransferInfoStep } from "./TransferInfoStep";
 import { GasFeeStep } from "./GasFeeStep";
 import { useDataRef } from "@/hooks/useDataRef";
@@ -34,8 +34,11 @@ function SendScreen() {
   const navigate = useNavigate();
   const { popupServerClient } = useClient();
   const { getMatchAccountsWithUniqueId } = useGroupAccount();
+  const { uniqueId: paramsUniqueId } = useParams<{
+    uniqueId: InnerChainUniqueId;
+  }>();
   // Only use in Aleo
-  const uniqueId = InnerChainUniqueId.ALEO_MAINNET;
+  const uniqueId = paramsUniqueId ?? InnerChainUniqueId.ALEO_MAINNET;
   const selectedAccount = useMemo(() => {
     return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_MAINNET)[0];
   }, [getMatchAccountsWithUniqueId]);
@@ -228,6 +231,7 @@ function SendScreen() {
       case 1: {
         return (
           <TransferInfoStep
+            uniqueId={uniqueId}
             transferToken={transferToken}
             receiverAddress={receiverAddress}
             setReceiverAddress={(str: string) => {
@@ -250,6 +254,7 @@ function SendScreen() {
       case 2: {
         return (
           <GasFeeStep
+            uniqueId={uniqueId}
             receiverAddress={receiverAddress}
             amountNum={transferAmount!}
             transferMethod={transferMethod}
@@ -262,17 +267,14 @@ function SendScreen() {
     }
   }, [
     step,
-    receiverAddress,
-    setReceiverAddress,
-    transferAmount,
-    amountStr,
-    setAmountStr,
-    transferMethod,
-    setTransferMethod,
-    transferRecord,
-    setTransferRecord,
+    uniqueId,
     transferToken,
+    receiverAddress,
+    amountStr,
+    transferMethod,
+    transferRecord,
     onStep1Submit,
+    transferAmount,
     onStep2Submit,
   ]);
 

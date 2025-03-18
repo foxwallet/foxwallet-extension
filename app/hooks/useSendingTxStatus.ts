@@ -5,6 +5,7 @@ import useSWR from "swr";
 
 export const useIsSendingAleoTx = () => {
   const { popupServerClient } = useClient();
+  // todo: does it need to handle with testnet?
   const key = `/sending_tx/${InnerChainUniqueId.ALEO_MAINNET}`;
   const fetchStatus = useCallback(async () => {
     return await popupServerClient.isSendingAleoTransaction();

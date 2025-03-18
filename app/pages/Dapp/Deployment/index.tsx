@@ -8,21 +8,32 @@ import { useDappRequest } from "@/hooks/useDappRequest";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { Content } from "@/layouts/Content";
 import { Button, Flex, Text } from "@chakra-ui/react";
+import { aleoChainIdToUniqueId } from "core/coins/ALEO/utils/chainId";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 function DeploymentScreen() {
-  const navigate = useNavigate();
   const { getMatchAccountsWithUniqueId } = useGroupAccount();
-  const selectedAccount = useMemo(() => {
-    return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_MAINNET)[0];
-  }, [getMatchAccountsWithUniqueId]);
+
   const { requestId } = useParams();
   const { popupServerClient } = useClient();
   const { dappRequest, loading } = useDappRequest(requestId);
   const { t } = useTranslation();
+
+  const uniqueId = useMemo(() => {
+    if (!dappRequest) {
+      return InnerChainUniqueId.ALEO_MAINNET;
+    }
+    const { payload } = dappRequest;
+    const { chainId } = payload;
+    return aleoChainIdToUniqueId(chainId);
+  }, [dappRequest]);
+
+  const selectedAccount = useMemo(() => {
+    return getMatchAccountsWithUniqueId(uniqueId)[0];
+  }, [getMatchAccountsWithUniqueId, uniqueId]);
 
   const dappRequestInfo = useMemo(() => {
     if (!dappRequest) {
@@ -76,7 +87,7 @@ function DeploymentScreen() {
         error: ERROR_CODE.USER_CANCEL,
       });
     }
-  }, []);
+  }, [popupServerClient, requestId]);
 
   return (
     <Content>

@@ -13,29 +13,29 @@ import {
   AleoTxStatus,
 } from "core/coins/ALEO/types/Transaction";
 import { useClient } from "@/hooks/useClient";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { showErrorToast } from "@/components/Custom/ErrorToast";
 import { SelectRecordsStep } from "@/components/Send/SelectRecordsStep";
 import { AleoTxType } from "core/coins/ALEO/types/History";
 import { NATIVE_TOKEN_TOKEN_ID } from "core/coins/ALEO/constants";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
-import {
-  ChainAssembleMode,
-  InnerChainUniqueId,
-} from "core/types/ChainUniqueId";
-import { useChainMode } from "@/hooks/useChainMode";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
+import type { AleoService } from "core/coins/ALEO/service/AleoService";
 
 function JoinScreen() {
   const { t } = useTranslation();
   const { getMatchAccountsWithUniqueId } = useGroupAccount();
+  const { uniqueId: paramsUniqueId } = useParams<{
+    uniqueId: InnerChainUniqueId;
+  }>();
 
-  // TODO: get uniqueId from chain mode or page params
+  const uniqueId = paramsUniqueId ?? InnerChainUniqueId.ALEO_MAINNET;
   const selectedAccount = useMemo(() => {
-    return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_MAINNET)[0];
-  }, [getMatchAccountsWithUniqueId]);
-  const uniqueId = InnerChainUniqueId.ALEO_MAINNET;
+    return getMatchAccountsWithUniqueId(uniqueId)[0];
+  }, [getMatchAccountsWithUniqueId, uniqueId]);
 
   const { nativeCurrency, coinService, chainConfig } = useCoinService(uniqueId);
+  const aAleoService = coinService as AleoService;
   const { popupServerClient } = useClient();
   const navigate = useNavigate();
   const { records } = useRecords({
@@ -74,7 +74,7 @@ function JoinScreen() {
         const pendingTx: AleoLocalTxInfo = {
           localId,
           address,
-          programId: nativeCurrency.address,
+          programId: nativeCurrency.address || "",
           functionName: "join",
           inputs,
           baseFee: gasFee.baseFee.toString(),
@@ -87,7 +87,7 @@ function JoinScreen() {
           notification: false,
           tokenId: NATIVE_TOKEN_TOKEN_ID,
         };
-        await coinService.setAddressLocalTx(address, pendingTx);
+        await aAleoService.setAddressLocalTx(address, pendingTx);
         popupServerClient
           .sendAleoTransaction({
             uniqueId: chainConfig.uniqueId,
@@ -97,7 +97,7 @@ function JoinScreen() {
             address,
             localId,
             chainId: chainConfig.chainId,
-            programId: nativeCurrency.address,
+            programId: nativeCurrency.address || "",
             functionName: "join",
             inputs,
             feeRecord: feeRecord?.plaintext || null,
@@ -110,7 +110,7 @@ function JoinScreen() {
           .catch(async (err) => {
             pendingTx.error = (err as Error).message;
             pendingTx.status = AleoTxStatus.FAILED;
-            await coinService.setAddressLocalTx(address, pendingTx);
+            await aAleoService.setAddressLocalTx(address, pendingTx);
           });
         navigate(-1);
       } catch (err) {
@@ -119,7 +119,15 @@ function JoinScreen() {
         setSubmitting(false);
       }
     },
-    [selectedAccount, nativeCurrency, chainConfig, coinService, navigate],
+    [
+      submittingRef,
+      selectedAccount,
+      nativeCurrency.address,
+      aAleoService,
+      popupServerClient,
+      chainConfig,
+      navigate,
+    ],
   );
 
   const content = useMemo(() => {
@@ -139,13 +147,14 @@ function JoinScreen() {
       case 1:
         return (
           <JoinStep
+            uniqueId={uniqueId}
             records={records}
             selectedRecords={selectedRecordsRef.current}
             onConfirm={onSubmit}
           />
         );
     }
-  }, [records, nativeCurrency, step, onSubmit]);
+  }, [step, records, nativeCurrency, uniqueId, onSubmit]);
 
   return (
     <PageWithHeader

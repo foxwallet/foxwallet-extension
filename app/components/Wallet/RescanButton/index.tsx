@@ -26,7 +26,15 @@ const RescanButton = (props: RescanButtonProps) => {
   const { getMatchAccountsWithUniqueId } = useGroupAccount();
   const { selectedBorderColor } = useThemeStyle();
 
-  const uniqueId = InnerChainUniqueId.ALEO_MAINNET; // aleo use only
+  // should be hidden in all mode
+  const uniqueId = useMemo(
+    () =>
+      chainMode.mode === ChainAssembleMode.ALL
+        ? InnerChainUniqueId.ALEO_MAINNET
+        : chainMode.uniqueId,
+    [chainMode],
+  );
+
   // selectedAccount 在evm私钥钱包时为undefined
   const selectedAccount = useMemo(() => {
     const accounts = getMatchAccountsWithUniqueId(uniqueId);
@@ -49,7 +57,11 @@ const RescanButton = (props: RescanButtonProps) => {
   }, [getProgress]);
 
   if (chainMode.mode !== ChainAssembleMode.SINGLE) return null;
-  if (chainMode.uniqueId !== InnerChainUniqueId.ALEO_MAINNET) return null;
+  if (
+    chainMode.uniqueId !== InnerChainUniqueId.ALEO_MAINNET &&
+    chainMode.uniqueId !== InnerChainUniqueId.ALEO_TESTNET
+  )
+    return null;
   if (!error && progress && progress >= 100) return null;
 
   return (

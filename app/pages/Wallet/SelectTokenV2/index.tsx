@@ -80,14 +80,17 @@ const SelectTokenScreenV2 = () => {
           `/receive/${uniqueId}/${address}?token=${serializeToken(token)}`,
         );
       } else if (action === NextAction.Send) {
-        if (uniqueId !== InnerChainUniqueId.ALEO_MAINNET) {
+        if (
+          uniqueId !== InnerChainUniqueId.ALEO_MAINNET &&
+          uniqueId !== InnerChainUniqueId.ALEO_TESTNET
+        ) {
           navigate(
             `/send_token/${uniqueId}/${address}/?token=${serializeToken(
               token,
             )}`,
           );
         } else {
-          navigate(`/send_aleo?token=${serializeToken(token)}`);
+          navigate(`/send_aleo/${uniqueId}/?token=${serializeToken(token)}`);
         }
       }
     },

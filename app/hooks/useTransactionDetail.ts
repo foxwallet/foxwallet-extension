@@ -33,7 +33,9 @@ export const useTransactionDetail = (params: TransactionDetailReq) => {
   } = params;
   const { coinService } = useCoinService(uniqueId);
 
-  const isAleo = uniqueId === InnerChainUniqueId.ALEO_MAINNET;
+  const isAleo =
+    uniqueId === InnerChainUniqueId.ALEO_MAINNET ||
+    uniqueId === InnerChainUniqueId.ALEO_TESTNET;
 
   const key = useMemo(() => {
     return `/transaction_detail/${uniqueId}/${txId}`;

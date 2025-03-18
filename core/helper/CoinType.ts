@@ -16,6 +16,7 @@ import { INNER_ETH_CONFIG } from "core/coins/ETH/config/chains";
 export const chainUniqueIdToCoinType = (uniqueId: ChainUniqueId): CoinType => {
   switch (uniqueId) {
     case InnerChainUniqueId.ALEO_MAINNET:
+    case InnerChainUniqueId.ALEO_TESTNET:
       return CoinType.ALEO;
     default: {
       if (InnerChainUniqueIdValues.includes(uniqueId as InnerChainUniqueId)) {
@@ -35,6 +36,7 @@ export const chainUniqueIdToAccountOptions = (
 ): Array<AccountOption[CoinType]> => {
   switch (uniqueId) {
     case InnerChainUniqueId.ALEO_MAINNET:
+    case InnerChainUniqueId.ALEO_TESTNET:
       return [DEFAULT_ALEO_ACCOUNT_OPTION];
     default: {
       if (InnerChainUniqueIdValues.includes(uniqueId as InnerChainUniqueId)) {

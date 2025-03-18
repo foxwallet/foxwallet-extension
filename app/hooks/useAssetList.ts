@@ -71,7 +71,8 @@ export const useAssetList = (uniqueId: ChainUniqueId, address: string) => {
       uniqueId,
       icon: chainConfig.logo,
     };
-    return uniqueId === InnerChainUniqueId.ALEO_MAINNET
+    return uniqueId === InnerChainUniqueId.ALEO_MAINNET ||
+      uniqueId === InnerChainUniqueId.ALEO_TESTNET
       ? { ...ALEO_NATIVE_TOKEN, ...coin }
       : coin;
   }, [address, chainConfig, nativeCurrency, uniqueId]);

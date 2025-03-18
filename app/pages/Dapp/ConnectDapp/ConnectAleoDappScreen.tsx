@@ -15,6 +15,7 @@ import { useTranslation } from "react-i18next";
 import { DecryptPermission } from "@/database/types/dapp";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
+import { aleoChainIdToUniqueId } from "core/coins/ALEO/utils/chainId";
 
 const shakeAnimation = keyframes`
   10%, 90% {
@@ -37,13 +38,24 @@ const shakeAnimation = keyframes`
 function ConnectAleoDappScreen() {
   const navigate = useNavigate();
   const { getMatchAccountsWithUniqueId } = useGroupAccount();
-  const selectedAccount = useMemo(() => {
-    return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_MAINNET)[0];
-  }, [getMatchAccountsWithUniqueId]);
 
   const { requestId } = useParams();
   const { popupServerClient } = useClient();
   const { dappRequest, loading } = useDappRequest(requestId);
+
+  const uniqueId = useMemo(() => {
+    if (!dappRequest) {
+      return InnerChainUniqueId.ALEO_MAINNET;
+    }
+    const { payload } = dappRequest;
+    const { network } = payload;
+    return aleoChainIdToUniqueId(network);
+  }, [dappRequest]);
+
+  const selectedAccount = useMemo(() => {
+    return getMatchAccountsWithUniqueId(uniqueId)[0];
+  }, [getMatchAccountsWithUniqueId, uniqueId]);
+
   const [showShakeAnimation, setShowShakeAnimation] = useState(false);
   const needCheck = useMemo(() => {
     return (

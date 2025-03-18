@@ -128,15 +128,15 @@ export const routesConfig: RouteObject[] = [
         element: <MainPage />,
       },
       {
-        path: "send_aleo",
+        path: "send_aleo/:uniqueId",
         element: <SendAleo />,
       },
       {
-        path: "join",
+        path: "join/:uniqueId",
         element: <Join />,
       },
       {
-        path: "split",
+        path: "split/:uniqueId",
         element: <Split />,
       },
       {

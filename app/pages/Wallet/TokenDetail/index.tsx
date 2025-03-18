@@ -24,7 +24,10 @@ import {
   AleoHistoryType,
   AleoTxAddressType,
 } from "core/coins/ALEO/types/History";
-import { InnerChainUniqueId } from "core/types/ChainUniqueId";
+import {
+  type ChainUniqueId,
+  InnerChainUniqueId,
+} from "core/types/ChainUniqueId";
 import type React from "react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -153,7 +156,7 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
 
 interface TokenTxHistoryItemProps {
   item: TransactionHistoryItem;
-  uniqueId: InnerChainUniqueId;
+  uniqueId: ChainUniqueId;
   token: TokenV2;
   address: string;
 }
@@ -345,7 +348,10 @@ const TokenDetailScreen = () => {
   const showBalance = usePopupSelector((state) => state.accountV2.showBalance);
 
   const isAleo = useMemo(() => {
-    return uniqueId === InnerChainUniqueId.ALEO_MAINNET;
+    return (
+      uniqueId === InnerChainUniqueId.ALEO_MAINNET ||
+      uniqueId === InnerChainUniqueId.ALEO_TESTNET
+    );
   }, [uniqueId]);
 
   const { symbol, decimals } = useMemo(() => {
@@ -483,7 +489,7 @@ const TokenDetailScreen = () => {
 
   const onSend = useCallback(() => {
     isAleo
-      ? navigate(`/send_aleo?token=${serializeToken(tokenInfo)}`)
+      ? navigate(`/send_aleo/${uniqueId}/?token=${serializeToken(tokenInfo)}`)
       : navigate(
           `/send_token/${uniqueId}/${address}/?token=${serializeToken(
             tokenInfo,
@@ -499,7 +505,7 @@ const TokenDetailScreen = () => {
             <AleoTxHistoryItem
               key={`${item.txId}${index}`}
               item={item}
-              uniqueId={uniqueId}
+              uniqueId={uniqueId as InnerChainUniqueId}
               token={tokenInfo}
               address={address}
             />

@@ -1,5 +1,6 @@
 export enum InnerChainUniqueId {
   ALEO_MAINNET = "aleo_mainnet",
+  ALEO_TESTNET = "aleo_testnet",
   ETHEREUM = "ethereum",
   ARBITRUM = "arbitrum",
   ARBITRUM_NOVA = "arbitrum-nova",

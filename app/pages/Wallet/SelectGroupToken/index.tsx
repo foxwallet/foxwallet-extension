@@ -58,7 +58,10 @@ const SelectGroupTokenScreen = () => {
   const onSelect = useCallback(
     async (token: TokenV2) => {
       if (action === NextAction.Send) {
-        if (token.uniqueId !== InnerChainUniqueId.ALEO_MAINNET) {
+        if (
+          token.uniqueId !== InnerChainUniqueId.ALEO_MAINNET &&
+          token.uniqueId !== InnerChainUniqueId.ALEO_TESTNET
+        ) {
           navigate(
             `/send_token/${token.uniqueId}/${
               token.ownerAddress
@@ -67,7 +70,9 @@ const SelectGroupTokenScreen = () => {
         } else if (sendingAleoTx) {
           await showBlockContinuousSendAleoDialog();
         } else {
-          navigate(`/send_aleo?token=${serializeToken(token)}`);
+          navigate(
+            `/send_aleo/${token.uniqueId}/?token=${serializeToken(token)}`,
+          );
         }
       }
     },

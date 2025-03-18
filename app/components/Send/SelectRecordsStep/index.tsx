@@ -38,7 +38,7 @@ export const SelectRecordsStep = (props: SelectRecordsStepProps) => {
     if (selectedRecords.length >= limit) {
       onConfirm(selectedRecords);
     }
-  }, [selectedRecords]);
+  }, [limit, onConfirm, selectedRecords]);
 
   return (
     <Content>

@@ -134,7 +134,10 @@ const TransactionDetailScreen = () => {
   const { nativeCurrency, chainConfig, coinService } = useCoinService(uniqueId);
 
   const isAleo = useMemo(() => {
-    return uniqueId === InnerChainUniqueId.ALEO_MAINNET;
+    return (
+      uniqueId === InnerChainUniqueId.ALEO_MAINNET ||
+      uniqueId === InnerChainUniqueId.ALEO_TESTNET
+    );
   }, [uniqueId]);
 
   const { tx, isSuccess, from, to, txId, time, amountStr, isSend, nonce } =

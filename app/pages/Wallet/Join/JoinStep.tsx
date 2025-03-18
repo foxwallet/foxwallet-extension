@@ -10,11 +10,8 @@ import { Button, Flex, Text } from "@chakra-ui/react";
 import { NATIVE_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
 import { AleoFeeMethod } from "core/coins/ALEO/types/FeeMethod";
 import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
-import {
-  AleoRecordMethod,
-  AleoTransferMethod,
-} from "core/coins/ALEO/types/TransferMethod";
-import { ChainUniqueId, InnerChainUniqueId } from "core/types/ChainUniqueId";
+import { AleoRecordMethod } from "core/coins/ALEO/types/TransferMethod";
+import { type InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { type AleoGasFee } from "core/types/GasFee";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -22,6 +19,7 @@ import { useBalance } from "@/hooks/useBalance";
 import { type AleoService } from "core/coins/ALEO/service/AleoService";
 
 export interface JoinStepProps {
+  uniqueId: InnerChainUniqueId;
   selectedRecords: RecordDetailWithSpent[];
   records: RecordDetailWithSpent[];
   onConfirm: (params: {
@@ -31,14 +29,12 @@ export interface JoinStepProps {
 }
 
 export const JoinStep = (props: JoinStepProps) => {
-  const { selectedRecords, onConfirm, records } = props;
+  const { selectedRecords, onConfirm, records, uniqueId } = props;
 
   const { getMatchAccountsWithUniqueId } = useGroupAccount();
-  // TODO: get uniqueId from chain mode or page params
   const selectedAccount = useMemo(() => {
-    return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_MAINNET)[0];
-  }, [getMatchAccountsWithUniqueId]);
-  const uniqueId = InnerChainUniqueId.ALEO_MAINNET;
+    return getMatchAccountsWithUniqueId(uniqueId)[0];
+  }, [getMatchAccountsWithUniqueId, uniqueId]);
 
   const { nativeCurrency, coinService } = useCoinService(uniqueId);
   const { t } = useTranslation();

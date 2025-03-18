@@ -40,31 +40,6 @@ export const BETA_STAKING_ALEO_TOKEN: Token = {
 };
 
 export const ALEO_CHAIN_CONFIGS: { [key in string]: AleoConfig } = {
-  // TESTNET: {
-  //   coinType: CoinType.ALEO,
-  //   uniqueId: InnerChainUniqueId.ALEO_TESTNET,
-  //   logo: AleoLogo,
-  //   chainId: "testnet",
-  //   chainName: "Aleo",
-  //   rpcList: ReserveChainConfigs[InnerChainUniqueId.ALEO_TESTNET].rpcList,
-  //   syncApiList:
-  //     ReserveChainConfigs[InnerChainUniqueId.ALEO_TESTNET].syncApiList,
-  //   walletApiList:
-  //     ReserveChainConfigs[InnerChainUniqueId.ALEO_TESTNET].walletApiList,
-  //   nativeCurrency: ALEO_NATIVE_CURRENCY,
-  //   explorerUrls: {
-  //     [ExplorerLanguages.EN]: "https://aleo.info/en/",
-  //     [ExplorerLanguages.ZH]: "https://aleo.info/en/",
-  //   },
-  //   explorerPaths: {
-  //     tx: "/transaction/{txid}",
-  //     address: "",
-  //   },
-  //   alphaSwapApi: "https://app.alphaswap.pro/api",
-  //   innerFaucet: true,
-  //   faucetApi: "https://faucet.aleo.org/",
-  //   testnet: true,
-  // },
   MAINNET: {
     coinType: CoinType.ALEO,
     uniqueId: InnerChainUniqueId.ALEO_MAINNET,
@@ -88,6 +63,32 @@ export const ALEO_CHAIN_CONFIGS: { [key in string]: AleoConfig } = {
     },
     alphaSwapApi: "https://mainnet.alphaswap.pro/api",
     aleoInfoApi: "https://api.aleo.info",
+  },
+  TESTNET: {
+    coinType: CoinType.ALEO,
+    uniqueId: InnerChainUniqueId.ALEO_TESTNET,
+    logo: AleoLogo,
+    chainId: "testnet",
+    chainName: "Aleo Testnet",
+    rpcList: ReserveChainConfigs[InnerChainUniqueId.ALEO_TESTNET].rpcList,
+    syncApiList:
+      ReserveChainConfigs[InnerChainUniqueId.ALEO_TESTNET].syncApiList,
+    walletApiList:
+      ReserveChainConfigs[InnerChainUniqueId.ALEO_TESTNET].walletApiList,
+    nativeCurrency: ALEO_NATIVE_CURRENCY,
+    explorerUrls: {
+      [ExplorerLanguages.EN]: "https://testnet.aleo.info/",
+      [ExplorerLanguages.ZH]: "https://testnet.aleo.info/",
+    },
+    explorerPaths: {
+      tx: "/transaction/{txid}",
+      address: "",
+    },
+    alphaSwapApi: "https://app.alphaswap.pro/api",
+    aleoInfoApi: "https://api.aleo.info",
+    innerFaucet: true,
+    faucetApi: "https://faucet.aleo.org/",
+    testnet: true,
   },
 };
 

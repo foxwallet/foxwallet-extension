@@ -53,7 +53,7 @@ const SelectTokenScreen = () => {
       " location ",
       JSON.stringify(location),
     );
-    navigate(`/${nextPage}?token=${serializeToken(token)}`, {
+    navigate(`/${nextPage}/${uniqueId}/?token=${serializeToken(token)}`, {
       replace: true,
     });
   };

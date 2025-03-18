@@ -52,7 +52,8 @@ export const useBalance = (params: BalanceReq) => {
         });
       } else {
         if (
-          uniqueId === InnerChainUniqueId.ALEO_MAINNET &&
+          (uniqueId === InnerChainUniqueId.ALEO_MAINNET ||
+            uniqueId === InnerChainUniqueId.ALEO_TESTNET) &&
           token?.programId &&
           token?.tokenId
         ) {

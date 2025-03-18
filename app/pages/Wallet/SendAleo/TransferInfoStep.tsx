@@ -27,7 +27,7 @@ import {
 } from "core/coins/ALEO/constants";
 import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
-import { InnerChainUniqueId } from "core/types/ChainUniqueId";
+import { type InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { parseUnits } from "ethers/lib/utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -37,6 +37,7 @@ import { useBalance } from "@/hooks/useBalance";
 import { type TokenV2 } from "core/types/Token";
 
 interface TransferInfoStepProps {
+  uniqueId: InnerChainUniqueId;
   transferToken: TokenV2;
   receiverAddress: string;
   setReceiverAddress: (address: string) => void;
@@ -57,6 +58,7 @@ interface TransferInfoStepProps {
 
 export const TransferInfoStep = (props: TransferInfoStepProps) => {
   const {
+    uniqueId,
     transferToken: tokenInfo,
     receiverAddress,
     setReceiverAddress,
@@ -72,9 +74,8 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
   const { getMatchAccountsWithUniqueId } = useGroupAccount();
   // Only use in Aleo
   const selectedAccount = useMemo(() => {
-    return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_MAINNET)[0];
-  }, [getMatchAccountsWithUniqueId]);
-  const uniqueId = InnerChainUniqueId.ALEO_MAINNET;
+    return getMatchAccountsWithUniqueId(uniqueId)[0];
+  }, [getMatchAccountsWithUniqueId, uniqueId]);
 
   const { coinService } = useCoinService(uniqueId);
   const { t } = useTranslation();

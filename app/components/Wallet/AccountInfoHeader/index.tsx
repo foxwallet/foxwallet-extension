@@ -285,6 +285,7 @@ export const AccountInfoHeader = ({
           mt={2}
           mx={6}
           onClick={() => {
+            // todo: does it need to handle with testnet?
             navigate(`/token_detail/${InnerChainUniqueId.ALEO_MAINNET}`);
           }}
         >

@@ -114,7 +114,10 @@ export const useTxHistory = ({
 }) => {
   const { coinService } = useCoinService(uniqueId);
   const isAleo = useMemo(() => {
-    return uniqueId === InnerChainUniqueId.ALEO_MAINNET;
+    return (
+      uniqueId === InnerChainUniqueId.ALEO_MAINNET ||
+      uniqueId === InnerChainUniqueId.ALEO_TESTNET
+    );
   }, [uniqueId]);
 
   const [endReach, setEndReach] = useState(false);
@@ -216,7 +219,10 @@ export const useAleoTxHistory = ({
 }) => {
   const { coinService } = useCoinService(uniqueId);
   const isAleo = useMemo(() => {
-    return uniqueId === InnerChainUniqueId.ALEO_MAINNET;
+    return (
+      uniqueId === InnerChainUniqueId.ALEO_MAINNET ||
+      uniqueId === InnerChainUniqueId.ALEO_TESTNET
+    );
   }, [uniqueId]);
 
   // local txs
