@@ -385,7 +385,7 @@ export class PopupWalletServer implements IPopupServer {
                 privateKey: pk,
               },
             });
-            const {id} = rawTxWrap;
+            const { id } = rawTxWrap;
             await browser.windows.remove(popupId);
             if (id) {
               resolve(id);
@@ -1052,13 +1052,16 @@ export class PopupWalletServer implements IPopupServer {
 
   async resetWallet(): Promise<boolean> {
     try {
+      await stopSync();
       await Promise.all([
         this.accountSettingStorage.removeSelectedAccount(),
         this.keyringManager.resetWallet(),
       ]);
       return true;
-    }catch (err) {
+    } catch (err) {
       return false;
+    } finally {
+      syncBlocks();
     }
   }
 
