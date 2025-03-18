@@ -3,7 +3,7 @@ import { useChainMode } from "@/hooks/useChainMode";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
 import { isEqual } from "lodash";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { useGroupInteractiveTokens } from "@/hooks/useToken";
 import { coinServiceEntry } from "core/coins/CoinServiceEntry";
 import { AssetType, type TokenV2 } from "core/types/Token";
@@ -179,7 +179,10 @@ export const useUserAssetsWithPriceBalanceAndValue = () => {
         a.contractAddress.localeCompare(b.contractAddress),
     );
     const temp = sortedAssets
-      .map((asset) => `${asset.uniqueId}-${asset.contractAddress}`)
+      .map(
+        (asset) =>
+          `${asset.uniqueId}-${asset.contractAddress}-${asset.ownerAddress}`,
+      )
       .join("-");
     return `/useUserAssetsWithPriceBalance/${temp}`;
   }, [assets]);
@@ -189,7 +192,6 @@ export const useUserAssetsWithPriceBalanceAndValue = () => {
     error,
     mutate: getUserAssetsWithPriceBalance,
     isLoading: loadingUserAssetsWithPriceBalance,
-    isValidating,
   } = useSWR(key, fetchData, {
     refreshInterval: 5 * 1000,
   });
@@ -226,7 +228,7 @@ export const useUserAssetsWithPriceBalanceAndValue = () => {
 };
 
 export const useGroupAccountAssets = () => {
-  const { getMatchAccountsWithUniqueId, groupAccount } = useGroupAccount();
+  const { getMatchAccountsWithUniqueId } = useGroupAccount();
   const { availableChains } = useChainMode();
   const dispatch = usePopupDispatch();
 
@@ -251,8 +253,10 @@ export const useGroupAccountAssets = () => {
     return res;
   });
 
-  const { getGroupInteractiveTokens, loadingGroupInteractiveTokens } =
-    useGroupInteractiveTokens(needUpdateMap, true);
+  const { getGroupInteractiveTokens } = useGroupInteractiveTokens(
+    needUpdateMap,
+    true,
+  );
 
   const key = useMemo(() => {
     const temp = assetIdentifiers
@@ -292,11 +296,8 @@ export const useGroupAccountAssets = () => {
     refreshInterval: 10 * 1000,
   });
 
-  const {
-    userAssetsWithPriceAndBalance: assets,
-    loadingUserAssetsWithPriceBalance,
-    getUserAssetsWithPriceBalance,
-  } = useUserAssetsWithPriceBalanceAndValue();
+  const { userAssetsWithPriceAndBalance: assets } =
+    useUserAssetsWithPriceBalanceAndValue();
   // console.log("      assets", assets);
 
   const totalUsdValue = useMemo(() => {
@@ -308,27 +309,10 @@ export const useGroupAccountAssets = () => {
     return commaInteger(formatPrice(temp).toString());
   }, [assets]);
 
-  const [loadingManual, setLoadingManual] = useState(false);
-  const isLoading = useMemo(() => {
-    return (
-      loadingGroupAccountAssets ||
-      loadingGroupInteractiveTokens ||
-      loadingUserAssetsWithPriceBalance ||
-      loadingManual
-    );
-  }, [
-    loadingGroupAccountAssets,
-    loadingGroupInteractiveTokens,
-    loadingUserAssetsWithPriceBalance,
-    loadingManual,
-  ]);
-
   return {
     assets,
     totalUsdValue,
-    isLoading,
-    loadingManual,
+    loadingGroupAccountAssets,
     getGroupAccountAssets,
-    getUserAssetsWithPriceBalance,
   };
 };
