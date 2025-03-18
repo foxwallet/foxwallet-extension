@@ -101,7 +101,9 @@ export const AccountInfoHeader = ({
 
   const copyAddress = useCallback(async () => {
     if (isAllMode) {
-      await showCopyAddressDrawer();
+      await showCopyAddressDrawer({
+        account: groupAccount,
+      });
     } else {
       try {
         if (availableAccounts.length === 0) {

@@ -67,8 +67,8 @@ const AccountMoreScreen = () => {
   }, [debounceSearchStr, chains, searchRes]);
 
   const onCopyAddress = useCallback(
-    async (data: OneMatchAccount) => {
-      await navigator.clipboard.writeText(data.account.address);
+    async (address: string) => {
+      await navigator.clipboard.writeText(address);
       showToast();
     },
     [showToast],
@@ -138,6 +138,7 @@ const AccountMoreScreen = () => {
                   key={item.uniqueId}
                   hasMore={true}
                   onMore={onMore}
+                  account={account}
                 />
               );
             })}
