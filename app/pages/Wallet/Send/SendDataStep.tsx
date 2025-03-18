@@ -273,6 +273,15 @@ export const SendDataStep = (props: SendDataStepProps) => {
     );
   }, [gasDecimals, gasSymbol, gasValue]);
 
+  const { balance: coinBalance } = useBalance({
+    uniqueId,
+    address: fromAddress,
+  });
+
+  const enoughGas = useMemo(() => {
+    return coinBalance ? coinBalance.total >= gasValue : false;
+  }, [coinBalance, gasValue]);
+
   // const fiatStr = useMemo(() => {
   //   if (!amountStr) {
   //     return "≈ 0.00 USD";
@@ -433,6 +442,11 @@ export const SendDataStep = (props: SendDataStepProps) => {
             </Flex>
           )}
         </Flex>
+        {!enoughGas && (
+          <Text color={"#EF466F"} fontWeight={500} fontSize={"small"}>
+            {t("Error:insufficientGas")}
+          </Text>
+        )}
       </>
     );
   }, [
@@ -443,6 +457,7 @@ export const SendDataStep = (props: SendDataStepProps) => {
     gasFeeStr,
     supportCustomGasFee,
     gasAmountStr,
+    enoughGas,
   ]);
 
   return (
@@ -462,7 +477,8 @@ export const SendDataStep = (props: SendDataStepProps) => {
             !amountStr ||
             loadingGasFee ||
             loadingGasFee ||
-            !gasFee
+            !gasFee ||
+            !enoughGas
           }
         >
           {t("Common:confirm")}

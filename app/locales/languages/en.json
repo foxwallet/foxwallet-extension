@@ -369,8 +369,8 @@
   "Error": {
     "invalidPassword": "Invalid password",
     "invalidAddress": "Invalid address",
-    "invalidPassword": "Invalid password",
-    "invalidPrivateKey": "Invalid Private Key"
+    "invalidPrivateKey": "Invalid Private Key",
+    "insufficientGas": "Insufficient balance for gas"
   },
   "Stake": {
     "title": "Stake",
