@@ -60,7 +60,7 @@ export class AleoInfoApi {
 
     const ret: AleoInfoTransferHistoryRes =
       camelcaseKeys(res ?? {}, { deep: true }) ?? [];
-    console.log("      aleo ret", ret);
+    // console.log("      aleo ret", ret);
     return ret;
   }
 }

@@ -3,7 +3,7 @@ import { useChainMode } from "@/hooks/useChainMode";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
 import { isEqual } from "lodash";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useGroupInteractiveTokens } from "@/hooks/useToken";
 import { coinServiceEntry } from "core/coins/CoinServiceEntry";
 import { AssetType, type TokenV2 } from "core/types/Token";
@@ -73,12 +73,21 @@ export const useUserAssetsWithPrice = () => {
   const { availableChainUniqueIds } = useChainMode();
   const { getMultiChainPrice } = useMultiChainPrice(availableChainUniqueIds);
 
-  useEffect(() => {
-    const getPrice = async () => {
-      await getMultiChainPrice();
-    };
-    getPrice();
+  const key = useMemo(() => {
+    const temp = availableChainUniqueIds.join("-");
+    return `/useUserAssetsWithPrice/${temp}`;
+  }, [availableChainUniqueIds]);
+
+  const fetchData = useCallback(async () => {
+    await getMultiChainPrice();
   }, [getMultiChainPrice]);
+
+  const {
+    mutate: getUserAssetsWithPrice,
+    isLoading: isLoadingUserAssetsWithPrice,
+  } = useSWR(key, fetchData, {
+    refreshInterval: 10 * 1000,
+  });
 
   const prices = usePopupSelector((state) => {
     return coinPriceSelector(state);
@@ -102,12 +111,16 @@ export const useUserAssetsWithPrice = () => {
     });
   }, [assets, prices]);
 
-  return assetsWithPrice;
+  return {
+    assetsWithPrice,
+    isLoadingUserAssetsWithPrice,
+    getUserAssetsWithPrice,
+  };
 };
 
 // add balance and value
 export const useUserAssetsWithPriceBalanceAndValue = () => {
-  const assets = useUserAssetsWithPrice();
+  const { assetsWithPrice: assets } = useUserAssetsWithPrice();
 
   const fetchData = useCallback(async () => {
     const promises = assets.map(async (item) => {
@@ -176,6 +189,7 @@ export const useUserAssetsWithPriceBalanceAndValue = () => {
     error,
     mutate: getUserAssetsWithPriceBalance,
     isLoading: loadingUserAssetsWithPriceBalance,
+    isValidating,
   } = useSWR(key, fetchData, {
     refreshInterval: 5 * 1000,
   });
@@ -212,7 +226,7 @@ export const useUserAssetsWithPriceBalanceAndValue = () => {
 };
 
 export const useGroupAccountAssets = () => {
-  const { getMatchAccountsWithUniqueId } = useGroupAccount();
+  const { getMatchAccountsWithUniqueId, groupAccount } = useGroupAccount();
   const { availableChains } = useChainMode();
   const dispatch = usePopupDispatch();
 
@@ -237,38 +251,52 @@ export const useGroupAccountAssets = () => {
     return res;
   });
 
-  const { getGroupInteractiveTokens } = useGroupInteractiveTokens(
-    needUpdateMap,
-    true,
-  );
+  const { getGroupInteractiveTokens, loadingGroupInteractiveTokens } =
+    useGroupInteractiveTokens(needUpdateMap, true);
 
-  useEffect(() => {
-    const updateTokens = async () => {
-      try {
-        const res = await getGroupInteractiveTokens();
-        if (res && res.length > 0) {
-          res.forEach(({ uniqueId, address, tokens }) => {
-            dispatch.tokens.updateAddressTokens({
-              uniqueId,
-              address,
-              tokens,
-            });
-            dispatch.tokens.updateTimestamp({
-              uniqueId,
-              address,
-              newUpdateTimestamp: Date.now(),
-            });
+  const key = useMemo(() => {
+    const temp = assetIdentifiers
+      .map((item) => {
+        return `${item.uniqueId}-${item.address}`;
+      })
+      .join("-");
+    return `/useGroupAccountAssets/${temp}`;
+  }, [assetIdentifiers]);
+
+  const fetchData = useCallback(async () => {
+    try {
+      const res = await getGroupInteractiveTokens();
+      if (res && res.length > 0) {
+        res.forEach(({ uniqueId, address, tokens }) => {
+          dispatch.tokens.updateAddressTokens({
+            uniqueId,
+            address,
+            tokens,
           });
-        }
-      } catch (error) {
-        console.log("Failed to update tokens:", error);
+          dispatch.tokens.updateTimestamp({
+            uniqueId,
+            address,
+            newUpdateTimestamp: Date.now(),
+          });
+        });
       }
-    };
-    void updateTokens();
+    } catch (error) {
+      console.log("Failed to update tokens:", error);
+    }
   }, [dispatch.tokens, getGroupInteractiveTokens]);
 
-  const { userAssetsWithPriceAndBalance: assets } =
-    useUserAssetsWithPriceBalanceAndValue();
+  const {
+    mutate: getGroupAccountAssets,
+    isLoading: loadingGroupAccountAssets,
+  } = useSWR(key, fetchData, {
+    refreshInterval: 10 * 1000,
+  });
+
+  const {
+    userAssetsWithPriceAndBalance: assets,
+    loadingUserAssetsWithPriceBalance,
+    getUserAssetsWithPriceBalance,
+  } = useUserAssetsWithPriceBalanceAndValue();
   // console.log("      assets", assets);
 
   const totalUsdValue = useMemo(() => {
@@ -280,5 +308,27 @@ export const useGroupAccountAssets = () => {
     return commaInteger(formatPrice(temp).toString());
   }, [assets]);
 
-  return { assets, totalUsdValue };
+  const [loadingManual, setLoadingManual] = useState(false);
+  const isLoading = useMemo(() => {
+    return (
+      loadingGroupAccountAssets ||
+      loadingGroupInteractiveTokens ||
+      loadingUserAssetsWithPriceBalance ||
+      loadingManual
+    );
+  }, [
+    loadingGroupAccountAssets,
+    loadingGroupInteractiveTokens,
+    loadingUserAssetsWithPriceBalance,
+    loadingManual,
+  ]);
+
+  return {
+    assets,
+    totalUsdValue,
+    isLoading,
+    loadingManual,
+    getGroupAccountAssets,
+    getUserAssetsWithPriceBalance,
+  };
 };
