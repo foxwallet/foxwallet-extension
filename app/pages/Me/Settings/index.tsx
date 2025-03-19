@@ -32,7 +32,7 @@ const SettingsScreen = () => {
     isEqual,
   );
   const { popupServerClient } = useClient();
-  const { deleteAllWallets } = useWallets();
+  const { resetWallet } = useWallets();
 
   const onModifyPassword = useCallback(() => {
     navigate("/change_password");
@@ -62,12 +62,15 @@ const SettingsScreen = () => {
     try {
       const { confirmed } = await showResetApplicationDialog();
       if (confirmed) {
-        await deleteAllWallets();
+        const res = await resetWallet();
+        if (res) {
+          navigate("/onboard/home");
+        }
       }
     } catch (err) {
       console.error(err);
     }
-  }, [deleteAllWallets]);
+  }, [navigate, resetWallet]);
 
   const onAbout = useCallback(() => {
     navigate("/about");

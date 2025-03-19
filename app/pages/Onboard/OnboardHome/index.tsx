@@ -56,14 +56,17 @@ function OnboardHomeScreen() {
   const [showShakeAnimation, setShowShakeAnimation] = useState(false);
   const language = usePopupSelector((state) => state.setting.language);
   const dispatch = usePopupDispatch();
-  const changeLanguage = useCallback((newLanguage: SupportLanguages) => {
-    void dispatch.setting.changeLanguage({ language: newLanguage });
-  }, []);
+  const changeLanguage = useCallback(
+    (newLanguage: SupportLanguages) => {
+      void dispatch.setting.changeLanguage({ language: newLanguage });
+    },
+    [dispatch.setting],
+  );
   const { t } = useTranslation();
 
   const menuBgColor = useColorModeValue("white", "black");
   return (
-    <Flex direction={"column"} w={"full"} h={"full"}>
+    <Flex direction={"column"} w={"full"} h={"full"} flex={1}>
       <Flex pl="6" pr="4" mt="4" justify={"space-between"}>
         <Flex justify={"start"} align={"center"}>
           <IconLogo w="6" h="6" />

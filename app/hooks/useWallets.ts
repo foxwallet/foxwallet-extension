@@ -60,6 +60,7 @@ export const useWallets = () => {
     [dispatch.accountV2],
   );
 
+  // use resetWallet instead
   const deleteAllWallets = useCallback(async () => {
     let resWallet = walletList;
     while (resWallet.length > 0) {
