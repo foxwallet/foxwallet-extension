@@ -222,10 +222,14 @@ export const SendDataStep = (props: SendDataStepProps) => {
 
   const amountUnit = useMemo(() => {
     if (amountStr) {
-      return <Text ml={1}>{symbol}</Text>;
+      return (
+        <Text ml={1} fontSize={"22px"}>
+          {symbol}
+        </Text>
+      );
     } else {
       return (
-        <Flex>
+        <Flex fontSize={"22px"}>
           <Text textColor={"gray.500"}>0</Text>
           <Text ml={1}>{symbol}</Text>
         </Flex>
@@ -354,6 +358,7 @@ export const SendDataStep = (props: SendDataStepProps) => {
               value={amountStr}
               textAlign={"right"}
               onChange={onAmountChange}
+              fontSize={"22px"}
             ></Input>
             {amountUnit}
             {/* {showSwitchBtn && ( */}
