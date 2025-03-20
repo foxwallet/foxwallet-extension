@@ -271,6 +271,7 @@ export const accountV2 = createModel<RootModel>()({
       try {
         await clients.popupServerClient.resetWallet();
         dispatch.accountV2._reset();
+        dispatch.account._reset();
         dispatch.address._resetNameTags();
         dispatch.multiChain._reset();
         dispatch.tokens._reset();
