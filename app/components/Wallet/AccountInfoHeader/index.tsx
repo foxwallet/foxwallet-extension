@@ -127,7 +127,14 @@ export const AccountInfoHeader = ({
         console.log("copyAddress err ", err);
       }
     }
-  }, [availableAccounts, availableChains, chainMode, isAllMode, showToast]);
+  }, [
+    availableAccounts,
+    availableChains,
+    chainMode,
+    groupAccount,
+    isAllMode,
+    showToast,
+  ]);
 
   const bgGradient = useColorModeValue(
     "linear(to-br, #ECFFF2, #FFFFFF, #ECFFF2)",
