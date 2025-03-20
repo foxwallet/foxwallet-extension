@@ -4,7 +4,10 @@ import { useTranslation } from "react-i18next";
 import { Content } from "@/layouts/Content";
 import type React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { type ChainUniqueId } from "core/types/ChainUniqueId";
+import {
+  type ChainUniqueId,
+  InnerChainUniqueId,
+} from "core/types/ChainUniqueId";
 import { useDebounce } from "use-debounce";
 import { IconChevronRight } from "@/components/Custom/Icon";
 import { LoadingView } from "@/components/Custom/Loading";
@@ -43,7 +46,15 @@ export const SendDataStep = (props: SendDataStepProps) => {
     props;
   const { t } = useTranslation();
   const { nativeCurrency, chainConfig, coinService } = useCoinService(uniqueId);
-  const { supportCustomGasFee } = useChainConfig(uniqueId);
+  const { supportCustomGasFee: supportCustomGasFeeInChainConfig } =
+    useChainConfig(uniqueId);
+  // todo
+  const supportCustomGasFee = useMemo(
+    () =>
+      supportCustomGasFeeInChainConfig &&
+      uniqueId === InnerChainUniqueId.ETHEREUM,
+    [supportCustomGasFeeInChainConfig, uniqueId],
+  );
 
   console.log("      initData ", initData);
 
@@ -244,7 +255,7 @@ export const SendDataStep = (props: SendDataStepProps) => {
   // e.g.  21.4357382734 Gwei
   const gasFeeStr = useMemo(() => {
     const data = gasFee;
-    if (!data || !supportCustomGasFee) {
+    if (!data || !supportCustomGasFeeInChainConfig) {
       return "";
     }
     let displayStr = "";
@@ -265,7 +276,7 @@ export const SendDataStep = (props: SendDataStepProps) => {
       return "";
     }
     return `${displayStr} ${gasUnit}`;
-  }, [gasFee, gasUnit, supportCustomGasFee]);
+  }, [gasFee, gasUnit, supportCustomGasFeeInChainConfig]);
   // console.log("      gasFeeStr", gasFeeStr);
 
   // e.g.  0.00043423 ETH
@@ -428,7 +439,7 @@ export const SendDataStep = (props: SendDataStepProps) => {
             <LoadingView />
           ) : (
             <Flex
-              cursor={"pointer"}
+              cursor={supportCustomGasFee ? "pointer" : ""}
               w={"full"}
               alignItems={"center"}
               h={"full"}
