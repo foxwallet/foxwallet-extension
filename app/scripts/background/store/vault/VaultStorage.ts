@@ -50,7 +50,7 @@ export class VaultStorage {
     const store: Vault = {
       cipher,
       keyring: {
-        version: 2,
+        version: vaultVersion,
       },
     };
     return await this.setVault(store);
