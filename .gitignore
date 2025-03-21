@@ -27,3 +27,8 @@ coverage/
 .env
 .env.development
 .env.production
+
+# upgradeTool
+upgradeTool/dist
+upgradeTool/dist_old
+upgradeTool/dist_new
