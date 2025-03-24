@@ -170,7 +170,7 @@
   "Receive": {
     "title": "Almak",
     "scanToTransfer": "Aktarmak için tarayın",
-    "onlyTips": "Yalnızca ALEO ile ilgili varlıkları destekleyin",
+    "onlyTips": "Yalnızca {{symbol}} ile ilgili varlıkları destekleyin",
     "walletAddr": "Cüzdan Adresi"
   },
   "Setting": {

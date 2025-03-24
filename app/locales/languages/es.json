@@ -170,7 +170,7 @@
   "Receive": {
     "title": "Recibir",
     "scanToTransfer": "Escanear para transferir",
-    "onlyTips": "Solo admite activos relacionados con ALEO",
+    "onlyTips": "Solo admite activos relacionados con {{symbol}}",
     "walletAddr": "Dirección de billetera"
   },
   "Setting": {

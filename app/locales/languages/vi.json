@@ -170,7 +170,7 @@
   "Receive": {
     "title": "Nhận được",
     "scanToTransfer": "Quét để chuyển",
-    "onlyTips": "Chỉ hỗ trợ các tài sản liên quan đến ALEO",
+    "onlyTips": "Chỉ hỗ trợ các tài sản liên quan đến {{symbol}}",
     "walletAddr": "Địa chỉ ví"
   },
   "Setting": {

@@ -170,7 +170,7 @@
   "Receive": {
     "title": "Menerima",
     "scanToTransfer": "Pindai untuk mentransfer",
-    "onlyTips": "Hanya mendukung aset terkait ALEO",
+    "onlyTips": "Hanya mendukung aset terkait {{symbol}}",
     "walletAddr": "Alamat Dompet"
   },
   "Setting": {

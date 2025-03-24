@@ -170,7 +170,7 @@
   "Receive": {
     "title": "Erhalten",
     "scanToTransfer": "Zum Übertragen scannen",
-    "onlyTips": "Unterstützen Sie nur ALEO-bezogene Assets",
+    "onlyTips": "Unterstützen Sie nur {{symbol}}-bezogene Assets",
     "walletAddr": "Wallet-Adresse"
   },
   "Setting": {

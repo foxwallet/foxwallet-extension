@@ -170,7 +170,7 @@
   "Receive": {
     "title": "وصول کریں۔",
     "scanToTransfer": "منتقلی کے لیے اسکین کریں۔",
-    "onlyTips": "صرف ALEO متعلقہ اثاثوں کو سپورٹ کریں۔",
+    "onlyTips": "صرف {{symbol}} متعلقہ اثاثوں کو سپورٹ کریں۔",
     "walletAddr": "بٹوے کا پتہ"
   },
   "Setting": {
