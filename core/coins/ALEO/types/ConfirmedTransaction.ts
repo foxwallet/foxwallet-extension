@@ -1,4 +1,4 @@
-import { AleoTransaction } from "./Transaction";
+import { type AleoTransaction } from "./Transaction";
 
 export type ConfirmedTransaction = {
   status: string;

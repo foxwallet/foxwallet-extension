@@ -1,0 +1,253 @@
+{
+  "Wallet": {
+    "title": "Wallet",
+    "backupTips": "You haven't backed up your wallet yet",
+    "backupBtnTitle": "Backup now",
+    "tabAsset": "Asset",
+    "Create": {
+      "title": "Create Wallet",
+      "explain": "Create a new HD wallet.",
+      "createMnemonic": "Create new seed phrase",
+      "walletName": "Wallet Name",
+      "walletNamePlaceholder": "Enter wallet name",
+      "dupWalletName": "Duplicate wallet name",
+      "backupMnemonic": "Backup seed phrase",
+      "confirmMnemonic": "Confirm seed phrase"
+    },
+    "Import": {
+      "title": "Import Wallet",
+      "selectType": "Select Type",
+      "importMnemonic": "Import seed phrase",
+      "importMnemonicExplain": "Seed phrase(mnemonic) is composed of 12 words, separated by spaces.",
+      "importPrivateKey": "Import private key",
+      "importPrivateKeyExplain": "Plain text private key characters."
+    },
+    "Export": {
+      "privateKey": "Export private key",
+      "seedPhrase": "Export seed phrase",
+      "show": "Show",
+      "hide": "Hide"
+    },
+    "Manage": {
+      "title": "Wallet",
+      "addWallet": "Add wallet",
+      "checkAccounts": "Check accounts",
+      "changeName": "Change wallet name",
+      "addAccount": "Add account",
+      "changeAccountName": "Change account name",
+      "accountName": "Account Name",
+      "accountNamePlaceholder": "Enter account name",
+      "dupAccountName": "Duplicate account name",
+      "delete": "Delete wallet",
+      "deleteRemind": "Please ensure the wallet is properly backed up as it can only be restored using the seed phrase or private key."
+    }
+  },
+  "Onboard": {
+    "Home": {
+      "slogan1": "The best Web3 wallet",
+      "slogan2": "Entrance to crypto world"
+    },
+    "Upgrade": {
+      "reminderTips": "The current browser version is too old, please upgrade to the latest version to use the FoxWallet extension wallet.",
+      "upgradeBtn": "Upgrade"
+    }
+  },
+  "Agreement": {
+    "content1": "I agree to FoxWallet's ",
+    "content2": "User Notice",
+    "and": " and ",
+    "content3": "Privacy Policy"
+  },
+  "Password": {
+    "title": "Password",
+    "enter": "Enter password",
+    "passwordPlaceholder": "No less than 6 characters",
+    "confirmPasswordPlaceholder": "Enter password again",
+    "warning": "FoxWallet won't store the password. Once the password is forgotten, you can only restore the wallet through the mnemonic.",
+    "verify": "Verify Password",
+    "strengthRemind": "If the password is not strong enough, the security of the wallet assets may be compromised.",
+    "change": "Change",
+    "stillCreate": "Still Create"
+  },
+  "Mnemonic": {
+    "title": "Seed phrase",
+    "backup": "Backup seed phrase",
+    "verification": "Seed phrase verification",
+    "backupTips1": "Click here to display seed phrase",
+    "backupTips2": "Please confirm that the surroundings are safe",
+    "warning1": "Please note down the seed phrase in order.",
+    "warning2": "Please copy and keep it in a safe place.",
+    "warning3": "Seed phrase or private key are the only way to recover your wallet. Once lost, it cannot be retrieved. Do not save them via screenshots or social medias.",
+    "later": "Remind me later",
+    "regenerate": "Regenerate",
+    "enterPlaceholder": "Enter the seed phrase, separated by spaces",
+    "checkTips": "Please check \"{{WORD}}\""
+  },
+  "PrivateKey": {
+    "title": "Private key",
+    "enterPlaceholder": "Enter private key",
+    "backupTips1": "Please keep it in a safe place.",
+    "backupTips2": "Seed phrase or private key are the only way to recover your wallet. Once lost, it cannot be retrieved. Do not save them via screenshots or social medias."
+  },
+  "Send": {
+    "title": "Send",
+    "from": "From",
+    "transferToken": "Transfer Token",
+    "to": "To Address",
+    "toPlaceholder": "Enter receiver address",
+    "private": "Private",
+    "public": "Public",
+    "balance": "Balance",
+    "amount": "Amount",
+    "amountPlaceholder": "Enter amount",
+    "available": "Available",
+    "privateRecordExplain": "Due to Aleo's implementation, the maximum amount of a single transfer is limited by the vale of the record used.",
+    "payPrivateRecord": "Pay with private record.",
+    "noRecord": "No record to transfer.",
+    "payPublicBalance": "Pay with public balance.",
+    "publicTransfer": "Public transfer",
+    "publicTransferDesc": "Both the spender's and receiver's details are public.",
+    "privateTransfer": "Private transfer",
+    "privateTransferDesc": "Sender's and receiver's details are in privacy.",
+    "privateToPublic": "Private to public",
+    "privateToPublicDesc": "The sender's details are in privacy, but the receiver's address and received amount are public.",
+    "publicToPrivate": "Public to private",
+    "publicToPrivateDesc": "The sender's address and sent amount are public, but the receiver's details are in privacy.",
+    "selectRecord": "Select record",
+    "commitment": "Commitment",
+    "noRecordExist": "No record exist",
+    "recordStatistics": "{{COUNT}} records, maximum",
+    "transferMethod": "Transfer Method",
+    "selectTransferMethod": "Select Transfer Method",
+    "privateRecord": "Private Record",
+    "publicBalance": "Public balance",
+    "gasFee": "Gas Fee",
+    "selectFeeMethod": "Select Fee Method",
+    "publicFee": "Public balance to pay fee",
+    "privateFee": "Private record to pay fee",
+    "feeHint": "You can use either the public balance or any of the following private records below to pay the gas fee.",
+    "sendingAleoTx": "Sending aleo transaction",
+    "insufficientBalance": "Insufficient balance",
+    "insufficientFee": "Insufficient balance to pay fee"
+  },
+  "JoinSplit": {
+    "title": "Join&Split",
+    "join": "Join",
+    "split": "Split",
+    "selectRecords": "Select {{COUNT}} records to continue.",
+    "splitWarning": "After the split, some records may have very small value (less than the privacy transaction fee). Please consider this before continuing.",
+    "splitRecord1Remind": "1st record's value",
+    "splitRecord2Remind": "2nd record's value({{VALUE}} Aleo for fee)",
+    "recordValue": "Record's value",
+    "selectMethod": "Select method",
+    "joinDesc": "Join two records into one.",
+    "splitDesc": "Split one record into two."
+  },
+  "Faucet": {
+    "title": "Faucet",
+    "claimed": "You've claimed Aleo testnet credits.",
+    "wait": "We've received your request, while your aleo testnet credits will be sent within 30 minutes.",
+    "explorer": "Check on explorer"
+  },
+  "SignMessage": {
+    "title": "Sign Message",
+    "message": "Message",
+    "sign": "Sign"
+  },
+  "Receive": {
+    "title": "Receive",
+    "scanToTransfer": "Scan to transfer",
+    "onlyTips": "Only support {{symbol}} related assets",
+    "walletAddr": "Wallet Address"
+  },
+  "TokenDetail": {
+    "title": "Token Detail",
+    "balance": "Balance",
+    "tx_records": "Transaction Records",
+    "empty_tx": "No transaction records",
+    "jump_explorer": "Explorer"
+  },
+  "Tx": {
+    "successToast": "Transaction Successful!",
+    "failToast": "Transaction Failed."
+  },
+  "Setting": {
+    "title": "Setting",
+    "guide": "Guide",
+    "tutorial": "Tutorial",
+    "community": "Community",
+    "securityTips": "Security Tips",
+    "settings": "Settings",
+    "account": "Account",
+    "switchWallet": "Switch Wallet"
+  },
+  "Me": {
+    "title": "Me"
+  },
+  "Language": {
+    "title": "Language"
+  },
+  "Currency": {
+    "title": "Currency"
+  },
+  "About": {
+    "title": "About",
+    "version": "Version",
+    "upgrade": "Upgrade",
+    "download": "Download",
+    "noUpdate": "No update required",
+    "privacyPolicy": "<Privacy Policy>",
+    "userAgreement": "<User Agreement>",
+    "update": "Check for Updates"
+  },
+  "Dapp": {
+    "requestConnect": "Request connection",
+    "requestDetail": "Request detail",
+    "network": "Network",
+    "permission": "Permission",
+    "program": "Program",
+    "programs": "Programs",
+    "permissionTip": "I trust this dapp, and allow it to access my on-chain history.",
+    "account": "Account",
+    "requestDeployment": "Request deployment",
+    "content": "Content",
+    "inputs": "Inputs",
+    "gasFee": "Gas Fee",
+    "requestTx": "Request send transaction",
+    "message": "Message",
+    "requestSignMessage": "Request sign message",
+    "noDecrypt": "No decrypt permission.",
+    "uponRequest": "Dapp may request decrypt your record.",
+    "autoDecrypt": "Dapp can decrypt record without request.",
+    "onChainHistory": "Dapp can access your on-chain history."
+  },
+  "Reset": {
+    "remind": "All of your history for this account will be reset and network will be resynced. Please confrim to proceed.",
+    "account": "Reset account"
+  },
+  "ManageToken": {
+    "title": "Manage Token",
+    "searchHint": "Search token(ID, Name, Symbol)"
+  },
+  "Common": {
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "next": "Next",
+    "more": "More",
+    "done": "Done",
+    "delete": "Delete",
+    "warning": "Warning",
+    "copySuccess": "Copy Success!",
+    "paused": "Paused",
+    "lock": "Lock",
+    "total": "Total",
+    "remind": "Remind",
+    "account": "Account",
+    "ok": "OK",
+    "wrongPassword": "Incorrect password"
+  },
+  "Error": {
+    "invalidPassword": "Invalid password"
+  }
+}

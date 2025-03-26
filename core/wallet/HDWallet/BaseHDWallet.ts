@@ -9,6 +9,7 @@ import {
 } from "../../types/KeyPair";
 import { type HDKey } from "../HDKey";
 import { BLS12377HDWallet } from "./BLS12377HDWallet";
+import { Secp256k1HDWallet } from "./Secp256k1HDWallet";
 // import { Secp256k1HDWallet } from "./Secp256k1HDWallet";
 
 export interface BaseHDWallet<T extends CoinType> {
@@ -27,11 +28,11 @@ export function getHDWallet<T extends CoinType>(
   const { symbol } = config;
   const coinCurve = getCoinDerivation(symbol).curve;
   switch (coinCurve) {
-    // case CoinCurve.SECP256K1: {
-    //   return new Secp256k1HDWallet(symbol, hdWallet);
-    // }
+    case CoinCurve.SECP256K1: {
+      return new Secp256k1HDWallet(symbol, hdWallet as HDKey[CoinType.ETH]);
+    }
     case CoinCurve.BLS12377: {
-      return new BLS12377HDWallet(symbol, hdWallet);
+      return new BLS12377HDWallet(symbol, hdWallet as HDKey[CoinType.ALEO]);
     }
   }
 }

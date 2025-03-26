@@ -1,4 +1,4 @@
-import { AccountOption } from "./CoinBasic";
+import { type AccountOption } from "./CoinBasic";
 import { type CoinType } from "./CoinType";
 import { type EncryptedField } from "./EncryptedField";
 
@@ -22,6 +22,8 @@ export interface EncryptedKeyPair {
   index: number;
   privateKey: EncryptedField;
   address: string;
+  coinType: CoinType;
+  option: AccountOption[CoinType];
 }
 
 export type EncryptedKeyPairWithPublicKey = EncryptedKeyPair & {

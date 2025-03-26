@@ -3,7 +3,8 @@ import { KeyringManager } from "../store/vault/managers/keyring/KeyringManager";
 import {
   DisplayKeyring,
   DisplayWallet,
-  SelectedAccount,
+  GroupAccount,
+  OneMatchGroupAccount,
   WalletType,
 } from "../store/vault/types/keyring";
 import {
@@ -16,7 +17,7 @@ import {
   SetSelectedAccountProps,
   GetSelectedAccountProps,
   RequestFinfishProps,
-  ConnectProps,
+  ALEOConnectProps,
   RequestTxProps,
   AleoRequestTxProps,
   SignMessageProps,
@@ -28,11 +29,13 @@ import {
   GetPrivateKeyProps,
   ChangeAccountStateProps,
   PopupSignMessageProps,
+  ConnectProps,
+  SiteMetadata,
 } from "./IWalletServer";
 import {
   isSendingAleoTransaction,
   sendDeployment,
-  sendTransaction,
+  sendAleoTransaction,
   stopSending,
   stopSync,
   syncBlocks,
@@ -53,12 +56,22 @@ import {
 import { CoinServiceEntry } from "core/coins/CoinServiceEntry";
 import { ChainUniqueId, InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { TaskPriority } from "core/coins/ALEO/types/SyncTask";
-import { AleoConnectHistory, DappRequest } from "@/database/types/dapp";
+import { ConnectHistory, DappRequest } from "@/database/types/dapp";
 import { AleoTxType } from "core/coins/ALEO/types/History";
 import {
   NATIVE_TOKEN_PROGRAM_ID,
   NATIVE_TOKEN_TOKEN_ID,
 } from "core/coins/ALEO/constants";
+import { matchAccountFromGroupAccount } from "../utils/account";
+import { getDefaultChainUniqueId } from "core/constants/chain";
+import { AleoService } from "core/coins/ALEO/service/AleoService";
+import { GasFee, GasFeeEIP1559, GasFeeLegacy } from "core/types/GasFee";
+import { isSameAddress } from "core/utils/address";
+import {
+  JSONParseWithBigInt,
+  JSONStringifyOmitBigInt,
+} from "@/common/utils/json";
+import { EthService } from "core/coins/ETH/service/EthService";
 
 export type OnRequestFinishCallback = (
   error: null | Error,
@@ -152,11 +165,16 @@ export class PopupWalletServer implements IPopupServer {
     }
   }
 
-  async createConnectPopup(params: ConnectProps, siteInfo: SiteInfo) {
+  async createALEOConnectPopup(params: ALEOConnectProps, siteInfo: SiteInfo) {
     const requestId = nanoid();
-    const selectedAccount = await this.getSelectedAccount({
-      coinType: CoinType.ALEO,
-    });
+    const groupAccount = await this.getSelectedGroupAccount();
+    if (!groupAccount) {
+      throw new Error("No selected account");
+    }
+    const selectedAccount = matchAccountFromGroupAccount(
+      groupAccount,
+      InnerChainUniqueId.ALEO_MAINNET,
+    );
     if (!selectedAccount) {
       throw new Error("No selected account");
     }
@@ -165,12 +183,12 @@ export class PopupWalletServer implements IPopupServer {
       type: "connect",
       coinType: CoinType.ALEO,
       siteInfo,
-      address: selectedAccount.address,
+      address: selectedAccount.account.address,
       payload: params,
     };
     await this.dappStorage.setDappRequest(request);
     return new Promise<string | null>(async (resolve, reject) => {
-      const popup = await createPopup(`/connect/${requestId}`);
+      const popup = await createPopup(`/connect_aleo/${requestId}`);
       const popupId = popup.id;
       if (popupId) {
         this.addItem(popupId, requestId);
@@ -184,8 +202,9 @@ export class PopupWalletServer implements IPopupServer {
               reject(error);
               return;
             }
-            const connectHistory: AleoConnectHistory = {
+            const connectHistory: ConnectHistory = {
               site: siteInfo,
+              coinType: CoinType.ALEO,
               ...params,
               address: data,
               lastConnectTime: Date.now(),
@@ -209,16 +228,202 @@ export class PopupWalletServer implements IPopupServer {
     });
   }
 
-  async createRequestTxPopup(params: AleoRequestTxProps, siteInfo: SiteInfo) {
-    const { coinType, address, localId } = params;
+  async createConnectPopup(params: ConnectProps, siteInfo: SiteInfo) {
     const requestId = nanoid();
-    const selectedAccount = await this.getSelectedAccount({
-      coinType: CoinType.ALEO,
-    });
+    const groupAccount = await this.getSelectedGroupAccount();
+    if (!groupAccount) {
+      throw new Error("No selected account");
+    }
+    const { coinType } = params;
+    const selectedAccount = matchAccountFromGroupAccount(
+      groupAccount,
+      getDefaultChainUniqueId(coinType, {}),
+    );
     if (!selectedAccount) {
       throw new Error("No selected account");
     }
-    if (selectedAccount.address !== address) {
+    const request: DappRequest = {
+      id: requestId,
+      type: "connect",
+      coinType: coinType,
+      siteInfo,
+      address: selectedAccount.account.address,
+      payload: params,
+    };
+    await this.dappStorage.setDappRequest(request);
+    return new Promise<string | null>(async (resolve, reject) => {
+      const popup = await createPopup(`/connect/${requestId}`);
+      const popupId = popup.id;
+      if (popupId) {
+        this.addItem(popupId, requestId);
+        this.requestIdCallbackMap[requestId] = async (error, data: string) => {
+          try {
+            if (error) {
+              const popupId = this.findPopupIdByRequestId(requestId);
+              if (popupId) {
+                browser.windows.remove(popupId);
+              }
+              reject(error);
+              return;
+            }
+            const connectHistory = {
+              site: siteInfo,
+              ...params,
+              address: data,
+              lastConnectTime: Date.now(),
+              network: "",
+            };
+            await this.dappStorage.addConnectHistory(
+              coinType,
+              data,
+              connectHistory,
+            );
+            await browser.windows.remove(popupId);
+            resolve(data);
+            return;
+          } catch (err) {
+            console.error("createConnectPopup callback error: ", err);
+            reject(err);
+          }
+        };
+      } else {
+        resolve(null);
+      }
+    });
+  }
+
+  async createRequestTxPopup(params: any, siteInfo: SiteInfo) {
+    // {
+    //   uniqueId: currUniqueId,
+    // coinType
+    //   from,
+    //     to,
+    //     value,
+    //     data,
+    //     replaceGasFeeData: {
+    //   type,
+    //     gasLimit: gasLimit,
+    //     gasPrice: formatGasPrice,
+    //     maxFeePerGas: formatMaxFeePerGas?.toBigInt(),
+    //     maxPriorityFeePerGas: formatMaxPriorityFeePerGas?.toBigInt(),
+    //     estimateGas: estimateGas.toBigInt(),
+    // } as GasFeeEIP1559 | GasFeeLegacy,
+    // },
+    const {
+      uniqueId,
+      coinType,
+      from,
+      to,
+      value,
+      data: paramsData,
+      replaceGasFeeData,
+    } = params;
+    const requestId = nanoid();
+    const groupAccount = await this.getSelectedGroupAccount();
+    if (!groupAccount) {
+      throw new Error("No selected account");
+    }
+    const selectedAccount = matchAccountFromGroupAccount(
+      groupAccount,
+      uniqueId,
+    );
+    if (!selectedAccount) {
+      throw new Error("No selected account");
+    }
+    if (!isSameAddress(selectedAccount.account.address, from)) {
+      throw new Error("Selected account is not match");
+    }
+    const request: DappRequest = {
+      id: requestId,
+      type: "requestTransaction",
+      coinType,
+      siteInfo,
+      address: params.from,
+      payload: params,
+    };
+    await this.dappStorage.setDappRequest(request);
+    return new Promise<string | null>(async (resolve, reject) => {
+      const popup = await createPopup(`/request_tx/${requestId}`);
+      const popupId = popup.id;
+      if (popupId) {
+        this.addItem(popupId, requestId);
+        this.requestIdCallbackMap[requestId] = async (error, data: string) => {
+          try {
+            if (error) {
+              const popupId = this.findPopupIdByRequestId(requestId);
+              if (popupId) {
+                browser.windows.remove(popupId);
+              }
+              reject(error);
+              return;
+            }
+
+            const pk = await this.keyringManager.getPrivateKeyByAddress({
+              coinType,
+              address: params.from,
+            });
+            if (!pk) {
+              reject(new Error("Get private key failed"));
+              return;
+            }
+            const gasFee = JSONParseWithBigInt(data);
+            // const gasFees = JSON.parse(JSONStringifyOmitBigInt(gasFee));
+            // resolve(gasFee);
+            const instance = this.coinService.getInstance(
+              params.uniqueId,
+            ) as EthService;
+
+            const rawTxWrap = await instance.getNativeCoinRawTx({
+              tx: {
+                from,
+                to,
+                value,
+                gasFee: gasFee as GasFee<CoinType.ETH>,
+                data: paramsData,
+              },
+              signer: {
+                privateKey: pk,
+              },
+            });
+            const { id } = rawTxWrap;
+            await browser.windows.remove(popupId);
+            if (id) {
+              resolve(id);
+              void instance.sendSignedTxRaw(rawTxWrap);
+            } else {
+              reject(new Error("invalid result"));
+              return;
+            }
+            return;
+          } catch (err) {
+            console.error("createRequestTxPopup callback error: ", err);
+            reject(err);
+          }
+        };
+      } else {
+        resolve(null);
+      }
+    });
+  }
+
+  async createRequestAleoTxPopup(
+    params: AleoRequestTxProps,
+    siteInfo: SiteInfo,
+  ) {
+    const { coinType, address, localId } = params;
+    const requestId = nanoid();
+    const groupAccount = await this.getSelectedGroupAccount();
+    if (!groupAccount) {
+      throw new Error("No selected account");
+    }
+    const selectedAccount = matchAccountFromGroupAccount(
+      groupAccount,
+      InnerChainUniqueId.ALEO_MAINNET,
+    );
+    if (!selectedAccount) {
+      throw new Error("No selected account");
+    }
+    if (selectedAccount.account.address !== address) {
       throw new Error("Selected account is not match");
     }
     const request: DappRequest = {
@@ -231,7 +436,7 @@ export class PopupWalletServer implements IPopupServer {
     };
     await this.dappStorage.setDappRequest(request);
     return new Promise<string | null>(async (resolve, reject) => {
-      const popup = await createPopup(`/request_tx/${requestId}`);
+      const popup = await createPopup(`/request_aleo_tx/${requestId}`);
       const popupId = popup.id;
       if (popupId) {
         this.addItem(popupId, requestId);
@@ -260,17 +465,18 @@ export class PopupWalletServer implements IPopupServer {
               status: AleoTxStatus.QUEUED,
               notification: false,
             };
-            await this.coinService
-              .getInstance(params.uniqueId)
-              .setAddressLocalTx(address, txInfo);
+            const instance = this.coinService.getInstance(
+              params.uniqueId,
+            ) as AleoService;
+            await instance.setAddressLocalTx(address, txInfo);
             await browser.windows.remove(popupId);
 
-            sendTransaction({
+            sendAleoTransaction({
               ...params,
               privateKey: pk,
             }).then(async (resp) => {
               console.log(
-                "===> createRequestTxPopup sendTransaction resp: ",
+                "===> createRequestAleoTxPopup sendTransaction resp: ",
                 resp,
               );
               if (!resp) {
@@ -281,15 +487,13 @@ export class PopupWalletServer implements IPopupServer {
                   notification: false,
                   error: "sendTransaction failed",
                 };
-                await this.coinService
-                  .getInstance(params.uniqueId)
-                  .setAddressLocalTx(address, finalTxInfo);
+                await instance.setAddressLocalTx(address, finalTxInfo);
               }
             });
             resolve(localId);
             return;
           } catch (err) {
-            console.error("createRequestTxPopup callback error: ", err);
+            console.error("createRequestAleoTxPopup callback error: ", err);
             reject(err);
           }
         };
@@ -305,13 +509,21 @@ export class PopupWalletServer implements IPopupServer {
   ) {
     const { coinType, address, localId } = params;
     const requestId = nanoid();
-    const selectedAccount = await this.getSelectedAccount({
-      coinType: CoinType.ALEO,
-    });
+    const groupAccount = await this.getSelectedGroupAccount();
+    if (!groupAccount) {
+      throw new Error("No selected account");
+    }
+    const selectedAccount = matchAccountFromGroupAccount(
+      groupAccount,
+      InnerChainUniqueId.ALEO_MAINNET,
+    );
     if (!selectedAccount) {
       throw new Error("No selected account");
     }
-    if (selectedAccount.address !== address) {
+    if (!selectedAccount) {
+      throw new Error("No selected account");
+    }
+    if (selectedAccount.account.address !== address) {
       throw new Error("Selected account is not match");
     }
     const request: DappRequest = {
@@ -355,9 +567,10 @@ export class PopupWalletServer implements IPopupServer {
               notification: false,
               tokenId: NATIVE_TOKEN_TOKEN_ID,
             };
-            await this.coinService
-              .getInstance(params.uniqueId)
-              .setAddressLocalTx(address, txInfo);
+            const instance = this.coinService.getInstance(
+              params.uniqueId,
+            ) as AleoService;
+            await instance.setAddressLocalTx(address, txInfo);
             await browser.windows.remove(popupId);
 
             sendDeployment({
@@ -376,9 +589,7 @@ export class PopupWalletServer implements IPopupServer {
                   error: "sendDeployment failed",
                   tokenId: NATIVE_TOKEN_PROGRAM_ID,
                 };
-                await this.coinService
-                  .getInstance(params.uniqueId)
-                  .setAddressLocalTx(address, finalTxInfo);
+                await instance.setAddressLocalTx(address, finalTxInfo);
               }
             });
             resolve(localId);
@@ -394,16 +605,21 @@ export class PopupWalletServer implements IPopupServer {
     });
   }
 
-  async creatSignMessagePopup(
+  async createAleoSignMessagePopup(
     params: SignMessageProps,
     address: string,
     siteInfo: SiteInfo,
   ) {
     const { message } = params;
     const requestId = nanoid();
-    const selectedAccount = await this.getSelectedAccount({
-      coinType: CoinType.ALEO,
-    });
+    const groupAccount = await this.getSelectedGroupAccount();
+    if (!groupAccount) {
+      throw new Error("No selected account");
+    }
+    const selectedAccount = matchAccountFromGroupAccount(
+      groupAccount,
+      InnerChainUniqueId.ALEO_MAINNET,
+    );
     if (!selectedAccount) {
       throw new Error("No selected account");
     }
@@ -412,13 +628,13 @@ export class PopupWalletServer implements IPopupServer {
       type: "signMessage",
       coinType: CoinType.ALEO,
       siteInfo,
-      address: selectedAccount.address,
+      address: selectedAccount.account.address,
       payload: params,
     };
     await this.dappStorage.setDappRequest(request);
     return new Promise<string | null>(async (resolve, reject) => {
       try {
-        const popup = await createPopup(`/sign_message/${requestId}`);
+        const popup = await createPopup(`/sign_aleo_message/${requestId}`);
         const popupId = popup.id;
         if (popupId) {
           this.addItem(popupId, requestId);
@@ -449,7 +665,78 @@ export class PopupWalletServer implements IPopupServer {
               const signature = privateKey.sign(messageArray).to_string();
               resolve(signature);
             } catch (err) {
-              console.error("creatSignMessagePopup callback error: ", err);
+              console.error("createAleoSignMessagePopup callback error: ", err);
+              reject(err);
+            }
+          };
+        } else {
+          resolve(null);
+        }
+      } catch (err) {
+        reject(err);
+      }
+    });
+  }
+
+  async createSignMessagePopup(
+    params: SignMessageProps,
+    address: string,
+    coinType: CoinType,
+    siteInfo: SiteInfo,
+  ) {
+    const { message } = params;
+    const requestId = nanoid();
+    const groupAccount = await this.getSelectedGroupAccount();
+    if (!groupAccount) {
+      throw new Error("No selected account");
+    }
+    const selectedAccount = matchAccountFromGroupAccount(
+      groupAccount,
+      getDefaultChainUniqueId(coinType, {}),
+    );
+    if (!selectedAccount) {
+      throw new Error("No selected account");
+    }
+    const request: DappRequest = {
+      id: requestId,
+      type: "signMessage",
+      coinType: coinType,
+      siteInfo,
+      address: address,
+      payload: params,
+    };
+    await this.dappStorage.setDappRequest(request);
+    return new Promise<boolean | null>(async (resolve, reject) => {
+      try {
+        const popup = await createPopup(`/sign_message/${requestId}`);
+        const popupId = popup.id;
+        if (popupId) {
+          this.addItem(popupId, requestId);
+          this.requestIdCallbackMap[requestId] = async (
+            error,
+            data: string,
+          ) => {
+            try {
+              if (error) {
+                const popupId = this.findPopupIdByRequestId(requestId);
+                if (popupId) {
+                  browser.windows.remove(popupId);
+                }
+                reject(error);
+                return;
+              }
+              const pk = await this.keyringManager.getPrivateKeyByAddress({
+                coinType: coinType,
+                address,
+              });
+              if (!pk) {
+                reject(new Error("Get private key failed"));
+                return;
+              }
+              await browser.windows.remove(popupId);
+              resolve(true);
+            } catch (err) {
+              console.error("createSignMessagePopup callback error: ", err);
               reject(err);
             }
           };
@@ -481,7 +768,6 @@ export class PopupWalletServer implements IPopupServer {
       }
     }
     await this.authManager.initPassword(params.password);
-    await this.keyringManager.reset();
     return true;
   }
 
@@ -509,14 +795,15 @@ export class PopupWalletServer implements IPopupServer {
 
   async createWallet(params: CreateWalletProps): Promise<DisplayWallet> {
     const wallet = await this.keyringManager.createNewWallet(params);
-    const account = wallet.accountsMap[CoinType.ALEO][0];
-    if (account) {
-      await this.setSelectedAccount({
-        selectAccount: {
-          walletId: wallet.walletId,
-          coinType: CoinType.ALEO,
-          ...account,
-        },
+    const { groupAccounts, ...restWallet } = wallet;
+    if (groupAccounts[0]) {
+      const newGroupAccount = {
+        wallet: restWallet,
+        group: groupAccounts[0],
+      };
+
+      await this.setSelectedGroupAccount({
+        groupAccount: newGroupAccount,
       });
     }
     return wallet;
@@ -526,14 +813,16 @@ export class PopupWalletServer implements IPopupServer {
     params: RegenerateWalletProps,
   ): Promise<DisplayWallet> {
     const wallet = await this.keyringManager.regenerateWallet(params);
-    const account = wallet.accountsMap[CoinType.ALEO][0];
-    if (account) {
-      await this.setSelectedAccount({
-        selectAccount: {
-          walletId: wallet.walletId,
-          coinType: CoinType.ALEO,
-          ...account,
-        },
+    const { groupAccounts, ...restWallet } = wallet;
+
+    if (groupAccounts[0]) {
+      const newGroupAccount = {
+        wallet: restWallet,
+        group: groupAccounts[0],
+      };
+
+      await this.setSelectedGroupAccount({
+        groupAccount: newGroupAccount,
       });
     }
     return wallet;
@@ -541,14 +830,16 @@ export class PopupWalletServer implements IPopupServer {
 
   async importHDWallet(params: ImportHDWalletProps): Promise<DisplayWallet> {
     const wallet = await this.keyringManager.importHDWallet(params);
-    const account = wallet.accountsMap[CoinType.ALEO][0];
-    if (account) {
-      await this.setSelectedAccount({
-        selectAccount: {
-          walletId: wallet.walletId,
-          coinType: CoinType.ALEO,
-          ...account,
-        },
+    const { groupAccounts, ...restWallet } = wallet;
+
+    if (groupAccounts[0]) {
+      const newGroupAccount = {
+        wallet: restWallet,
+        group: groupAccounts[0],
+      };
+
+      await this.setSelectedGroupAccount({
+        groupAccount: newGroupAccount,
       });
     }
     return wallet;
@@ -556,15 +847,16 @@ export class PopupWalletServer implements IPopupServer {
 
   async addAccount(params: AddAccountProps): Promise<DisplayWallet> {
     const wallet = await this.keyringManager.addNewAccount(params);
-    const accounts = wallet.accountsMap[params.coinType];
-    const account = accounts[accounts.length - 1];
-    if (account) {
-      await this.setSelectedAccount({
-        selectAccount: {
-          walletId: wallet.walletId,
-          coinType: params.coinType,
-          ...account,
-        },
+    const { groupAccounts, ...restWallet } = wallet;
+    const groupAccount = groupAccounts[groupAccounts.length - 1];
+    if (groupAccount) {
+      const newGroupAccount = {
+        wallet: restWallet,
+        group: groupAccount,
+      };
+
+      await this.setSelectedGroupAccount({
+        groupAccount: newGroupAccount,
       });
     }
     return wallet;
@@ -574,70 +866,70 @@ export class PopupWalletServer implements IPopupServer {
     params: ImportPrivateKeyProps<T>,
   ): Promise<DisplayWallet> {
     const wallet = await this.keyringManager.importPrivateKey(params);
-    const account = wallet.accountsMap[params.coinType][0];
-    if (account) {
-      await this.setSelectedAccount({
-        selectAccount: {
-          walletId: wallet.walletId,
-          coinType: params.coinType,
-          ...account,
-        },
+    const { groupAccounts, ...restWallet } = wallet;
+
+    if (groupAccounts[0]) {
+      const newGroupAccount = {
+        wallet: restWallet,
+        group: groupAccounts[0],
+      };
+
+      await this.setSelectedGroupAccount({
+        groupAccount: newGroupAccount,
       });
     }
     return wallet;
   }
 
-  async getSelectedAccount(
-    params: GetSelectedAccountProps,
-  ): Promise<SelectedAccount | null> {
-    const selectedAccount = await this.accountSettingStorage.getSelectedAccount(
-      params.coinType,
-    );
+  async getSelectedGroupAccount(
+    params?: GetSelectedAccountProps,
+  ): Promise<OneMatchGroupAccount | null> {
+    const selectedAccount =
+      await this.accountSettingStorage.getSelectedGroupAccount();
     if (selectedAccount) {
       return selectedAccount;
     }
     const existKeyring = await this.keyringManager.getAllWallet(true);
     const existWallet = existKeyring[WalletType.HD]?.[0];
     if (existWallet) {
-      const existAccount = existWallet.accountsMap[params.coinType].find(
-        (account) => !account.hide,
-      );
+      const { groupAccounts, ...restWallet } = existWallet;
+      const existAccount = groupAccounts[0];
       if (existAccount) {
         const newSelectedAccount = {
-          walletId: existWallet.walletId,
-          coinType: params.coinType,
-          ...existAccount,
+          wallet: restWallet,
+          group: existAccount,
         };
-        await this.setSelectedAccount({ selectAccount: newSelectedAccount });
+        await this.setSelectedGroupAccount({
+          groupAccount: newSelectedAccount,
+        });
         return newSelectedAccount;
       }
     }
     return null;
   }
 
-  async setSelectedAccount(
-    params: SetSelectedAccountProps,
-  ): Promise<SelectedAccount> {
-    return await this.accountSettingStorage.setSelectedAccount(
-      params.selectAccount,
-    );
+  async setSelectedGroupAccount({
+    groupAccount,
+  }: SetSelectedAccountProps): Promise<OneMatchGroupAccount> {
+    await this.accountSettingStorage.setSelectedGroupAccount(groupAccount);
+    return groupAccount;
   }
 
-  async getSelectedUniqueId(
-    params: GetSelectedUniqueIdProps,
-  ): Promise<ChainUniqueId> {
-    const { coinType } = params;
-    const selectedUniqueId =
-      await this.accountSettingStorage.getSelectedUniqueId(coinType);
-    return selectedUniqueId;
-  }
+  // async getSelectedUniqueId(
+  //   params: GetSelectedUniqueIdProps,
+  // ): Promise<ChainUniqueId> {
+  //   const { coinType } = params;
+  //   const selectedUniqueId =
+  //     await this.accountSettingStorage.getSelectedUniqueId(coinType);
+  //   return selectedUniqueId;
+  // }
 
-  async setSelectedUniqueId(
-    params: SetSelectedUniqueIdProps,
-  ): Promise<ChainUniqueId> {
-    const { uniqueId } = params;
-    return await this.accountSettingStorage.setSelectedUniqueId(uniqueId);
-  }
+  // async setSelectedUniqueId(
+  //   params: SetSelectedUniqueIdProps,
+  // ): Promise<ChainUniqueId> {
+  //   const { uniqueId } = params;
+  //   return await this.accountSettingStorage.setSelectedUniqueId(uniqueId);
+  // }
 
   async getHDWallet(walletId: string): Promise<DisplayWallet> {
     return await this.keyringManager.getHDWallet(walletId);
@@ -655,30 +947,31 @@ export class PopupWalletServer implements IPopupServer {
     try {
       await stopSending();
       await stopSync();
-      const selectedAccount = await this.getSelectedAccount({
-        coinType: CoinType.ALEO,
-      });
-      const selectedUniqueId = await this.getSelectedUniqueId({
-        coinType: CoinType.ALEO,
-      });
-      if (selectedAccount) {
-        await this.coinService
-          .getInstance(selectedUniqueId)
-          .clearAddressLocalData(selectedAccount.address);
+      const groupAccount = await this.getSelectedGroupAccount({});
+      // const selectedUniqueId = await this.getSelectedUniqueId({
+      //   coinType: CoinType.ALEO,
+      // });
+      const account = groupAccount?.group.accounts.find(
+        (account) => account.coinType === CoinType.ALEO,
+      );
+      if (groupAccount && account) {
+        const selectedUniqueId = InnerChainUniqueId.ALEO_MAINNET;
+        const instance = this.coinService.getInstance(
+          selectedUniqueId,
+        ) as AleoService;
+        await instance.clearAddressLocalData(account.address);
         const viewKey = await this.keyringManager.getViewKey({
           coinType: CoinType.ALEO,
-          address: selectedAccount.address,
+          address: account.address,
         });
         if (viewKey) {
-          await this.coinService
-            .getInstance(selectedUniqueId)
-            .setAleoSyncAccount({
-              walletId: selectedAccount.walletId,
-              accountId: selectedAccount.accountId,
-              address: selectedAccount.address,
-              viewKey,
-              priority: TaskPriority.MEDIUM,
-            });
+          await instance.setAleoSyncAccount({
+            walletId: groupAccount.wallet.walletId,
+            accountId: account.accountId,
+            address: account.address,
+            viewKey,
+            priority: TaskPriority.MEDIUM,
+          });
         } else {
           console.error("===> rescanAleo error: viewKey is null");
         }
@@ -696,10 +989,13 @@ export class PopupWalletServer implements IPopupServer {
     try {
       await stopSending();
       await stopSync();
-      const selectedUniqueId = await this.getSelectedUniqueId({
-        coinType: CoinType.ALEO,
-      });
-      await this.coinService.getInstance(selectedUniqueId).resetChainData();
+      // const selectedUniqueId = await this.getSelectedUniqueId({
+      //   coinType: CoinType.ALEO,
+      // });
+      const instance = this.coinService.getInstance(
+        InnerChainUniqueId.ALEO_MAINNET,
+      ) as AleoService;
+      await instance.resetChainData();
       return true;
     } catch (err) {
       console.error("===> resetChain error: ", err);
@@ -716,7 +1012,7 @@ export class PopupWalletServer implements IPopupServer {
       coinType,
       accountId,
     });
-    sendTransaction({
+    sendAleoTransaction({
       ...rest,
       privateKey: pk,
     }).then(async (resp) => {
@@ -729,9 +1025,10 @@ export class PopupWalletServer implements IPopupServer {
           notification: false,
           error: "sendTransaction failed",
         };
-        await this.coinService
-          .getInstance(params.uniqueId)
-          .setAddressLocalTx(rest.address, finalTxInfo);
+        const instance = this.coinService.getInstance(
+          params.uniqueId,
+        ) as AleoService;
+        await instance.setAddressLocalTx(rest.address, finalTxInfo);
       }
     });
     // const tx = await sendTransaction({
@@ -753,27 +1050,39 @@ export class PopupWalletServer implements IPopupServer {
     return await this.keyringManager.getHDMnemonic(walletId);
   }
 
+  async resetWallet(): Promise<boolean> {
+    try {
+      await stopSync();
+      await Promise.all([
+        this.accountSettingStorage.removeSelectedAccount(),
+        this.keyringManager.resetWallet(),
+      ]);
+      return true;
+    } catch (err) {
+      return false;
+    } finally {
+      syncBlocks();
+    }
+  }
+
   async deleteWallet(walletId: string): Promise<DisplayKeyring> {
     try {
       await stopSync();
-      const selectedAccount =
-        await this.accountSettingStorage.getSelectedAccount(CoinType.ALEO);
-      let newSelectedAccount: SelectedAccount | null = null;
-      if (selectedAccount?.walletId === walletId) {
+      const groupAccount =
+        await this.accountSettingStorage.getSelectedGroupAccount();
+      let newSelectedAccount: OneMatchGroupAccount | null = null;
+      if (groupAccount?.wallet.walletId === walletId) {
         const allWallets = await this.keyringManager.getAllWallet(false);
         if (allWallets) {
           const otherHDWallet = allWallets[WalletType.HD]?.filter(
             (item) => item.walletId !== walletId,
           )[0];
           if (otherHDWallet) {
-            const otherAccount = otherHDWallet.accountsMap[CoinType.ALEO].find(
-              (account) => !account.hide,
-            );
-            if (otherAccount) {
+            const { groupAccounts, ...restWallet } = otherHDWallet;
+            if (groupAccounts[0]) {
               newSelectedAccount = {
-                walletId: otherHDWallet.walletId,
-                coinType: CoinType.ALEO,
-                ...otherAccount,
+                wallet: restWallet,
+                group: groupAccounts[0],
               };
             }
           } else {
@@ -781,25 +1090,22 @@ export class PopupWalletServer implements IPopupServer {
               (item) => item.walletId !== walletId,
             )[0];
             if (otherSimpleWallet) {
-              const otherAccount = otherSimpleWallet.accountsMap[
-                CoinType.ALEO
-              ].find((account) => !account.hide);
-              if (otherAccount) {
+              const { groupAccounts, ...restWallet } = otherSimpleWallet;
+              if (groupAccounts[0]) {
                 newSelectedAccount = {
-                  walletId: otherSimpleWallet.walletId,
-                  coinType: CoinType.ALEO,
-                  ...otherAccount,
+                  wallet: restWallet,
+                  group: groupAccounts[0],
                 };
               }
             }
           }
         }
         if (newSelectedAccount) {
-          await this.accountSettingStorage.setSelectedAccount(
+          await this.accountSettingStorage.setSelectedGroupAccount(
             newSelectedAccount,
           );
         } else {
-          await this.accountSettingStorage.removeSelectedAccount(CoinType.ALEO);
+          await this.accountSettingStorage.removeSelectedAccount();
         }
       }
       await this.keyringManager.deleteWallet(walletId);
@@ -843,7 +1149,118 @@ export class PopupWalletServer implements IPopupServer {
     return await this.authManager.checkPassword(password);
   }
 
-  async changeAccountHideState(params: ChangeAccountStateProps): Promise<void> {
-    return await this.keyringManager.changeAccountHideState(params);
+  async createRequestETHAddChainPopup(params: any, siteMetadata: SiteMetadata) {
+    const requestId = nanoid();
+    const groupAccount = await this.getSelectedGroupAccount();
+    if (!groupAccount) {
+      throw new Error("No selected account");
+    }
+    const selectedAccount = matchAccountFromGroupAccount(
+      groupAccount,
+      InnerChainUniqueId.ETHEREUM,
+    );
+    if (!selectedAccount) {
+      throw new Error("No selected account");
+    }
+    const request: DappRequest = {
+      id: requestId,
+      type: "wallet_addEthereumChain",
+      coinType: CoinType.ETH,
+      siteInfo: siteMetadata.siteInfo,
+      address: selectedAccount.account.address,
+      payload: params,
+    };
+    await this.dappStorage.setDappRequest(request);
+    return new Promise<any | null>(async (resolve, reject) => {
+      try {
+        const popup = await createPopup(`/add_ethereum_chain/${requestId}`);
+        const popupId = popup.id;
+        if (popupId) {
+          this.addItem(popupId, requestId);
+          this.requestIdCallbackMap[requestId] = async (error, data: any) => {
+            try {
+              if (error) {
+                const popupId = this.findPopupIdByRequestId(requestId);
+                if (popupId) {
+                  browser.windows.remove(popupId);
+                }
+                reject(error);
+                return;
+              }
+              await browser.windows.remove(popupId);
+              resolve(data);
+            } catch (err) {
+              console.error(
+                "createRequestETHAddChainPopup callback error: ",
+                err,
+              );
+              reject(err);
+            }
+          };
+        } else {
+          resolve(null);
+        }
+      } catch (err) {
+        reject(err);
+      }
+    });
+  }
+
+  async createRequestETHAddTokenPopup(params: any, siteMetadata: SiteMetadata) {
+    const { coinType, address, localId } = params;
+    const requestId = nanoid();
+    const groupAccount = await this.getSelectedGroupAccount();
+    if (!groupAccount) {
+      throw new Error("No selected account");
+    }
+    const selectedAccount = matchAccountFromGroupAccount(
+      groupAccount,
+      InnerChainUniqueId.ETHEREUM,
+    );
+    if (!selectedAccount) {
+      throw new Error("No selected account");
+    }
+    const request: DappRequest = {
+      id: requestId,
+      type: "wallet_watchAsset",
+      coinType: CoinType.ETH,
+      siteInfo: siteMetadata.siteInfo,
+      address: selectedAccount.account.address,
+      payload: params,
+    };
+    await this.dappStorage.setDappRequest(request);
+    return new Promise<any | null>(async (resolve, reject) => {
+      try {
+        const popup = await createPopup(`/add_ethereum_token/${requestId}`);
+        const popupId = popup.id;
+        if (popupId) {
+          this.addItem(popupId, requestId);
+          this.requestIdCallbackMap[requestId] = async (error, data: any) => {
+            try {
+              if (error) {
+                const popupId = this.findPopupIdByRequestId(requestId);
+                if (popupId) {
+                  browser.windows.remove(popupId);
+                }
+                reject(error);
+                return;
+              }
+              await browser.windows.remove(popupId);
+              resolve(data);
+            } catch (err) {
+              console.error(
+                "createRequestETHAddTokenPopup callback error: ",
+                err,
+              );
+              reject(err);
+            }
+          };
+        } else {
+          resolve(null);
+        }
+      } catch (err) {
+        reject(err);
+      }
+    });
   }
 }

@@ -3,7 +3,7 @@ import {
   type ExportPrivateKeyTypeMap,
   type ImportPrivateKeyTypeMap,
 } from "../types/CoinBasic";
-import { type CoinType } from "../types/CoinType";
+import { type CoinType } from "core/types";
 
 export abstract class CoinBasic<T extends CoinType> {
   constructor(public coinType: CoinType) {}
@@ -14,8 +14,6 @@ export abstract class CoinBasic<T extends CoinType> {
     address?: string,
   ): string;
 
-  public abstract isValidAddress(address: string): boolean;
-
   public abstract isValidPrivateKey(
     rawPrivateKey: string,
     pkType: ImportPrivateKeyTypeMap[T],
@@ -24,5 +22,5 @@ export abstract class CoinBasic<T extends CoinType> {
   public abstract deriveAccount(
     privateKey: string,
     pkType: ImportPrivateKeyTypeMap[T],
-  ): { address: string; publicKey: string; viewKey: string };
+  ): { address: string; publicKey: string; viewKey?: string };
 }

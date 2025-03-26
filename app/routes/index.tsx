@@ -1,6 +1,6 @@
 import React, { lazy } from "react";
 import { Navigate, Outlet, type RouteObject } from "react-router-dom";
-import { CheckOnboard } from "../components/Onboard/CheckOnboard";
+import { CheckOnboard } from "@/components/Onboard/CheckOnboard";
 import { CheckAuth } from "@/components/Onboard/CheckAuth";
 import { CheckBrowserVersion } from "@/components/Onboard/CheckBrowserVersion";
 
@@ -9,7 +9,20 @@ const MainPage = lazy(async () => await import("../pages/Main"));
 const SendAleo = lazy(async () => await import("../pages/Wallet/SendAleo"));
 const Receive = lazy(async () => await import("../pages/Wallet/Receive"));
 const ConnectDapp = lazy(async () => await import("../pages/Dapp/ConnectDapp"));
+const ConnectAleoDapp = lazy(
+  async () => await import("../pages/Dapp/ConnectDapp/ConnectAleoDappScreen"),
+);
+const RequestAleoTx = lazy(
+  async () => await import("../pages/Dapp/RequestTx/requestAleoTx"),
+);
 const RequestTx = lazy(async () => await import("../pages/Dapp/RequestTx"));
+const SignAleoMessage = lazy(
+  async () => await import("../pages/Dapp/SignMessage/SignAleoMessage"),
+);
+const AddChain = lazy(async () => await import("../pages/Dapp/AddChain"));
+const AddTokenConfirm = lazy(
+  async () => await import("../pages/Dapp/AddTokenConfirm"),
+);
 const SignMessage = lazy(async () => await import("../pages/Dapp/SignMessage"));
 const Deployment = lazy(async () => await import("../pages/Dapp/Deployment"));
 const TokenDetail = lazy(
@@ -23,6 +36,9 @@ const Split = lazy(async () => await import("../pages/Wallet/Split"));
 const AddToken = lazy(async () => await import("../pages/Wallet/AddToken"));
 const SelectToken = lazy(
   async () => await import("../pages/Wallet/SelectToken"),
+);
+const SelectTokenV2 = lazy(
+  async () => await import("../pages/Wallet/SelectTokenV2"),
 );
 
 // SettingTab
@@ -55,7 +71,21 @@ const ChangePassword = lazy(
   async () => await import("../pages/Me/ChangePassword"),
 );
 const WalletDetail = lazy(async () => await import("../pages/Me/WalletDetail"));
-
+const Contacts = lazy(async () => await import("../pages/Me/Contacts"));
+const ConnectedSites = lazy(
+  async () => await import("../pages/Me/ConnectedSites"),
+);
+const Networks = lazy(async () => await import("../pages/Me/Networks"));
+const AddOrEditContact = lazy(
+  async () => await import("../pages/Me/AddOrEditContact"),
+);
+const SendToken = lazy(async () => await import("../pages/Wallet/Send"));
+const NetworkDetail = lazy(
+  async () => await import("../pages/Me/NetworkDetail"),
+);
+const SelectNetwork = lazy(
+  async () => await import("../pages/Wallet/SelectNetwork"),
+);
 // Onboard
 const OnboardHome = lazy(
   async () => await import("../pages/Onboard/OnboardHome"),
@@ -65,6 +95,14 @@ const OnboardCreateWallet = lazy(
 );
 const OnboardImportWallet = lazy(
   async () => await import("../pages/Onboard/OnboardImportWallet"),
+);
+const SelectGroupToken = lazy(
+  async () => await import("../pages/Wallet/SelectGroupToken"),
+);
+const AccountMore = lazy(async () => await import("../pages/Me/AccountMore"));
+
+const ChangeCoinType = lazy(
+  async () => await import("../pages/Me/ChangeCoinType"),
 );
 
 // 加上 onboard 和 lock 逻辑
@@ -102,7 +140,7 @@ export const routesConfig: RouteObject[] = [
         element: <Split />,
       },
       {
-        path: "receive",
+        path: "receive/:uniqueId/:address",
         element: <Receive />,
       },
       {
@@ -110,12 +148,32 @@ export const routesConfig: RouteObject[] = [
         element: <ConnectDapp />,
       },
       {
+        path: "connect_aleo/:requestId",
+        element: <ConnectAleoDapp />,
+      },
+      {
         path: "request_tx/:requestId",
         element: <RequestTx />,
       },
       {
+        path: "request_aleo_tx/:requestId",
+        element: <RequestAleoTx />,
+      },
+      {
         path: "sign_message/:requestId",
         element: <SignMessage />,
+      },
+      {
+        path: "sign_aleo_message/:requestId",
+        element: <SignAleoMessage />,
+      },
+      {
+        path: "add_ethereum_chain/:requestId",
+        element: <AddChain />,
+      },
+      {
+        path: "add_ethereum_token/:requestId",
+        element: <AddTokenConfirm />,
       },
       {
         path: "request_deploy/:requestId",
@@ -166,7 +224,7 @@ export const routesConfig: RouteObject[] = [
         element: <ExportPrivateKey />,
       },
       {
-        path: "transaction_detail/:txId",
+        path: "transaction_detail/:uniqueId/:address",
         element: <TransactionDetail />,
       },
       {
@@ -190,12 +248,56 @@ export const routesConfig: RouteObject[] = [
         element: <ChangePassword />,
       },
       {
-        path: "add_token",
+        path: "add_token/:uniqueId",
         element: <AddToken />,
       },
       {
         path: "select_token/:uniqueId/:address",
         element: <SelectToken />,
+      },
+      {
+        path: "contacts/:action",
+        element: <Contacts />,
+      },
+      {
+        path: "connected_sites",
+        element: <ConnectedSites />,
+      },
+      {
+        path: "networks",
+        element: <Networks />,
+      },
+      {
+        path: "add_or_edit_contact/:addOrEdit",
+        element: <AddOrEditContact />,
+      },
+      {
+        path: "send_token/:uniqueId/:address",
+        element: <SendToken />,
+      },
+      {
+        path: "network_detail/:uniqueId",
+        element: <NetworkDetail />,
+      },
+      {
+        path: "select_network/:action",
+        element: <SelectNetwork />,
+      },
+      {
+        path: "select_token_v2/:uniqueId/:action",
+        element: <SelectTokenV2 />,
+      },
+      {
+        path: "select_group_token/:action",
+        element: <SelectGroupToken />,
+      },
+      {
+        path: "account_more/:account",
+        element: <AccountMore />,
+      },
+      {
+        path: "change_coin_type/:currCoinType",
+        element: <ChangeCoinType />,
       },
     ],
   },

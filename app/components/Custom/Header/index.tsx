@@ -66,7 +66,7 @@ export const Header = ({
       >
         {title}
       </Text>
-      {!!rightIcon ? rightIcon : <Box w={"7"} h={"7"} />}
+      {rightIcon ?? <Box w={"7"} h={"7"} />}
     </Flex>
   );
 };

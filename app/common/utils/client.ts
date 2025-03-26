@@ -1,4 +1,4 @@
-import { InnerChainUniqueId } from "core/types/ChainUniqueId";
+import { type InnerChainUniqueId } from "core/types/ChainUniqueId";
 import {
   type PopupServerMethod,
   type IPopupServer,
@@ -6,22 +6,22 @@ import {
   type RegenerateWalletProps,
   type ImportHDWalletProps,
   type AddAccountProps,
-  AleoSendTxProps,
-  GetSelectedAccountProps,
-  SetSelectedAccountProps,
-  RequestFinfishProps,
-  GetSelectedUniqueIdProps,
-  SetSelectedUniqueIdProps,
+  type AleoSendTxProps,
+  type GetSelectedAccountProps,
+  type SetSelectedAccountProps,
+  type RequestFinfishProps,
+  type GetSelectedUniqueIdProps,
+  type SetSelectedUniqueIdProps,
   ResyncAleoProps,
-  ImportPrivateKeyProps,
-  GetPrivateKeyProps,
-  ChangeAccountStateProps,
-  PopupSignMessageProps,
+  type ImportPrivateKeyProps,
+  type GetPrivateKeyProps,
+  type ChangeAccountStateProps,
+  type PopupSignMessageProps,
 } from "../../scripts/background/servers/IWalletServer";
 import {
   type DisplayWallet,
   type DisplayKeyring,
-  SelectedAccount,
+  type OneMatchGroupAccount,
 } from "../../scripts/background/store/vault/types/keyring";
 import { KEEP_ALIVE_INTERVAL } from "../constants";
 import {
@@ -34,7 +34,7 @@ import { PortName } from "../types/port";
 import { logger } from "./logger";
 import { type IPort, Port } from "./port";
 import { nanoid } from "nanoid";
-import { CoinType } from "core/types";
+import { type CoinType } from "core/types";
 
 export interface IClient {
   _connect: () => void;
@@ -93,8 +93,12 @@ export class PopupServerClient implements IClient, IPopupServer {
   _connect(): void {
     this.port = new Port({ name: PortName.POPUP_TO_BACKGROUND });
     this.port.onMessage.addListener(this.#onMessage.bind(this));
-    this.port.onDisconnect.addListener(() => {
-      logger.warn("PopupServerClient disconnected, try to reconnect");
+    this.port.onDisconnect.addListener((...args) => {
+      logger.warn(
+        "PopupServerClient disconnected, try to reconnect ",
+        " args: ",
+        args,
+      );
       Object.values(this.callbackMap).forEach((callback) => {
         callback(new Error("PopupServerClient disconncected"));
       });
@@ -109,7 +113,7 @@ export class PopupServerClient implements IClient, IPopupServer {
     if (callback) {
       const { error, data } = payload;
       if (error) {
-        callback(new Error(error), null);
+        callback(new Error(error?.message ?? error), null);
       } else {
         callback(null, data);
       }
@@ -130,11 +134,11 @@ export class PopupServerClient implements IClient, IPopupServer {
   }
 
   async lock(): Promise<void> {
-    return await this.#send("lock", {});
+    await this.#send("lock", {});
   }
 
   async timeoutLock(): Promise<void> {
-    return await this.#send("timeoutLock", {});
+    await this.#send("timeoutLock", {});
   }
 
   async createWallet(params: CreateWalletProps): Promise<DisplayWallet> {
@@ -161,28 +165,16 @@ export class PopupServerClient implements IClient, IPopupServer {
     return await this.#send("importPrivateKey", params);
   }
 
-  async getSelectedAccount(
-    params: GetSelectedAccountProps,
-  ): Promise<SelectedAccount | null> {
-    return await this.#send("getSelectedAccount", params);
+  async getSelectedGroupAccount(
+    params?: GetSelectedAccountProps | undefined,
+  ): Promise<OneMatchGroupAccount | null> {
+    return await this.#send("getSelectedGroupAccount", params);
   }
 
-  async setSelectedAccount(
-    params: SetSelectedAccountProps,
-  ): Promise<SelectedAccount> {
-    return await this.#send("setSelectedAccount", params);
-  }
-
-  async getSelectedUniqueId(
-    params: GetSelectedUniqueIdProps,
-  ): Promise<InnerChainUniqueId> {
-    return await this.#send("getSelectedUniqueId", params);
-  }
-
-  async setSelectedUniqueId(
-    params: SetSelectedUniqueIdProps,
-  ): Promise<InnerChainUniqueId> {
-    return await this.#send("setSelectedUniqueId", params);
+  async setSelectedGroupAccount({
+    groupAccount,
+  }: SetSelectedAccountProps): Promise<OneMatchGroupAccount> {
+    return await this.#send("setSelectedGroupAccount", { groupAccount });
   }
 
   async getHDWallet(walletId: string): Promise<DisplayWallet> {
@@ -201,8 +193,12 @@ export class PopupServerClient implements IClient, IPopupServer {
     return await this.#send("rescanAleo", {});
   }
 
+  async resetChain(): Promise<boolean> {
+    return await this.#send("resetChain", {});
+  }
+
   async sendAleoTransaction(params: AleoSendTxProps): Promise<void> {
-    return await this.#send("sendAleoTransaction", params);
+    await this.#send("sendAleoTransaction", params);
   }
 
   async isSendingAleoTransaction(): Promise<boolean> {
@@ -214,11 +210,15 @@ export class PopupServerClient implements IClient, IPopupServer {
   }
 
   async onRequestFinish(params: RequestFinfishProps): Promise<void> {
-    return await this.#send("onRequestFinish", params);
+    await this.#send("onRequestFinish", params);
   }
 
   async getHDMnemonic(walletId: string): Promise<string> {
     return await this.#send("getHDMnemonic", walletId);
+  }
+
+  async resetWallet(): Promise<boolean> {
+    return await this.#send("resetWallet", {});
   }
 
   async deleteWallet(walletId: string): Promise<DisplayKeyring> {
@@ -233,12 +233,8 @@ export class PopupServerClient implements IClient, IPopupServer {
     return await this.#send("checkPassword", password);
   }
 
-  async changeAccountHideState(params: ChangeAccountStateProps): Promise<void> {
-    return await this.#send("changeAccountHideState", params);
-  }
-
   async #send<T, R>(method: PopupServerMethod, payload: T): Promise<R> {
-    return await new Promise<R>((resolve, reject) => {
+    return new Promise<R>((resolve, reject) => {
       const id = nanoid();
       const message: ServerMessage = {
         type: MessageType.REQUEST,

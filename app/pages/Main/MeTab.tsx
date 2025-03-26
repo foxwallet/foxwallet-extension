@@ -2,15 +2,17 @@ import { HELP_CENTER_URL } from "@/common/constants";
 import {
   IconChevronRight,
   IconCommunity,
+  IconConnect,
+  IconContact,
   IconGuide,
   IconLogo,
+  IconNetwork,
   IconSecurityTips,
   IconSettings,
   IconWallet,
 } from "@/components/Custom/Icon";
-import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import SettingItem from "@/components/Setting/SettingItem";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
+import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
 import { useCurrWallet } from "@/hooks/useWallets";
 import { Content } from "@/layouts/Content";
@@ -24,7 +26,7 @@ import browser from "webextension-polyfill";
 export const MeTab = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { selectedAccount } = useCurrAccount();
+  const { groupAccount } = useGroupAccount();
   const { selectedWallet } = useCurrWallet();
 
   const onSwitchWallet = useCallback(() => {
@@ -35,14 +37,14 @@ export const MeTab = () => {
     if (selectedWallet) {
       navigate(`/wallet_detail/${selectedWallet.walletId}`);
     }
-  }, [navigate, selectedWallet?.walletId]);
+  }, [navigate, selectedWallet]);
 
   const onGuide = useCallback(() => {
     const url =
       i18next.resolvedLanguage === "zh"
         ? `${HELP_CENTER_URL}/zh/blog/aleo-extension-tutorial`
         : `${HELP_CENTER_URL}/blog/aleo-extension-tutorial`;
-    browser.tabs.create({ url });
+    void browser.tabs.create({ url });
   }, []);
 
   const onCummunity = useCallback(() => {
@@ -54,11 +56,23 @@ export const MeTab = () => {
       i18next.resolvedLanguage === "zh"
         ? `${HELP_CENTER_URL}/zh/docs/security-tips`
         : `${HELP_CENTER_URL}/docs/security-tips`;
-    browser.tabs.create({ url });
+    void browser.tabs.create({ url });
   }, []);
 
   const onSettings = useCallback(() => {
     navigate("/settings");
+  }, [navigate]);
+
+  const onNetworks = useCallback(() => {
+    navigate("/networks");
+  }, [navigate]);
+
+  const onContact = useCallback(() => {
+    navigate(`/contacts/manage?uniqueId=`);
+  }, [navigate]);
+
+  const onConnectedSites = useCallback(() => {
+    navigate("/connected_sites");
   }, [navigate]);
 
   const { borderColor } = useThemeStyle();
@@ -89,7 +103,7 @@ export const MeTab = () => {
               fontWeight={500}
               noOfLines={1}
             >
-              <MiddleEllipsisText text={selectedAccount.address} width={150} />
+              <Text maxW={270}>{groupAccount?.group.groupName}</Text>
             </Box>
           </Flex>
         </Flex>
@@ -102,6 +116,22 @@ export const MeTab = () => {
           onPress={onWalletDetail}
         />
         <SettingItem
+          title={t("Setting:networks")}
+          icon={<IconNetwork w={4} h={4} />}
+          onPress={onNetworks}
+        />
+        <SettingItem
+          title={t("Setting:contacts")}
+          icon={<IconContact w={4} h={4} />}
+          onPress={onContact}
+        />
+        {/* <SettingItem */}
+        {/*  title={t("Setting:connectedSites")} */}
+        {/*  icon={<IconConnect w={4} h={4} />} */}
+        {/*  onPress={onConnectedSites} */}
+        {/* /> */}
+        <Divider h={"1px"} mb={2.5} />
+        <SettingItem
           title={t("Setting:tutorial")}
           icon={<IconGuide w={4} h={4} />}
           onPress={onGuide}
@@ -111,7 +141,6 @@ export const MeTab = () => {
           icon={<IconCommunity w={4} h={4} />}
           onPress={onCummunity}
         />
-        <Divider h={"1px"} mb={2.5} />
         <SettingItem
           title={t("Setting:securityTips")}
           icon={<IconSecurityTips w={4} h={4} />}

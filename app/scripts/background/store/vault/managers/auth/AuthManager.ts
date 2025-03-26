@@ -2,8 +2,8 @@ import {
   generateToken,
   getToken,
   validateToken,
-} from "../../../../../../common/utils/auth";
-import { logger } from "../../../../../../common/utils/logger";
+} from "@/common/utils/auth";
+import { logger } from "@/common/utils/logger";
 import { vaultStorage, type VaultStorage } from "../../VaultStorage";
 
 const EXPIRE_TIME = 1000 * 60 * 60 * 4;
@@ -81,6 +81,8 @@ export class AuthManager {
       this.#token = token.toString("hex");
       this.#loginTimestamp = Date.now();
     }
+    // migrate when login
+    await this.#storage.migrate();
     return valid;
   }
 

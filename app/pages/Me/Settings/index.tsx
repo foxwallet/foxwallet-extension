@@ -2,26 +2,24 @@ import {
   IconChevronDown,
   IconCurrency,
   IconEdit,
-  IconInfo,
+  IconAbout,
   IconLanguage,
   IconReset,
 } from "@/components/Custom/Icon";
 import { showConfirmResyncDialog } from "@/components/Setting/ConfirmResyncDialog";
 import SettingItem from "@/components/Setting/SettingItem";
 import { useClient } from "@/hooks/useClient";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { usePopupSelector } from "@/hooks/useStore";
 import { Content } from "@/layouts/Content";
 import { PageWithHeader } from "@/layouts/Page";
 import { LanguageLabels } from "@/locales/i18";
-import { CURRENCY } from "core/constants";
-import { CoinType } from "core/types";
 import { isEqual } from "lodash";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import TestTheme from "../TestTheme";
-import { Button } from "@chakra-ui/react";
+import { Button, Flex, Text } from "@chakra-ui/react";
+import { showResetApplicationDialog } from "@/components/Wallet/ResetApplicationDialog";
+import { useWallets } from "@/hooks/useWallets";
 
 const SettingsScreen = () => {
   const { t } = useTranslation();
@@ -33,8 +31,8 @@ const SettingsScreen = () => {
     }),
     isEqual,
   );
-  const { selectedAccount } = useCurrAccount();
   const { popupServerClient } = useClient();
+  const { resetWallet } = useWallets();
 
   const onModifyPassword = useCallback(() => {
     navigate("/change_password");
@@ -53,11 +51,26 @@ const SettingsScreen = () => {
       const { confirmed } = await showConfirmResyncDialog();
       if (confirmed) {
         return await popupServerClient.rescanAleo();
+        // return await popupServerClient.resetChain();
       }
     } catch (err) {
       console.error(err);
     }
   }, [popupServerClient]);
+
+  const onReset = useCallback(async () => {
+    try {
+      const { confirmed } = await showResetApplicationDialog();
+      if (confirmed) {
+        const res = await resetWallet();
+        if (res) {
+          navigate("/onboard/home");
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }, [navigate, resetWallet]);
 
   const onAbout = useCallback(() => {
     navigate("/about");
@@ -83,22 +96,40 @@ const SettingsScreen = () => {
           icon={<IconCurrency w={4} h={4} />}
           onPress={onCurrency}
         /> */}
-        {selectedAccount.coinType === CoinType.ALEO && (
-          <SettingItem
-            title={t("Reset:account")}
-            icon={<IconReset w={"16px"} h={"16px"} />}
-            noNext
-            onPress={onResetAleoStatus}
-          />
-        )}
+        {/* <SettingItem */}
+        {/*  title={t("Reset:account")} */}
+        {/*  icon={<IconReset w={"16px"} h={"16px"} />} */}
+        {/*  noNext */}
+        {/*  onPress={onResetAleoStatus} */}
+        {/* /> */}
         <SettingItem
           title={t("About:title")}
-          icon={<IconInfo w={4} h={4} />}
+          icon={<IconAbout w={4} h={4} />}
           onPress={onAbout}
         />
-        <Button onClick={() => navigate("/manage_wallet")}>
+        <Button
+          onClick={() => {
+            navigate("/manage_wallet");
+          }}
+        >
           {t("Setting:switchWallet")}
         </Button>
+        <Flex
+          w={"full"}
+          h={10}
+          alignItems={"center"}
+          justifyContent={"center"}
+          mt={4}
+        >
+          <Text
+            onClick={onReset}
+            cursor={"pointer"}
+            textDecoration={"underline"}
+            textColor={"#EF466F"}
+          >
+            {t("Setting:resetApplication")}
+          </Text>
+        </Flex>
       </Content>
     </PageWithHeader>
   );

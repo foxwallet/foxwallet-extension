@@ -1,17 +1,17 @@
 import {
-  ChangeEvent,
+  type ChangeEvent,
   useCallback,
   useEffect,
   useMemo,
   useState,
-  KeyboardEvent,
+  type KeyboardEvent,
 } from "react";
-import { H6 } from "../../../common/theme/components/text";
+import { H6 } from "@/common/theme/components/text";
 import { Box, Button, Flex, Text, Textarea } from "@chakra-ui/react";
-import { Content } from "../../../layouts/Content";
+import { Content } from "@/layouts/Content";
 import { wordlists, validateMnemonic } from "bip39";
 import { useDebounce } from "use-debounce";
-import { useDataRef } from "../../../hooks/useDataRef";
+import { useDataRef } from "@/hooks/useDataRef";
 import { WarningArea } from "../../Custom/WarningArea";
 import { useTranslation } from "react-i18next";
 
@@ -27,44 +27,46 @@ export const ImportMnemonicStep = ({ onConfirm }: Props) => {
   const [matchWords, setMatchWords] = useState<string[]>([]);
   const matchWordsRef = useDataRef(matchWords);
   const [errorWord, setErrorWord] = useState("");
+  const wordSet = useMemo(() => new Set(wordlists.english), []);
 
-  const checkLastWord = useCallback((lastWord: string) => {
-    if (!lastWord) {
-      return { correct: true, matchWords: [] };
-    }
-    const wordlist = wordlists.english;
-    let exist = false;
-    const matches = [];
-    for (let word of wordlist) {
-      if (word === lastWord) {
-        exist = true;
-        break;
+  const checkLastWord = useCallback(
+    (lastWord: string) => {
+      if (!lastWord) {
+        return { correct: true, matchWords: [] };
       }
-      if (word.startsWith(lastWord)) {
-        matches.push(word);
-      }
-    }
-    if (exist) {
-      // last word is correct
-      return { correct: true, matchWords: [] };
-    } else if (matches.length === 0) {
-      // last word is incorrect
-      return { correct: false, matchWords: [] };
-    } else {
-      // last word is typing
-      return { correct: true, matchWords: matches.slice(0, 10) };
-    }
-  }, []);
 
-  const checkOtherWords = useCallback((words: string[]) => {
-    const wordlist = wordlists.english;
-    return words.findLast((it) => !wordlist.includes(it)) || "";
-  }, []);
+      const lowercaseWord = lastWord.toLowerCase();
+      if (wordSet.has(lowercaseWord)) {
+        return { correct: true, matchWords: [] };
+      }
+
+      // 对于前缀匹配，遍历
+      const matches = Array.from(wordSet)
+        .filter((word) => word.startsWith(lowercaseWord))
+        .slice(0, 10);
+
+      return {
+        correct: matches.length > 0,
+        matchWords: matches,
+      };
+    },
+    [wordSet],
+  );
+
+  const checkOtherWords = useCallback(
+    (words: string[]) => {
+      return (
+        [...words].reverse().find((word) => !wordSet.has(word.toLowerCase())) ??
+        ""
+      );
+    },
+    [wordSet],
+  );
 
   const checkMnemonicWord = useCallback(
     (originalText: string) => {
       const words = originalText.trim().split(" ");
-      const lastWord = words.pop() || "";
+      const lastWord = words.pop() ?? "";
       const { correct: lastWordCorrect, matchWords: _matchWords } =
         checkLastWord(lastWord);
       setMatchWords(_matchWords);
@@ -95,21 +97,24 @@ export const ImportMnemonicStep = ({ onConfirm }: Props) => {
   );
 
   const onInputChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
-    let value = e.target.value;
+    const value = e.target.value;
     let processText = value.toLowerCase().replace(/\s\s+/g, " ");
     processText = processText.replace(/[^a-zA-Z\s]/g, "");
     setMnemonic(processText);
   }, []);
 
-  const handleKeyDown = useCallback((e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" || e.key === "Tab") {
-      e.preventDefault();
-      const word = matchWordsRef.current[0];
-      if (word) {
-        onReplaceLastWord(word);
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key === "Enter" || e.key === "Tab") {
+        e.preventDefault();
+        const word = matchWordsRef.current[0];
+        if (word) {
+          onReplaceLastWord(word);
+        }
       }
-    }
-  }, []);
+    },
+    [matchWordsRef, onReplaceLastWord],
+  );
 
   const isValid = useMemo(() => {
     return validateMnemonic(mnemonic.trim());
@@ -148,7 +153,9 @@ export const ImportMnemonicStep = ({ onConfirm }: Props) => {
               py={"1"}
               mr={"2"}
               mt={"2"}
-              onClick={() => onReplaceLastWord(item)}
+              onClick={() => {
+                onReplaceLastWord(item);
+              }}
             >
               <Text color={"green.700"}>{item}</Text>
             </Box>

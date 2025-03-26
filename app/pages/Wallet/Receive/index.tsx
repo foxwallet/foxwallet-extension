@@ -1,4 +1,3 @@
-import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { PageWithHeader } from "@/layouts/Page";
 import {
   Flex,
@@ -7,24 +6,39 @@ import {
   chakra,
   useClipboard,
   useColorModeValue,
+  Image,
 } from "@chakra-ui/react";
 import { QRCodeSVG } from "qrcode.react";
-// @ts-ignore
 import WALLET_LOGO from "@/common/assets/image/logo.png";
 import { Content } from "@/layouts/Content";
-import { HeaderLeftIconType } from "@/components/Custom/Header";
-import { IconAleo, IconCopyBlack, IconWarning } from "@/components/Custom/Icon";
-import { useCallback } from "react";
+import {
+  IconCopyBlack,
+  IconTokenPlaceHolder,
+  IconWarning,
+} from "@/components/Custom/Icon";
+import { useCallback, useMemo } from "react";
 import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
 import { useTranslation } from "react-i18next";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
+import { useCoinService } from "@/hooks/useCoinService";
+import { useSafeParams } from "@/hooks/useSafeParams";
+import { useSafeTokenInfo } from "@/hooks/useSafeTokenInfo";
 
 const QRCode = chakra(QRCodeSVG);
 
 function ReceiveScreen() {
   const { t } = useTranslation();
-  const { selectedAccount } = useCurrAccount();
-  const { onCopy } = useClipboard(selectedAccount.address);
+
+  const { uniqueId, address } = useSafeParams();
+  // console.log("      params ", uniqueId, address);
+
+  const { chainConfig } = useCoinService(uniqueId);
+
+  const { tokenInfo } = useSafeTokenInfo(uniqueId, address);
+  // console.log("      tokenInfo");
+  // console.log({ ...tokenInfo });
+
+  const { onCopy } = useClipboard(address);
   const { showToast } = useCopyToast();
 
   const handleCopy = useCallback(() => {
@@ -39,25 +53,31 @@ function ReceiveScreen() {
     <PageWithHeader enableBack title={t("Receive:title")}>
       <Content>
         <VStack>
-          <IconAleo h={10} w={10} />
+          {tokenInfo.icon ? (
+            <Image src={tokenInfo?.icon} w={10} h={10} borderRadius={20} />
+          ) : (
+            <IconTokenPlaceHolder w={10} h={10} />
+          )}
           <Text fontWeight={500} fontSize={14}>
-            {t("Receive:scanToTransfer")}
+            {`${t("Receive:scanToTransfer")} ${tokenInfo.symbol}`}
           </Text>
           <Flex
             bg={"rgba(239, 70, 111, 0.08)"}
-            h={6}
             px={2.5}
+            py={1}
             borderRadius={4}
             align={"center"}
           >
             <IconWarning mr={1} />
             <Text color={"#EF466F"} fontWeight={500} fontSize={14}>
-              {t("Receive:onlyTips")}
+              {t("Receive:onlyTips", {
+                symbol: chainConfig.chainName,
+              })}
             </Text>
           </Flex>
         </VStack>
         <QRCode
-          value={selectedAccount.address}
+          value={address ?? ""}
           mt={4}
           h={200}
           w={200}
@@ -81,7 +101,7 @@ function ReceiveScreen() {
           p={2.5}
         >
           <Text noOfLines={3} maxW={274} fontSize={12} fontWeight={500}>
-            {selectedAccount.address}
+            {address ?? ""}
           </Text>
           <Flex
             h={6}

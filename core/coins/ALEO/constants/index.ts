@@ -16,4 +16,6 @@ export const ALPHA_TOKEN_PROGRAM_ID = "alphaswap.aleo";
 
 export const BETA_STAKING_PROGRAM_ID = "betastaking.aleo";
 
+export const TOKEN_REGISTRY_PROGRAM_ID = "token_registry.aleo";
+
 export const ARCANE_PROGRAM_ID = "token_registry.aleo";

@@ -1,4 +1,4 @@
-import { AleoTxAddressType } from "./History";
+import { type AleoTxAddressType } from "./History";
 
 export enum TaskPriority {
   HIGH = 0,

@@ -1,26 +1,23 @@
-import { Box, Flex, Text } from "@chakra-ui/react";
-import { promisifyChooseDialogWrapper } from "../../../common/utils/dialog";
+import { Button, Flex, Text } from "@chakra-ui/react";
+import { promisifyChooseDialogWrapper } from "@/common/utils/dialog";
 import { BasicDrawer } from "@/components/Custom/Drawer";
-import { useCurrWallet } from "@/hooks/useWallets";
-import {
-  IconAleo,
-  IconArrowRight,
-  IconCheckLineBlack,
-} from "@/components/Custom/Icon";
-import React, { useCallback } from "react";
-import { DisplayAccount } from "@/scripts/background/store/vault/types/keyring";
-import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
+import { useCurrWallet, useWallets } from "@/hooks/useWallets";
+import { IconArrowRight, IconCheckLineBlack } from "@/components/Custom/Icon";
+import type React from "react";
+import { useMemo, useCallback } from "react";
 import { usePopupDispatch } from "@/hooks/useStore";
-import { CoinType } from "core/types";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
 import { H6 } from "@/common/theme/components/text";
-import { useNavigate } from "react-router-dom";
+import { useGroupAccount } from "@/hooks/useGroupAccount";
+import { type OneMatchGroupAccount } from "@/scripts/background/store/vault/types/keyring";
+import { useTranslation } from "react-i18next";
+import { nanoid } from "nanoid";
+import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 
 interface AccountListItemProps {
-  account: DisplayAccount;
+  account: OneMatchGroupAccount;
   isSelected: boolean;
-  onSelected: (account: DisplayAccount) => void;
+  onSelected: (account: OneMatchGroupAccount) => void;
 }
 const AccountListItem: React.FC<AccountListItemProps> = ({
   account,
@@ -46,11 +43,8 @@ const AccountListItem: React.FC<AccountListItemProps> = ({
     >
       <Flex direction={"column"}>
         <Text fontSize={13} fontWeight={500} align={"start"}>
-          {account.accountName}
+          {account.group.groupName}
         </Text>
-        <Box fontSize={9} color={"#777E90"} noOfLines={1}>
-          <MiddleEllipsisText text={account.address} width={260} />
-        </Box>
       </Flex>
       {isSelected && <IconCheckLineBlack height={18} width={18} />}
     </Flex>
@@ -66,10 +60,19 @@ interface Props {
 
 const WalletsDrawer = (props: Props) => {
   const { isOpen, onCancel, onConfirm, onManageWallet } = props;
-
-  const { selectedAccount } = useCurrAccount();
-  const { selectedWallet, accountsInWallet } = useCurrWallet();
+  const { t } = useTranslation();
+  const { groupAccount } = useGroupAccount();
+  const { selectedWallet, groupAccountsInWallet } = useCurrWallet();
   const dispatch = usePopupDispatch();
+  const { addAccount } = useWallets();
+
+  const walletId = useMemo(() => {
+    return selectedWallet?.walletId ?? "";
+  }, [selectedWallet]);
+
+  const onAddAccount = useCallback(() => {
+    void addAccount(walletId, nanoid());
+  }, [addAccount, walletId]);
 
   const handleManageWallet = useCallback(() => {
     onConfirm?.();
@@ -77,35 +80,30 @@ const WalletsDrawer = (props: Props) => {
   }, [onManageWallet, onConfirm]);
 
   const onSelectAccount = useCallback(
-    (account: DisplayAccount) => {
+    (account: OneMatchGroupAccount) => {
       if (!selectedWallet?.walletId) return;
 
-      dispatch.account.setSelectedAccount({
-        selectedAccount: {
-          walletId: selectedWallet?.walletId,
-          coinType: CoinType.ALEO,
-          ...account,
-          accountName: account.accountName,
-        },
+      void dispatch.accountV2.setSelectedGroupAccount({
+        selectedGroupAccount: account,
       });
       onConfirm?.();
     },
-    [dispatch.account, selectedWallet?.walletId, onConfirm],
+    [dispatch.accountV2, selectedWallet?.walletId, onConfirm],
   );
 
   const renderAccountItem = useCallback(
-    (account: DisplayAccount, index: number) => {
-      const isSelected = selectedAccount.accountId === account.accountId;
+    (account: OneMatchGroupAccount, index: number) => {
+      const isSelected = groupAccount.group.groupId === account.group.groupId;
       return (
         <AccountListItem
-          key={`${account.accountId}${index}`}
+          key={`${account.group.groupId}${index}`}
           account={account}
           isSelected={isSelected}
           onSelected={onSelectAccount}
         />
       );
     },
-    [selectedAccount.accountId, onSelectAccount],
+    [groupAccount.group.groupId, onSelectAccount],
   );
 
   return (
@@ -117,6 +115,7 @@ const WalletsDrawer = (props: Props) => {
           justifyContent={"center"}
           alignItems={"center"}
           onClick={handleManageWallet}
+          cursor={"pointer"}
         >
           <H6>{selectedWallet?.walletName}</H6>
           <IconArrowRight w={18} h={18} ml={0.5} />
@@ -124,15 +123,21 @@ const WalletsDrawer = (props: Props) => {
       }
       body={
         <Flex flexDirection={"column"} px={1.5}>
-          <Flex align={"center"} justify={"flex-start"}>
-            <IconAleo />
-            <Text ml={1} fontSize={14} fontWeight={500}>
-              ALEO
-            </Text>
+          <Flex
+            direction={"column"}
+            maxH={400}
+            overflowY="auto"
+            sx={HIDE_SCROLL_BAR_CSS}
+          >
+            {groupAccountsInWallet.map(renderAccountItem)}
           </Flex>
-          <Flex direction={"column"} maxH={190} overflowY="auto">
-            {accountsInWallet.map(renderAccountItem)}
-          </Flex>
+        </Flex>
+      }
+      footer={
+        <Flex justify={"space-between"} flex={1}>
+          <Button flex={1} onClick={onAddAccount}>
+            {t("Wallet:Manage:addAccount")}
+          </Button>
         </Flex>
       }
     />

@@ -1,8 +1,6 @@
 import { get, post } from "@/common/utils/request";
-import { AllTokenResp } from "./token.di";
-import { Token } from "../../types/Token";
-import { ALPHA_TOKEN_PROGRAM_ID } from "../../constants";
-import { ArcaneTokensResp } from "./arcane.di";
+import { type Token } from "../../types/Token";
+import { type ArcaneTokensResp } from "./arcane.di";
 
 export class ArcaneApi {
   host: string;

@@ -9,9 +9,11 @@ import { logger } from "../../../common/utils/logger";
 import { type ContentWalletServer } from "../servers/ContentServer";
 import { PortName } from "../../../common/types/port";
 import { executeServerMethod } from "../servers/IWalletServer";
+import {EmitData} from "@/scripts/content/type";
 
 export class ContentServerHandler implements IHandler {
   contentServer: ContentWalletServer;
+  pagePorts: Runtime.Port[] = [];
 
   constructor(contentWalletServer: ContentWalletServer) {
     this.contentServer = contentWalletServer;
@@ -25,23 +27,47 @@ export class ContentServerHandler implements IHandler {
   }
 
   handle(port: Runtime.Port): void | Promise<void> {
+    if (!this.pagePorts.includes(port)) {
+      this.pagePorts.push(port);
+    } else {
+      console.log("ContentServerHandler do get duplicate port");
+    }
     port.onMessage.addListener(async (msg: ServerMessage) => {
       if (msg.type !== MessageType.REQUEST) {
         return;
       }
-      const { id, method, payload, origin } = msg;
-      if (origin !== PortName.CONTENT_TO_BACKGROUND) {
+      if (msg.origin !== PortName.CONTENT_TO_BACKGROUND) {
         logger.error("ContentServerHandler Invalid origin ", msg.origin);
         return;
       }
-      const siteMetadata = msg.siteMetadata;
+      console.log("ContentServerHandler msg", msg);
+      const { id, method, coinType, payload, origin, siteMetadata } = msg;
       const resp = this.wrapContentResp(
         await executeServerMethod(
-          this.contentServer[method](payload, siteMetadata) as any,
+          this.contentServer.execute({
+            method,
+            payload,
+            siteMetadata,
+            coinType,
+          }) as any,
         ),
         id,
       );
       port.postMessage(resp);
     });
+    port.onDisconnect.addListener((port)=>{
+      this.pagePorts = this.pagePorts.filter(lPort => lPort === port);
+    })
+  }
+
+  emitToDapps(message: EmitData) {
+    console.log("ContentServerHandler emitToDapps", this.pagePorts);
+    this.pagePorts.forEach((port) => {
+      try {
+        port.postMessage(message);
+      } catch (e) {
+        console.log("ContentServerHandler", e);
+      }
+    })
   }
 }

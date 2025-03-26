@@ -1,5 +1,3 @@
-import { type ChainUniqueId } from "./ChainUniqueId";
-
 export interface NFTMarket {
   name: string;
   baseUrl: string;
@@ -7,9 +5,8 @@ export interface NFTMarket {
   collectionPath: string;
 }
 
-export interface NFTApiConfig {
-  uniqueId: ChainUniqueId;
-  supportResync: boolean;
-}
-
-export type NFTConfig = Pick<NFTApiConfig, "supportResync">;
+export type NFTConfig = {
+  supportResync?: boolean;
+  supportCollectionWay?: boolean;
+  markets?: NFTMarket[];
+};

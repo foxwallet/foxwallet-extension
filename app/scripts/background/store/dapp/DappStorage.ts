@@ -1,6 +1,6 @@
 import { CoinType } from "core/types";
 import { dappDB } from "@/database/DappDatabase";
-import { AleoConnectHistory, DappRequest } from "@/database/types/dapp";
+import { ConnectHistory, DappRequest } from "@/database/types/dapp";
 
 export class DappStorage {
   constructor() {}
@@ -20,11 +20,22 @@ export class DappStorage {
     const instance = await this.getStorageInstance();
     switch (coinType) {
       case CoinType.ALEO: {
-        const historyList = await instance.aleo_history
-          .where("[address+network]")
-          .equals([address, chainId])
+        return instance.dapp_history
+          .where("[address+coinType+network]")
+          .equals([address, coinType, chainId])
           .toArray();
-        return historyList;
+      }
+      case CoinType.ETH: {
+        if (!chainId) {
+          return instance.dapp_history
+            .where("[address+coinType]")
+            .equals([address, coinType])
+            .toArray();
+        }
+        return instance.dapp_history
+          .where("[address+coinType+network]")
+          .equals([address, coinType, chainId])
+          .toArray();
       }
     }
   };
@@ -32,22 +43,54 @@ export class DappStorage {
   addConnectHistory = async (
     coinType: CoinType,
     address: string,
-    history: AleoConnectHistory,
+    history: ConnectHistory,
   ) => {
     const instance = await this.getStorageInstance();
     switch (coinType) {
-      case CoinType.ALEO: {
-        const count = await instance.aleo_history
+      case CoinType.ETH:
+        const count = await instance.dapp_history
           .where({
             address,
+            coinType,
+            "site.origin": history.site.origin,
+          })
+          .count();
+        if (count) {
+          await instance.dapp_history
+            .where({
+              address,
+              coinType,
+              "site.origin": history.site.origin,
+            })
+            .modify((item) => {
+              item.decryptPermission =
+                history.decryptPermission || item.decryptPermission;
+              item.disconnected = false;
+              item.lastConnectTime = Date.now();
+              item.programs = history.programs;
+            });
+        } else {
+          await instance.dapp_history.add({
+            ...history,
+            address,
+            coinType,
+          });
+        }
+        break;
+      case CoinType.ALEO: {
+        const count = await instance.dapp_history
+          .where({
+            address,
+            coinType,
             network: history.network,
             "site.origin": history.site.origin,
           })
           .count();
         if (count) {
-          await instance.aleo_history
+          await instance.dapp_history
             .where({
               address,
+              coinType,
               network: history.network,
               "site.origin": history.site.origin,
             })
@@ -59,11 +102,13 @@ export class DappStorage {
               item.programs = history.programs;
             });
         } else {
-          await instance.aleo_history.add({
+          await instance.dapp_history.add({
             ...history,
             address,
+            coinType,
           });
         }
+        break;
       }
     }
   };
@@ -76,16 +121,19 @@ export class DappStorage {
   ) => {
     const instance = await this.getStorageInstance();
     switch (coinType) {
+      case CoinType.ETH:
       case CoinType.ALEO: {
-        await instance.aleo_history
+        await instance.dapp_history
           .where({
             address,
-            network: chainId,
+            coinType,
+            network: coinType === CoinType.ETH ? "" : chainId,
             "site.origin": origin,
           })
           .modify((item) => {
             item.disconnected = true;
           });
+        break;
       }
     }
   };

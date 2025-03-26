@@ -1,14 +1,13 @@
-import { Token } from "core/coins/ALEO/types/Token";
+import { type TokenV2 } from "core/types/Token";
 
-export const serializeToken = (token: Token) => {
-  const { tokenId, name, symbol, decimals, logo, official, programId } = token;
-  return JSON.stringify({
-    tokenId,
-    name,
-    symbol,
-    decimals,
-    logo,
-    official,
-    programId,
-  });
+export const serializeToken = (token: TokenV2) => {
+  return JSON.stringify(token, (key, value) =>
+    typeof value === "bigint" ? value.toString() : value,
+  );
+};
+
+export const serializeData = <T>(token: T) => {
+  return JSON.stringify(token, (key, value) =>
+    typeof value === "bigint" ? value.toString() : value,
+  );
 };

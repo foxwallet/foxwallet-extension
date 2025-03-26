@@ -1,6 +1,5 @@
 import { getBlockDatabaseByChainId } from "./database/AleoBlockDatabase";
-import { ProverKeyPair } from "./types";
-import { AleoLocalTxInfo } from "./types";
+import { type ProverKeyPair, type AleoLocalTxInfo } from "./types";
 
 export class AleoStorage {
   static instance: AleoStorage;
@@ -22,7 +21,7 @@ export class AleoStorage {
 
   async getAddressLocalTxs(chainId: string, address: string) {
     const instance = await this.getBlockDBInstance(chainId);
-    const data = await instance.txs.where({ address: address }).toArray();
+    const data = await instance.txs.where({ address }).toArray();
     return data;
   }
 
@@ -33,7 +32,7 @@ export class AleoStorage {
   ): Promise<AleoLocalTxInfo | null> {
     const instance = await this.getBlockDBInstance(chainId);
     const data = await instance.txs.where({ localId }).first();
-    return data ? data : null;
+    return data ?? null;
   }
 
   async setAddressLocalTx(
@@ -64,9 +63,7 @@ export class AleoStorage {
     programId: string,
   ): Promise<string | null> {
     const instance = await this.getBlockDBInstance(chainId);
-    const data = await instance.programs
-      .where({ programId: programId })
-      .first();
+    const data = await instance.programs.where({ programId }).first();
     if (!data) {
       return null;
     }
@@ -128,8 +125,8 @@ export class AleoStorage {
     ]);
     if (existProverSha1 === proverSha1 && existVerifierSha1 === verifierSha1) {
       return {
-        proverFile: proverFile,
-        verifierFile: verifierFile,
+        proverFile,
+        verifierFile,
       };
     } else {
       console.error("Cached prover is broken ", programId, functionName);

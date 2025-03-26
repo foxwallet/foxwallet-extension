@@ -1,5 +1,5 @@
 import { IconWeb } from "@/components/Custom/Icon";
-import { SiteInfo } from "@/scripts/content/host";
+import { type SiteInfo } from "@/scripts/content/host";
 import { Flex, Image, Text } from "@chakra-ui/react";
 
 interface DappInfoProps {
@@ -22,7 +22,7 @@ export const DappInfo = (props: DappInfoProps) => {
       p={2}
     >
       <Image
-        src={icon ? icon : undefined}
+        src={icon ?? undefined}
         fallback={<IconWeb w={8} h={8} />}
         fallbackStrategy="beforeLoadOrError"
         w={8}

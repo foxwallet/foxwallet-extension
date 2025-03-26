@@ -1,14 +1,14 @@
-import { ChainUniqueId } from "core/types/ChainUniqueId";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { useCallback, useMemo } from "react";
 import { useClient } from "./useClient";
 import useSWR from "swr";
 
-export const useIsSendingAleoTx = (uniqueId: ChainUniqueId) => {
+export const useIsSendingAleoTx = () => {
   const { popupServerClient } = useClient();
-  const key = `/sending_tx/${uniqueId}`;
+  const key = `/sending_tx/${InnerChainUniqueId.ALEO_MAINNET}`;
   const fetchStatus = useCallback(async () => {
     return await popupServerClient.isSendingAleoTransaction();
-  }, [popupServerClient, uniqueId]);
+  }, [popupServerClient]);
 
   const {
     data: sendingAleoTx,

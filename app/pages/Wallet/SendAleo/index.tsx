@@ -1,16 +1,15 @@
 import { ERROR_CODE } from "@/common/types/error";
 import { useClient } from "@/hooks/useClient";
 import { useCoinService } from "@/hooks/useCoinService";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { PageWithHeader } from "@/layouts/Page";
-import { AleoFeeMethod } from "core/coins/ALEO/types/FeeMethod";
-import { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
+import { type AleoFeeMethod } from "core/coins/ALEO/types/FeeMethod";
+import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 import {
-  AleoLocalTxInfo,
+  type AleoLocalTxInfo,
   AleoTxStatus,
 } from "core/coins/ALEO/types/Transaction";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
-import { AleoGasFee } from "core/types/GasFee";
+import { type AleoGasFee } from "core/types/GasFee";
 import { nanoid } from "nanoid";
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -20,19 +19,27 @@ import { useDataRef } from "@/hooks/useDataRef";
 import { showErrorToast } from "@/components/Custom/ErrorToast";
 import { useTranslation } from "react-i18next";
 import { AleoTxType } from "core/coins/ALEO/types/History";
-import { Token } from "core/coins/ALEO/types/Token";
 import {
   ALPHA_TOKEN_PROGRAM_ID,
   ARCANE_PROGRAM_ID,
   BETA_STAKING_PROGRAM_ID,
   NATIVE_TOKEN_PROGRAM_ID,
 } from "core/coins/ALEO/constants";
-import { useLocationParams } from "@/hooks/useLocationParams";
+import { useGroupAccount } from "@/hooks/useGroupAccount";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
+import { type AleoService } from "core/coins/ALEO/service/AleoService";
+import { type TokenV2 } from "core/types/Token";
+import { useSafeTokenInfo } from "@/hooks/useSafeTokenInfo";
 
 function SendScreen() {
   const navigate = useNavigate();
   const { popupServerClient } = useClient();
-  const { selectedAccount, uniqueId } = useCurrAccount();
+  const { getMatchAccountsWithUniqueId } = useGroupAccount();
+  // Only use in Aleo
+  const uniqueId = InnerChainUniqueId.ALEO_MAINNET;
+  const selectedAccount = useMemo(() => {
+    return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_MAINNET)[0];
+  }, [getMatchAccountsWithUniqueId]);
   const { coinService, chainConfig, nativeCurrency } = useCoinService(uniqueId);
   const { t } = useTranslation();
 
@@ -46,9 +53,12 @@ function SendScreen() {
   const [transferRecord, setTransferRecord] = useState<
     RecordDetailWithSpent | undefined
   >();
-  const tokenStr = useLocationParams("token");
-  const token: Token | undefined = tokenStr ? JSON.parse(tokenStr) : undefined;
-  const [transferToken, setTransferToken] = useState<Token | undefined>(token);
+
+  const { tokenInfo } = useSafeTokenInfo(
+    uniqueId,
+    selectedAccount.account.address,
+  );
+  const [transferToken, setTransferToken] = useState<TokenV2>(tokenInfo);
 
   const onStep1Submit = useCallback(
     ({
@@ -62,7 +72,7 @@ function SendScreen() {
       amountNum: bigint;
       transferMethod: AleoTransferMethod;
       transferRecord?: RecordDetailWithSpent;
-      token: Token;
+      token: TokenV2;
     }) => {
       setReceiverAddress(submitReceiverAddress);
       setTransferAmount(submitAmountNum);
@@ -89,7 +99,7 @@ function SendScreen() {
     }: {
       receiverAddress: string;
       amountNum: bigint;
-      token: Token;
+      token: TokenV2;
       transferMethod: AleoTransferMethod;
       transferRecord?: RecordDetailWithSpent;
       feeType: AleoFeeMethod;
@@ -103,16 +113,24 @@ function SendScreen() {
         return;
       }
       setSubmitting(true);
+
+      const { programId: _programId, tokenId: _tokenId } = (
+        coinService as AleoService
+      ).parseContractAddress(token.contractAddress);
+
+      const tokenId = token.tokenId ?? _tokenId;
+      const programId = token.programId ?? _programId;
+
       try {
-        const address = selectedAccount.address;
-        let inputs: string[];
+        const address = selectedAccount.account.address;
+        let inputs: string[] = [];
         switch (finalTransferMethod) {
           case AleoTransferMethod.PRIVATE:
           case AleoTransferMethod.PRIVATE_TO_PUBLIC: {
             if (!finalTransferRecord || !finalTransferRecord.plaintext) {
               throw new Error(ERROR_CODE.INVALID_ARGUMENT);
             }
-            switch (token.programId) {
+            switch (programId) {
               case NATIVE_TOKEN_PROGRAM_ID: {
                 inputs = [finalTransferRecord.plaintext, to, `${amount}u64`];
                 break;
@@ -143,18 +161,19 @@ function SendScreen() {
                 break;
               }
               case ALPHA_TOKEN_PROGRAM_ID: {
-                inputs = [token.tokenId, to, `${amount}u128`];
+                // todo  token.tokenId ?? ""
+                inputs = [token.tokenId ?? "", to, `${amount}u128`];
                 break;
               }
               case ARCANE_PROGRAM_ID: {
-                inputs = [token.tokenId, to, `${amount}u128`];
+                inputs = [token.tokenId ?? "", to, `${amount}u128`];
                 break;
               }
             }
             break;
           }
           case AleoTransferMethod.PUBLIC_TO_PRIVATE: {
-            switch (token.programId) {
+            switch (programId) {
               case NATIVE_TOKEN_PROGRAM_ID: {
                 inputs = [to, `${amount}u64`];
                 break;
@@ -164,11 +183,11 @@ function SendScreen() {
                 break;
               }
               case ALPHA_TOKEN_PROGRAM_ID: {
-                inputs = [token.tokenId, to, `${amount}u128`];
+                inputs = [token?.tokenId ?? "", to, `${amount}u128`];
                 break;
               }
               case ARCANE_PROGRAM_ID: {
-                inputs = [token.tokenId, to, `${amount}u128`, "false"];
+                inputs = [token.tokenId ?? "", to, `${amount}u128`, "false"];
                 break;
               }
             }
@@ -179,8 +198,8 @@ function SendScreen() {
         const timestamp = Date.now();
         const pendingTx: AleoLocalTxInfo = {
           localId,
-          address: address,
-          programId: token.programId,
+          address,
+          programId: programId ?? "",
           functionName: finalTransferMethod,
           inputs,
           baseFee: gasFee.baseFee.toString(),
@@ -190,20 +209,23 @@ function SendScreen() {
           timestamp,
           amount: amount.toString(),
           txType: AleoTxType.EXECUTION,
-          tokenId: token.tokenId,
+          tokenId: token?.tokenId ?? "",
           notification: false,
         };
-        await coinService.setAddressLocalTx(address, pendingTx);
+        await (coinService as AleoService).setAddressLocalTx(
+          address,
+          pendingTx,
+        );
         popupServerClient
           .sendAleoTransaction({
             uniqueId: chainConfig.uniqueId,
-            walletId: selectedAccount.walletId,
-            accountId: selectedAccount.accountId,
+            walletId: selectedAccount.wallet.walletId,
+            accountId: selectedAccount.account.accountId,
             coinType: chainConfig.coinType,
-            address: address,
+            address,
             localId,
             chainId: chainConfig.chainId,
-            programId: token.programId,
+            programId: programId ?? "",
             functionName: finalTransferMethod,
             inputs,
             feeRecord: feeRecord?.plaintext || null,
@@ -211,27 +233,31 @@ function SendScreen() {
             priorityFee: gasFee.priorityFee.toString(),
             timestamp,
             amount: amount.toString(),
-            tokenId: token.tokenId,
+            tokenId: token?.tokenId ?? "",
           })
           .catch(async (err) => {
             pendingTx.error = (err as Error).message;
             pendingTx.status = AleoTxStatus.FAILED;
-            await coinService.setAddressLocalTx(address, pendingTx);
+            await (coinService as AleoService).setAddressLocalTx(
+              address,
+              pendingTx,
+            );
           });
-        navigate(-1);
+        navigate("/");
       } catch (err) {
-        showErrorToast({ message: (err as Error).message });
+        void showErrorToast({ message: (err as Error).message });
       } finally {
         setSubmitting(false);
       }
     },
     [
-      selectedAccount,
-      nativeCurrency,
-      chainConfig,
-      coinService,
-      navigate,
+      submittingRef,
       transferToken,
+      selectedAccount,
+      coinService,
+      popupServerClient,
+      chainConfig,
+      navigate,
     ],
   );
 
@@ -240,18 +266,21 @@ function SendScreen() {
       case 1: {
         return (
           <TransferInfoStep
+            transferToken={transferToken}
             receiverAddress={receiverAddress}
-            setReceiverAddress={(str: string) => setReceiverAddress(str)}
+            setReceiverAddress={(str: string) => {
+              setReceiverAddress(str);
+            }}
             amountStr={amountStr}
             setAmountStr={setAmountStr}
             transferMethod={transferMethod}
-            setTransferMethod={(method: AleoTransferMethod) =>
-              setTransferMethod(method)
-            }
+            setTransferMethod={(method: AleoTransferMethod) => {
+              setTransferMethod(method);
+            }}
             selectedTransferRecord={transferRecord}
-            setSelectedTransferRecord={(record?: RecordDetailWithSpent) =>
-              setTransferRecord(record)
-            }
+            setSelectedTransferRecord={(record?: RecordDetailWithSpent) => {
+              setTransferRecord(record);
+            }}
             onConfirm={onStep1Submit}
           />
         );
@@ -259,11 +288,11 @@ function SendScreen() {
       case 2: {
         return (
           <GasFeeStep
-            receiverAddress={receiverAddress!}
+            receiverAddress={receiverAddress}
             amountNum={transferAmount!}
             transferMethod={transferMethod}
             transferRecord={transferRecord}
-            token={transferToken!}
+            token={transferToken}
             onConfirm={onStep2Submit}
           />
         );
@@ -274,7 +303,6 @@ function SendScreen() {
     receiverAddress,
     setReceiverAddress,
     transferAmount,
-    setTransferAmount,
     amountStr,
     setAmountStr,
     transferMethod,

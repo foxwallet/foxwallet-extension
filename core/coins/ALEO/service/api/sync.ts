@@ -1,11 +1,11 @@
 import { get, post } from "@/common/utils/request";
 import {
-  RecordFileInfo,
-  RecordRawInfo,
-  RecordTrimInfo,
-  SyncResp,
+  type RecordFileInfo,
+  type RecordRawInfo,
+  type RecordTrimInfo,
+  type SyncResp,
 } from "./sync.di";
-import { RecordDetail, RecordTrimDetail } from "../../types/SyncTask";
+import { type RecordDetail, type RecordTrimDetail } from "../../types/SyncTask";
 
 export class AleoSyncApi {
   host: string;
@@ -112,8 +112,8 @@ export class AleoSyncApi {
   }
 
   async getTrimRecordsInfo(
-    records: Array<RecordTrimDetail>,
-  ): Promise<Array<RecordDetail>> {
+    records: RecordTrimDetail[],
+  ): Promise<RecordDetail[]> {
     const info = await this.postData<SyncResp<RecordRawInfo[]>>(
       `/records/info`,
       records.map((item) => ({
@@ -184,17 +184,22 @@ export class AleoSyncApi {
   async getNodeStatus(): Promise<{
     syncHeight: number;
     referenceHeight: number;
+    serverHeight: number;
   }> {
-    const resp =
-      await this.fetchData<
-        SyncResp<{ sync_height: number; reference_height: number }>
-      >(`/height/status`);
+    const resp = await this.fetchData<
+      SyncResp<{
+        sync_height: number;
+        reference_height: number;
+        server_height: number;
+      }>
+    >(`/height/status`);
     if (resp.status !== 0) {
       throw new Error(resp.msg);
     }
     return {
       syncHeight: resp.data.sync_height,
       referenceHeight: resp.data.reference_height,
+      serverHeight: resp.data.server_height,
     };
   }
 }

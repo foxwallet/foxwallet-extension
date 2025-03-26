@@ -1,4 +1,4 @@
-import { AutoSwitchService } from "../../../../utils/retry";
+import { type AutoSwitchProxy, createAutoSwitchApi } from "core/utils/retry";
 import { TokenApi } from "../api/token";
 
 interface Config {
@@ -6,10 +6,11 @@ interface Config {
   chainId: string;
 }
 
-export class TokenService extends AutoSwitchService<Config, TokenApi> {
-  getInstanceList(config: Config[]): TokenApi[] {
-    return config.map(({ url, chainId }) => {
-      return new TokenApi({ host: url, chainId });
-    });
-  }
-}
+export type AlphaSwapTokenService = AutoSwitchProxy<Config, TokenApi>;
+
+export const createAlphaSwapTokenService = (config: Config[]) => {
+  return createAutoSwitchApi(
+    config,
+    ({ url, chainId }) => new TokenApi({ host: url, chainId }),
+  );
+};

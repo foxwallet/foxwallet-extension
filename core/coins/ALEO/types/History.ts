@@ -1,5 +1,4 @@
-import { Token } from "./Token";
-import { AleoTxStatus } from "./Transaction";
+import { type AleoTxStatus } from "./Transaction";
 
 export enum AleoHistoryType {
   ON_CHAIN = "on_chain",
@@ -27,6 +26,8 @@ export interface AleoOnChainHistoryItem {
   addressType: AleoTxAddressType;
   amount?: string;
   status: AleoTxStatus;
+  from?: string;
+  to?: string;
 }
 
 export interface AleoLocalHistoryItem {

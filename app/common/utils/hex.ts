@@ -1,3 +1,5 @@
+import { stripHexPrefix } from "core/coins/ETH/utils";
+
 export function stringToHex(str: string) {
   let hexStr = "";
   for (let i = 0; i < str.length; i++) {
@@ -18,4 +20,19 @@ export function hexToString(hex: string) {
     console.error("hexToString error:", err);
     return hex;
   }
+}
+
+export const hexify = (data: string) => {
+  if (data.startsWith("0x")) {
+    return data;
+  }
+  return `0x${Buffer.from(data, "utf-8").toString("hex")}`;
+};
+
+export function hexToBuffer(str: string): Buffer {
+  if (!str) {
+    return Buffer.from([]);
+  }
+  str = stripHexPrefix(str);
+  return Buffer.from(str, "hex");
 }

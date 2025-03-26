@@ -1,51 +1,58 @@
 import { createModel } from "@rematch/core";
-import { RootModel } from ".";
-import { ChainUniqueId, InnerChainUniqueId } from "core/types/ChainUniqueId";
-import { Token } from "core/coins/ALEO/types/Token";
+import { type RootModel } from ".";
+import {
+  type ChainUniqueId,
+  type InnerChainUniqueId,
+} from "core/types/ChainUniqueId";
+import { type Token } from "core/coins/ALEO/types/Token";
+import { type TokenV2 } from "core/types/Token";
 
 export type TokenMap = {
-  [address: string]: Token[] | undefined;
+  [address: string]: TokenV2[] | undefined;
 };
 
 export type UserTokensMap = {
-  [uniqueId in InnerChainUniqueId]?: TokenMap;
+  [uniqueId in ChainUniqueId]?: TokenMap;
 };
 
-export type HasInitTokensByInteractiveTokens = {
-  [uniqueId in ChainUniqueId]?: { [address: string]: boolean | undefined };
+export type LastUpdateTimestamp = {
+  [uniqueId in ChainUniqueId]?: { [address: string]: number | undefined };
 };
 
 export type TokenMaps = {
   userTokens: UserTokensMap;
-  hasInitTokensByInteractiveTokens: HasInitTokensByInteractiveTokens;
+  lastUpdateTimestamp: LastUpdateTimestamp;
 };
 
 const defaultTokenMaps: TokenMaps = {
   userTokens: {},
-  hasInitTokensByInteractiveTokens: {},
+  lastUpdateTimestamp: {},
 };
 
 export const tokens = createModel<RootModel>()({
   name: "tokens",
   state: defaultTokenMaps,
   reducers: {
-    initAddressTokens(
+    _reset() {
+      return { ...defaultTokenMaps };
+    },
+    updateAddressTokens(
       state,
       payload: {
         uniqueId: ChainUniqueId;
         address: string;
-        tokens: Token[];
+        tokens: TokenV2[];
       },
     ) {
       const { uniqueId, address, tokens: addressTokens } = payload;
       const allChainTokens = state.userTokens;
-      const userTokens = allChainTokens[uniqueId] ?? {};
+      const oldUniqueIdUserTokens = allChainTokens[uniqueId] ?? {};
       return {
         ...state,
         userTokens: {
           ...allChainTokens,
           [uniqueId]: {
-            ...userTokens,
+            ...oldUniqueIdUserTokens,
             [address]: [...addressTokens],
           },
         },
@@ -57,15 +64,21 @@ export const tokens = createModel<RootModel>()({
       payload: {
         uniqueId: ChainUniqueId;
         address: string;
-        token: Token;
+        token: TokenV2;
       },
     ) {
-      const { uniqueId, address, token } = payload;
+      const { uniqueId, address, token: paramToken } = payload;
+      const token = { ...paramToken, ownerAddress: address };
+
       const allChainTokens = state.userTokens;
-      const userTokens = allChainTokens[uniqueId] ?? {};
-      const addressTokens = userTokens[address] ?? [];
-      const exist = addressTokens.some((item: Token) => {
-        return item.tokenId === token.tokenId;
+      const oldUniqueIdUserTokens = allChainTokens[uniqueId] ?? {};
+      const oldAddressTokens = oldUniqueIdUserTokens[address] ?? [];
+
+      const exist = oldAddressTokens.some((item: TokenV2) => {
+        return (
+          item.contractAddress.toLowerCase() ===
+          token.contractAddress.toLowerCase()
+        );
       });
       if (exist) {
         return state;
@@ -75,8 +88,8 @@ export const tokens = createModel<RootModel>()({
         userTokens: {
           ...allChainTokens,
           [uniqueId]: {
-            ...userTokens,
-            [address]: [...addressTokens, { ...token }],
+            ...oldUniqueIdUserTokens,
+            [address]: [...oldAddressTokens, { ...token }],
           },
         },
       };
@@ -87,47 +100,50 @@ export const tokens = createModel<RootModel>()({
       payload: {
         uniqueId: ChainUniqueId;
         address: string;
-        token: Token;
+        token: TokenV2;
       },
     ) {
       const { uniqueId, address, token } = payload;
       const allChainTokens = state.userTokens;
-      const userTokens = allChainTokens[uniqueId] ?? {};
-      const addressTokens = userTokens[address] ?? [];
-      const newTokens = addressTokens.filter((item: Token) => {
-        return item.tokenId !== token.tokenId;
+      const oldUniqueIdUserTokens = allChainTokens[uniqueId] ?? {};
+      const oldAddressTokens = oldUniqueIdUserTokens[address] ?? [];
+      const newTokens = oldAddressTokens.filter((item: TokenV2) => {
+        return (
+          item.contractAddress.toLowerCase() !==
+          token.contractAddress.toLowerCase()
+        );
       });
       return {
         ...state,
         userTokens: {
           ...allChainTokens,
           [uniqueId]: {
-            ...userTokens,
+            ...oldUniqueIdUserTokens,
             [address]: newTokens,
           },
         },
       };
     },
 
-    changeHasInitTokensByInteractiveTokensState(
+    updateTimestamp(
       state,
       payload: {
         uniqueId: ChainUniqueId;
         address: string;
-        newInitState: boolean;
+        newUpdateTimestamp: number;
       },
     ) {
-      const { uniqueId, address, newInitState } = payload;
-      const { hasInitTokensByInteractiveTokens } = state;
-      const addressInitState =
-        hasInitTokensByInteractiveTokens?.[uniqueId] || {};
+      const { uniqueId, address, newUpdateTimestamp } = payload;
+      const { lastUpdateTimestamp } = state;
+      const oldAddressUpdateTimestamp = lastUpdateTimestamp?.[uniqueId] ?? {};
+
       return {
         ...state,
-        hasInitTokensByInteractiveTokens: {
-          ...hasInitTokensByInteractiveTokens,
+        lastUpdateTimestamp: {
+          ...lastUpdateTimestamp,
           [uniqueId]: {
-            ...addressInitState,
-            [address]: newInitState,
+            ...oldAddressUpdateTimestamp,
+            [address]: newUpdateTimestamp,
           },
         },
       };

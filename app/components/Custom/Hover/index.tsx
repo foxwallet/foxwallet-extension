@@ -1,12 +1,12 @@
 import { Flex, useStyleConfig } from "@chakra-ui/react";
-import { PropsWithChildren } from "react";
-import { ChakraComponent } from "@chakra-ui/system";
+import { type PropsWithChildren } from "react";
+import { type ChakraComponent } from "@chakra-ui/system";
 
 type HoverVariant = "icon" | "cell";
 
 type HoverProps = PropsWithChildren & { variant?: HoverVariant };
 
-const Hover: ChakraComponent<any, HoverProps> = (props) => {
+const Hover: ChakraComponent<any, HoverProps> = (props: HoverProps) => {
   const { variant, ...rest } = props;
   const styles = useStyleConfig("Hover", { variant });
 

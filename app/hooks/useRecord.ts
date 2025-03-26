@@ -4,7 +4,7 @@ import { useCoinService } from "./useCoinService";
 import { RecordFilter } from "@/scripts/background/servers/IWalletServer";
 import { chainUniqueIdToCoinType } from "core/helper/CoinType";
 import { CoinType } from "core/types";
-import { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
+import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 import { NATIVE_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
 
 export const useRecords = ({
@@ -49,7 +49,7 @@ export const useRecords = ({
   }, [coinType, coinService, address, programId, recordFilter]);
 
   useEffect(() => {
-    fetchRecords();
+    void fetchRecords();
   }, [fetchRecords]);
 
   const res = useMemo(() => {
@@ -65,7 +65,7 @@ export const useRecords = ({
       records,
       fetchRecords,
     };
-  }, [loading, records, fetchRecords]);
+  }, [coinType, loading, records, fetchRecords]);
 
   return res;
 };

@@ -6,8 +6,8 @@ import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import { TokenNum } from "@/components/Wallet/TokenNum";
 import { Content } from "@/layouts/Content";
 import { Flex, Text } from "@chakra-ui/react";
-import { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
-import { NativeToken } from "core/types/Token";
+import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
+import { type NativeToken } from "core/types/Token";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -61,7 +61,9 @@ export const SelectRecordsStep = (props: SelectRecordsStepProps) => {
             borderBottom="1px solid"
             borderColor={"gray.100"}
             justifyContent={"space-between"}
-            onClick={() => onSelectedRecords(record)}
+            onClick={() => {
+              onSelectedRecords(record);
+            }}
           >
             <Flex align={"center"}>
               {selectedRecords.some(

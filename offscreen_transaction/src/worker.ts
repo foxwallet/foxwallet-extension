@@ -1,17 +1,17 @@
 import { initThreadPool } from "@aleohq/wasm";
 import type { AleoSendTxParams } from "../../core/coins/ALEO/types/Transaction";
 import { AleoTxWorker } from "./transaction";
-import { AleoRequestDeploymentParams } from "./types";
+import { type AleoRequestDeploymentParams } from "./types";
 
 let aleoTxWorker: AleoTxWorker | null = null;
 let inited = false;
 
 await initThreadPool();
 
-const taskQuene: {
+const taskQuene: Array<{
   taskType: "sendTx" | "deploy";
   payload: any;
-}[] = [];
+}> = [];
 
 function initAleoTxWorker(rpcList: string[], enableMeasure: boolean) {
   if (!aleoTxWorker) {
@@ -34,7 +34,7 @@ async function deploy(params: AleoRequestDeploymentParams) {
   return await aleoTxWorker.deploy(params);
 }
 
-addEventListener("message", async (event) => {
+addEventListener("message", (event) => {
   const data = event.data;
   taskQuene.push({
     taskType: data.type,
@@ -48,7 +48,8 @@ if (!inited) {
 }
 
 async function executeTask() {
-  while (true) {
+  let flagExit = false;
+  while (!flagExit) {
     const task = taskQuene.shift();
     console.log("===> execute task: ", task);
     if (!task) {
@@ -81,11 +82,11 @@ async function executeTask() {
         await new Promise((resolve) => setTimeout(resolve, 2000));
         if (taskQuene.length === 0) {
           postMessage({ type: "finished" });
-          return;
+          flagExit = true;
         }
       }
     }
   }
 }
 
-executeTask();
+void executeTask();

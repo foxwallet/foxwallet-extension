@@ -32,9 +32,12 @@ function OnboardCreateWalletScreen() {
       walletId,
       revealMnemonic: true,
     });
-    await dispatch.account.resyncAllWalletsToStore();
+    await dispatch.accountV2.resyncAllWalletsToStore();
+
+    dispatch.multiChain.addHdWalletChainItem({ walletId });
+
     setMnemonic(wallet.mnemonic ?? "");
-  }, []);
+  }, [dispatch, popupServerClient]);
 
   // const regenerateWallet = useCallback(async () => {
   //   const walletId = walletIdRef.current;
@@ -75,7 +78,7 @@ function OnboardCreateWalletScreen() {
           <ConfirmMnemonicStep
             mnemonic={mnemonic}
             onConfirm={() => {
-              dispatch.account.changeWalletBackupedMnemonic({
+              dispatch.accountV2.changeWalletBackupedMnemonic({
                 walletId: walletIdRef.current,
                 backupedMnemonic: true,
               });
@@ -84,7 +87,14 @@ function OnboardCreateWalletScreen() {
           />
         );
     }
-  }, [step, mnemonic, createWallet]);
+  }, [
+    step,
+    mnemonic,
+    createWallet,
+    popupServerClient,
+    dispatch.accountV2,
+    navigate,
+  ]);
 
   const { t } = useTranslation();
   const CreateWalletSteps = useMemo(
