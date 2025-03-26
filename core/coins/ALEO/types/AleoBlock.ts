@@ -1,4 +1,4 @@
-import { ConfirmedTransaction } from "./ConfirmedTransaction";
+import { type ConfirmedTransaction } from "./ConfirmedTransaction";
 
 export type Block = {
   block_hash: string;

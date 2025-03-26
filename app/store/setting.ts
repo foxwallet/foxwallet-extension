@@ -1,6 +1,6 @@
-import { SupportCurrency } from "core/constants";
+import { SupportCurrency } from "core/constants/currency";
 import { createModel } from "@rematch/core";
-import { RootModel } from ".";
+import { type RootModel } from ".";
 import { SupportLanguages, changeLanguage } from "@/locales/i18";
 
 export enum ColorMode {

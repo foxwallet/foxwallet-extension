@@ -1,4 +1,4 @@
-import { DappRequest } from "@/database/types/dapp";
+import { type DappRequest } from "@/database/types/dapp";
 import { dappService } from "@/services/dapp/DappService";
 import { useCallback, useEffect, useState } from "react";
 
@@ -20,7 +20,7 @@ export const useDappRequest = (requestId?: string) => {
   }, [requestId]);
 
   useEffect(() => {
-    getDappRequest();
+    void getDappRequest();
   }, [getDappRequest]);
 
   return {

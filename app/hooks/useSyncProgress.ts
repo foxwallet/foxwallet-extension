@@ -1,15 +1,18 @@
-import { ChainUniqueId } from "core/types/ChainUniqueId";
+import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import { useCoinService } from "./useCoinService";
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
+import { type AleoService } from "core/coins/ALEO/service/AleoService";
 
-export const useSyncProgress = (uniqueId: ChainUniqueId, address: string) => {
+export const useSyncProgress = (uniqueId: ChainUniqueId, address?: string) => {
   const { coinService } = useCoinService(uniqueId);
 
   const key = `/progress/${uniqueId}/${address}`;
   const fetchProgress = useCallback(async () => {
-    return coinService.getSyncProgress(address);
-  }, [coinService, uniqueId, address]);
+    if (address) {
+      return (coinService as AleoService).getSyncProgress(address);
+    }
+  }, [coinService, address]);
 
   const {
     data: progress,

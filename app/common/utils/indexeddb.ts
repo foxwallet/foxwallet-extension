@@ -1,7 +1,7 @@
 import localForage from "localforage";
 import { type Cache } from "swr";
 import { logger } from "./logger";
-import { CoinType } from "core/types";
+import { type CoinType } from "core/types";
 import { measureMemory } from "vm";
 
 // both background service and popup run in the same extension context, so the indexedDB is the same
@@ -18,6 +18,9 @@ export const aleoAccountStorageInstance = localForage.createInstance({
 });
 
 // To remember the selected account
+/**
+ * @deprecated
+ */
 export const createAccountSettingStorage = (coinType: CoinType) => {
   return localForage.createInstance({
     driver: localForage.INDEXEDDB,
@@ -72,6 +75,7 @@ export const swrCache = (): Cache => ({
     });
   },
   delete: (key) => {
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
     delete memoryCache[key];
     swrStorageInstance.removeItem(key).catch((err) => {
       logger.error("swrCache delete error ", err.message);

@@ -1,5 +1,5 @@
 import { useDispatch, useSelector, type EqualityFn } from "react-redux";
-import type { Dispatch, RootState } from "../store/store";
+import type { Dispatch, RootState } from "@/store/store";
 import type { UseSelectorOptions } from "react-redux/es/hooks/useSelector";
 
 export const usePopupDispatch = useDispatch<Dispatch>;

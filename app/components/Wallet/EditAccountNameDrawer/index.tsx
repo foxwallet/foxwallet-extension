@@ -1,18 +1,18 @@
 import { Box, Button, Flex, Text } from "@chakra-ui/react";
 import { promisifyChooseDialogWrapper } from "../../../common/utils/dialog";
-import { useCurrWallet } from "@/hooks/useWallets";
-import React, { useCallback, useMemo, useState } from "react";
+import type React from "react";
+import { useCallback, useMemo, useState } from "react";
 import { BottomUpDrawer } from "@/components/Custom/BottomUpDrawer";
 import { BaseInput } from "@/components/Custom/Input";
 import { useTranslation } from "react-i18next";
 import { WarningArea } from "@/components/Custom/WarningArea";
-import { SelectedAccount } from "@/scripts/background/store/vault/types/keyring";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
 import { isEqual } from "lodash";
-import { CoinType } from "core/types";
+import { type OneMatchGroupAccount } from "@/scripts/background/store/vault/types/keyring";
+import { dupGroupNameSelector } from "@/store/selectors/account";
 
 interface Props {
-  account: SelectedAccount;
+  account: OneMatchGroupAccount;
   isOpen: boolean;
   onCancel: () => void;
   onConfirm: () => void;
@@ -24,12 +24,12 @@ const EditAccountNameDrawer = (props: Props) => {
   const dispatch = usePopupDispatch();
 
   const allWalletInfo = usePopupSelector(
-    (state) => state.account.allWalletInfo,
+    (state) => state.accountV2.allWalletInfo,
     isEqual,
   );
-  const walletOfAccount = allWalletInfo[account.walletId];
+  const walletOfAccount = allWalletInfo[account.wallet.walletId];
 
-  const [accountName, setAccountName] = useState(account.accountName);
+  const [accountName, setAccountName] = useState(account.group.groupName);
 
   const onAccountNameChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -41,26 +41,27 @@ const EditAccountNameDrawer = (props: Props) => {
 
   const handleConfirmName = useCallback(async () => {
     if (!accountName) return;
-    dispatch.account.changeAccountName({
+    dispatch.accountV2.changeAccountName({
       walletId: walletOfAccount.walletId,
-      accountId: account.accountId,
+      groupId: account.group.groupId,
       accountName,
     });
     onConfirm?.();
-  }, [onConfirm, accountName, dispatch.account, account, walletOfAccount]);
+  }, [onConfirm, accountName, dispatch.accountV2, account, walletOfAccount]);
 
-  const dupWalletName = useMemo(() => {
-    if (!accountName) return false;
-    const coinType = CoinType.ALEO;
-    return walletOfAccount.accountsMap[coinType]?.some(
-      (item) =>
-        item.accountName === accountName && accountName !== account.accountName,
-    );
-  }, [walletOfAccount, accountName, account]);
+  const dupAccountName = usePopupSelector(
+    (state) =>
+      dupGroupNameSelector(state, {
+        walletId: account.wallet.walletId,
+        groupId: account.group.groupId,
+        groupName: accountName ?? "",
+      }),
+    isEqual,
+  );
 
   const isInvalidName = useMemo(() => {
-    return !accountName || dupWalletName;
-  }, [accountName, dupWalletName]);
+    return !accountName || dupAccountName;
+  }, [accountName, dupAccountName]);
 
   return (
     <BottomUpDrawer
@@ -76,10 +77,10 @@ const EditAccountNameDrawer = (props: Props) => {
             onChange={onAccountNameChange}
             isInvalid={isInvalidName}
           />
-          {dupWalletName && (
+          {dupAccountName && (
             <WarningArea
               container={{ mt: "2" }}
-              content={t("Wallet:Create:dupAccountName")}
+              content={t("Wallet:Manage:dupAccountName")}
             />
           )}
         </Flex>

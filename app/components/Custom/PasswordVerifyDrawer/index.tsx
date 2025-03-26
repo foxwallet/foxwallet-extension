@@ -1,6 +1,7 @@
 import { Button, Flex, InputRightElement } from "@chakra-ui/react";
 import { promisifyChooseDialogWrapper } from "../../../common/utils/dialog";
-import React, { useCallback, useMemo, useState } from "react";
+import type React from "react";
+import { useCallback, useMemo, useState } from "react";
 import { BottomUpDrawer } from "@/components/Custom/BottomUpDrawer";
 import { BaseInputGroup } from "@/components/Custom/Input";
 import { useTranslation } from "react-i18next";

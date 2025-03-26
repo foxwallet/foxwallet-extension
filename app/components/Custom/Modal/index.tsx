@@ -3,17 +3,15 @@ import {
   Modal,
   ModalBody,
   type ModalBodyProps,
-  ModalCloseButton,
   ModalContent,
   ModalFooter,
   type ModalFooterProps,
   ModalHeader,
   ModalOverlay,
-  useDisclosure,
   useColorModeValue,
+  type TextProps,
 } from "@chakra-ui/react";
-import { useState } from "react";
-import { H6 } from "../../../common/theme/components/text";
+import { H6 } from "@/common/theme/components/text";
 import { IconCloseLine } from "../Icon";
 
 interface ModalProps {
@@ -26,6 +24,7 @@ interface ModalProps {
   bodyStyle?: ModalBodyProps;
   footerStyle?: ModalFooterProps;
   isCentered?: boolean;
+  titleStyle?: TextProps;
 }
 
 export function BasicModal(props: ModalProps) {
@@ -39,6 +38,7 @@ export function BasicModal(props: ModalProps) {
     bodyStyle,
     footerStyle,
     isCentered,
+    titleStyle,
   } = props;
   const bg = useColorModeValue("white", "black");
 
@@ -66,7 +66,7 @@ export function BasicModal(props: ModalProps) {
             mb={4}
           >
             <Box w={5} h={5} />
-            {!!title && <H6>{title}</H6>}
+            {!!title && <H6 {...titleStyle}>{title}</H6>}
             {hideClose ? (
               <Box w={5} h={5} />
             ) : (

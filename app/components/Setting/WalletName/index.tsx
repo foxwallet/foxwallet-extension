@@ -1,16 +1,22 @@
 import { Button, Flex } from "@chakra-ui/react";
-import React, { useCallback, useMemo, useState } from "react";
-import { Content } from "../../../layouts/Content";
+import type React from "react";
+import { useCallback, useMemo, useState } from "react";
+import { Content } from "@/layouts/Content";
 import { BaseInputGroup } from "../../Custom/Input";
 import { WarningArea } from "../../Custom/WarningArea";
 import { useWallets } from "@/hooks/useWallets";
 import { useTranslation } from "react-i18next";
+import { isEqual } from "lodash";
+import { defaultWalletNameSelector } from "@/store/selectors/account";
+import { useSelector } from "react-redux";
 
 export const WalletNameStep = (props: {
   onConfirm: (walletName: string) => void;
 }) => {
   const { onConfirm: onSubmit } = props;
-  const [walletName, setWalletName] = useState("");
+  const defaultWalletName = useSelector(defaultWalletNameSelector, isEqual);
+
+  const [walletName, setWalletName] = useState(defaultWalletName ?? "");
   const { t } = useTranslation();
   const { t: commonT } = useTranslation("Common");
   const { walletList } = useWallets();
@@ -32,7 +38,7 @@ export const WalletNameStep = (props: {
 
   const disableConfirm = useMemo(() => {
     return !walletName || dupWalletName;
-  }, [walletName]);
+  }, [dupWalletName, walletName]);
 
   const onConfirm = useCallback(async () => {
     if (disableConfirm) {

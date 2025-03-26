@@ -1,27 +1,28 @@
-import { Flex, Image, TabPanel, Text } from "@chakra-ui/react";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
+import { TabPanel } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { useCallback } from "react";
-import { useAssetList } from "@/hooks/useAssetList";
-import { Token } from "core/coins/ALEO/types/Token";
 import { TokenItemWithBalance } from "../TokenItem";
 import { serializeToken } from "@/common/utils/string";
+import { type TokenV2 } from "core/types/Token";
+import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 
-export const AssetList = () => {
+type AssetListProps = {
+  assets: TokenV2[] | undefined;
+};
+
+export const AssetList = (props: AssetListProps) => {
   const navigate = useNavigate();
-  const { selectedAccount, uniqueId } = useCurrAccount();
-  const { assets } = useAssetList(uniqueId, selectedAccount.address);
+  const { assets: groupAssets } = props;
 
   const onTokenDetail = useCallback(
-    (token: Token) => {
-      // need to be modified when adapt for multi-chain
+    (token: TokenV2) => {
       navigate(
-        `/token_detail/${uniqueId}/${
-          selectedAccount.address
+        `/token_detail/${token.uniqueId}/${
+          token.ownerAddress
         }?token=${serializeToken(token)}`,
       );
     },
-    [navigate, uniqueId, selectedAccount],
+    [navigate],
   );
 
   return (
@@ -30,12 +31,13 @@ export const AssetList = () => {
       flexDir={"column"}
       overflowY={"auto"}
       marginBottom={"60px"}
+      sx={HIDE_SCROLL_BAR_CSS}
     >
-      {assets.map((token) => (
+      {groupAssets?.map((token) => (
         <TokenItemWithBalance
-          key={token.tokenId}
-          uniqueId={uniqueId}
-          address={selectedAccount.address}
+          key={`${token.contractAddress}-${token.symbol}-${token.type}-${token.uniqueId}`}
+          uniqueId={token.uniqueId}
+          address={token.ownerAddress}
           token={token}
           onClick={onTokenDetail}
           hover

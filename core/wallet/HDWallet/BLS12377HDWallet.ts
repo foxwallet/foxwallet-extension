@@ -12,14 +12,14 @@ import { getCoinDerivation } from "../../helper/CoinBasic";
 import { CoreError } from "../../types/Error";
 import { encryptStr } from "../../utils/encrypt";
 import init, { PrivateKey } from "aleo_wasm";
-import { logger } from "@/common/utils/logger";
+import { DEFAULT_ALEO_ACCOUNT_OPTION } from "core/coins/ALEO/config/derivation";
 
 export class BLS12377HDWallet<T extends CoinType> implements BaseHDWallet<T> {
   private readonly coinRootPath: string;
   private readonly coinRoot: BLS12377HDKey;
   private readonly symbol: T;
 
-  constructor(symbol: T, hdWallet: HDKey[T]) {
+  constructor(symbol: T, hdWallet: BLS12377HDKey) {
     this.symbol = symbol;
     this.coinRootPath = getCoinDerivation(symbol).path[0];
     this.coinRoot = hdWallet.derive(this.coinRootPath);
@@ -51,6 +51,8 @@ export class BLS12377HDWallet<T extends CoinType> implements BaseHDWallet<T> {
             viewKey,
             address,
             index: i,
+            coinType: CoinType.ALEO,
+            option: DEFAULT_ALEO_ACCOUNT_OPTION,
           };
         } catch (err) {
           console.error(err);

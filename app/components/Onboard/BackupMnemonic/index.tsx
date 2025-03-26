@@ -5,11 +5,11 @@ import {
   Grid,
   Text,
   GridItem,
-  BoxProps,
+  type BoxProps,
   Button,
   Link,
 } from "@chakra-ui/react";
-import { Content } from "../../../layouts/Content";
+import { Content } from "@/layouts/Content";
 import { IconPreventScreenshot } from "../../Custom/Icon";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
@@ -67,7 +67,7 @@ export const BackupMnemonicStep = (props: {
       t("Mnemonic:warning2"),
       t("Mnemonic:warning3"),
     ];
-  }, []);
+  }, [t]);
 
   const wordList = useMemo(() => {
     if (!mnemonic) {
@@ -77,7 +77,7 @@ export const BackupMnemonicStep = (props: {
   }, [mnemonic]);
 
   useEffect(() => {
-    createWallet?.();
+    void createWallet?.();
   }, [createWallet]);
 
   const { borderColor } = useThemeStyle();
@@ -100,7 +100,9 @@ export const BackupMnemonicStep = (props: {
             justifyContent={"center"}
             alignItems={"center"}
             backdropFilter="blur(10px)"
-            onClick={() => setStartBackup(true)}
+            onClick={() => {
+              setStartBackup(true);
+            }}
           >
             <IconPreventScreenshot w={"8"} h={"8"} mb={2} />
             <Text mb={2} fontWeight={"bold"}>
@@ -141,7 +143,13 @@ export const BackupMnemonicStep = (props: {
             {t("Mnemonic:regenerate")}
           </Button>
         )} */}
-        <Button flex={1} isDisabled={!startBackup} onClick={() => onConfirm()}>
+        <Button
+          flex={1}
+          isDisabled={!startBackup}
+          onClick={() => {
+            onConfirm();
+          }}
+        >
           {t("Common:confirm")}
         </Button>
       </Flex>
@@ -152,15 +160,17 @@ export const BackupMnemonicStep = (props: {
         left={0}
         right={0}
       >
-        <Link
-          textDecorationLine={"underline"}
-          textDecorationColor={"green.600"}
-          color={"green.600"}
-          fontWeight={"bold"}
-          onClick={() => navigate("/main")}
-        >
-          <Text fontSize={"smaller"}>{t("Mnemonic:later")}</Text>
-        </Link>
+        {/* <Link */}
+        {/*  textDecorationLine={"underline"} */}
+        {/*  textDecorationColor={"green.600"} */}
+        {/*  color={"green.600"} */}
+        {/*  fontWeight={"bold"} */}
+        {/*  onClick={() => { */}
+        {/*    navigate("/main"); */}
+        {/*  }} */}
+        {/* > */}
+        {/*  <Text fontSize={"smaller"}>{t("Mnemonic:later")}</Text> */}
+        {/* </Link> */}
       </Flex>
     </Content>
   );

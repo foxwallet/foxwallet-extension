@@ -20,7 +20,7 @@ const ExportSeedPhrase = () => {
       const mnemonic = await popupServerClient.getHDMnemonic(walletId!);
       setMnemonic(mnemonic);
     };
-    fetchMnemonic();
+    void fetchMnemonic();
   }, [walletId]);
 
   return (
@@ -28,7 +28,9 @@ const ExportSeedPhrase = () => {
       <Body>
         <BackupMnemonicStep
           mnemonic={mnemonic}
-          onConfirm={() => navigate(-1)}
+          onConfirm={() => {
+            navigate(-1);
+          }}
         />
       </Body>
     </PageWithHeader>

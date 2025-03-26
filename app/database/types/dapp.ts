@@ -1,11 +1,11 @@
-import { SiteInfo } from "@/scripts/content/host";
-import { ContentServerMethod } from "@/scripts/background/servers/IWalletServer";
-import { CoinType } from "core/types";
+import { type SiteInfo } from "@/scripts/content/host";
+import { type ContentServerMethod } from "@/scripts/background/servers/IWalletServer";
+import { type CoinType } from "core/types";
 
 export interface DappRequest {
   id: string;
   address: string;
-  type: ContentServerMethod;
+  type: ContentServerMethod<CoinType>;
   coinType: CoinType;
   siteInfo: SiteInfo;
   payload: any;
@@ -24,6 +24,17 @@ export interface AleoConnectHistory {
   decryptPermission: DecryptPermission;
   programs?: string[];
   network: string;
+  lastConnectTime: number;
+  disconnected?: boolean;
+}
+
+export interface ConnectHistory {
+  address: string;
+  coinType: CoinType;
+  site: SiteInfo;
+  decryptPermission?: DecryptPermission;
+  programs?: string[];
+  network?: string;
   lastConnectTime: number;
   disconnected?: boolean;
 }

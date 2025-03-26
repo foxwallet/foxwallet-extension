@@ -1,11 +1,12 @@
 import { PageWithHeader } from "@/layouts/Page";
 import { Box, Button, Flex, Text, useDisclosure } from "@chakra-ui/react";
-import { SyntheticEvent, useCallback } from "react";
+import type React from "react";
+import { type SyntheticEvent, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCurrWallet, useWallets } from "@/hooks/useWallets";
 import {
-  DisplayAccount,
-  DisplayWallet,
+  type DisplayGroupAccount,
+  type DisplayWallet,
 } from "@/scripts/background/store/vault/types/keyring";
 import { useTranslation } from "react-i18next";
 import {
@@ -15,10 +16,10 @@ import {
   IconLogo,
 } from "@/components/Custom/Icon";
 import { usePopupDispatch } from "@/hooks/useStore";
-import { CoinType } from "core/types";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
 import Hover from "@/components/Custom/Hover";
 import { showEditWalletNameDrawer } from "@/components/Wallet/EditWalletNameDrawer";
+import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 
 interface WalletItemProps {
   wallet: DisplayWallet;
@@ -45,10 +46,10 @@ const WalletItem: React.FC<WalletItemProps> = ({
 
   const handleEditName = useCallback(
     (event: SyntheticEvent) => {
-      showEditWalletNameDrawer({ wallet });
+      void showEditWalletNameDrawer({ wallet });
       event.stopPropagation();
     },
-    [showEditWalletNameDrawer, wallet],
+    [wallet],
   );
 
   const { borderColor, selectedBorderColor } = useThemeStyle();
@@ -104,23 +105,22 @@ function ManageWalletScreen() {
   const onSelectWallet = useCallback(
     (wallet: DisplayWallet) => {
       if (wallet.walletId !== selectedWallet?.walletId) {
-        const account: DisplayAccount | undefined = (
-          wallet.accountsMap[CoinType.ALEO] || []
-        ).find((a) => !a.hide);
+        const { groupAccounts, ...restWallet } = wallet;
+        const account: DisplayGroupAccount | undefined =
+          wallet.groupAccounts[0];
 
         if (account) {
-          dispatch.account.setSelectedAccount({
-            selectedAccount: {
-              ...account,
-              walletId: wallet.walletId,
-              coinType: CoinType.ALEO,
+          void dispatch.accountV2.setSelectedGroupAccount({
+            selectedGroupAccount: {
+              wallet: restWallet,
+              group: account,
             },
           });
         }
       }
       navigate(-1);
     },
-    [dispatch.account, navigate],
+    [dispatch.accountV2, navigate, selectedWallet?.walletId],
   );
 
   const onDeleteWallet = useCallback(
@@ -131,7 +131,7 @@ function ManageWalletScreen() {
           navigate("/onboard/home");
         }
       } catch (e) {
-        console.warn("delete wallet error " + e);
+        console.warn("delete wallet error ", e);
       }
     },
     [deleteWallet, navigate],
@@ -151,7 +151,7 @@ function ManageWalletScreen() {
         />
       );
     },
-    [selectedWallet?.walletId, isOpen],
+    [selectedWallet?.walletId, isOpen, onSelectWallet, onDeleteWallet],
   );
 
   return (
@@ -171,7 +171,12 @@ function ManageWalletScreen() {
       }
     >
       <Flex direction={"column"} flex={1} px={5} pb={4}>
-        <Flex direction={"column"} maxH={470} overflowY="auto">
+        <Flex
+          direction={"column"}
+          maxH={470}
+          overflowY="auto"
+          sx={HIDE_SCROLL_BAR_CSS}
+        >
           {walletList.map(renderWalletItem)}
         </Flex>
         <Button
@@ -179,7 +184,9 @@ function ManageWalletScreen() {
           bottom={5}
           left={5}
           right={5}
-          onClick={() => navigate("/create_wallet")}
+          onClick={() => {
+            navigate("/create_wallet");
+          }}
         >
           {t("Wallet:Manage:addWallet")}
         </Button>

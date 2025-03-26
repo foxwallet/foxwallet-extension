@@ -1,7 +1,10 @@
-import { AleoSyncAccount } from "./AleoSyncAccount";
-import { AleoOnChainHistoryItem } from "./History";
-import { AleoAddressInfo, SyncRecordResultWithDuration } from "./SyncTask";
-import { AleoLocalTxInfo } from "./Transaction";
+import { type AleoSyncAccount } from "./AleoSyncAccount";
+import { type AleoOnChainHistoryItem } from "./History";
+import {
+  type AleoAddressInfo,
+  type SyncRecordResultWithDuration,
+} from "./SyncTask";
+import { type AleoLocalTxInfo } from "./Transaction";
 
 export interface IAleoStorage {
   getAccountsAddress(): Promise<string[]>;

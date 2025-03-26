@@ -1,4 +1,4 @@
-import { Flex, FlexProps } from "@chakra-ui/react";
+import { Flex, type FlexProps } from "@chakra-ui/react";
 
 export const ResponsiveFlex = (props: FlexProps) => {
   return (

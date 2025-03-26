@@ -14,7 +14,7 @@ function App() {
   useEffect(() => {
     const language = store.getState().setting.language;
     if (language) {
-      changeLanguage(language);
+      void changeLanguage(language);
     }
 
     // for inintial color mode

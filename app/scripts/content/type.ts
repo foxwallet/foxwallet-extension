@@ -1,4 +1,5 @@
 import { ContentServerMethod } from "../background/servers/IWalletServer";
+import { CoinType } from "core/types";
 
 export interface CallbackParams {
   detail: {
@@ -7,10 +8,17 @@ export interface CallbackParams {
     data?: any;
   };
 }
+export interface EmitData {
+  type: "EmitData";
+  event: string;
+  coinType: CoinType;
+  data?: any;
+}
 
-export interface RequestParams {
+export interface RequestParams<T extends CoinType> {
   id: string;
-  method: ContentServerMethod;
+  coinType: T;
+  method: ContentServerMethod<T>;
   payload: any;
   metadata: any;
 }

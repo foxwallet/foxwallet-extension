@@ -4,6 +4,7 @@
     "backupTips": "You haven't backed up your wallet yet",
     "backupBtnTitle": "Backup now",
     "tabAsset": "Asset",
+    "initWallet": "Initializing wallet, please wait",
     "Create": {
       "title": "Create Wallet",
       "explain": "Create a new HD wallet.",
@@ -40,7 +41,9 @@
       "dupAccountName": "Duplicate account name",
       "delete": "Delete wallet",
       "deleteRemind": "Please ensure the wallet is properly backed up as it can only be restored using the seed phrase or private key."
-    }
+    },
+    "allNetworks": "ALL",
+    "allEVMNetworks": "ALL EVM Networks"
   },
   "Onboard": {
     "Home": {
@@ -50,7 +53,8 @@
     "Upgrade": {
       "reminderTips": "The current browser version is too old, please upgrade to the latest version to use the FoxWallet extension wallet.",
       "upgradeBtn": "Upgrade"
-    }
+    },
+    "defaultWalletName": "Wallet-"
   },
   "Agreement": {
     "content1": "I agree to FoxWallet's ",
@@ -85,6 +89,8 @@
   },
   "PrivateKey": {
     "title": "Private key",
+    "coinType": "Coin Type",
+    "selectCoinType": "Select Coin Type",
     "enterPlaceholder": "Enter private key",
     "backupTips1": "Please keep it in a safe place.",
     "backupTips2": "Seed phrase or private key are the only way to recover your wallet. Once lost, it cannot be retrieved. Do not save them via screenshots or social medias."
@@ -95,6 +101,7 @@
     "transferToken": "Transfer Token",
     "to": "To Address",
     "toPlaceholder": "Enter receiver address",
+    "next": "Next",
     "private": "Private",
     "public": "Public",
     "balance": "Balance",
@@ -128,7 +135,26 @@
     "feeHint": "You can use either the public balance or any of the following private records below to pay the gas fee.",
     "sendingAleoTx": "Sending aleo transaction",
     "insufficientBalance": "Insufficient balance",
-    "insufficientFee": "Insufficient balance to pay fee"
+    "insufficientFee": "Insufficient balance to pay fee",
+    "value": "Value",
+    "invalidAmount": "Invalid amount",
+    "processing": "Transaction is processing, please wait.",
+    "sendingAleoHint": "You have an ongoing transaction, please wait."
+  },
+  "GasSetting": {
+    "fast": "Fast",
+    "middle": "Middle",
+    "slow": "Slow",
+    "selectGasFee": "Select Gas Fee",
+    "advanced": "Advanced Setting",
+    "maxPriorityFeeTitle": "Priority Fee",
+    "maxPriorityFeeRemind": "Priority Fee shouldn't be higher than Max Fee",
+    "maxPriorityLowRemind": "Priority Fee too low",
+    "maxPriorityHighRemind": "Priority Fee too high",
+    "maxFeeTitle": "Max Fee",
+    "maxFeeHighRemind": "Max Fee too high",
+    "maxFeeLowRemind": "Max Fee too low",
+    "gasLimitTitle": "Gas Limit"
   },
   "JoinSplit": {
     "title": "Join&Split",
@@ -157,7 +183,7 @@
   "Receive": {
     "title": "Receive",
     "scanToTransfer": "Scan to transfer",
-    "onlyTips": "Only support ALEO related assets",
+    "onlyTips": "Only support {{symbol}} related assets",
     "walletAddr": "Wallet Address"
   },
   "TokenDetail": {
@@ -165,7 +191,31 @@
     "balance": "Balance",
     "tx_records": "Transaction Records",
     "empty_tx": "No transaction records",
-    "jump_explorer": "Explorer"
+    "jump_explorer": "Explorer",
+    "myAddress": "My Address",
+    "public": "Public",
+    "private": "Private",
+    "total": "Total",
+    "token_transfer": "Token Transfer",
+    "send": "Send",
+    "contract_call": "Call Smart Contract",
+    "token_approve": "Token Approve",
+    "bridge": "Bridge",
+    "receive": "Receive",
+    "copyContractAddressMsg": "This is token's contract address, not receiving address, do not transfer to this address.",
+    "failed": "Failed"
+  },
+  "TransactionDetail": {
+    "hash": "Hash",
+    "from": "From",
+    "to": "To",
+    "value": "Value",
+    "time": "Time",
+    "nonce": "Nonce",
+    "confirmations": "Confirmations",
+    "network": "Network",
+    "gasFee": "Gas Fee",
+    "type": "Type"
   },
   "Tx": {
     "successToast": "Transaction Successful!",
@@ -179,7 +229,58 @@
     "securityTips": "Security Tips",
     "settings": "Settings",
     "account": "Account",
-    "switchWallet": "Switch Wallet"
+    "switchWallet": "Switch Wallet",
+    "networks": "Networks",
+    "contacts": "Contacts",
+    "connectedSites": "Connected Sites",
+    "resetApplication": "Reset Application"
+  },
+  "Networks": {
+    "title": "Networks",
+    "searchHint": "Search networks",
+    "manageNetworks": "Manage Networks",
+    "networkDetail": "Network Detail",
+    "networkName": "Network name",
+    "networkNameHint": "Input network name",
+    "symbol": "Currency symbol",
+    "rpc": "RPC URL",
+    "rpcHint": "Input RPC URL",
+    "chainId": "Chain ID",
+    "unavailable": "unavailable",
+    "loading": "Loading...",
+    "height": "Height: {{height}}",
+    "deleteWarning": "Deleted RPC configuration can't be recovered",
+    "invalidRpc": "RPC url is empty",
+    "manageWallet": "Manage Wallet",
+    "defaultChainRemind": "Default chain can't be unselected",
+    "selectNetwork": "Select Network",
+    "selectToken": "Select Token",
+    "pkWalletRemind": "Private key wallet only displays the supported networks. To use all the networks, switch to a seed phase wallet."
+  },
+  "Contacts": {
+    "title": "Contacts",
+    "searchHint": "Search address",
+    "addContact": "Add Contact",
+    "editContact": "Edit Contact",
+    "contactInfo": "Contact Info",
+    "enterContactName": "Enter contact name",
+    "enterAddress": "Enter address",
+    "confirmCreate": "Confirm Create",
+    "confirmUpdate": "Confirm Update",
+    "selectNetwork": "Select Network",
+    "networkName": "Network name",
+    "remove": "Remove",
+    "copyAddress": "Copy Address",
+    "editAddress": "Edit Address",
+    "deleteHint": "Confirm to remove this address?",
+    "alreadyExist": "This address already in your contact list",
+    "invalidAddress": "Invalid address"
+
+  },
+  "SelectToken": {
+    "title": "Select Token",
+    "searchToken": "Search token",
+    "searchHint": "Search token(Symbol, Address)"
   },
   "Me": {
     "title": "Me"
@@ -214,6 +315,7 @@
     "inputs": "Inputs",
     "gasFee": "Gas Fee",
     "requestTx": "Request send transaction",
+    "addChain": "Request add {{CHAIN}}",
     "message": "Message",
     "requestSignMessage": "Request sign message",
     "noDecrypt": "No decrypt permission.",
@@ -223,11 +325,20 @@
   },
   "Reset": {
     "remind": "All of your history for this account will be reset and network will be resynced. Please confrim to proceed.",
-    "account": "Reset account"
+    "account": "Reset Aleo account",
+    "explain": "Wallet won't unlock? You can ERASE your app data and setup a new wallet",
+    "resetApp": "Reset Application",
+    "confirmDelete": "Confirm Deletion",
+    "warningTitle": "Are you sure you want to erase your app data？",
+    "warningTitle2": "Confirm reset application",
+    "warningContent1": "Your wallets, accounts and assets data will be permanently deleted from this app. ",
+    "warningContent2": "You can only restore this wallet with your seed phrase, FoxWallet does not own your seed phrase. ",
+    "warningStrong": "This action cannot be undone."
   },
   "ManageToken": {
     "title": "Manage Token",
-    "searchHint": "Search token(ID, Name, Symbol)"
+    "searchHint": "Search token(Symbol, Address)",
+    "pleaseWait": "Searching, this might take a while"
   },
   "Common": {
     "confirm": "Confirm",
@@ -245,10 +356,21 @@
     "remind": "Remind",
     "account": "Account",
     "ok": "OK",
-    "wrongPassword": "Incorrect password"
+    "wrongPassword": "Incorrect password",
+    "noSearchResult": "No search result",
+    "pleaseWait": "Please wait",
+    "copy": "Copy",
+    "reminder": "Reminder",
+    "success": "Success",
+    "failed": "Failed",
+    "pending": "Pending",
+    "loading":"Loading"
   },
   "Error": {
-    "invalidPassword": "Invalid password"
+    "invalidPassword": "Invalid password",
+    "invalidAddress": "Invalid address",
+    "invalidPrivateKey": "Invalid Private Key",
+    "insufficientGas": "Insufficient balance for gas"
   },
   "Stake": {
     "title": "Stake",

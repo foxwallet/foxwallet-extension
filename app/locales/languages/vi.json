@@ -40,7 +40,10 @@
       "dupAccountName": "Tên tài khoản trùng lặp",
       "delete": "Xóa ví",
       "deleteRemind": "Vui lòng đảm bảo ví được sao lưu đúng cách vì nó chỉ có thể được khôi phục bằng cụm từ hạt giống hoặc khóa riêng."
-    }
+    },
+    "allNetworks": "TẤT CẢ",
+    "allEVMNetworks": "Tất cả các mạng EVM",
+    "initWallet": "Khởi tạo ví, vui lòng đợi"
   },
   "Onboard": {
     "Home": {
@@ -50,7 +53,8 @@
     "Upgrade": {
       "reminderTips": "Phiên bản trình duyệt hiện tại đã quá cũ, vui lòng nâng cấp lên phiên bản mới nhất để sử dụng ví mở rộng FoxWallet.",
       "upgradeBtn": "Nâng cấp"
-    }
+    },
+    "defaultWalletName": "Cái ví-"
   },
   "Agreement": {
     "content1": "Tôi đồng ý với FoxWallet",
@@ -99,7 +103,15 @@
     "remind": "Nhắc lại",
     "account": "Tài khoản",
     "ok": "ĐƯỢC RỒI",
-    "wrongPassword": "mật khẩu không đúng"
+    "wrongPassword": "mật khẩu không đúng",
+    "noSearchResult": "Không có kết quả tìm kiếm",
+    "pleaseWait": "Vui lòng chờ",
+    "copy": "Sao chép",
+    "reminder": "Lời nhắc nhở",
+    "success": "Thành công",
+    "failed": "Thất bại",
+    "pending": "Chưa giải quyết",
+    "loading": "Đang tải"
   },
   "Send": {
     "title": "Gửi",
@@ -140,18 +152,25 @@
     "feeHint": "Bạn có thể sử dụng số dư công khai hoặc bất kỳ hồ sơ cá nhân nào dưới đây để thanh toán phí gas.",
     "sendingAleoTx": "Gửi giao dịch aleo",
     "insufficientBalance": "Thiếu cân bằng",
-    "insufficientFee": "Số dư không đủ để trả phí"
+    "insufficientFee": "Số dư không đủ để trả phí",
+    "next": "Kế tiếp",
+    "value": "Giá trị",
+    "invalidAmount": "Số tiền không hợp lệ",
+    "processing": "Giao dịch đang xử lý, vui lòng chờ đợi.",
+    "sendingAleoHint": "Bạn có một giao dịch đang diễn ra, xin vui lòng chờ đợi."
   },
   "PrivateKey": {
     "title": "Khóa riêng",
     "enterPlaceholder": "Nhập khóa riêng",
     "backupTips1": "Xin vui lòng giữ nó ở một nơi an toàn.",
-    "backupTips2": "Cụm từ gốc hoặc khóa riêng là cách duy nhất để khôi phục ví của bạn. Một khi đã mất thì không thể lấy lại được. Không lưu chúng qua ảnh chụp màn hình hoặc phương tiện truyền thông xã hội."
+    "backupTips2": "Cụm từ gốc hoặc khóa riêng là cách duy nhất để khôi phục ví của bạn. Một khi đã mất thì không thể lấy lại được. Không lưu chúng qua ảnh chụp màn hình hoặc phương tiện truyền thông xã hội.",
+    "coinType": "Loại tiền xu",
+    "selectCoinType": "Chọn loại tiền xu"
   },
   "Receive": {
     "title": "Nhận được",
     "scanToTransfer": "Quét để chuyển",
-    "onlyTips": "Chỉ hỗ trợ các tài sản liên quan đến ALEO",
+    "onlyTips": "Chỉ hỗ trợ các tài sản liên quan đến {{symbol}}",
     "walletAddr": "Địa chỉ ví"
   },
   "Setting": {
@@ -162,17 +181,35 @@
     "settings": "Cài đặt",
     "account": "Tài khoản",
     "switchWallet": "Chuyển ví",
-    "tutorial": "Hướng dẫn"
+    "tutorial": "Hướng dẫn",
+    "networks": "Mạng",
+    "contacts": "Liên hệ",
+    "connectedSites": "Các trang web được kết nối",
+    "resetApplication": "Đặt lại ứng dụng"
   },
   "Error": {
-    "invalidPassword": "Mật khẩu không hợp lệ"
+    "invalidPassword": "Mật khẩu không hợp lệ",
+    "invalidAddress": "Địa chỉ không hợp lệ",
+    "invalidPrivateKey": "Khóa riêng không hợp lệ"
   },
   "TokenDetail": {
     "title": "Chi tiết mã thông báo",
     "balance": "Sự cân bằng",
     "tx_records": "Hồ sơ giao dịch",
     "empty_tx": "Không có hồ sơ giao dịch",
-    "jump_explorer": "nhà thám hiểm"
+    "jump_explorer": "nhà thám hiểm",
+    "myAddress": "Địa chỉ của tôi",
+    "public": "Công cộng",
+    "private": "Riêng tư",
+    "total": "Tổng cộng",
+    "token_transfer": "Chuyển mã thông báo",
+    "send": "Gửi",
+    "contract_call": "Gọi hợp đồng thông minh",
+    "token_approve": "Mã thông báo phê duyệt",
+    "bridge": "Cầu",
+    "receive": "Nhận được",
+    "copyContractAddressMsg": "Đây là địa chỉ hợp đồng của Token, không nhận được địa chỉ, không chuyển đến địa chỉ này.",
+    "failed": "Thất bại"
   },
   "Language": {
     "title": "Ngôn ngữ"
@@ -196,7 +233,8 @@
     "noDecrypt": "Không có quyền giải mã.",
     "uponRequest": "Dapp có thể yêu cầu giải mã hồ sơ của bạn.",
     "autoDecrypt": "Dapp có thể giải mã bản ghi mà không cần yêu cầu.",
-    "onChainHistory": "Dapp có thể truy cập lịch sử giao dịch của bạn."
+    "onChainHistory": "Dapp có thể truy cập lịch sử giao dịch của bạn.",
+    "addChain": "Yêu cầu Thêm {{chuỗi}}"
   },
   "Currency": {
     "title": "Tiền tệ"
@@ -216,7 +254,15 @@
   },
   "Reset": {
     "remind": "Tất cả lịch sử của bạn đối với tài khoản này sẽ được đặt lại và mạng sẽ được đồng bộ hóa lại. Hãy xác nhận để tiếp tục.",
-    "account": "Cài đặt lại tài khoản"
+    "account": "Cài đặt lại tài khoản",
+    "explain": "Ví sẽ không mở khóa? Bạn có thể xóa dữ liệu ứng dụng của mình và thiết lập ví mới",
+    "resetApp": "Đặt lại ứng dụng",
+    "confirmDelete": "Xác nhận xóa",
+    "warningTitle": "Bạn có chắc là bạn muốn xóa dữ liệu ứng dụng của mình？",
+    "warningTitle2": "Xác nhận ứng dụng đặt lại",
+    "warningContent1": "Ví, tài khoản và dữ liệu tài sản của bạn sẽ bị xóa vĩnh viễn khỏi ứng dụng này.",
+    "warningContent2": "Bạn chỉ có thể khôi phục ví này với cụm từ hạt giống của mình, Foxwallet không sở hữu cụm từ hạt giống của bạn.",
+    "warningStrong": "Hành động này không thể được hoàn tác."
   },
   "JoinSplit": {
     "title": "Tham gia & Chia tách",
@@ -248,7 +294,81 @@
   },
   "ManageToken": {
     "title": "Quản lý mã thông báo",
-    "searchHint": "Mã thông báo tìm kiếm (ID, Tên, Ký hiệu)"
+    "searchHint": "Mã thông báo tìm kiếm (ID, Tên, Ký hiệu)",
+    "pleaseWait": "Tìm kiếm, điều này có thể mất một lúc"
+  },
+  "GasSetting": {
+    "fast": "Nhanh",
+    "middle": "Ở giữa",
+    "slow": "Chậm",
+    "selectGasFee": "Chọn phí xăng",
+    "advanced": "Cài đặt nâng cao",
+    "maxPriorityFeeTitle": "Phí ưu tiên",
+    "maxPriorityFeeRemind": "Phí ưu tiên không nên cao hơn phí tối đa",
+    "maxPriorityLowRemind": "Phí ưu tiên quá thấp",
+    "maxPriorityHighRemind": "Phí ưu tiên quá cao",
+    "maxFeeTitle": "Phí tối đa",
+    "maxFeeHighRemind": "Phí tối đa quá cao",
+    "maxFeeLowRemind": "Phí tối đa quá thấp",
+    "gasLimitTitle": "Giới hạn khí"
+  },
+  "TransactionDetail": {
+    "hash": "Băm",
+    "from": "Từ",
+    "to": "ĐẾN",
+    "value": "Giá trị",
+    "time": "Thời gian",
+    "nonce": "Không",
+    "confirmations": "Xác nhận",
+    "network": "Mạng",
+    "gasFee": "Phí gas",
+    "type": "Kiểu"
+  },
+  "Networks": {
+    "title": "Mạng",
+    "searchHint": "Mạng tìm kiếm",
+    "manageNetworks": "Quản lý mạng",
+    "networkDetail": "Chi tiết mạng",
+    "networkName": "Tên mạng",
+    "networkNameHint": "Tên mạng đầu vào",
+    "symbol": "Biểu tượng tiền tệ",
+    "rpc": "URL RPC",
+    "rpcHint": "URL đầu vào RPC",
+    "chainId": "ID chuỗi",
+    "manageWallet": "Quản lý ví",
+    "defaultChainRemind": "Chuỗi mặc định không thể được chọn",
+    "selectNetwork": "Chọn Mạng",
+    "selectToken": "Chọn mã thông báo",
+    "pkWalletRemind": "Ví khóa riêng chỉ hiển thị các mạng được hỗ trợ. Để sử dụng tất cả các mạng, chuyển sang ví pha hạt giống.",
+    "unavailable": "không có sẵn",
+    "loading": "Đang tải...",
+    "height": "Chiều cao: {{chiều cao}}",
+    "deleteWarning": "Không thể phục hồi được cấu hình RPC",
+    "invalidRpc": "URL RPC trống"
+  },
+  "Contacts": {
+    "title": "Liên hệ",
+    "searchHint": "Địa chỉ tìm kiếm",
+    "addContact": "Thêm liên hệ",
+    "editContact": "Chỉnh sửa liên hệ",
+    "contactInfo": "Thông tin liên hệ",
+    "enterContactName": "Nhập tên liên hệ",
+    "enterAddress": "Nhập địa chỉ",
+    "confirmCreate": "Xác nhận Tạo",
+    "confirmUpdate": "Xác nhận cập nhật",
+    "selectNetwork": "Chọn Mạng",
+    "networkName": "Tên mạng",
+    "remove": "Di dời",
+    "copyAddress": "Địa chỉ sao chép",
+    "editAddress": "Chỉnh sửa địa chỉ",
+    "deleteHint": "Xác nhận để xóa địa chỉ này?",
+    "alreadyExist": "Địa chỉ này đã có trong danh sách liên hệ của bạn",
+    "invalidAddress": "Địa chỉ không hợp lệ"
+  },
+  "SelectToken": {
+    "title": "Chọn mã thông báo",
+    "searchToken": "Tìm kiếm mã thông báo",
+    "searchHint": "Mã thông báo tìm kiếm (Biểu tượng, địa chỉ)"
   },
   "Stake": {
     "title": "cổ phần",

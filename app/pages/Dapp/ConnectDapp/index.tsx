@@ -1,10 +1,9 @@
 import { ERROR_CODE } from "@/common/types/error";
 import { IconFoxWallet, IconLogo } from "@/components/Custom/Icon";
 import { useClient } from "@/hooks/useClient";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { useDappRequest } from "@/hooks/useDappRequest";
 import { Content } from "@/layouts/Content";
-import { Button, Flex, Text, keyframes } from "@chakra-ui/react";
+import { Button, Flex, keyframes, Text } from "@chakra-ui/react";
 import BaseCheckbox from "../../../components/Custom/Checkbox";
 
 import { useCallback, useMemo, useState } from "react";
@@ -14,6 +13,9 @@ import { ResponsiveFlex } from "@/components/Custom/ResponsiveFlex";
 import { AccountInfo } from "@/components/Dapp/AccountInfo";
 import { useTranslation } from "react-i18next";
 import { DecryptPermission } from "@/database/types/dapp";
+import { useGroupAccount } from "@/hooks/useGroupAccount";
+import { CoinType } from "core/types";
+import { getDefaultChainUniqueId } from "core/constants/chain";
 
 const shakeAnimation = keyframes`
   10%, 90% {
@@ -33,12 +35,23 @@ const shakeAnimation = keyframes`
   }
 `;
 
-function ConnectAleoDappScreen() {
+function ConnectDappScreen() {
   const navigate = useNavigate();
-  const { selectedAccount } = useCurrAccount();
+  const { getMatchAccountsWithUniqueId } = useGroupAccount();
   const { requestId } = useParams();
-  const { popupServerClient } = useClient();
   const { dappRequest, loading } = useDappRequest(requestId);
+  const coinType = useMemo(
+    () => dappRequest?.coinType ?? CoinType.ETH,
+    [dappRequest],
+  );
+
+  const selectedAccount = useMemo(() => {
+    return getMatchAccountsWithUniqueId(
+      getDefaultChainUniqueId(coinType, {}),
+    )[0];
+  }, [coinType, getMatchAccountsWithUniqueId]);
+
+  const { popupServerClient } = useClient();
   const [showShakeAnimation, setShowShakeAnimation] = useState(false);
   const needCheck = useMemo(() => {
     return (
@@ -49,22 +62,15 @@ function ConnectAleoDappScreen() {
   const [checked, setChecked] = useState(false);
   const { t } = useTranslation();
 
-  const permissionExplain = useMemo(() => {
-    return {
-      [DecryptPermission.NoDecrypt]: t("Dapp:noDecrypt"),
-      [DecryptPermission.UponRequest]: t("Dapp:uponRequest"),
-      [DecryptPermission.AutoDecrypt]: t("Dapp:autoDecrypt"),
-      [DecryptPermission.OnChainHistory]: t("Dapp:onChainHistory"),
-    };
-  }, [t]);
-
   const dappRequestInfo = useMemo(() => {
     if (!dappRequest) {
       return null;
     }
-    const { payload } = dappRequest;
-    const { decryptPermission, network, programs } = payload;
+    const { coinType } = dappRequest;
 
+    if (coinType !== CoinType.ETH) {
+      return null;
+    }
     return (
       <Flex
         direction={"column"}
@@ -81,23 +87,11 @@ function ConnectAleoDappScreen() {
       >
         <Flex justify={"space-between"}>
           <Text>{t("Dapp:network")}</Text>
-          <Text fontWeight={"bold"}>{network}</Text>
-        </Flex>
-        <Flex justify={"space-between"} mt={2}>
-          <Text>{t("Dapp:permission")}</Text>
-          <Text fontWeight={"bold"} maxW={210} wordBreak={"break-all"}>
-            {permissionExplain[decryptPermission as DecryptPermission] ?? ""}
-          </Text>
-        </Flex>
-        <Flex justify={"space-between"} mt={2}>
-          <Text>{t("Dapp:programs")}</Text>
-          <Text fontWeight={"bold"} maxW={210} wordBreak={"break-all"}>
-            {(programs ?? []).join(",\n")}
-          </Text>
+          <Text fontWeight={"bold"}>EVM</Text>
         </Flex>
       </Flex>
     );
-  }, [dappRequest, selectedAccount, t]);
+  }, [dappRequest, t]);
 
   const onConnect = useCallback(() => {
     if (needCheck && !checked) {
@@ -107,28 +101,28 @@ function ConnectAleoDappScreen() {
       }, 820);
       return;
     }
-    if (requestId && selectedAccount?.address) {
-      popupServerClient.onRequestFinish({
+    if (requestId && selectedAccount?.account.address) {
+      void popupServerClient.onRequestFinish({
         requestId,
-        data: selectedAccount.address,
+        data: selectedAccount.account.address,
       });
     }
   }, [
     popupServerClient,
     requestId,
-    selectedAccount?.address,
+    selectedAccount?.account.address,
     needCheck,
     checked,
   ]);
 
   const onCancel = useCallback(() => {
     if (requestId) {
-      popupServerClient.onRequestFinish({
+      void popupServerClient.onRequestFinish({
         requestId,
         error: ERROR_CODE.USER_CANCEL,
       });
     }
-  }, []);
+  }, [popupServerClient, requestId]);
 
   return (
     <Content>
@@ -205,4 +199,4 @@ function ConnectAleoDappScreen() {
   );
 }
 
-export default ConnectAleoDappScreen;
+export default ConnectDappScreen;

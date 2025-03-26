@@ -1,11 +1,11 @@
 import { Flex, Text } from "@chakra-ui/react";
-import { promisifyChooseDialogWrapper } from "../../../common/utils/dialog";
+import { promisifyChooseDialogWrapper } from "@/common/utils/dialog";
 import { useCallback, useMemo } from "react";
 import { BottomUpDrawer } from "@/components/Custom/BottomUpDrawer";
 import { useTranslation } from "react-i18next";
 import { IconDelete, IconExportPhrase } from "@/components/Custom/Icon";
 import {
-  DisplayWallet,
+  type DisplayWallet,
   WalletType,
 } from "@/scripts/background/store/vault/types/keyring";
 import { usePopupSelector } from "@/hooks/useStore";
@@ -30,7 +30,7 @@ const WalletOptionDrawer = (props: Props) => {
   const { t } = useTranslation();
 
   const walletBackupMnemonicMap = usePopupSelector(
-    (state) => state.account.walletBackupMnemonicMap,
+    (state) => state.accountV2.walletBackupMnemonicMap,
     isEqual,
   );
   const isBackuped = useMemo(

@@ -1,5 +1,5 @@
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
-import { RootState } from "../store";
+import { type RootState } from "../store";
 
 export const migrationV2 = (state: RootState): RootState => {
   try {
@@ -10,7 +10,7 @@ export const migrationV2 = (state: RootState): RootState => {
       ...state,
       account: {
         ...account,
-        selectedUniqueId: InnerChainUniqueId.ALEO_TESTNET,
+        selectedUniqueId: InnerChainUniqueId.ALEO_MAINNET,
       },
     };
   } catch (err) {

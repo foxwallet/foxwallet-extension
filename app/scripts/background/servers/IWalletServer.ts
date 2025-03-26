@@ -1,10 +1,10 @@
 import { CoinType } from "core/types";
 import { type ServerPayload } from "../../../common/types/message";
 import {
-  DisplayAccount,
+  DisplayComposedAccount,
   DisplayKeyring,
   DisplayWallet,
-  SelectedAccount,
+  OneMatchGroupAccount,
 } from "../store/vault/types/keyring";
 import { logger } from "../../../common/utils/logger";
 import { ChainUniqueId } from "core/types/ChainUniqueId";
@@ -15,8 +15,9 @@ import {
   AleoRequestDeploymentParams,
 } from "core/coins/ALEO/types/Deployment";
 import { SiteInfo } from "@/scripts/content/host";
-import { ImportPrivateKeyTypeMap } from "core/types/CoinBasic";
+import { AccountOption, ImportPrivateKeyTypeMap } from "core/types/CoinBasic";
 import { DecryptPermission } from "@/database/types/dapp";
+import {ProviderError, SerializableError} from "@/scripts/content/ErrorCode";
 
 export type PopupServerMethod = keyof IPopupServer;
 
@@ -36,7 +37,6 @@ export type ImportHDWalletProps = {
 
 export interface AddAccountProps {
   walletId: string;
-  coinType: CoinType;
   accountId: string;
 }
 
@@ -46,14 +46,13 @@ export interface ImportPrivateKeyProps<T extends CoinType> {
   coinType: T;
   privateKey: string;
   privateKeyType: ImportPrivateKeyTypeMap[T];
+  option: AccountOption[T];
 }
 
-export interface GetSelectedAccountProps {
-  coinType: CoinType;
-}
+export interface GetSelectedAccountProps {}
 
 export interface SetSelectedAccountProps {
-  selectAccount: SelectedAccount;
+  groupAccount: OneMatchGroupAccount;
 }
 
 export interface GetBalanceProps {
@@ -71,7 +70,7 @@ export interface SetSelectedUniqueIdProps {
 
 export interface ResyncAleoProps {
   uniqueId: ChainUniqueId;
-  account: DisplayAccount;
+  account: DisplayComposedAccount;
 }
 
 // export enum SerializeType {
@@ -137,7 +136,6 @@ export type GetPrivateKeyProps = {
 export type ChangeAccountStateProps = {
   walletId: string;
   accountId: string;
-  hide: boolean;
 };
 
 export interface IPopupServer {
@@ -163,16 +161,6 @@ export interface IPopupServer {
     params: ImportPrivateKeyProps<T>,
   ): Promise<DisplayWallet>;
 
-  getSelectedAccount(
-    params: GetSelectedAccountProps,
-  ): Promise<SelectedAccount | null>;
-
-  setSelectedAccount(params: SetSelectedAccountProps): Promise<SelectedAccount>;
-
-  getSelectedUniqueId(params: GetSelectedUniqueIdProps): Promise<ChainUniqueId>;
-
-  setSelectedUniqueId(params: SetSelectedUniqueIdProps): Promise<ChainUniqueId>;
-
   getHDWallet(walletId: string): Promise<DisplayWallet>;
 
   getSimpleWallet(walletId: string): Promise<DisplayWallet>;
@@ -180,6 +168,8 @@ export interface IPopupServer {
   getAllWallet: () => Promise<DisplayKeyring>;
 
   rescanAleo(): Promise<boolean>;
+
+  resetChain(): Promise<boolean>;
 
   sendAleoTransaction(params: AleoSendTxProps): Promise<void>;
 
@@ -191,19 +181,33 @@ export interface IPopupServer {
 
   getHDMnemonic(walletId: string): Promise<string>;
 
+  resetWallet(): Promise<boolean>;
+
   deleteWallet(walletId: string): Promise<DisplayKeyring>;
 
   getPrivateKey(params: GetPrivateKeyProps): Promise<string>;
 
   checkPassword(password: string): Promise<boolean>;
 
-  changeAccountHideState(params: ChangeAccountStateProps): Promise<void>;
+  getSelectedGroupAccount(
+    params?: GetSelectedAccountProps,
+  ): Promise<OneMatchGroupAccount | null>;
+
+  setSelectedGroupAccount({
+    groupAccount,
+  }: SetSelectedAccountProps): Promise<OneMatchGroupAccount>;
 }
 
-export interface ConnectProps {
+export interface ALEOConnectProps {
   decryptPermission: DecryptPermission;
   network: string;
   programs?: string[];
+}
+
+export interface ConnectProps {
+  coinType: CoinType;
+  network?: string;
+  chainId?: string;
 }
 
 export interface DecrtptProps {
@@ -273,6 +277,7 @@ export interface RequestTxResp {
 
 export interface SignMessageProps {
   message: string;
+  method?: string;
 }
 
 export interface SignMessageResp {
@@ -322,8 +327,6 @@ export interface RequestTxHistoryResp {
   transactions: TxHistoryBody[];
 }
 
-export type ContentServerMethod = keyof IContentServer;
-
 export interface RequestFinfishProps {
   requestId: string;
   error?: string;
@@ -336,57 +339,168 @@ export interface SiteMetadata {
   address: string | null;
 }
 
-export interface IContentServer {
+export type ServerMethodContext = {
+  coinType: CoinType;
+  siteMetadata?: SiteMetadata;
+};
+
+export type ETHSignPersonalMessageResult = {};
+
+export interface IALEOContentServer {
   connect: (
-    params: ConnectProps,
-    siteMetadata?: SiteMetadata,
+    params: ALEOConnectProps,
+    serverMethodContext: ServerMethodContext,
   ) => Promise<string | null>;
-  disconnect: (params: {}, siteMetadata?: SiteMetadata) => Promise<boolean>;
+  disconnect: (
+    params: {},
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<boolean>;
   decrypt: (
     params: DecrtptProps,
-    siteMetadata?: SiteMetadata,
+    serverMethodContext: ServerMethodContext,
   ) => Promise<string>;
   requestRecords: (
     params: RequestRecordsProps,
-    siteMetadata?: SiteMetadata,
+    serverMethodContext: ServerMethodContext,
   ) => Promise<RequestRecordsResp>;
   requestRecordPlaintexts: (
     params: RequestRecordsProps,
-    siteMetadata?: SiteMetadata,
+    serverMethodContext: ServerMethodContext,
   ) => Promise<RequestRecordsPlaintextResp>;
   requestTransaction: (
     params: RequestTxProps,
-    siteMetadata?: SiteMetadata,
+    serverMethodContext: ServerMethodContext,
   ) => Promise<RequestTxResp>;
   signMessage: (
     params: SignMessageProps,
-    siteMetadata?: SiteMetadata,
+    serverMethodContext: ServerMethodContext,
   ) => Promise<SignMessageResp>;
   requestExecution: (
     params: RequestTxProps,
-    siteMetadata?: SiteMetadata,
+    serverMethodContext: ServerMethodContext,
   ) => Promise<RequestTxResp>;
   requestBulkTransactions: (
     params: RequestBulkTxsProps,
-    siteMetadata?: SiteMetadata,
+    serverMethodContext: ServerMethodContext,
   ) => Promise<RequestBulkTxsResp>;
   requestDeploy: (
     params: RequestDeployProps,
-    siteMetadata?: SiteMetadata,
+    serverMethodContext: ServerMethodContext,
   ) => Promise<RequestDeployResp>;
   transactionStatus: (
     params: TransactionStatusProps,
-    siteMetadata?: SiteMetadata,
+    serverMethodContext: ServerMethodContext,
   ) => Promise<TransactionStatusResp>;
   getExecution: (
     params: TransactionStatusProps,
-    siteMetadata?: SiteMetadata,
+    serverMethodContext: ServerMethodContext,
   ) => Promise<TransactionStatusResp>;
   requestTransactionHistory: (
     params: RequestTxHistoryProps,
-    siteMetadata?: SiteMetadata,
+    serverMethodContext: ServerMethodContext,
   ) => Promise<RequestTxHistoryResp>;
 }
+
+export type ETHRequestParams<T> = {
+  id?: string;
+  method: string;
+  params: T;
+};
+
+export type ETHSignPersonalMessageParams = {
+  data: string;
+};
+
+export interface IETHContentServer {
+  eth_accounts: (
+    payload: ETHRequestParams<{}>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<string[]>;
+  eth_requestAccounts: (
+    payload: ETHRequestParams<{}>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<string[]>;
+  // net_version: (
+  //   payload: ETHRequestParams<{}>,
+  //   serverMethodContext: ServerMethodContext,
+  // ) => Promise<string>;
+  // eth_chainId: (
+  //   payload: ETHRequestParams<{}>,
+  //   serverMethodContext: ServerMethodContext,
+  // ) => Promise<string>;
+  wallet_getPermissions: (
+    payload: ETHRequestParams<{}>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  wallet_requestPermissions: (
+    payload: ETHRequestParams<[{ eth_accounts: {} }]>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  wallet_revokePermissions: (
+    payload: ETHRequestParams<[{ eth_accounts: {} }]>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  personal_sign: (
+    payload: ETHRequestParams<[string, string]>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  personal_ecRecover: (
+    payload: ETHRequestParams<[string, string]>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  eth_signTypedData_v3: (
+    payload: ETHRequestParams<[any, string]>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  eth_signTypedData_v4: (
+    payload: ETHRequestParams<[any, string]>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  eth_signTypedData: (
+    payload: ETHRequestParams<[any, string]>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  eth_sendTransaction: (
+    payload: ETHRequestParams<[any]>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  wallet_watchAsset: (
+    payload: ETHRequestParams<any>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  wallet_addEthereumChain: (
+    payload: ETHRequestParams<any>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  wallet_switchEthereumChain: (
+    payload: ETHRequestParams<[{ chainId: string }]>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  _setGlobalChainId: (
+    payload: string,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  _getGlobalChainId: (
+    payload: any,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  proxyRPCCall: (
+    payload: any,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+}
+
+export type IContentServer<T extends CoinType> = T extends CoinType.ALEO
+  ? IALEOContentServer
+  : T extends CoinType.ETH
+  ? IETHContentServer
+  : never;
+
+export type ContentServerMethod<T extends CoinType> = T extends CoinType.ALEO
+  ? keyof IALEOContentServer
+  : T extends CoinType.ETH
+  ? keyof IETHContentServer
+  : never;
 
 export async function executeServerMethod<T>(
   promise: Promise<T>,
@@ -399,14 +513,24 @@ export async function executeServerMethod<T>(
       }))
       .catch((error) => {
         logger.error("executeServerMethod error: ", error);
-        return {
-          error: error.message,
-          data: null,
-        };
+        if (
+          error instanceof ProviderError ||
+          error instanceof SerializableError
+        ) {
+          return {
+            error: error,
+            data: null,
+          };
+        } else {
+          return {
+            error: new SerializableError(error?.message ?? error),
+            data: null,
+          };
+        }
       });
   } catch (err: any) {
     return {
-      error: err.message,
+      error: new SerializableError(err?.message ?? err),
       data: null,
     };
   }

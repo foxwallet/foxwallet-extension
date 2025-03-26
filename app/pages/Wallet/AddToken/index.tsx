@@ -3,10 +3,14 @@ import {
   IconRemoveCircle,
   IconSearch,
 } from "@/components/Custom/Icon";
-import { TokenItem, TokenItemWithBalance } from "@/components/Wallet/TokenItem";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
+import { TokenItemWithBalance } from "@/components/Wallet/TokenItem";
+import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
-import { useTokens } from "@/hooks/useToken";
+import {
+  matchedAndUnMatchedTokens,
+  useAllTokens,
+  useRecommendTokens,
+} from "@/hooks/useToken";
 import { PageWithHeader } from "@/layouts/Page";
 import {
   Divider,
@@ -14,65 +18,127 @@ import {
   Input,
   InputGroup,
   InputLeftElement,
-  Spinner,
+  Text,
 } from "@chakra-ui/react";
-import { BETA_STAKING_PROGRAM_ID } from "core/coins/ALEO/constants";
-import { Token } from "core/coins/ALEO/types/Token";
+import {
+  BETA_STAKING_ALEO_TOKEN_ID,
+  BETA_STAKING_PROGRAM_ID,
+} from "core/coins/ALEO/constants";
 import { isEqual } from "lodash";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import type React from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useSafeParams } from "@/hooks/useSafeParams";
+import { type TokenV2 } from "core/types/Token";
+import { LoadingView } from "@/components/Custom/Loading";
+import { useSearchTokens, useSearchTokensByRpc } from "@/hooks/useSearchTokens";
+import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
+import type { AleoService } from "core/coins/ALEO/service/AleoService";
+import { useCoinService } from "@/hooks/useCoinService";
 
 function AddToken() {
   const { t } = useTranslation();
-  const { selectedAccount, uniqueId } = useCurrAccount();
-  const [keyword, setKeyword] = useState("");
-  const { tokens, loadingTokens, getTokens } = useTokens(uniqueId, keyword);
-  const userTokens = usePopupSelector(
-    (state) => state.tokens.userTokens?.[uniqueId]?.[selectedAccount.address],
-    isEqual,
-  );
+  const { uniqueId } = useSafeParams();
+  const { getMatchAccountsWithUniqueId } = useGroupAccount();
+  const selectedAccount = useMemo(() => {
+    return getMatchAccountsWithUniqueId(uniqueId)[0];
+  }, [getMatchAccountsWithUniqueId, uniqueId]);
+  const [searchText, setSearchText] = useState("");
+  const { coinService } = useCoinService(uniqueId);
   const dispatch = usePopupDispatch();
 
-  const [selectedTokens, unselectedTokens] = useMemo(() => {
-    const useTokenIds = new Set(
-      userTokens?.map((token) => token.tokenId) || [],
-    );
-    const _selectedTokens: Token[] = [];
-    const _unselectedTokens: Token[] = [];
-    tokens?.forEach((token) => {
-      if (useTokenIds.has(token.tokenId)) {
-        _selectedTokens.push(token);
-      } else {
-        _unselectedTokens.push(token);
+  const userTokens = usePopupSelector(
+    (state) =>
+      state.tokens.userTokens?.[uniqueId]?.[selectedAccount?.account.address],
+    isEqual,
+  );
+
+  const recommendTokens = useRecommendTokens(uniqueId); // 推荐 数量适中
+  // console.log("      recommendTokens", recommendTokens);
+
+  const rawAllTokens = useAllTokens(uniqueId); // 所有 数量很多
+  // console.log("      rawAllTokens", rawAllTokens);
+
+  // 使用symbol, contractAddress 在rawAllTokens 搜索
+  const { searchRes: searchInRawAllTokens, searching: loadingInRawAllTokens } =
+    useSearchTokens(searchText, rawAllTokens);
+
+  // 使用 contractAddress 在rpc搜索
+  const { searchRes: searchResByRpc, searching: searchingByRpc } =
+    useSearchTokensByRpc(searchText, uniqueId);
+  // console.log("      searchResByRpc", searchResByRpc);
+
+  const loading = useMemo(() => {
+    if (searchInRawAllTokens.length > 0) {
+      return false;
+    } else {
+      return loadingInRawAllTokens || searchingByRpc;
+    }
+  }, [loadingInRawAllTokens, searchInRawAllTokens.length, searchingByRpc]);
+
+  // 需要区分用户已添加/没有添加的数据
+  const targetTokens = useMemo(() => {
+    if (searchText) {
+      if (searchInRawAllTokens.length > 0) {
+        return [...searchInRawAllTokens];
+      } else if (searchResByRpc) {
+        return [searchResByRpc];
       }
-    });
-    return [_selectedTokens, _unselectedTokens];
-  }, [tokens, userTokens]);
+      return [];
+    } else {
+      return recommendTokens;
+    }
+  }, [searchText, searchInRawAllTokens, searchResByRpc, recommendTokens]);
+
+  // 区分结果
+  const { matchedTokens, unMatchedTokens } = useMemo(() => {
+    return matchedAndUnMatchedTokens(uniqueId, targetTokens, userTokens);
+  }, [targetTokens, uniqueId, userTokens]);
+
+  // 页面显示的数据
+  const { selectedTokens, unselectedTokens } = useMemo(() => {
+    return {
+      selectedTokens: searchText ? matchedTokens : userTokens ?? [],
+      unselectedTokens: unMatchedTokens ?? [],
+    };
+  }, [matchedTokens, searchText, unMatchedTokens, userTokens]);
 
   const onKeywordChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const value = event.target.value.trim();
-      setKeyword(value);
+      setSearchText(value);
     },
     [],
   );
 
   const selectToken = useCallback(
-    (token: Token) => {
+    (token: TokenV2) => {
+      // betastaking.aleo 特殊处理
+      if (uniqueId === InnerChainUniqueId.ALEO_MAINNET) {
+        const { programId: _programId, tokenId: _tokenId } = (
+          coinService as AleoService
+        ).parseContractAddress(token.contractAddress);
+        if (_programId === BETA_STAKING_PROGRAM_ID) {
+          token.tokenId = BETA_STAKING_ALEO_TOKEN_ID;
+          token.programId = BETA_STAKING_PROGRAM_ID;
+        }
+      }
+
       dispatch.tokens.selectToken({
         uniqueId,
-        address: selectedAccount.address,
+        address: selectedAccount.account.address,
         token,
       });
     },
-    [dispatch.tokens, uniqueId, selectedAccount],
+    [uniqueId, dispatch.tokens, selectedAccount.account.address, coinService],
   );
 
   const unselectToken = useCallback(
-    (token: Token) => {
+    (token: TokenV2) => {
       dispatch.tokens.unselectToken({
         uniqueId,
-        address: selectedAccount.address,
+        address: selectedAccount.account.address,
         token,
       });
     },
@@ -88,15 +154,34 @@ function AddToken() {
         <Input
           alignSelf={"stretch"}
           bg={"gray.50"}
-          value={keyword}
+          value={searchText}
           onChange={onKeywordChange}
           placeholder={t("ManageToken:searchHint")}
           pl={10}
           py={2}
         />
       </InputGroup>
-      {loadingTokens && <Spinner w={6} h={6} alignSelf={"center"} mt={10} />}
-      <Flex flexDir={"column"} maxH={"500px"} overflowY={"auto"} mt={"10px"}>
+      {loading && (
+        <Flex
+          alignItems={"center"}
+          justifyContent={"center"}
+          flexDir={"column"}
+        >
+          <LoadingView w={8} h={8} alignSelf={"center"} mt={2} />
+          <Text mt={2} fontSize={10}>
+            {t("ManageToken:pleaseWait")}
+          </Text>
+        </Flex>
+      )}
+      {}
+      <Flex
+        flexDir={"column"}
+        maxH={"500px"}
+        overflowY={"auto"}
+        mt={"6px"}
+        sx={HIDE_SCROLL_BAR_CSS}
+      >
+        {/* added tokens */}
         {selectedTokens.length > 0 && (
           <>
             {selectedTokens.map((token) => {
@@ -111,11 +196,19 @@ function AddToken() {
                 >
                   <TokenItemWithBalance
                     uniqueId={uniqueId}
-                    address={selectedAccount.address}
+                    address={selectedAccount.account.address}
                     token={token}
-                    onClick={() => unselectToken(token)}
+                    onClick={() => {
+                      unselectToken(token);
+                    }}
+                    showPriceAndChange={false}
                   />
-                  <Flex cursor={"pointer"} onClick={() => unselectToken(token)}>
+                  <Flex
+                    cursor={"pointer"}
+                    onClick={() => {
+                      unselectToken(token);
+                    }}
+                  >
                     <IconRemoveCircle w={4} h={4} />
                   </Flex>
                 </Flex>
@@ -126,7 +219,8 @@ function AddToken() {
             </Flex>
           </>
         )}
-        {!loadingTokens &&
+        {/* not added tokens */}
+        {!loading &&
           unselectedTokens.length > 0 &&
           unselectedTokens.map((token) => {
             return (
@@ -138,12 +232,22 @@ function AddToken() {
                 pr={5}
                 _hover={{ bg: "gray.50", borderRadius: "lg" }}
               >
-                <TokenItem
+                <TokenItemWithBalance
+                  uniqueId={uniqueId}
+                  address={selectedAccount.account.address}
                   token={token}
-                  onClick={() => selectToken(token)}
-                  hideId={token.programId === BETA_STAKING_PROGRAM_ID}
+                  onClick={() => {
+                    selectToken(token);
+                  }}
+                  showPriceAndChange={false}
+                  showBalanceAndValue={false}
                 />
-                <Flex cursor={"pointer"} onClick={() => selectToken(token)}>
+                <Flex
+                  cursor={"pointer"}
+                  onClick={() => {
+                    selectToken(token);
+                  }}
+                >
                   <IconAddCircle w={4} h={4} />
                 </Flex>
               </Flex>

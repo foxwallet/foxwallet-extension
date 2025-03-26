@@ -9,6 +9,7 @@ import {
 import * as browser from "webextension-polyfill";
 import { AleoSendTxParams } from "core/coins/ALEO/types/Transaction";
 import { offscreen } from "./aleo";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 
 const OFFSCREEN_TX_DOCUMENT_PATH = "/offscreen_tx.html";
 const OFFSCREEN_DOCUMENT_PATH = "/offscreen.html";
@@ -101,7 +102,7 @@ export async function syncBlocks() {
   return initResp;
 }
 
-export async function sendTransaction(params: AleoSendTxParams) {
+export async function sendAleoTransaction(params: AleoSendTxParams) {
   try {
     stopCheckSyncing();
     console.log("===> sendTransaction closeOffscreenTxDocument");
@@ -117,7 +118,7 @@ export async function sendTransaction(params: AleoSendTxParams) {
       origin: MessageOrigin.BACKGROUND_TO_OFFSCREEN_TX,
       payload: {
         ...params,
-        rpcList: ReserveChainConfigs.ALEO_MAINNET.rpcList,
+        rpcList: ReserveChainConfigs[InnerChainUniqueId.ALEO_MAINNET].rpcList,
       },
     };
     const sendTxResp: OffscreenMessage =
@@ -204,7 +205,7 @@ export async function sendDeployment(params: AleoRequestDeploymentParams) {
       origin: MessageOrigin.BACKGROUND_TO_OFFSCREEN_TX,
       payload: {
         ...params,
-        rpcList: ReserveChainConfigs.ALEO_MAINNET.rpcList,
+        rpcList: ReserveChainConfigs[InnerChainUniqueId.ALEO_MAINNET].rpcList,
       },
     };
     const sendTxResp: OffscreenMessage =
@@ -229,7 +230,8 @@ export async function sendDeployment(params: AleoRequestDeploymentParams) {
   }
 }
 
-const makeSureSyncing = () => {
+/*
+const makeSureSyncing2 = () => {
   let interval = 5000;
   let timer: any = null;
 
@@ -257,6 +259,63 @@ const makeSureSyncing = () => {
     console.log("===> stopCheckSyncing ", timer, interval);
     clearTimeout(timer);
     timer = null;
+  };
+
+  return {
+    startCheckSyncing,
+    stopCheckSyncing,
+  };
+};
+ */
+
+const makeSureSyncing = () => {
+  let interval = 5000;
+  let timer: NodeJS.Timeout | null = null;
+
+  // 检查同步状态的逻辑
+  const checkSyncing = async () => {
+    try {
+      const [isSyncing, isSending] = await Promise.all([
+        isSyncingBlocks(),
+        isSendingAleoTransaction(),
+      ]);
+      console.log("===> checkSyncing: isSyncingBlocks, isSendingTx ", isSyncing, isSending);
+      if (!isSyncing && !isSending) {
+        offscreen();
+      }
+    } catch (error) {
+      console.error("Error while checking syncing status:", error);
+    }
+  };
+
+  // 启动定时器
+  const startCheckSyncing = () => {
+    console.log("===> startCheckSyncing ", timer, interval);
+    if (timer !== null) return; // 如果定时器已启动，则不再重复启动
+
+    timer = setInterval(async () => {
+      await checkSyncing();
+      // 第一次检查后，将间隔时间调整为 60 秒
+      if (interval !== 60 * 1000) {
+        interval = 60 * 1000;
+        resetTimer();
+      }
+    }, interval);
+  };
+
+  // 停止定时器
+  const stopCheckSyncing = () => {
+    console.log("===> stopCheckSyncing ", timer, interval);
+    if (timer) {
+      clearInterval(timer);
+      timer = null;
+    }
+  };
+
+  // 重置定时器
+  const resetTimer = () => {
+    stopCheckSyncing();
+    startCheckSyncing();
   };
 
   return {

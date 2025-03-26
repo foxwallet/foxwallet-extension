@@ -15,7 +15,7 @@ const BackupMnemonicScreen = () => {
   const [step, setStep] = useState(1);
   const [mnemonic, setMnemonic] = useState("");
   const { popupServerClient } = useClient();
-  const walletIdRef = useRef(walletIdFromRoute || "");
+  const walletIdRef = useRef(walletIdFromRoute ?? "");
   const navigate = useNavigate();
   const dispatch = usePopupDispatch();
   const { t } = useTranslation();
@@ -27,7 +27,7 @@ const BackupMnemonicScreen = () => {
       );
       setMnemonic(mnemonic);
     };
-    fetchMnemonic();
+    void fetchMnemonic();
   }, [popupServerClient]);
 
   const stepContent = useMemo(() => {
@@ -46,7 +46,7 @@ const BackupMnemonicScreen = () => {
           <ConfirmMnemonicStep
             mnemonic={mnemonic}
             onConfirm={() => {
-              dispatch.account.changeWalletBackupedMnemonic({
+              dispatch.accountV2.changeWalletBackupedMnemonic({
                 walletId: walletIdRef.current,
                 backupedMnemonic: true,
               });
@@ -55,7 +55,7 @@ const BackupMnemonicScreen = () => {
           />
         );
     }
-  }, [dispatch.account, step, mnemonic, navigate]);
+  }, [dispatch.accountV2, step, mnemonic, navigate]);
 
   const title = useMemo(() => {
     if (step === 1) return t("Menmonic:backup");

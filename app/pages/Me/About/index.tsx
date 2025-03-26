@@ -11,7 +11,6 @@ import {
   Button,
 } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
-// @ts-ignore
 import WALLET_LOGO from "@/common/assets/image/logo.png";
 import browser from "webextension-polyfill";
 import {
@@ -43,7 +42,7 @@ const AboutScreen = () => {
           align={"center"}
           justify={"space-between"}
           cursor={"pointer"}
-          onClick={() =>
+          onClick={async () =>
             browser.tabs.create({
               url: `${EXTENSION_PAGE_URL}${browser.runtime.id}`,
             })
@@ -76,7 +75,7 @@ const AboutScreen = () => {
           fontSize={14}
           fontWeight={500}
           textDecoration={"underline"}
-          onClick={() =>
+          onClick={async () =>
             browser.tabs.create({
               url: `${EXTENSION_STORE_URL}${browser.runtime.id}`,
             })
@@ -89,7 +88,7 @@ const AboutScreen = () => {
           fontSize={14}
           fontWeight={500}
           cursor={"pointer"}
-          onClick={() => browser.tabs.create({ url: PRIVACY_POLICY_URL })}
+          onClick={async () => browser.tabs.create({ url: PRIVACY_POLICY_URL })}
         >
           <Text>{t("About:privacyPolicy")}</Text>
         </Box>
@@ -98,7 +97,9 @@ const AboutScreen = () => {
           fontSize={14}
           fontWeight={500}
           cursor={"pointer"}
-          onClick={() => browser.tabs.create({ url: TERMS_OF_SERVICE_URL })}
+          onClick={async () =>
+            browser.tabs.create({ url: TERMS_OF_SERVICE_URL })
+          }
         >
           <Text>{t("About:userAgreement")}</Text>
         </Box>

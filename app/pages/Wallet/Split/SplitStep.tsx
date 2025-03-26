@@ -1,37 +1,19 @@
 import { H6 } from "@/common/theme/components/text";
-import { showErrorToast } from "@/components/Custom/ErrorToast";
-import { IconChevronRight } from "@/components/Custom/Icon";
 import { BaseInputGroup } from "@/components/Custom/Input";
 import { WarningArea } from "@/components/Custom/WarningArea";
-import { showSelectFeeTypeDialog } from "@/components/Send/SelectFeeType";
 import { TokenNum } from "@/components/Wallet/TokenNum";
-import { useBalance } from "@/hooks/useBalance";
 import { useCoinService } from "@/hooks/useCoinService";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
+import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
 import { Content } from "@/layouts/Content";
-import {
-  Button,
-  Flex,
-  InputRightElement,
-  Text,
-  border,
-} from "@chakra-ui/react";
-import {
-  NATIVE_TOKEN_PROGRAM_ID,
-  SPLIT_RECORD_FEE,
-} from "core/coins/ALEO/constants";
-import { AleoFeeMethod } from "core/coins/ALEO/types/FeeMethod";
-import { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
-import {
-  AleoRecordMethod,
-  AleoTransferMethod,
-} from "core/coins/ALEO/types/TransferMethod";
-import { ChainUniqueId } from "core/types/ChainUniqueId";
-import { AleoGasFee } from "core/types/GasFee";
+import { Button, Flex, InputRightElement, Text } from "@chakra-ui/react";
+import { SPLIT_RECORD_FEE } from "core/coins/ALEO/constants";
+import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { parseUnits } from "ethers/lib/utils";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useBalance } from "@/hooks/useBalance";
 
 export interface SplitStepProps {
   selectedRecords: RecordDetailWithSpent[];
@@ -41,13 +23,19 @@ export interface SplitStepProps {
 export const SplitStep = (props: SplitStepProps) => {
   const { selectedRecords, onConfirm } = props;
   const splitRecord = selectedRecords[0];
-  const { selectedAccount, uniqueId } = useCurrAccount();
-  const { nativeCurrency, coinService } = useCoinService(uniqueId);
+  const { getMatchAccountsWithUniqueId } = useGroupAccount();
+  // TODO: get uniqueId from chain mode or page params
+  const selectedAccount = useMemo(() => {
+    return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_MAINNET)[0];
+  }, [getMatchAccountsWithUniqueId]);
+  const uniqueId = InnerChainUniqueId.ALEO_MAINNET;
+
+  const { nativeCurrency } = useCoinService(uniqueId);
   const { t } = useTranslation();
+
   const { balance, loadingBalance } = useBalance({
     uniqueId,
-    address: selectedAccount.address,
-    programId: NATIVE_TOKEN_PROGRAM_ID,
+    address: selectedAccount.account.address,
   });
 
   const [amountStr, setAmountStr] = useState<string>("");
@@ -101,7 +89,7 @@ export const SplitStep = (props: SplitStepProps) => {
       amountNum -
       parseUnits(SPLIT_RECORD_FEE, nativeCurrency.decimals).toBigInt()
     );
-  }, [splitRecord, amountNum]);
+  }, [splitRecord, amountNum, nativeCurrency.decimals]);
 
   const onAmountChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -115,14 +103,14 @@ export const SplitStep = (props: SplitStepProps) => {
       return t("Send:insufficientBalance");
     }
     return "";
-  }, [amountValid, t]);
+  }, [amountStr, amountValid, t]);
 
   const onSubmit = useCallback(() => {
     if (!amountNum) {
       return;
     }
     onConfirm({ amount: amountNum });
-  }, [amountNum]);
+  }, [amountNum, onConfirm]);
 
   const { borderColor } = useThemeStyle();
 

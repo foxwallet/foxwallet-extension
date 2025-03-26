@@ -4,30 +4,33 @@ import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 export const DEFAULT_UNIQUE_ID_MAP: { [key in CoinType]: InnerChainUniqueId } =
   {
     [CoinType.ALEO]: InnerChainUniqueId.ALEO_MAINNET,
+    [CoinType.ETH]: InnerChainUniqueId.ETHEREUM,
   };
 
 export enum SupportCurrency {
-  USD = "USD",
-  INR = "INR",
-  PHP = "PHP",
-  IDR = "IDR",
-  EUR = "EUR",
-  JPY = "JPY",
-  CAD = "CAD",
-  AUD = "AUD",
-  SGD = "SGD",
-  HKD = "HKD",
-  KRW = "KRW",
-  VND = "VND",
-  NGN = "NGN",
-  IRR = "IRR",
-  MMK = "MMK",
-  RUB = "RUB",
-  UAH = "UAH",
-  GBP = "GBP",
-  TRY = "TRY",
-  BDT = "BDT",
-  BRL = "BRL",
+  USD = "USD", // 美元
+  INR = "INR", // 印度卢比
+  PHP = "PHP", // 菲律宾比索
+  IDR = "IDR", // 印度尼西亚 卢比
+  EUR = "EUR", // 欧元
+  JPY = "JPY", // 日元
+  CAD = "CAD", // 加元
+  AUD = "AUD", // 澳元
+  SGD = "SGD", // 新加坡元
+  HKD = "HKD", // 港币
+  KRW = "KRW", // 韩元
+  VND = "VND", // 越南盾
+  NGN = "NGN", // 尼日利亚	奈拉
+  IRR = "IRR", // 伊朗里亚尔
+  MMK = "MMK", // 缅甸元
+  RUB = "RUB", // 俄罗斯卢布
+  UAH = "UAH", // 乌克兰	格里夫尼亚
+  GBP = "GBP", // 英镑
+  TRY = "TRY", // 土耳其里拉
+  BDT = "BDT", // 孟加拉国	塔卡
+  BRL = "BRL", // 巴西雷亚尔
+  PKR = "PKR", // 巴基斯坦卢比
+  SAR = "SAR", // 沙特里亚尔
 }
 
 export const CURRENCY = {
@@ -93,7 +96,7 @@ export const CURRENCY = {
   },
   [SupportCurrency.VND]: {
     symbol: "VND",
-    symbolAbbr: "D.",
+    symbolAbbr: "D. ",
     localName: "Đồng",
   },
   [SupportCurrency.PHP]: {
@@ -123,7 +126,7 @@ export const CURRENCY = {
   },
   [SupportCurrency.IRR]: {
     symbol: "IRR",
-    symbolAbbr: "RI.",
+    symbolAbbr: "RI. ",
     localName: "Rial-e Irân",
   },
   [SupportCurrency.BDT]: {
@@ -136,9 +139,19 @@ export const CURRENCY = {
     symbolAbbr: "R$",
     localName: "Real Brasileiro",
   },
+  [SupportCurrency.PKR]: {
+    symbol: "PKR",
+    symbolAbbr: "₨ ",
+    localName: "پاکستانی روپیہ",
+  },
+  [SupportCurrency.SAR]: {
+    symbol: "SAR",
+    symbolAbbr: "﷼",
+    localName: "ريال سعودي",
+  },
 };
 
-export const COUNTRY_CURRENCY: { [key: string]: SupportCurrency } = {
+export const COUNTRY_CURRENCY: Record<string, SupportCurrency> = {
   US: SupportCurrency.USD,
   AU: SupportCurrency.AUD,
   CA: SupportCurrency.CAD,
@@ -164,4 +177,6 @@ export const COUNTRY_CURRENCY: { [key: string]: SupportCurrency } = {
   TR: SupportCurrency.TRY,
   BD: SupportCurrency.BDT,
   BR: SupportCurrency.BRL,
+  PK: SupportCurrency.PKR,
+  SA: SupportCurrency.SAR,
 };

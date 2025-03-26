@@ -1,64 +1,115 @@
-import type { ChainUniqueId } from "core/types/ChainUniqueId";
-import useSWR from "swr";
-import { useClient } from "./useClient";
+import {
+  type ChainUniqueId,
+  InnerChainUniqueId,
+} from "core/types/ChainUniqueId";
+import { AssetType, type TokenV2 } from "core/types/Token";
+import { useCoinService } from "@/hooks/useCoinService";
 import { useCallback, useMemo } from "react";
-import { useCoinService } from "./useCoinService";
-import { NATIVE_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
-import { InnerProgramId } from "core/coins/ALEO/types/ProgramId";
+import useSWR from "swr";
+import { usePopupDispatch } from "@/hooks/useStore";
+import { type BalanceResp } from "core/types/Balance";
 
-export interface Balance {
-  privateBalance: bigint;
-  publicBalance: bigint;
-  total: bigint;
-}
-
-/**
- *
- * @param uniqueId ChainUniqueId
- * @param address string
- * @param refreshInterval the refresh interval, should be greater than SYNS_BLOCK_INTERVAL
- * @returns {Balance} balance
- */
-export const useBalance = ({
-  uniqueId,
-  address,
-  programId,
-  tokenId,
-  refreshInterval,
-}: {
+export type BalanceReq = {
   uniqueId: ChainUniqueId;
   address: string;
-  programId: InnerProgramId;
-  tokenId?: string;
+  token?: TokenV2;
   refreshInterval?: number;
-}) => {
-  const { coinService } = useCoinService(uniqueId);
+};
 
-  const key = `/balance/${uniqueId}/${programId}/${address}/${tokenId}`;
+export const useBalance = (params: BalanceReq) => {
+  const { uniqueId, address, token, refreshInterval = 4000 } = params;
+  const { coinService } = useCoinService(uniqueId);
+  const dispatch = usePopupDispatch();
+
+  const isAddressValid = useMemo(() => {
+    return coinService.validateAddress(address);
+  }, [address, coinService]);
+
+  const key = useMemo(() => {
+    return `/balance/${[
+      uniqueId,
+      address,
+      token?.name,
+      token?.symbol,
+      token?.contractAddress,
+      token?.tokenId,
+      token?.programId,
+    ]
+      .filter((item) => !!item)
+      .join("/")}`;
+  }, [address, token, uniqueId]);
+
   const fetchBalance = useCallback(async () => {
-    if (programId !== NATIVE_TOKEN_PROGRAM_ID && tokenId) {
-      return await coinService.getTokenBalance(address, programId, tokenId);
+    if (!isAddressValid) {
+      return undefined;
     }
-    return await coinService.getBalance(address);
-  }, [coinService, uniqueId, address, tokenId]);
+    let balance: BalanceResp | undefined;
+    if (token?.type === AssetType.TOKEN) {
+      if (token?.contractAddress) {
+        balance = await coinService.getTokenBalance({
+          address,
+          token: { contractAddress: token.contractAddress },
+        });
+      } else {
+        if (
+          uniqueId === InnerChainUniqueId.ALEO_MAINNET &&
+          token?.programId &&
+          token?.tokenId
+        ) {
+          balance = await coinService.getTokenBalance({
+            address,
+            token: { contractAddress: `${token.programId}-${token.tokenId}` },
+          });
+        }
+      }
+    } else {
+      balance = await coinService.getBalance(address);
+    }
+    if (balance) {
+      const { total, privateBalance, publicBalance } = balance;
+      dispatch.coinBalanceV2.updateCoinBalance({
+        uniqueId,
+        address,
+        contractAddress: token?.contractAddress ?? "",
+        balanceItem: { total, privateBalance, publicBalance },
+      });
+    }
+
+    return balance;
+  }, [
+    address,
+    coinService,
+    dispatch.coinBalanceV2,
+    isAddressValid,
+    token,
+    uniqueId,
+  ]);
 
   const {
     data: balance,
     error,
     mutate: getBalance,
     isLoading: loadingBalance,
-  } = useSWR(key, fetchBalance, {
-    refreshInterval: refreshInterval,
+  } = useSWR(isAddressValid ? key : null, fetchBalance, {
+    refreshInterval,
   });
 
   const res = useMemo(() => {
+    if (!isAddressValid) {
+      return {
+        balance: undefined,
+        error: new Error("Data error"),
+        getBalance: undefined,
+        loadingBalance: false,
+      };
+    }
     return {
       balance,
       error,
       getBalance,
       loadingBalance,
     };
-  }, [balance, error, getBalance, loadingBalance]);
+  }, [balance, error, getBalance, isAddressValid, loadingBalance]);
 
   return res;
 };

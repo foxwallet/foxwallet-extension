@@ -1,64 +1,87 @@
-import { AleoConfig } from "../types/AleoConfig";
-import { IAleoStorage } from "../types/IAleoStorage";
+import { type AleoConfig } from "../types/AleoConfig";
+import { type IAleoStorage } from "../types/IAleoStorage";
 import {
-  AleoAddressInfo,
-  FutureJSON,
-  RecordDetailWithSpent,
+  type AleoAddressInfo,
+  type FutureJSON,
+  type RecordDetailWithSpent,
 } from "../types/SyncTask";
 import { parseU128, parseU64 } from "../utils/num";
 import { logger } from "@/common/utils/logger";
-import { AutoSwitch, AutoSwitchServiceType } from "core/utils/retry";
 import {
-  InputItem,
+  type InputItem,
   RecordFilter,
 } from "@/scripts/background/servers/IWalletServer";
 import { groupBy, uniqBy } from "lodash";
-import { AleoRpcService } from "./instances/rpc";
-import { AleoCreditMethod } from "../types/TransferMethod";
+import { type AleoRpcService, createAleoRpcService } from "./instances/rpc";
+import { type AleoCreditMethod } from "../types/TransferMethod";
 import {
-  AleoLocalTxInfo,
-  AleoTransaction,
+  type AleoLocalTxInfo,
+  type AleoTransaction,
   AleoTxStatus,
 } from "../types/Transaction";
-import { AleoGasFee } from "core/types/GasFee";
+import { type AleoGasFee } from "core/types/GasFee";
 import {
   ALPHA_TOKEN_PROGRAM_ID,
   ARCANE_PROGRAM_ID,
   BETA_STAKING_PROGRAM_ID,
-  FAILED_TX_REMOVE_TIME,
   LOCAL_TX_EXPIRE_TIME,
   NATIVE_TOKEN_PROGRAM_ID,
   NATIVE_TOKEN_TOKEN_ID,
 } from "../constants";
 import {
-  AleoHistoryItem,
+  type AleoHistoryItem,
   AleoHistoryType,
-  AleoLocalHistoryItem,
-  AleoOnChainHistoryItem,
+  type AleoLocalHistoryItem,
+  type AleoOnChainHistoryItem,
   AleoTxAddressType,
   AleoTxType,
 } from "../types/History";
 import { Mutex } from "async-mutex";
 import {
-  Program,
-  ViewKey,
+  Address,
   Future,
-  RecordCiphertext,
   hashBHP256,
   Plaintext,
+  Program,
+  RecordCiphertext,
+  ViewKey,
 } from "aleo_wasm";
-import { AleoApiService } from "./instances/sync";
-import { AleoSyncAccount } from "../types/AleoSyncAccount";
-import { AleoWalletService } from "./instances/api";
-import { Pagination } from "../types/Pagination";
-import { FaucetMessage, FaucetResp } from "../types/Faucet";
+import { type AleoApiService, createAleoApiService } from "./instances/sync";
+import { type AleoSyncAccount } from "../types/AleoSyncAccount";
+import {
+  type AleoWalletService,
+  createAleoWalletService,
+} from "./instances/api";
+import { type Pagination } from "../types/Pagination";
+import { type FaucetMessage, type FaucetResp } from "../types/Faucet";
 import { ExplorerLanguages } from "core/types/ExplorerLanguages";
-import { TokenService } from "./instances/token";
-import { Token, TokenWithBalance } from "../types/Token";
+import {
+  type AlphaSwapTokenService,
+  createAlphaSwapTokenService,
+} from "./instances/token";
+import { type Token, type TokenWithBalance } from "../types/Token";
 import { type InnerProgramId } from "../types/ProgramId";
 import { BETA_STAKING_ALEO_TOKEN } from "../config/chains";
-import { Transition } from "../types/AleoTransition";
-import { ArcaneService } from "./instances/arcane";
+import { isNotEmpty } from "core/utils/is";
+import { AleoStorage } from "@/scripts/background/store/aleo/AleoStorage";
+import { CoinServiceBasic } from "core/coins/CoinServiceBasic";
+import { AssetType, type TokenV2 } from "core/types/Token";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
+import type { InteractiveTokenParams } from "core/types/TokenTransaction";
+import { type BalanceResp, type TokenBalanceParams } from "core/types/Balance";
+import {
+  type CoinTxDetailParams,
+  type NativeCoinTxHistoryParams,
+  type TransactionStatusInfo,
+} from "core/types/NativeCoinTransaction";
+import { type TransactionHistoryResp } from "core/types/TransactionHistory";
+import { TransactionStatus } from "core/types/TransactionStatus";
+import { AleoInfoApi } from "core/coins/ALEO/service/api/aleoInfoApi";
+import { parseAleoFeeFuture } from "core/coins/ALEO/utils/utils";
+import {
+  type ArcaneService,
+  createArcaneService,
+} from "core/coins/ALEO/service/instances/arcane";
 
 const CREDITS_MAPPING_NAME = "account";
 
@@ -71,65 +94,74 @@ const SYNS_BLOCK_INTERVAL = 1000;
 const GET_SPENT_TAGS_SIZE = 500;
 
 // only for popup thread
-export class AleoService {
+export class AleoService extends CoinServiceBasic {
   config: AleoConfig;
   chainId: string;
+  aleoInfoApi: AleoInfoApi;
   private aleoStorage: IAleoStorage;
   private rpcService: AleoRpcService;
   private apiService: AleoApiService;
   private arcaneService: ArcaneService;
   private walletService: AleoWalletService;
-  private tokenService: TokenService;
+  private tokenService: AlphaSwapTokenService;
   private cachedSyncBlock: AleoAddressInfo | null = null;
   private lastSyncBlockTime: number = 0;
 
-  constructor(config: AleoConfig, storage: IAleoStorage) {
+  constructor(config: AleoConfig) {
+    super(config);
     this.config = config;
     this.chainId = config.chainId;
-    this.aleoStorage = storage;
-    this.rpcService = new AleoRpcService({
-      configs: config.rpcList.map((item) => ({
+    this.aleoStorage = AleoStorage.getInstance();
+    this.aleoInfoApi = new AleoInfoApi(config.aleoInfoApi);
+    this.rpcService = createAleoRpcService(
+      config.rpcList.map((item) => ({
         url: item,
         chainId: config.chainId,
       })),
-    });
-    this.apiService = new AleoApiService({
-      configs: config.syncApiList.map((item) => ({
+    );
+    this.apiService = createAleoApiService(
+      config.syncApiList.map((item) => ({
         url: item,
         chainId: config.chainId,
       })),
-    });
-    this.walletService = new AleoWalletService({
-      configs: config.walletApiList.map((item) => ({
+    );
+    this.walletService = createAleoWalletService(
+      config.walletApiList.map((item) => ({
         url: item,
         chainId: config.chainId,
       })),
-    });
+    );
     if (this.config.alphaSwapApi) {
-      this.tokenService = new TokenService({
-        configs: [
-          {
-            url: this.config.alphaSwapApi,
-            chainId: this.config.chainId,
-          },
-        ],
-      });
+      this.tokenService = createAlphaSwapTokenService([
+        {
+          url: this.config.alphaSwapApi,
+          chainId: this.config.chainId,
+        },
+      ]);
     }
     if (this.config.arcaneApi) {
-      this.arcaneService = new ArcaneService({
-        configs: [
-          {
-            url: this.config.arcaneApi,
-            chainId: this.config.chainId,
-          },
-        ],
-      });
+      this.arcaneService = createArcaneService([
+        {
+          url: this.config.arcaneApi,
+          chainId: this.config.chainId,
+        },
+      ]);
     }
   }
 
-  @AutoSwitch({ serviceType: AutoSwitchServiceType.API })
+  validateAddress(address: string): boolean {
+    try {
+      const addressObj = Address.from_string(address);
+      console.log("===> addressObj: ", addressObj, !!addressObj);
+      return !!addressObj;
+    } catch (err) {
+      logger.log("===> isValidAddress failed: ", err, address);
+      return false;
+    }
+  }
+
   private async getSpentTagsInRange(tags: string[]) {
-    return await this.apiService.currInstance().getSpentTags(tags);
+    return await this.apiService.getSpentTags(tags);
   }
 
   private async getSpentTags(tags: string[]) {
@@ -149,9 +181,12 @@ export class AleoService {
   public async getSyncProgress(address: string): Promise<number> {
     const [recordRanges, nodeStatus] = await Promise.all([
       this.aleoStorage.getAleoRecordRanges(this.chainId, address),
-      this.apiService.currInstance().getNodeStatus(),
+      this.apiService.getNodeStatus(),
     ]);
-    const { syncHeight, referenceHeight } = nodeStatus;
+    const { referenceHeight, serverHeight } = nodeStatus;
+    const maxHeight = Math.max(referenceHeight ?? 0, serverHeight ?? 0);
+    // console.log("      recordRanges", recordRanges, nodeStatus);
+
     const finishHeight = recordRanges
       .map((item) => {
         const [start, end] = item.split("-");
@@ -160,11 +195,19 @@ export class AleoService {
       .reduce((prev, curr) => {
         return prev + curr[1] - curr[0] + 1;
       }, 0);
-    return Math.min(
-      // add some buffer to avoid always 99%
-      Math.floor(((finishHeight + 20) / referenceHeight) * 100),
-      100,
-    );
+    // console.log("      finishHeight", finishHeight);
+
+    const realProgress = Math.floor((finishHeight / maxHeight) * 100);
+    // console.log("      realProgress", realProgress);
+
+    // 99%时视为100%, 否则会持续显示99%
+    return realProgress < 99 ? realProgress : 100;
+
+    // return Math.min(
+    //   // add some buffer to avoid always 99%
+    //   // Math.floor(((finishHeight + 20) / maxHeight) * 100),
+    //   100,
+    // );
   }
 
   private syncRecords = async (
@@ -376,15 +419,12 @@ export class AleoService {
     return privateBalance;
   }
 
-  @AutoSwitch({ serviceType: AutoSwitchServiceType.RPC })
   async getPublicBalance(address: string): Promise<bigint> {
-    const balance = await this.rpcService
-      .currInstance()
-      .getProgramMappingValue(
-        this.config.nativeCurrency.address,
-        CREDITS_MAPPING_NAME,
-        address,
-      );
+    const balance = await this.rpcService.getProgramMappingValue(
+      this.config.nativeCurrency.address,
+      CREDITS_MAPPING_NAME,
+      address,
+    );
     if (!balance || balance === "null") {
       return 0n;
     }
@@ -398,8 +438,8 @@ export class AleoService {
     ]);
 
     return {
-      privateBalance: privateBalance,
-      publicBalance: publicBalance,
+      privateBalance,
+      publicBalance,
       total: privateBalance + publicBalance,
     };
   }
@@ -408,9 +448,10 @@ export class AleoService {
     programId: InnerProgramId,
     method: AleoCreditMethod,
   ): Promise<bigint> {
-    const baseFee = await this.walletService
-      .currInstance()
-      .getBaseFee({ txType: method, programId });
+    const baseFee = await this.walletService.getBaseFee({
+      txType: method,
+      programId,
+    });
     return baseFee;
   }
 
@@ -430,14 +471,12 @@ export class AleoService {
 
   async getPriorityFee(): Promise<bigint> {
     try {
-      const priorityFee = await this.walletService
-        .currInstance()
-        .getPriorityFee();
+      const priorityFee = await this.walletService.getPriorityFee();
       if (priorityFee) {
         return BigInt(priorityFee);
       }
       const [latestBlock] = await Promise.all([
-        this.rpcService.currInstance().getLatestBlock(),
+        this.rpcService.getLatestBlock(),
       ]);
       const feeList: bigint[] = [];
       latestBlock.transactions?.forEach((tx) => {
@@ -528,14 +567,13 @@ export class AleoService {
     return false;
   }
 
-  @AutoSwitch({ serviceType: AutoSwitchServiceType.RPC })
   async getProgramContent(chainId: string, programId: string) {
     const cache = await this.aleoStorage.getProgramContent(chainId, programId);
     console.log("===> getProgramContent cache: ", cache?.length);
     if (cache) {
       return cache;
     }
-    const program = await this.rpcService.currInstance().getProgram(programId);
+    const program = await this.rpcService.getProgram(programId);
     console.log("===> getProgramContent: ", program.length);
     if (program) {
       await this.aleoStorage.setProgramContent(chainId, programId, program);
@@ -602,7 +640,7 @@ export class AleoService {
       const { records: recordWithName, changed } =
         await this.getRecordsWithName(
           programId,
-          result.recordsMap[programId] || {},
+          result.recordsMap[programId] ?? {},
         );
       recordsMap = recordWithName;
       if (changed) {
@@ -631,6 +669,8 @@ export class AleoService {
         case RecordFilter.ALL: {
           return true;
         }
+        default:
+          return false;
       }
     }) as RecordDetailWithSpent[];
     if (programId !== NATIVE_TOKEN_PROGRAM_ID) {
@@ -900,7 +940,7 @@ export class AleoService {
 
     // const { cursor } = pagination;
     // const publicHistory = await this.walletService
-    //   .currInstance()
+    //
     //   .getPublicHistory(address, cursor);
     // return publicHistory.map((item) => {
     //   return {
@@ -920,9 +960,8 @@ export class AleoService {
     // });
   }
 
-  @AutoSwitch({ serviceType: AutoSwitchServiceType.RPC })
   private async getTxInfoOnChain(txId: string): Promise<AleoTransaction> {
-    return await this.rpcService.currInstance().getTransaction(txId);
+    return await this.rpcService.getTransaction(txId);
   }
 
   private async getConfirmedTransactionInfo({
@@ -941,7 +980,7 @@ export class AleoService {
     if (cachedTx) {
       return cachedTx;
     }
-    const item = await this.walletService.currInstance().getTransaction(txId);
+    const item = await this.walletService.getTransaction(txId);
     let txType = AleoTxType.EXECUTION;
     if (item.origin_data.deployment) {
       txType = AleoTxType.DEPLOYMENT;
@@ -991,9 +1030,9 @@ export class AleoService {
             const isOwner = this.isRecordOwner(viewKey, output.value);
             if (isOwner) {
               isSender = true;
-              const baseFee = parseU64(feeTransition.inputs?.[1].value || "");
+              const baseFee = parseU64(feeTransition.inputs?.[1].value ?? "");
               const priorityFee = parseU64(
-                feeTransition.inputs?.[2].value || "",
+                feeTransition.inputs?.[2].value ?? "",
               );
               fee = baseFee + priorityFee;
             }
@@ -1006,7 +1045,7 @@ export class AleoService {
     const history: AleoOnChainHistoryItem = {
       type: AleoHistoryType.ON_CHAIN,
       txId: item.origin_data.id,
-      programId: programId,
+      programId,
       functionName: funcName,
       height: item.height,
       timestamp: item.timestamp,
@@ -1014,7 +1053,7 @@ export class AleoService {
         ? AleoTxAddressType.SEND
         : AleoTxAddressType.RECEIVE,
       status: AleoTxStatus.FINALIZD,
-      txType: txType,
+      txType,
     };
     await this.aleoStorage.cacheTransaction(this.chainId, history);
     return history;
@@ -1041,11 +1080,11 @@ export class AleoService {
       const viewKeyObj = this.parseViewKey(account.viewKey);
       const recordsMap = syncBlocksResult?.recordsMap ?? {};
       const records = [];
-      for (let recordMap of Object.values(recordsMap)) {
+      for (const recordMap of Object.values(recordsMap)) {
         if (!recordMap) {
           continue;
         }
-        for (let record of Object.values(recordMap)) {
+        for (const record of Object.values(recordMap)) {
           if (!record) {
             continue;
           }
@@ -1087,14 +1126,8 @@ export class AleoService {
     }
     const historyList = [...publicHistory, ...privateHistory];
     historyList.sort((item1, item2) => {
-      if (
-        (item1 as AleoOnChainHistoryItem).height &&
-        (item2 as AleoOnChainHistoryItem).height
-      ) {
-        return (
-          (item2 as AleoOnChainHistoryItem).height -
-          (item1 as AleoOnChainHistoryItem).height
-        );
+      if (item1.height && item2.height) {
+        return item2.height - item1.height;
       }
       return item2.timestamp - item1.timestamp;
     });
@@ -1124,20 +1157,20 @@ export class AleoService {
         case BETA_STAKING_PROGRAM_ID: {
           records = Object.values(recordsMap[program] ?? {}).filter(
             (item) => !!item,
-          );
+          ) as RecordDetailWithSpent[];
+          break;
         }
         default: {
           records = Object.values(recordsMap[program] ?? {}).filter(
             (item) => !!item,
-          );
+          ) as RecordDetailWithSpent[];
+          break;
         }
       }
     } else {
-      let programs = Object.keys(recordsMap);
-      for (let program of programs) {
-        let res = Object.values(recordsMap[program] ?? {}).filter(
-          (item) => !!item,
-        );
+      const programs = Object.keys(recordsMap);
+      for (const program of programs) {
+        const res = Object.values(recordsMap[program] ?? {}).filter(isNotEmpty);
         records = records.concat(res);
       }
     }
@@ -1153,10 +1186,10 @@ export class AleoService {
 
     return transactionIds.map((txId) => {
       const records = groupRecords[txId];
-      let executionRecords = [];
-      let feeRecords = [];
+      const executionRecords = [];
+      const feeRecords = [];
       let height = 0;
-      for (let record of records) {
+      for (const record of records) {
         height = record.height;
         record.timestamp = record.timestamp * 1000;
         if (
@@ -1197,11 +1230,11 @@ export class AleoService {
       const viewKeyObj = this.parseViewKey(account.viewKey);
       const recordsMap = syncBlocksResult?.recordsMap ?? {};
       const records = [];
-      for (let recordMap of Object.values(recordsMap)) {
+      for (const recordMap of Object.values(recordsMap)) {
         if (!recordMap) {
           continue;
         }
-        for (let record of Object.values(recordMap)) {
+        for (const record of Object.values(recordMap)) {
           if (!record) {
             continue;
           }
@@ -1309,9 +1342,7 @@ export class AleoService {
   }
 
   async faucetMessage(address: string): Promise<FaucetMessage> {
-    const content = await this.walletService
-      .currInstance()
-      .getFaucetContent({ address });
+    const content = await this.walletService.getFaucetContent({ address });
     const message = {
       ...content,
       address,
@@ -1331,9 +1362,7 @@ export class AleoService {
   }
 
   async faucetStatus(address: string): Promise<FaucetResp> {
-    const status = await this.walletService
-      .currInstance()
-      .getFaucetStatus({ address });
+    const status = await this.walletService.getFaucetStatus({ address });
     return status;
   }
 
@@ -1346,7 +1375,7 @@ export class AleoService {
     message: string;
     signature: string;
   }): Promise<boolean> {
-    const res = await this.walletService.currInstance().requestFaucet({
+    const res = await this.walletService.requestFaucet({
       address,
       message,
       signature,
@@ -1384,7 +1413,7 @@ export class AleoService {
         return `[${item.join(",")}]`;
       }
       if (item.id && item.owner && item.program_id) {
-        const records = recordsMap[item.program_id] || {};
+        const records = recordsMap[item.program_id] ?? {};
         const existRecord = records[item.id];
         if (existRecord && existRecord.plaintext) {
           if (item.program_id === NATIVE_TOKEN_PROGRAM_ID) {
@@ -1393,10 +1422,10 @@ export class AleoService {
           return existRecord.plaintext;
         }
       }
-      throw new Error("Invalid input item: " + item);
+      throw new Error(`Invalid input item: ${JSON.stringify(item)}`);
     });
     const creditsRecords = Object.values(
-      recordsMap[NATIVE_TOKEN_PROGRAM_ID] || {},
+      recordsMap[NATIVE_TOKEN_PROGRAM_ID] ?? {},
     ).filter((item) => {
       if (!item) {
         return false;
@@ -1446,11 +1475,10 @@ export class AleoService {
   };
 
   // tokens
-  supportToken() {
+  supportToken(): boolean {
     return !!this.config.alphaSwapApi;
   }
 
-  @AutoSwitch({ serviceType: AutoSwitchServiceType.RPC })
   async getTokenPublicBalance(
     address: string,
     programId: InnerProgramId,
@@ -1460,9 +1488,11 @@ export class AleoService {
       case ALPHA_TOKEN_PROGRAM_ID: {
         const id = hashBHP256(`{ token: ${tokenId}, user: ${address} }`);
         console.log("===> public balance id: ", tokenId, address, id);
-        const balance = await this.rpcService
-          .currInstance()
-          .getProgramMappingValue(programId, CREDITS_MAPPING_NAME, id);
+        const balance = await this.rpcService.getProgramMappingValue(
+          programId,
+          CREDITS_MAPPING_NAME,
+          id,
+        );
         console.log("===> token public balance: ", balance, id);
         if (!balance || balance === "null") {
           return 0n;
@@ -1470,9 +1500,11 @@ export class AleoService {
         return parseU128(balance);
       }
       case BETA_STAKING_PROGRAM_ID: {
-        const balance = await this.rpcService
-          .currInstance()
-          .getProgramMappingValue(programId, CREDITS_MAPPING_NAME, address);
+        const balance = await this.rpcService.getProgramMappingValue(
+          programId,
+          CREDITS_MAPPING_NAME,
+          address,
+        );
         console.log("===> token public balance: ", balance, address);
         if (!balance || balance === "null") {
           return 0n;
@@ -1481,9 +1513,11 @@ export class AleoService {
       }
       case ARCANE_PROGRAM_ID: {
         const id = hashBHP256(`{account: ${address}, token_id: ${tokenId}}`);
-        const res = await this.rpcService
-          .currInstance()
-          .getProgramMappingValue(programId, "authorized_balances", id);
+        const res = await this.rpcService.getProgramMappingValue(
+          programId,
+          "authorized_balances",
+          id,
+        );
         if (!res || typeof res !== "string" || res === "null") {
           return 0n;
         }
@@ -1576,7 +1610,8 @@ export class AleoService {
     }
   }
 
-  async getTokenBalance(
+  // TODO impl new api
+  async getTokenBalanceOld(
     address: string,
     programId: InnerProgramId,
     tokenId: string,
@@ -1592,33 +1627,71 @@ export class AleoService {
     };
   }
 
+  private getContractAddress = (
+    programId: InnerProgramId | string,
+    tokenId: string,
+  ) => {
+    return `${programId}-${tokenId}`;
+  };
+
+  parseContractAddress = (contractAddress: string) => {
+    const [programId, tokenId] = contractAddress.split("-");
+    return { programId, tokenId };
+  };
+
+  async getTokenBalance(
+    params: TokenBalanceParams,
+  ): Promise<BalanceResp | undefined> {
+    const { address, token } = params;
+    const { programId, tokenId } = this.parseContractAddress(
+      token.contractAddress,
+    );
+    const [publicBalance, privateBalance] = await Promise.all([
+      this.getTokenPublicBalance(address, programId as InnerProgramId, tokenId),
+      this.getTokenPrivateBalance(
+        address,
+        programId as InnerProgramId,
+        tokenId,
+      ),
+    ]);
+    return {
+      total: publicBalance + privateBalance,
+      publicBalance,
+      privateBalance,
+    };
+  }
+
   async getAllTokens() {
     const [tokens, arcaneTokens] = await Promise.all([
-      this.tokenService.currInstance().getTokens(),
-      this.arcaneService.currInstance().getTokens(),
+      this.tokenService.getTokens(),
+      this.arcaneService.getTokens(),
     ]);
     return [BETA_STAKING_ALEO_TOKEN, ...tokens, ...arcaneTokens];
   }
 
   async searchTokens(keyword: string) {
     const searchStAleo = keyword.includes("st") || keyword.includes("ale");
+
     const [tokens, arcaneTokens] = await Promise.all([
-      this.tokenService.currInstance().searchTokens(keyword),
-      this.arcaneService.currInstance().searchTokens(keyword),
+      this.tokenService.searchTokens(keyword),
+      this.arcaneService.searchTokens(keyword),
     ]);
     return searchStAleo
       ? [BETA_STAKING_ALEO_TOKEN, ...tokens, ...arcaneTokens]
       : [...tokens, ...arcaneTokens];
   }
 
-  async getInteractiveTokens(address: string): Promise<TokenWithBalance[]> {
+  async getUserInteractiveTokens(
+    params: InteractiveTokenParams,
+  ): Promise<TokenV2[]> {
+    const { address } = params;
     const tokens = await this.getAllTokens();
     // exclude stAleo
     const top10Tokens = tokens.slice(1, 11);
-    let balances = await Promise.all(
+    const balances = await Promise.all(
       top10Tokens.map(async (token) => {
         try {
-          const balance = await this.getTokenBalance(
+          const balance = await this.getTokenBalanceOld(
             address,
             token.programId,
             token.tokenId,
@@ -1628,7 +1701,7 @@ export class AleoService {
             balance,
           };
         } catch (err) {
-          console.error("===> getInteractiveTokens error: ", err);
+          console.error("===> getUserInteractiveTokens error: ", err);
           return {
             ...token,
             balance: {
@@ -1650,7 +1723,7 @@ export class AleoService {
       },
     };
     try {
-      const balance = await this.getTokenBalance(
+      const balance = await this.getTokenBalanceOld(
         address,
         stAleoToken.programId,
         stAleoToken.tokenId,
@@ -1659,22 +1732,48 @@ export class AleoService {
         ...balance,
       };
     } catch (err) {
-      console.error("===> getInteractiveTokens stAleo error: ", err);
+      console.error("===> getUserInteractiveTokens stAleo error: ", err);
     }
-    return [stAleoToken, ...non0Tokens];
+    const temp: TokenWithBalance[] = [stAleoToken, ...non0Tokens];
+    const res: TokenV2[] = temp.map((item) => {
+      const {
+        tokenId,
+        name,
+        symbol,
+        decimals,
+        logo,
+        official,
+        programId,
+        balance,
+      } = item;
+      return {
+        symbol,
+        decimals,
+        name,
+        type: AssetType.TOKEN,
+        uniqueId: InnerChainUniqueId.ALEO_MAINNET,
+        icon: logo,
+        official,
+        programId,
+        tokenId,
+        total: balance.total,
+        privateBalance: balance.privateBalance,
+        publicBalance: balance.publicBalance,
+        ownerAddress: address,
+        contractAddress: "",
+      };
+    });
+    return res;
   }
 
-  @AutoSwitch({ serviceType: AutoSwitchServiceType.RPC })
   async getTokenInfoOnChain(
     tokenId: string,
   ): Promise<Omit<Token, "logo" | "official">> {
-    const tokenRawInfo = await this.rpcService
-      .currInstance()
-      .getProgramMappingValue(
-        ALPHA_TOKEN_PROGRAM_ID,
-        ALPHA_SWAP_TOKEN_MAPPING_NAME,
-        tokenId,
-      );
+    const tokenRawInfo = await this.rpcService.getProgramMappingValue(
+      ALPHA_TOKEN_PROGRAM_ID,
+      ALPHA_SWAP_TOKEN_MAPPING_NAME,
+      tokenId,
+    );
     if (!tokenRawInfo) {
       throw new Error("Token not found");
     }
@@ -1690,9 +1789,9 @@ export class AleoService {
   ): Promise<Token | undefined> {
     switch (programId) {
       case ALPHA_TOKEN_PROGRAM_ID: {
-        const allTokens = await this.tokenService
-          .currInstance()
-          .searchTokens(tokenId.slice(0, -5));
+        const allTokens = await this.tokenService.searchTokens(
+          tokenId.slice(0, -5),
+        );
         const token = allTokens.find((item) => item.tokenId === tokenId);
         return token;
       }
@@ -1719,7 +1818,7 @@ export class AleoService {
     if (cachedTx) {
       return cachedTx;
     }
-    const item = await this.walletService.currInstance().getTransaction(txId);
+    const item = await this.walletService.getTransaction(txId);
     let txType = AleoTxType.EXECUTION;
     if (item.origin_data.deployment) {
       txType = AleoTxType.DEPLOYMENT;
@@ -1769,9 +1868,9 @@ export class AleoService {
             const isOwner = this.isRecordOwner(viewKey, output.value);
             if (isOwner) {
               isSender = true;
-              const baseFee = parseU64(feeTransition.inputs?.[1].value || "");
+              const baseFee = parseU64(feeTransition.inputs?.[1].value ?? "");
               const priorityFee = parseU64(
-                feeTransition.inputs?.[2].value || "",
+                feeTransition.inputs?.[2].value ?? "",
               );
               fee = baseFee + priorityFee;
             }
@@ -1784,7 +1883,7 @@ export class AleoService {
     const history: AleoOnChainHistoryItem = {
       type: AleoHistoryType.ON_CHAIN,
       txId: item.origin_data.id,
-      programId: programId,
+      programId,
       functionName: funcName,
       height: item.height,
       timestamp: item.timestamp,
@@ -1792,7 +1891,7 @@ export class AleoService {
         ? AleoTxAddressType.SEND
         : AleoTxAddressType.RECEIVE,
       status: AleoTxStatus.FINALIZD,
-      txType: txType,
+      txType,
     };
     await this.aleoStorage.cacheTransaction(this.chainId, history);
     return history;
@@ -1805,8 +1904,11 @@ export class AleoService {
   }: {
     address: string;
     pagination: Pagination;
-    token: Token;
+    token: TokenV2;
   }): Promise<AleoOnChainHistoryItem[]> {
+    if (!token?.programId) {
+      return [];
+    }
     const syncBlocksResult = await this.debounceSyncBlocks(address);
     const account = await this.aleoStorage.getAccountInfo(address);
     let privateHistory: AleoOnChainHistoryItem[] = [];
@@ -1814,7 +1916,7 @@ export class AleoService {
       const viewKeyObj = this.parseViewKey(account.viewKey);
       const recordMap = syncBlocksResult?.recordsMap[token.programId] ?? {};
       const records: RecordDetailWithSpent[] = [];
-      for (let record of Object.values(recordMap)) {
+      for (const record of Object.values(recordMap)) {
         if (!record) {
           continue;
         }
@@ -1828,11 +1930,13 @@ export class AleoService {
               if (record.parsedContent.token !== token.tokenId) {
                 continue;
               }
+              break;
             }
             case BETA_STAKING_PROGRAM_ID: {
               record.parsedContent = {
                 amount: record.content.amount.slice(0, -11),
               };
+              break;
             }
             case ARCANE_PROGRAM_ID: {
               record.parsedContent = {
@@ -1842,6 +1946,7 @@ export class AleoService {
               if (record.parsedContent.token !== token.tokenId) {
                 continue;
               }
+              break;
             }
             default: {
               throw new Error(
@@ -1869,18 +1974,233 @@ export class AleoService {
     }
     const historyList = [...privateHistory];
     historyList.sort((item1, item2) => {
-      if (
-        (item1 as AleoOnChainHistoryItem).height &&
-        (item2 as AleoOnChainHistoryItem).height
-      ) {
-        return (
-          (item2 as AleoOnChainHistoryItem).height -
-          (item1 as AleoOnChainHistoryItem).height
-        );
+      if (item1.height && item2.height) {
+        return item2.height - item1.height;
       }
       return item2.timestamp - item1.timestamp;
     });
 
     return historyList;
+  }
+
+  gasUnit(): string {
+    return "ALEO";
+  }
+
+  async getLatestBlockNumber(): Promise<number> {
+    const height = await this.rpcService.getLatestHeight();
+    if (height) {
+      return height;
+    }
+    return -1;
+  }
+
+  supportNativeCoinTxHistory(): boolean {
+    return true;
+  }
+
+  async getNativeCoinTxHistory(
+    params: NativeCoinTxHistoryParams,
+  ): Promise<TransactionHistoryResp> {
+    const { pageSize, pageNum } = params.pagination;
+    console.log("aleo getCoinTxHistory", pageSize, pageNum);
+    const hist = await this.aleoInfoApi.getTransferHistory(
+      params.address,
+      pageSize * pageNum,
+      pageSize,
+    );
+    return {
+      txs: hist.transactions.map((item) => {
+        return {
+          id: item.transactionId,
+          from: item.transferFrom?.address ?? "",
+          to: item.transferTo?.address ?? "",
+          value: BigInt(item.credits),
+          timestamp: item.timestamp * 1000,
+          status:
+            item.state === "Pending"
+              ? TransactionStatus.PENDING
+              : item.state === "Accepted"
+              ? TransactionStatus.SUCCESS
+              : TransactionStatus.FAILED,
+          height: item.height,
+          functionName: item.functionName,
+          programId: item.programId,
+        };
+      }),
+      pagination: {
+        pageSize,
+        pageNum,
+        endReach: hist.transactions.length < pageSize,
+        totalCount: hist.transferCount,
+      },
+    };
+  }
+
+  // 现在解析 aleo 的交易有比较大的难度
+  // 首先需要不同交易类型，交易结构不同
+  // 其次一些字段如 ciphertext1qgqt3mdf8k73wkhc60duh04qypmsk9qn6ugftdsl0se22gcntl405pg4w2w23w7208phvujuxvxslgac44dluu74njq25xl63ujm36sqpv52qya5 解密遇到了困难，没有找到解析方法
+  // 另外只能通过自己的 viewkey 解开自己的 record，无法解析其他人的 record
+  // 因此目前 aleo 采用本地的交易历史，仅通过接口拿取交易的 fee 信息
+  // 后续支持交易历史，但是不能隐私交易不能显示完全的交易信息
+  supportGetTxStatus(): boolean {
+    return true;
+  }
+
+  async getTxStatus(
+    params: CoinTxDetailParams,
+  ): Promise<TransactionStatusInfo | undefined> {
+    try {
+      const {
+        txId,
+        filter: { address, addressType },
+      } = params;
+
+      const [tx, latestHeight] = await Promise.all([
+        this.walletService.getTransaction(txId),
+        this.rpcService.getLatestHeight(),
+      ]);
+      if (!tx) {
+        return undefined;
+      }
+      if (tx.status === -1) {
+        return {
+          fee: 0n,
+          height: -1,
+          timestamp: -1,
+          confirmations: 0,
+          call: "",
+          status: TransactionStatus.PENDING,
+          chainSpecific: {
+            aleoStatus: AleoTxStatus.COMPLETED,
+          },
+        };
+      }
+      let fee = 0n;
+      if (tx.origin_data.fee?.transition.function === "fee_public") {
+        const baseFeeStr =
+          tx.origin_data.fee?.transition.inputs?.[0]?.value || "0u64";
+        const priorityFeeStr =
+          tx.origin_data.fee?.transition.inputs?.[1]?.value || "0u64";
+        fee =
+          BigInt(baseFeeStr.slice(0, -3)) + BigInt(priorityFeeStr.slice(0, -3));
+      } else if (tx.origin_data.fee?.transition.function === "fee_private") {
+        const baseFeeStr =
+          tx.origin_data.fee?.transition.inputs?.[1]?.value || "0u64";
+        const priorityFeeStr =
+          tx.origin_data.fee?.transition.inputs?.[2]?.value || "0u64";
+        fee =
+          BigInt(baseFeeStr.slice(0, -3)) + BigInt(priorityFeeStr.slice(0, -3));
+      }
+      const { height, timestamp } = tx;
+      let confirmations = 0;
+      if (height && latestHeight) {
+        confirmations = latestHeight - height + 1;
+      }
+      let program;
+      let fn;
+      const executionTransitions = tx.origin_data.execution?.transitions;
+      let executionTransition;
+      const feeTransition = tx.origin_data.fee?.transition;
+      if (tx.status === "accepted" && executionTransitions) {
+        const length = executionTransitions.length;
+        executionTransition = executionTransitions[length - 1];
+        program = executionTransition?.program;
+        fn = executionTransition?.function;
+      }
+      let from;
+      let to;
+      let value;
+      if (addressType === "sender") {
+        from = address ?? "";
+        to = "";
+      } else if (addressType === "receiver") {
+        from = "";
+        to = address ?? "";
+      }
+      if (program === NATIVE_TOKEN_PROGRAM_ID) {
+        switch (fn) {
+          case "transfer_public": {
+            if (executionTransition && feeTransition) {
+              from =
+                feeTransition.function === "fee_public"
+                  ? parseAleoFeeFuture(feeTransition.outputs?.[0]?.value)
+                  : "";
+
+              to = executionTransition.inputs?.[0]?.value;
+              value = BigInt(
+                executionTransition.inputs?.[1].value?.slice(0, -3) ?? 0,
+              );
+            }
+            break;
+          }
+          case "transfer_public_to_private": {
+            if (feeTransition) {
+              from =
+                feeTransition.function === "fee_public"
+                  ? parseAleoFeeFuture(feeTransition.outputs?.[0]?.value)
+                  : "";
+            }
+            value = BigInt(
+              executionTransition?.inputs?.[1]?.value?.slice(0, -3) ?? 0,
+            );
+            break;
+          }
+          case "transfer_private_to_public": {
+            if (feeTransition) {
+              from =
+                feeTransition.function === "fee_public"
+                  ? parseAleoFeeFuture(feeTransition.outputs?.[0]?.value)
+                  : "";
+            }
+            if (executionTransition) {
+              to = executionTransition.inputs?.[1]?.value;
+              value = BigInt(
+                executionTransition.inputs?.[2].value?.slice(0, -3) ?? 0,
+              );
+            }
+            break;
+          }
+        }
+      }
+      let call;
+      if (program && fn) {
+        call = `${program}-${fn}}`;
+      }
+      let status = TransactionStatus.PENDING;
+      let aleoStatus = AleoTxStatus.QUEUED;
+      if (tx.status === "accepted") {
+        status = TransactionStatus.SUCCESS;
+        aleoStatus =
+          tx.height > 0 ? AleoTxStatus.FINALIZD : AleoTxStatus.COMPLETED;
+      } else if (tx.status === "rejected") {
+        status = TransactionStatus.FAILED;
+        aleoStatus = AleoTxStatus.FAILED;
+      } else if (tx.status === "") {
+        status = TransactionStatus.PENDING;
+        aleoStatus = AleoTxStatus.COMPLETED;
+      }
+      return {
+        fee,
+        height: height === 0 ? -1 : height,
+        timestamp: timestamp * 1000,
+        confirmations,
+        call,
+        status,
+        from,
+        to,
+        value,
+        chainSpecific: {
+          aleoStatus,
+        },
+      };
+    } catch (err) {
+      console.error("getTxStatus error: ", err);
+      return undefined;
+    }
+  }
+
+  supportTokenTxHistory(): boolean {
+    return false;
   }
 }

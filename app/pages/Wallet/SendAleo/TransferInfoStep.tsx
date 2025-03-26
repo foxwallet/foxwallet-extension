@@ -1,21 +1,14 @@
 import { H6 } from "@/common/theme/components/text";
 import { serializeToken } from "@/common/utils/string";
-import {
-  IconAleo,
-  IconChevronRight,
-  IconQuestionCircle,
-} from "@/components/Custom/Icon";
+import { IconChevronRight, IconQuestionCircle } from "@/components/Custom/Icon";
 import { BaseInputGroup } from "@/components/Custom/Input";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import { showSelectRecordDialog } from "@/components/Send/SelectRecord";
 import { showSelectTransferMethodDialog } from "@/components/Send/SelectTransferMethod";
-import { TokenItem } from "@/components/Wallet/TokenItem";
+import { TokenItemWithBalance } from "@/components/Wallet/TokenItem";
 import { TokenNum } from "@/components/Wallet/TokenNum";
-import { useAssetList } from "@/hooks/useAssetList";
-import { useBalance } from "@/hooks/useBalance";
-import { useCoinBasic, useCoinService } from "@/hooks/useCoinService";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
-import { useLocationParams } from "@/hooks/useLocationParams";
+import { useCoinService } from "@/hooks/useCoinService";
+import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { useRecords } from "@/hooks/useRecord";
 import { Content } from "@/layouts/Content";
 import { RecordFilter } from "@/scripts/background/servers/IWalletServer";
@@ -33,16 +26,20 @@ import {
   BETA_STAKING_PROGRAM_ID,
   NATIVE_TOKEN_PROGRAM_ID,
 } from "core/coins/ALEO/constants";
-import { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
-import { Token } from "core/coins/ALEO/types/Token";
+import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { parseUnits } from "ethers/lib/utils";
+import type React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useDebounce } from "use-debounce";
+import { useBalance } from "@/hooks/useBalance";
+import { type TokenV2 } from "core/types/Token";
 
 interface TransferInfoStepProps {
+  transferToken: TokenV2;
   receiverAddress: string;
   setReceiverAddress: (address: string) => void;
   amountStr: string;
@@ -56,12 +53,13 @@ interface TransferInfoStepProps {
     amountNum: bigint;
     transferMethod: AleoTransferMethod;
     transferRecord?: RecordDetailWithSpent;
-    token: Token;
+    token: TokenV2;
   }) => void;
 }
 
 export const TransferInfoStep = (props: TransferInfoStepProps) => {
   const {
+    transferToken: tokenInfo,
     receiverAddress,
     setReceiverAddress,
     amountStr,
@@ -73,29 +71,20 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
     onConfirm,
   } = props;
 
-  const { selectedAccount, uniqueId } = useCurrAccount();
-  const coinBasic = useCoinBasic(uniqueId);
+  const { getMatchAccountsWithUniqueId } = useGroupAccount();
+  // Only use in Aleo
+  const selectedAccount = useMemo(() => {
+    return getMatchAccountsWithUniqueId(InnerChainUniqueId.ALEO_MAINNET)[0];
+  }, [getMatchAccountsWithUniqueId]);
+  const uniqueId = InnerChainUniqueId.ALEO_MAINNET;
+
+  const { coinService } = useCoinService(uniqueId);
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const token = useLocationParams("token");
-
-  const { nativeToken } = useAssetList(uniqueId, selectedAccount.address);
-
-  const tokenInfo = useMemo(() => {
-    try {
-      if (!token) {
-        return nativeToken;
-      }
-      return JSON.parse(token) as Token;
-    } catch (err) {
-      return nativeToken;
-    }
-  }, [token, nativeToken]);
-
   const { records, loading: loadingRecords } = useRecords({
     uniqueId,
-    address: selectedAccount.address,
+    address: selectedAccount.account.address,
     recordFilter: RecordFilter.UNSPENT,
     programId: tokenInfo.programId,
   });
@@ -129,7 +118,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
           );
       }
       default: {
-        console.error("Unsupport programId " + tokenInfo.programId);
+        console.error(`Unsupport programId ${tokenInfo.programId}`);
         return [];
       }
     }
@@ -137,10 +126,9 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
 
   const { balance, loadingBalance } = useBalance({
     uniqueId,
-    address: selectedAccount.address,
-    programId: tokenInfo.programId,
-    tokenId: tokenInfo.tokenId,
+    address: selectedAccount.account.address,
     refreshInterval: 10000,
+    token: tokenInfo,
   });
 
   // Receiver
@@ -151,14 +139,14 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
       setAddressValid(true);
       setReceiverAddress(event.target.value);
     },
-    [],
+    [setReceiverAddress],
   );
   useEffect(() => {
     if (debounceReceiverAddress) {
-      const valid = coinBasic.isValidAddress(debounceReceiverAddress);
+      const valid = coinService.validateAddress(debounceReceiverAddress);
       setAddressValid(valid);
     }
-  }, [debounceReceiverAddress, coinBasic]);
+  }, [debounceReceiverAddress, coinService]);
 
   // Transfer method
   const isPrivateMethod = useMemo(() => {
@@ -168,25 +156,32 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
   const onSelectTransferMethod = useCallback(async () => {
     const { data } = await showSelectTransferMethodDialog({
       uniqueId,
-      address: selectedAccount.address,
+      address: selectedAccount.account.address,
       selectedMethod: transferMethod,
       token: tokenInfo,
     });
     if (data) {
       setTransferMethod(data);
     }
-  }, [transferMethod, selectedAccount, uniqueId]);
+  }, [
+    uniqueId,
+    selectedAccount.account.address,
+    transferMethod,
+    tokenInfo,
+    setTransferMethod,
+  ]);
+
   useEffect(() => {
     if (
       !loadingBalance &&
       balance?.publicBalance === 0n &&
-      balance?.privateBalance > 0n
+      (balance?.privateBalance ?? 0n) > 0n
     ) {
       if (transferMethod.startsWith("transfer_public")) {
         setTransferMethod(AleoTransferMethod.PRIVATE);
       }
     }
-  }, [loadingBalance, balance, transferMethod]);
+  }, [loadingBalance, balance, transferMethod, setTransferMethod]);
 
   // Amount
   const [amountNum, amountNumLegal] = useMemo(() => {
@@ -195,7 +190,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
         return [null, false];
       }
       const amountNum = parseUnits(amountStr, tokenInfo.decimals).toBigInt();
-      return [amountNum, true];
+      return amountNum >= 0n ? [amountNum, true] : [null, false];
     } catch (err) {
       return [null, false];
     }
@@ -205,12 +200,12 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
     (event: React.ChangeEvent<HTMLInputElement>) => {
       setAmountStr(event.target.value.trim());
     },
-    [],
+    [setAmountStr],
   );
 
   // transfer record
   const currTransferRecord: RecordDetailWithSpent | undefined =
-    selectedTransferRecord || tokenRecords[0];
+    selectedTransferRecord ?? tokenRecords[0];
 
   const recordAmount = useMemo(() => {
     switch (tokenInfo.programId) {
@@ -227,7 +222,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
         return currTransferRecord?.parsedContent?.amount;
       }
       default: {
-        console.error("Unsupport programId " + tokenInfo.programId);
+        console.error(`Unsupport programId ${tokenInfo.programId}`);
       }
     }
   }, [tokenInfo, currTransferRecord]);
@@ -241,7 +236,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
     if (data) {
       setSelectedTransferRecord(data);
     }
-  }, [tokenRecords, tokenInfo, currTransferRecord]);
+  }, [tokenRecords, tokenInfo, currTransferRecord, setSelectedTransferRecord]);
 
   // amount valid
   const amountValid = useMemo(() => {
@@ -262,7 +257,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
         // } else {
         //   return amountNum <= balance.publicBalance;
         // }
-        return amountNum <= balance.publicBalance;
+        return balance.publicBalance && amountNum <= balance.publicBalance;
       }
       case AleoTransferMethod.PRIVATE:
       case AleoTransferMethod.PRIVATE_TO_PUBLIC: {
@@ -278,8 +273,6 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
     loadingBalance,
     balance,
     transferMethod,
-    currTransferRecord,
-    tokenRecords,
     recordAmount,
   ]);
 
@@ -320,13 +313,15 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
     amountValid,
     transferMethod,
     currTransferRecord,
+    loadingBalance,
+    balance,
   ]);
 
   const onNext = useCallback(async () => {
     if (!canSubmit) {
       return;
     }
-    if (!amountNum) {
+    if (amountNum === null) {
       return;
     }
     onConfirm({
@@ -339,11 +334,11 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
   }, [
     canSubmit,
     amountNum,
+    onConfirm,
     receiverAddress,
-    transferMethod,
-    amountNum,
-    currTransferRecord,
     tokenInfo,
+    transferMethod,
+    currTransferRecord,
   ]);
 
   const transferMethodMap = useMemo(() => {
@@ -371,25 +366,28 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
         <Flex justifyContent={"space-between"} align={"center"}>
           <Text>{t("Send:from")}</Text>
           <Box width={200}>
-            <MiddleEllipsisText text={selectedAccount.address} />
+            <MiddleEllipsisText text={selectedAccount.account.address} />
           </Box>
         </Flex>
         <Flex justify={"space-between"} mt={2} align={"center"}>
           <Text>{t("Send:transferToken")}</Text>
           <Flex align={"center"}>
-            <TokenItem
+            <TokenItemWithBalance
+              uniqueId={uniqueId}
+              address={selectedAccount.account.address}
               token={tokenInfo}
-              onClick={() =>
+              onClick={() => {
                 navigate(
                   `/select_token/${uniqueId}/${
-                    selectedAccount.address
-                  }?page=send_aleo&currToken=${serializeToken(tokenInfo)}`,
+                    selectedAccount.account.address
+                  }?page=send_aleo&token=${serializeToken(tokenInfo)}`,
                   {
                     replace: true,
                   },
-                )
-              }
-              hideId
+                );
+              }}
+              showPriceAndChange={false}
+              showBalanceAndValue={false}
               style={{ pr: 1 }}
             />
             <IconChevronRight w={4} h={4} />
@@ -481,7 +479,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
       />
       <Flex align={"center"} mt={2} position={"relative"}>
         {isPrivateMethod ? (
-          !!currTransferRecord ? (
+          currTransferRecord ? (
             <Flex flex={1}>
               {showPrivateHint && (
                 <Flex
@@ -506,8 +504,12 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
                 </Flex>
               )}
               <Box
-                onMouseEnter={() => setShowPrivateHint(true)}
-                onMouseLeave={() => setShowPrivateHint(false)}
+                onMouseEnter={() => {
+                  setShowPrivateHint(true);
+                }}
+                onMouseLeave={() => {
+                  setShowPrivateHint(false);
+                }}
               >
                 <IconQuestionCircle mr={1} />
               </Box>

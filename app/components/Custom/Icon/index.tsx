@@ -1,5 +1,5 @@
 import {
-  ChakraComponent,
+  type ChakraComponent,
   chakra,
   useColorModeValue,
   useStyleConfig,
@@ -63,7 +63,7 @@ import Discord from "@/common/assets/image/icon_discord.svg";
 import Youtube from "@/common/assets/image/icon_youtube.svg";
 import Language from "@/common/assets/image/icon_language.svg";
 import Currency from "@/common/assets/image/icon_currency.svg";
-import Info from "@/common/assets/image/icon_info.svg";
+import About from "@/common/assets/image/icon_about.svg";
 import Web from "@/common/assets/image/icon_web.svg";
 import MeSelected from "@/common/assets/image/icon_me_selected.svg";
 import MeUnselected from "@/common/assets/image/icon_me_unselected.svg";
@@ -76,21 +76,45 @@ import UpgradeReminderDark from "@/common/assets/image/icon_upgrade_reminder_dar
 import AddCircle from "@/common/assets/image/icon_add_circle.svg";
 import RemoveCircle from "@/common/assets/image/icon_remove_circle.svg";
 import Search from "@/common/assets/image/icon_search_line.svg";
+import Contact from "@/common/assets/image/icon_contact.svg";
+import Network from "@/common/assets/image/icon_network.svg";
+import Connect from "@/common/assets/image/icon_connect.svg";
+import Info from "@/common/assets/image/icon_info.svg";
+import CheckboxSelected from "@/common/assets/image/icon_checkbox_selected.svg";
+import CheckboxUnselected from "@/common/assets/image/icon_checkbox_unselected.svg";
+import SendContact from "@/common/assets/image/icon_send_contact.svg";
+import Switch from "@/common/assets/image/icon_switch.svg";
+import AllNetworks from "@/common/assets/image/icon_all_networks.svg";
+import TokenPlaceHolder from "@/common/assets/image/icon_token_placeholder.svg";
+import Success from "@/common/assets/image/icon_success.svg";
+import Failed from "@/common/assets/image/icon_failed.svg";
+import Processing from "@/common/assets/image/icon_processing.svg";
+import IconEth from "@/common/assets/image/icon_eth.svg";
+import Agree from "@/common/assets/image/icon_agree.svg";
+import Disagree from "@/common/assets/image/icon_disagree.svg";
+import CopyStyle2 from "@/common/assets/image/icon_copy_style2.svg";
+import EditStyle2 from "@/common/assets/image/icon_edit_style2.svg";
 
-const ThemeIconFill: (i: any) => ChakraComponent<any, any> =
-  (icon: any) => (props: ChakraComponent<any, any>) => {
+const ThemeIconFill: (i: any) => ChakraComponent<any, any> = (icon: any) => {
+  const ThemeIcon = (props: ChakraComponent<any, any>) => {
     const styles = useStyleConfig("SvgIcon");
     const OriginIcon = chakra(icon);
     return <OriginIcon __css={styles} {...props} />;
   };
+  ThemeIcon.displayName = `ThemeIconFill(${icon.displayName || icon.name})`;
+  return ThemeIcon;
+};
 
-const ThemeIconStroke: (i: any) => ChakraComponent<any, any> =
-  (icon: any) => (props: ChakraComponent<any, any>) => {
+const ThemeIconStroke: (i: any) => ChakraComponent<any, any> = (icon: any) => {
+  const ThemeIcon = (props: ChakraComponent<any, any>) => {
     const iconStrokeColor = useColorModeValue("black", "white");
 
     const OriginIcon = chakra(icon);
     return <OriginIcon stroke={iconStrokeColor} {...props} />;
   };
+  ThemeIcon.displayName = `ThemeIconStroke(${icon.displayName || icon.name})`;
+  return ThemeIcon;
+};
 
 export const IconCheckCircle = chakra(CheckCircle);
 export const IconCheckLine = chakra(CheckLine);
@@ -104,6 +128,9 @@ export const IconCloseCircle = chakra(CloseCircle);
 export const IconArrowRight = ThemeIconFill(ArrowRight);
 export const IconLogo = chakra(LogoNew);
 export const IconCopy = ThemeIconFill(Copy);
+export const IconCopy2 = ThemeIconFill(CopyStyle2);
+export const IconEdit2 = ThemeIconFill(EditStyle2);
+
 export const IconReceive = chakra(Receive);
 export const IconSend = chakra(Send);
 export const IconStake = chakra(Stake);
@@ -153,7 +180,7 @@ export const IconDiscord = ThemeIconFill(Discord);
 export const IconYoutube = ThemeIconFill(Youtube);
 export const IconLanguage = ThemeIconFill(Language);
 export const IconCurrency = chakra(Currency);
-export const IconInfo = ThemeIconFill(Info);
+export const IconAbout = ThemeIconFill(About);
 export const IconWeb = chakra(Web);
 export const IconMeSelected = ThemeIconFill(MeSelected);
 export const IconMeUnselected = ThemeIconFill(MeUnselected);
@@ -164,3 +191,19 @@ export const IconUpgradeReminderDark = chakra(UpgradeReminderDark);
 export const IconAddCircle = ThemeIconStroke(AddCircle);
 export const IconRemoveCircle = ThemeIconStroke(RemoveCircle);
 export const IconSearch = ThemeIconStroke(Search);
+export const IconContact = ThemeIconStroke(Contact);
+export const IconNetwork = ThemeIconStroke(Network);
+export const IconConnect = ThemeIconStroke(Connect);
+export const IconInfo = ThemeIconStroke(Info);
+export const IconCheckboxSelected = chakra(CheckboxSelected);
+export const IconCheckboxUnselected = chakra(CheckboxUnselected);
+export const IconSendContact = ThemeIconStroke(SendContact);
+export const IconSwitch = ThemeIconStroke(Switch);
+export const IconAllNetworks = ThemeIconFill(AllNetworks);
+export const IconTokenPlaceHolder = chakra(TokenPlaceHolder);
+export const IconSuccess = chakra(Success);
+export const IconFailed = chakra(Failed);
+export const IconProcessing = chakra(Processing);
+export const IconEVM = chakra(IconEth);
+export const IconAgree = chakra(Agree);
+export const IconDisagree = chakra(Disagree);

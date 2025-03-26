@@ -1,9 +1,15 @@
-import { coinServiceEntry } from "@/services/coin/CoinService";
+// import { coinServiceEntry } from "@/services/coin/CoinService";
 import { ALEO_CHAIN_CONFIGS } from "core/coins/ALEO/config/chains";
 import { coinBasicFactory } from "core/coins/CoinBasicFactory";
-import { CoinServiceEntry } from "core/coins/CoinServiceEntry";
+import {
+  coinServiceEntry,
+  CoinServiceEntry,
+} from "core/coins/CoinServiceEntry";
 import { chainUniqueIdToCoinType } from "core/helper/CoinType";
-import { ChainUniqueId, InnerChainUniqueId } from "core/types/ChainUniqueId";
+import {
+  type ChainUniqueId,
+  InnerChainUniqueId,
+} from "core/types/ChainUniqueId";
 import { useMemo } from "react";
 
 export const useCoinBasic = (uniqueId: ChainUniqueId) => {

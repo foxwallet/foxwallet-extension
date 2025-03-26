@@ -1,7 +1,7 @@
 import {
   CoinType,
   EncryptedKeyPairWithViewKey,
-  EncryptedField,
+  EncryptedField, EncryptedKeyPairWithPublicKey,
 } from "core/types";
 
 export interface Cipher {
@@ -16,29 +16,66 @@ export enum WalletType {
 
 export type AccountWithViewKey = EncryptedKeyPairWithViewKey & {
   accountName: string;
-  hide: boolean;
 };
 
-export type DisplayAccount = Omit<AccountWithViewKey, "privateKey" | "viewKey">;
+export type AccountWithPublicKey = EncryptedKeyPairWithPublicKey & {
+  accountName: string;
+};
 
-export type SelectedAccount = DisplayAccount & {
+export type ComposedAccount = AccountWithViewKey | AccountWithPublicKey;
+
+export type DisplayComposedAccount = Omit<
+  ComposedAccount,
+  "privateKey" | "viewKey"
+>;
+
+export type GroupAccount = {
+  groupId: string;
+  groupName: string;
+  index: number;
+  accounts: Array<ComposedAccount>;
+};
+
+export type GroupAccountMeta = {
+  walletType: WalletType;
   walletId: string;
-  coinType: CoinType;
+  groupId: string;
+};
+
+export type AccountMeta = {
+  walletType: WalletType;
+  walletId: string;
+  groupId: string;
+  accountId: string;
+};
+
+export type DisplayGroupAccount = {
+  groupId: string;
+  groupName: string;
+  index: number;
+  accounts: Array<DisplayComposedAccount>;
+};
+
+export type OneMatchGroupAccount = {
+  wallet: Omit<DisplayBaseWallet, "groupAccounts">;
+  group: DisplayGroupAccount;
+};
+
+export type OneMatchAccount = {
+  wallet: Omit<DisplayBaseWallet, "groupAccounts">;
+  group: Omit<DisplayGroupAccount, "accounts">;
+  account: DisplayComposedAccount;
 };
 
 export interface BaseWallet {
   walletType: WalletType;
   walletId: string;
   walletName: string;
-  accountsMap: {
-    [CoinType.ALEO]: AccountWithViewKey[];
-  };
+  groupAccounts: GroupAccount[];
 }
 
-export type DisplayBaseWallet = Omit<BaseWallet, "accountsMap"> & {
-  accountsMap: {
-    [CoinType.ALEO]: DisplayAccount[];
-  };
+export type DisplayBaseWallet = Omit<BaseWallet, "groupAccounts"> & {
+  groupAccounts: DisplayGroupAccount[];
 };
 
 export interface HDWallet extends BaseWallet {

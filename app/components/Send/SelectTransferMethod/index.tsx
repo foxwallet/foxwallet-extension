@@ -11,20 +11,15 @@ import {
   Spinner,
   Text,
 } from "@chakra-ui/react";
-import { L1, P3 } from "../../../common/theme/components/text";
-import { BasicModal } from "../../Custom/Modal";
-import { promisifyChooseDialogWrapper } from "../../../common/utils/dialog";
+import { promisifyChooseDialogWrapper } from "@/common/utils/dialog";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
 import { useMemo } from "react";
-import { useBalance } from "@/hooks/useBalance";
-import { ChainUniqueId } from "core/types/ChainUniqueId";
+import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import { TokenNum } from "@/components/Wallet/TokenNum";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { useCoinService } from "@/hooks/useCoinService";
 import { IconCheckLine } from "@/components/Custom/Icon";
 import { useRecords } from "@/hooks/useRecord";
 import { useTranslation } from "react-i18next";
-import { Token } from "core/coins/ALEO/types/Token";
 import { RecordFilter } from "@/scripts/background/servers/IWalletServer";
 import {
   ALPHA_TOKEN_PROGRAM_ID,
@@ -33,13 +28,15 @@ import {
   NATIVE_TOKEN_PROGRAM_ID,
   NATIVE_TOKEN_TOKEN_ID,
 } from "core/coins/ALEO/constants";
+import { useBalance } from "@/hooks/useBalance";
+import { type TokenV2 } from "core/types/Token";
 
 interface Props {
   isOpen: boolean;
   selectedMethod: AleoTransferMethod;
   uniqueId: ChainUniqueId;
   address: string;
-  token: Token;
+  token: TokenV2;
   onConfirm: (data: AleoTransferMethod) => void;
   onCancel: () => void;
 }
@@ -54,14 +51,14 @@ const SelectTransferMethodDrawer = (props: Props) => {
     selectedMethod,
     token,
   } = props;
-  const { nativeCurrency } = useCoinService(uniqueId);
+
   const { balance, loadingBalance } = useBalance({
     uniqueId,
     address,
-    programId: token.programId,
-    tokenId: token.tokenId,
     refreshInterval: 10000,
+    token,
   });
+
   const { records, loading: loadingRecords } = useRecords({
     uniqueId,
     address,
@@ -98,7 +95,8 @@ const SelectTransferMethodDrawer = (props: Props) => {
           );
       }
       default: {
-        console.error("Unsupport programId " + token.programId);
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        console.error(`Unsupport programId ${token.programId}`);
         return [];
       }
     }
@@ -114,7 +112,7 @@ const SelectTransferMethodDrawer = (props: Props) => {
       return t("Send:noRecordExist");
     }
     return t("Send:recordStatistics", { COUNT: tokenRecords.length });
-  }, [tokenRecords]);
+  }, [t, tokenRecords]);
 
   const transferMethods = useMemo(() => {
     return Object.values(AleoTransferMethod);
@@ -162,7 +160,7 @@ const SelectTransferMethodDrawer = (props: Props) => {
                 <Spinner w={2} h={2} />
               ) : (
                 <TokenNum
-                  amount={balance?.publicBalance || 0n}
+                  amount={balance?.publicBalance ?? 0n}
                   decimals={token.decimals}
                   symbol={token.symbol}
                 />
@@ -175,7 +173,7 @@ const SelectTransferMethodDrawer = (props: Props) => {
                   <Spinner w={2} h={2} />
                 ) : (
                   <TokenNum
-                    amount={balance?.privateBalance || 0n}
+                    amount={balance?.privateBalance ?? 0n}
                     decimals={token.decimals}
                     symbol={token.symbol}
                   />
@@ -200,9 +198,8 @@ const SelectTransferMethodDrawer = (props: Props) => {
           </Flex>
           <Flex direction={"column"}>
             {transferMethods.map((method) => (
-              <Flex flexDir={"column"}>
+              <Flex key={method} flexDir={"column"}>
                 <Flex
-                  key={method}
                   flex={1}
                   mt="4"
                   px={4}
@@ -210,7 +207,9 @@ const SelectTransferMethodDrawer = (props: Props) => {
                   border="1px solid"
                   borderColor={selectedMethod === method ? "black" : "gray.100"}
                   borderRadius={"lg"}
-                  onClick={() => onConfirm(method)}
+                  onClick={() => {
+                    onConfirm(method);
+                  }}
                   justify={"space-between"}
                 >
                   <Text>{transferMethodMap[method].title}</Text>

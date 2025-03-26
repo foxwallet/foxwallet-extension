@@ -351,11 +351,6 @@ export interface BackgroundMessage<T = any> {
   payload: T;
 }
 
-export enum InnerChainUniqueId {
-  ALEO_TESTNET = "ALEO_TESTNET",
-  ALEO_MAINNET = "ALEO_MAINNET",
-}
-
 export interface AleoRequestDeploymentParams {
   privateKey: string;
   chainId: string;

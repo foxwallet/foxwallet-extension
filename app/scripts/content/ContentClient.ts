@@ -1,39 +1,30 @@
-import { MessageType, ServerMessage, ServerResp } from "@/common/types/message";
+import {
+  MessageType,
+  MsgContentToBackground,
+  ServerResp,
+} from "@/common/types/message";
 import { PortName } from "@/common/types/port";
 import { IClient } from "@/common/utils/client";
 import { IPort, Port } from "@/common/utils/port";
 import {
-  ConnectProps,
   ContentServerMethod,
-  DecrtptProps,
-  RequestBulkTxsProps,
-  RequestBulkTxsResp,
-  RequestDeployProps,
-  RequestDeployResp,
-  RequestFinfishProps,
-  RequestRecordsPlaintextResp,
-  RequestRecordsProps,
-  RequestRecordsResp,
-  RequestTxHistoryProps,
-  RequestTxHistoryResp,
-  RequestTxProps,
-  RequestTxResp,
-  SignMessageProps,
-  SignMessageResp,
   SiteMetadata,
-  TransactionStatusProps,
-  TransactionStatusResp,
 } from "../background/servers/IWalletServer";
 import { nanoid } from "nanoid";
-import { SiteInfo } from "./host";
+import { CoinType } from "core/types";
+import {EmitData} from "@/scripts/content/type";
+
+export type EmitRepeat = (_: EmitData) => void;
 
 export class ContentClient implements IClient {
   private port: IPort;
   private callbackMap: Map<string, (error: string | null, data: any) => void>;
+  private emitRepeater: EmitRepeat;
 
-  constructor() {
+  constructor(emitRepeater: EmitRepeat) {
     this.callbackMap = new Map();
     this._connect();
+    this.emitRepeater = emitRepeater;
   }
 
   _connect(): void {
@@ -42,82 +33,23 @@ export class ContentClient implements IClient {
     this.port.onDisconnect.addListener(() => {
       console.warn("ContentClient disconnected, try to reconnect");
       Object.values(this.callbackMap).forEach((callback) => {
-        callback(new Error("PopupServerClient disconncected"));
+        callback(new Error("PopupServerClient disconnected"));
       });
       this.callbackMap = new Map();
       this._connect();
     });
   }
 
-  // connect = (params: ConnectProps): Promise<string | null> => {
-  //   return this.send("connect", params);
-  // };
-
-  // disconnect = (): Promise<boolean> => {
-  //   return this.send("disconnect", {});
-  // };
-
-  // decrypt = (params: DecrtptProps): Promise<string> => {
-  //   return this.send("decrypt", params);
-  // };
-
-  // requestRecords = (
-  //   params: RequestRecordsProps,
-  // ): Promise<RequestRecordsResp> => {
-  //   return this.send("requestRecords", params);
-  // };
-
-  // requestRecordPlaintexts = (
-  //   params: RequestRecordsProps,
-  // ): Promise<RequestRecordsPlaintextResp> => {
-  //   return this.send("requestRecordPlaintexts", params);
-  // };
-
-  // requestTransaction = (params: RequestTxProps): Promise<RequestTxResp> => {
-  //   return this.send("requestTransaction", params);
-  // };
-
-  // signMessage = (params: SignMessageProps): Promise<SignMessageResp> => {
-  //   return this.send("signMessage", params);
-  // };
-
-  // requestExecution = (params: RequestTxProps): Promise<RequestTxResp> => {
-  //   return this.send("requestExecution", params);
-  // };
-
-  // requestBulkTransactions = (
-  //   params: RequestBulkTxsProps,
-  // ): Promise<RequestBulkTxsResp> => {
-  //   return this.send("requestBulkTransactions", params);
-  // };
-
-  // requestDeploy = (params: RequestDeployProps): Promise<RequestDeployResp> => {
-  //   return this.send("requestDeploy", params);
-  // };
-
-  // transactionStatus = (
-  //   params: TransactionStatusProps,
-  // ): Promise<TransactionStatusResp> => {
-  //   return this.send("transactionStatus", params);
-  // };
-
-  // getExecution = (
-  //   params: TransactionStatusProps,
-  // ): Promise<TransactionStatusResp> => {
-  //   return this.send("getExecution", params);
-  // };
-
-  // requestTransactionHistory = (
-  //   params: RequestTxHistoryProps,
-  // ): Promise<RequestTxHistoryResp> => {
-  //   return this.send("requestTransactionHistory", params);
-  // };
-
-  #onMessage(msg: ServerResp) {
-    const { id, payload } = msg;
+  #onMessage(msg: ServerResp | EmitData) {
+    console.log("CONTENT_TO_BACKGROUND listener on page", msg);
+    if ((msg as EmitData).type === "EmitData") {
+      this.emitRepeater(msg as EmitData);
+      return;
+    }
+    const {id, payload} = msg as ServerResp;
     const callback = this.callbackMap.get(id);
     if (callback) {
-      const { error, data } = payload;
+      const {error, data} = payload;
       if (error) {
         callback(error, null);
       } else {
@@ -127,28 +59,29 @@ export class ContentClient implements IClient {
     }
   }
 
-  async send<T>(
-    method: ContentServerMethod,
+  async send<C extends CoinType, T>(
+    method: ContentServerMethod<C>,
     payload: T,
+    coinType: C,
     siteMetadata: SiteMetadata,
   ) {
-    return await new Promise<{ error: string | null; data: any }>(
-      (resolve, reject) => {
-        const id = nanoid();
-        const message: ServerMessage = {
-          type: MessageType.REQUEST,
-          id,
-          origin: PortName.CONTENT_TO_BACKGROUND,
-          method,
-          payload,
-          siteMetadata,
-        };
-        const callback = (error: string | null, data: any) => {
-          resolve({ error, data });
-        };
-        this.callbackMap.set(id, callback);
-        this.port.postMessage(message);
-      },
-    );
+    return await new Promise<{ error: string | null; data: any }>((resolve) => {
+      const id = nanoid();
+      const message: MsgContentToBackground<C, T> = {
+        type: MessageType.REQUEST,
+        id,
+        origin: PortName.CONTENT_TO_BACKGROUND,
+        coinType,
+        method,
+        payload,
+        siteMetadata,
+      };
+      console.log("postMessage", message);
+      const callback = (error: string | null, data: any) => {
+        resolve({ error, data });
+      };
+      this.callbackMap.set(id, callback);
+      this.port.postMessage(message);
+    });
   }
 }

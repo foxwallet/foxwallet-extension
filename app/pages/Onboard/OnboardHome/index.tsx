@@ -18,13 +18,17 @@ import { useNavigate } from "react-router-dom";
 import BaseCheckbox from "../../../components/Custom/Checkbox";
 import browser from "webextension-polyfill";
 import {
+  IconAgree,
+  IconCheckCircle,
+  IconCheckLineBlack,
   IconChevronDown,
   IconChevronRight,
+  IconDisagree,
   IconFoxWallet,
   IconLogo,
+  IconProcessing,
   OnboardLogo,
 } from "../../../components/Custom/Icon";
-import { useCurrAccount } from "@/hooks/useCurrAccount";
 import { LanguageLabels, SupportLanguages } from "@/locales/i18";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
 import { useTranslation } from "react-i18next";
@@ -52,14 +56,17 @@ function OnboardHomeScreen() {
   const [showShakeAnimation, setShowShakeAnimation] = useState(false);
   const language = usePopupSelector((state) => state.setting.language);
   const dispatch = usePopupDispatch();
-  const changeLanguage = useCallback((newLanguage: SupportLanguages) => {
-    dispatch.setting.changeLanguage({ language: newLanguage });
-  }, []);
+  const changeLanguage = useCallback(
+    (newLanguage: SupportLanguages) => {
+      void dispatch.setting.changeLanguage({ language: newLanguage });
+    },
+    [dispatch.setting],
+  );
   const { t } = useTranslation();
 
   const menuBgColor = useColorModeValue("white", "black");
   return (
-    <Flex direction={"column"} w={"full"} h={"full"}>
+    <Flex direction={"column"} w={"full"} h={"full"} flex={1}>
       <Flex pl="6" pr="4" mt="4" justify={"space-between"}>
         <Flex justify={"start"} align={"center"}>
           <IconLogo w="6" h="6" />
@@ -97,7 +104,9 @@ function OnboardHomeScreen() {
                 {Object.values(SupportLanguages).map((item) => (
                   <MenuItem
                     key={item}
-                    onClick={() => changeLanguage(item)}
+                    onClick={() => {
+                      changeLanguage(item);
+                    }}
                     fontSize={"xs"}
                     fontWeight={"normal"}
                     mt={1}
@@ -140,18 +149,26 @@ function OnboardHomeScreen() {
       </Flex>
       {/* Open new tab will dismiss the popup window, so check the policy advance */}
       {/* Make onboard progress in a new tab further(Need new design) */}
-      <BaseCheckbox
-        onStatusChange={(status) => {
-          setChecked(status);
+      <Flex
+        ml={6}
+        mb={4}
+        cursor={"pointer"}
+        alignItems={"center"}
+        // bg={"yellow"}
+        onClick={() => {
+          setChecked(!checked);
         }}
-        container={{
-          ml: 6,
-          mb: 4,
+        sx={{
           animation: showShakeAnimation
             ? `${shakeAnimation} 0.82s cubic-bezier(.36,.07,.19,.97) both`
             : "none",
         }}
       >
+        {checked ? (
+          <IconAgree ml={1} mr={2} w={3.5} h={3.5} />
+        ) : (
+          <IconDisagree ml={1} mr={2} w={3.5} h={3.5} />
+        )}
         <B3>
           {t("Agreement:content1")}
           <B3
@@ -159,7 +176,7 @@ function OnboardHomeScreen() {
             textDecorationColor={"green.500"}
             color="green.400"
             onClick={() => {
-              browser.tabs.create({
+              void browser.tabs.create({
                 url: "https://hc.foxwallet.com/terms-of-service",
               });
             }}
@@ -172,7 +189,7 @@ function OnboardHomeScreen() {
             textDecorationColor={"green.500"}
             color="green.400"
             onClick={() => {
-              browser.tabs.create({
+              void browser.tabs.create({
                 url: "https://hc.foxwallet.com/privacy-policy",
               });
             }}
@@ -180,7 +197,8 @@ function OnboardHomeScreen() {
             {t("Agreement:content3")}
           </B3>
         </B3>
-      </BaseCheckbox>
+      </Flex>
+
       <Button
         mx="6"
         mb="4"

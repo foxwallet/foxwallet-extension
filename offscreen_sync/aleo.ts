@@ -7,7 +7,6 @@ import {
   RecordCiphertext,
   Future,
 } from "aleo_wasm";
-import { AutoSwitch, AutoSwitchServiceType } from "core/utils/retry";
 import { Measure, MeasureAsync } from "@/common/utils/measure";
 import { ALEO_SYNC_HEIGHT_SIZE } from "@/common/constants";
 import { shuffle } from "@/common/utils/array";
@@ -17,13 +16,13 @@ import {
   type SyncRecordResp,
   type AddressSyncRecordResp,
   type WorkerSyncTask,
-  RecordTrimDetail,
+  type RecordTrimDetail,
 } from "core/coins/ALEO/types/SyncTask";
-import { AleoApiService } from "core/coins/ALEO/service/instances/sync";
-import type {
-  RecordRawInfo,
-  RecordTrimInfo,
-} from "core/coins/ALEO/service/api/sync.di";
+import {
+  type AleoApiService,
+  createAleoApiService,
+} from "core/coins/ALEO/service/instances/sync";
+import { type RecordTrimInfo } from "core/coins/ALEO/service/api/sync.di";
 
 export class AleoWorker {
   static logger: LogFunc | undefined;
@@ -32,6 +31,7 @@ export class AleoWorker {
   private measureMap: {
     [process in string]?: { time: number; count: number; max: number };
   } = {};
+
   apiService: AleoApiService;
   // private currIndex: number | undefined;
 
@@ -45,12 +45,12 @@ export class AleoWorker {
     public enableMeasure: boolean,
   ) {
     apiList = shuffle(apiList);
-    this.apiService = new AleoApiService({
-      configs: apiList.map((item) => ({
+    this.apiService = createAleoApiService(
+      apiList.map((item) => ({
         url: item,
         chainId: "mainnet",
       })),
-    });
+    );
   }
 
   get getWorkerId() {
@@ -126,43 +126,37 @@ export class AleoWorker {
     }
   };
 
-  @AutoSwitch({ serviceType: AutoSwitchServiceType.API, waitTime: 2000 })
   @MeasureAsync()
   async getRecordsInRange(chainId: string, start: number, end: number) {
-    this.apiService.currInstance().setChainId(chainId);
+    this.apiService.setChainId(chainId);
     const index =
       Math.floor(start / ALEO_SYNC_HEIGHT_SIZE) * ALEO_SYNC_HEIGHT_SIZE;
-    const recordsInRange = await this.apiService
-      .currInstance()
-      .getTrimRecords(index);
+    // const recordsInRange = await this.apiService.getRecords(index);
+    const recordsInRange = await this.apiService.getTrimRecords(index);
     return recordsInRange;
   }
 
-  @AutoSwitch({ serviceType: AutoSwitchServiceType.API, waitTime: 2000 })
   @MeasureAsync()
-  async getRecordsDetail(chainId: string, records: Array<RecordTrimDetail>) {
+  async getRecordsDetail(chainId: string, records: RecordTrimDetail[]) {
     // maxium 10
-    this.apiService.currInstance().setChainId(chainId);
-    const recordsInRange = await this.apiService
-      .currInstance()
-      .getTrimRecordsInfo(records);
+    this.apiService.setChainId(chainId);
+    const recordsInRange = await this.apiService.getTrimRecordsInfo(records);
     return recordsInRange;
   }
 
-  @AutoSwitch({ serviceType: AutoSwitchServiceType.API, waitTime: 2000 })
   @MeasureAsync()
   async getRecordsDetailInRange(
     chainId: string,
-    records: Array<RecordTrimDetail>,
-  ): Promise<Array<RecordDetail>> {
+    records: RecordTrimDetail[],
+  ): Promise<RecordDetail[]> {
     if (records.length === 0) {
       return [];
     }
-    this.apiService.currInstance().setChainId(chainId);
-    const tasks: Array<RecordTrimDetail>[] = [];
+    this.apiService.setChainId(chainId);
+    const tasks: RecordTrimDetail[][] = [];
     for (let i = 0; i < records.length; i++) {
-      let index = Math.floor(i / 10);
-      let taskQuene = tasks[index] ?? [];
+      const index = Math.floor(i / 10);
+      const taskQuene = tasks[index] ?? [];
       taskQuene.push(records[i]);
       tasks[index] = taskQuene;
     }
@@ -172,9 +166,9 @@ export class AleoWorker {
         return recordsInRange;
       }),
     );
-    return result.reduce((prev, curr) => {
+    return result.reduce<RecordDetail[]>((prev, curr) => {
       return prev.concat(curr);
-    }, [] as Array<RecordDetail>);
+    }, []);
   }
 
   @Measure()
@@ -271,7 +265,7 @@ export class AleoWorker {
         await Promise.all(
           syncParams.map(async (syncParam) => {
             const { address, viewKey } = syncParam;
-            const decryptedRecords: Array<RecordTrimDetail> = [];
+            const decryptedRecords: RecordTrimDetail[] = [];
             for (let i = recordsInRange.length - 1; i >= 0; i--) {
               const recordRawInfo = recordsInRange[i];
               const cache = addressCache[address];

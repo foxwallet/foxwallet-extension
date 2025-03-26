@@ -25,7 +25,9 @@ const UpgradeReminderScreen = () => {
         bottom={5}
         left={5}
         right={5}
-        onClick={() => Browser.tabs.create({ url: "chrome://settings/help" })}
+        onClick={async () =>
+          Browser.tabs.create({ url: "chrome://settings/help" })
+        }
       >
         {t("Onboard:Upgrade:upgradeBtn")}
       </Button>

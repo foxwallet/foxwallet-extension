@@ -15,9 +15,9 @@ import { promisifyChooseDialogWrapper } from "../../../common/utils/dialog";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
 import { useMemo } from "react";
 import { AleoFeeMethod } from "core/coins/ALEO/types/FeeMethod";
-import { Balance } from "@/hooks/useBalance";
-import { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
-import { NativeToken } from "core/types/Token";
+import { type Balance } from "@/hooks/useAleoBalance";
+import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
+import { type NativeToken } from "core/types/Token";
 import { TokenNum } from "@/components/Wallet/TokenNum";
 import {
   IconCheckCircle,
@@ -27,12 +27,13 @@ import {
 } from "@/components/Custom/Icon";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import { useTranslation } from "react-i18next";
+import { type BalanceResp } from "core/types/Balance";
 
 interface Props {
   isOpen: boolean;
   onConfirm: (data?: RecordDetailWithSpent) => void;
   onCancel: () => void;
-  balance?: Balance;
+  balance?: BalanceResp;
   selectedFeeMethod: AleoFeeMethod;
   selectedFeeRecord?: RecordDetailWithSpent;
   recordList: RecordDetailWithSpent[];
@@ -97,7 +98,9 @@ const SelectFeeTypeDrawer = (props: Props) => {
               borderRadius={"lg"}
               justify={"space-between"}
               align={"center"}
-              onClick={() => onConfirm()}
+              onClick={() => {
+                onConfirm();
+              }}
             >
               <Flex align={"center"}>
                 {selectedFeeMethod === AleoFeeMethod.FEE_PUBLIC ? (
@@ -108,7 +111,7 @@ const SelectFeeTypeDrawer = (props: Props) => {
                 <Text ml="1">{feeMethodMap[AleoFeeMethod.FEE_PUBLIC]}</Text>
               </Flex>
               <TokenNum
-                amount={balance?.publicBalance || 0n}
+                amount={balance?.publicBalance ?? 0n}
                 decimals={nativeCurrency.decimals}
                 symbol={nativeCurrency.symbol}
               />
@@ -127,7 +130,9 @@ const SelectFeeTypeDrawer = (props: Props) => {
               borderRadius={"lg"}
               justify={"space-between"}
               align={"center"}
-              onClick={() => onConfirm(selectedFeeRecord || recordList[0])}
+              onClick={() => {
+                onConfirm(selectedFeeRecord ?? recordList[0]);
+              }}
             >
               <Flex align={"center"}>
                 {selectedFeeMethod === AleoFeeMethod.FEE_PRIVATE ? (
@@ -138,7 +143,7 @@ const SelectFeeTypeDrawer = (props: Props) => {
                 <Text ml="1">{feeMethodMap[AleoFeeMethod.FEE_PRIVATE]}</Text>
               </Flex>
               <TokenNum
-                amount={balance?.privateBalance || 0n}
+                amount={balance?.privateBalance ?? 0n}
                 decimals={nativeCurrency.decimals}
                 symbol={nativeCurrency.symbol}
               />
@@ -157,7 +162,9 @@ const SelectFeeTypeDrawer = (props: Props) => {
                   pb={"2"}
                   borderBottom="1px solid"
                   borderColor={"gray.100"}
-                  onClick={() => onConfirm(record)}
+                  onClick={() => {
+                    onConfirm(record);
+                  }}
                   justifyContent={"space-between"}
                 >
                   <Flex align={"center"}>

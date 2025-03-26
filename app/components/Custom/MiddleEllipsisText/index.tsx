@@ -1,5 +1,5 @@
 import {
-  CSSProperties,
+  type CSSProperties,
   useCallback,
   useEffect,
   useMemo,
@@ -73,7 +73,7 @@ function MiddleEllipsisText(props: TruncateProps) {
     if (width) {
       targetW = width;
     } else {
-      targetW = containerRef.current?.getBoundingClientRect().width || 0;
+      targetW = containerRef.current?.getBoundingClientRect().width ?? 0;
     }
     setTargetWidth(targetW);
     const measureWidth = canvas.measureText(text).width;
@@ -127,7 +127,11 @@ function MiddleEllipsisText(props: TruncateProps) {
   return (
     <div
       ref={containerRef}
-      style={{ width: width || "100%", whiteSpace: "nowrap", ...style }}
+      style={{
+        width: width || "100%",
+        whiteSpace: "nowrap",
+        ...style,
+      }}
     >
       {truncated ? calculatedText : calculatedText}
     </div>

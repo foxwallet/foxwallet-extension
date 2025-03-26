@@ -1,4 +1,4 @@
-import { AutoSwitchService } from "../../../../utils/retry";
+import { type AutoSwitchProxy, createAutoSwitchApi } from "core/utils/retry";
 import { ArcaneApi } from "../api/arcane";
 
 interface Config {
@@ -6,10 +6,11 @@ interface Config {
   chainId: string;
 }
 
-export class ArcaneService extends AutoSwitchService<Config, ArcaneApi> {
-  getInstanceList(config: Config[]): ArcaneApi[] {
-    return config.map(({ url, chainId }) => {
-      return new ArcaneApi({ host: url, chainId });
-    });
-  }
-}
+export type ArcaneService = AutoSwitchProxy<Config, ArcaneApi>;
+
+export const createArcaneService = (config: Config[]) => {
+  return createAutoSwitchApi(
+    config,
+    ({ url, chainId }) => new ArcaneApi({ host: url, chainId }),
+  );
+};

@@ -1,4 +1,3 @@
-import { coinServiceEntry } from "@/services/coin/CoinService";
 import { PortName } from "../../common/types/port";
 import { Connection } from "../../common/utils/connection";
 import { offscreen } from "./aleo";
@@ -7,7 +6,6 @@ import { keepAliveHandler } from "./handlers/KeepaliveHandler";
 import { PopupServerHandler } from "./handlers/PopupServerHandler";
 import { ContentWalletServer } from "./servers/ContentServer";
 import { PopupWalletServer } from "./servers/PopupServer";
-import { AccountSettingStorage } from "./store/account/AccountStorage";
 import { DappStorage } from "./store/dapp/DappStorage";
 import { AuthManager } from "./store/vault/managers/auth/AuthManager";
 import { KeyringManager } from "./store/vault/managers/keyring/KeyringManager";
@@ -20,6 +18,8 @@ import {
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { clearSwrCache, swrStorageInstance } from "@/common/utils/indexeddb";
 import { startCheckSyncing } from "./offscreen";
+import { accountSettingStorage } from "./store/account/AccountStorage";
+import { coinServiceEntry } from "core/coins/CoinServiceEntry";
 
 const keepAliveConnection = new Connection(
   keepAliveHandler,
@@ -27,7 +27,6 @@ const keepAliveConnection = new Connection(
 );
 keepAliveConnection.connect();
 
-const accountSettingStorage = AccountSettingStorage.getInstance();
 const authManager = new AuthManager();
 const keyringManager = new KeyringManager(authManager);
 keyringManager.init();
@@ -55,6 +54,8 @@ export const contentWalletServer = new ContentWalletServer(
 
 const contentServerHandler = new ContentServerHandler(contentWalletServer);
 
+export { contentServerHandler };
+
 const popupConnection = new Connection(
   popupServerHandler,
   PortName.POPUP_TO_BACKGROUND,
@@ -80,12 +81,12 @@ async function checkVersion() {
       currentVersion,
       beforeTestnetReset,
     );
-    if (beforeTestnetReset) {
-      await coinService
-        .getInstance(InnerChainUniqueId.ALEO_TESTNET)
-        .resetChainData();
-      await clearSwrCache();
-    }
+    // if (beforeTestnetReset) {
+    //   await coinService
+    //     .getInstance(InnerChainUniqueId.ALEO_TESTNET)
+    //     .resetChainData();
+    //   await clearSwrCache();
+    // }
   }
   if (existVersion !== currentVersion) {
     await extensionInfoDB.setVersion(currentVersion);
@@ -98,3 +99,5 @@ checkVersion().finally(() => {
 });
 
 startCheckSyncing();
+
+export {keyringManager}

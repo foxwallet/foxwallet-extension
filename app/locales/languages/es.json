@@ -40,7 +40,10 @@
       "dupAccountName": "Nombre de cuenta duplicado",
       "delete": "Eliminar billetera",
       "deleteRemind": "Asegúrese de que la billetera tenga una copia de seguridad adecuada, ya que solo se puede restaurar utilizando la frase inicial o la clave privada."
-    }
+    },
+    "allNetworks": "TODO",
+    "allEVMNetworks": "Todas las redes EVM",
+    "initWallet": "Inicializando la billetera, espere"
   },
   "Onboard": {
     "Home": {
@@ -50,7 +53,8 @@
     "Upgrade": {
       "reminderTips": "La versión actual del navegador es demasiado antigua; actualice a la última versión para utilizar la extensión de billetera FoxWallet.",
       "upgradeBtn": "Mejora"
-    }
+    },
+    "defaultWalletName": "Billetera-"
   },
   "Agreement": {
     "content1": "Estoy de acuerdo con FoxWallet",
@@ -99,7 +103,15 @@
     "remind": "Recordar",
     "account": "Cuenta",
     "ok": "DE ACUERDO",
-    "wrongPassword": "Contraseña incorrecta"
+    "wrongPassword": "Contraseña incorrecta",
+    "noSearchResult": "Sin resultado de la búsqueda",
+    "pleaseWait": "Espere por favor",
+    "copy": "Copiar",
+    "reminder": "Recordatorio",
+    "success": "Éxito",
+    "failed": "Fallido",
+    "pending": "Pendiente",
+    "loading": "Cargando"
   },
   "Send": {
     "title": "Enviar",
@@ -140,18 +152,25 @@
     "feeHint": "Puede utilizar el saldo público o cualquiera de los siguientes registros privados a continuación para pagar la tarifa del gas.",
     "sendingAleoTx": "Enviando transacción aleo",
     "insufficientBalance": "Saldo insuficiente",
-    "insufficientFee": "Saldo insuficiente para pagar la tarifa"
+    "insufficientFee": "Saldo insuficiente para pagar la tarifa",
+    "next": "Próximo",
+    "value": "Valor",
+    "invalidAmount": "Cantidad no válida",
+    "processing": "La transacción se está procesando, espere.",
+    "sendingAleoHint": "Tiene una transacción continua, espere."
   },
   "PrivateKey": {
     "title": "Llave privada",
     "enterPlaceholder": "Introduce la clave privada",
     "backupTips1": "Guárdelo en un lugar seguro.",
-    "backupTips2": "La frase inicial o la clave privada son la única forma de recuperar su billetera. Una vez perdido, no se puede recuperar. No los guardes mediante capturas de pantalla o redes sociales."
+    "backupTips2": "La frase inicial o la clave privada son la única forma de recuperar su billetera. Una vez perdido, no se puede recuperar. No los guardes mediante capturas de pantalla o redes sociales.",
+    "coinType": "Tipo de moneda",
+    "selectCoinType": "Seleccionar el tipo de moneda"
   },
   "Receive": {
     "title": "Recibir",
     "scanToTransfer": "Escanear para transferir",
-    "onlyTips": "Solo admite activos relacionados con ALEO",
+    "onlyTips": "Solo admite activos relacionados con {{symbol}}",
     "walletAddr": "Dirección de billetera"
   },
   "Setting": {
@@ -162,17 +181,35 @@
     "settings": "Ajustes",
     "account": "Cuenta",
     "switchWallet": "Cambiar billetera",
-    "tutorial": "Tutorial"
+    "tutorial": "Tutorial",
+    "networks": "Redes",
+    "contacts": "Contactos",
+    "connectedSites": "Sitios conectados",
+    "resetApplication": "Restablecer la aplicación"
   },
   "Error": {
-    "invalidPassword": "Contraseña invalida"
+    "invalidPassword": "Contraseña invalida",
+    "invalidAddress": "Dirección no válida",
+    "invalidPrivateKey": "Clave privada no válida"
   },
   "TokenDetail": {
     "title": "Detalle del token",
     "balance": "Balance",
     "tx_records": "Registros de transacciones",
     "empty_tx": "Sin registros de transacciones",
-    "jump_explorer": "Explorador"
+    "jump_explorer": "Explorador",
+    "myAddress": "Mi dirección",
+    "public": "Público",
+    "private": "Privado",
+    "total": "Total",
+    "token_transfer": "Transferencia de token",
+    "send": "Enviar",
+    "contract_call": "Llame al contrato inteligente",
+    "token_approve": "Token aprobar",
+    "bridge": "Puente",
+    "receive": "Recibir",
+    "copyContractAddressMsg": "Esta es la dirección del contrato de Token, que no recibe la dirección, no transfiere a esta dirección.",
+    "failed": "Fallido"
   },
   "Language": {
     "title": "Idioma"
@@ -196,7 +233,8 @@
     "noDecrypt": "Sin permiso de descifrado.",
     "uponRequest": "Dapp puede solicitar descifrar su registro.",
     "autoDecrypt": "Dapp puede descifrar registros sin solicitud.",
-    "onChainHistory": "Dapp puede acceder a su historial en cadena."
+    "onChainHistory": "Dapp puede acceder a su historial en cadena.",
+    "addChain": "Solicitar add {{cadena}}"
   },
   "Currency": {
     "title": "Divisa"
@@ -216,7 +254,15 @@
   },
   "Reset": {
     "remind": "Se restablecerá todo el historial de esta cuenta y se resincronizará la red. Por favor confirme para continuar.",
-    "account": "Restablecer cuenta"
+    "account": "Restablecer cuenta",
+    "explain": "¿La billetera no se desbloqueará? Puede borrar los datos de su aplicación y configurar una nueva billetera",
+    "resetApp": "Restablecer la aplicación",
+    "confirmDelete": "Confirmar la eliminación",
+    "warningTitle": "¿Estás seguro de que quieres borrar los datos de tu aplicación？",
+    "warningTitle2": "Confirmar la aplicación de reinicio",
+    "warningContent1": "Sus datos de billeteras, cuentas y activos se eliminarán permanentemente de esta aplicación.",
+    "warningContent2": "Solo puede restaurar esta billetera con su frase de semillas, Foxwallet no posee su frase de semillas.",
+    "warningStrong": "Esta acción no se puede deshacer."
   },
   "JoinSplit": {
     "title": "Unirse y dividir",
@@ -248,7 +294,81 @@
   },
   "ManageToken": {
     "title": "Administrar token",
-    "searchHint": "Token de búsqueda (ID, nombre, símbolo)"
+    "searchHint": "Token de búsqueda (ID, nombre, símbolo)",
+    "pleaseWait": "Buscando, esto podría llevar un tiempo"
+  },
+  "GasSetting": {
+    "fast": "Rápido",
+    "middle": "Medio",
+    "slow": "Lento",
+    "selectGasFee": "Seleccionar tarifa de gas",
+    "advanced": "Configuración avanzada",
+    "maxPriorityFeeTitle": "Tarifa prioritaria",
+    "maxPriorityFeeRemind": "La tarifa prioritaria no debe ser más alta que la tarifa máxima",
+    "maxPriorityLowRemind": "Tarifa prioritaria demasiado baja",
+    "maxPriorityHighRemind": "Tarifa prioritaria demasiado alta",
+    "maxFeeTitle": "Tarifa máxima",
+    "maxFeeHighRemind": "Tarifa máxima demasiado alta",
+    "maxFeeLowRemind": "Tarifa máxima demasiado baja",
+    "gasLimitTitle": "Límite de gas"
+  },
+  "TransactionDetail": {
+    "hash": "Picadillo",
+    "from": "De",
+    "to": "A",
+    "value": "Valor",
+    "time": "Tiempo",
+    "nonce": "Mientras tanto",
+    "confirmations": "Confirmaciones",
+    "network": "Red",
+    "gasFee": "Tarifa de gasolina",
+    "type": "Tipo"
+  },
+  "Networks": {
+    "title": "Redes",
+    "searchHint": "Redes de búsqueda",
+    "manageNetworks": "Administrar redes",
+    "networkDetail": "Detalle de la red",
+    "networkName": "Nombre de red",
+    "networkNameHint": "Nombre de la red de entrada",
+    "symbol": "Símbolo de moneda",
+    "rpc": "URL RPC",
+    "rpcHint": "URL RPC de entrada",
+    "chainId": "ID de cadena",
+    "manageWallet": "Gestionar la billetera",
+    "defaultChainRemind": "La cadena predeterminada no se puede no seleccionar",
+    "selectNetwork": "Seleccionar red",
+    "selectToken": "Seleccionar token",
+    "pkWalletRemind": "La billetera de llave privada solo muestra las redes compatibles. Para usar todas las redes, cambie a una billetera de fase de semilla.",
+    "unavailable": "indisponible",
+    "loading": "Cargando...",
+    "height": "Altura: {{altura}}",
+    "deleteWarning": "La configuración de RPC eliminada no se puede recuperar",
+    "invalidRpc": "La URL de RPC está vacía"
+  },
+  "Contacts": {
+    "title": "Contactos",
+    "searchHint": "Dirección de búsqueda",
+    "addContact": "Agregar contacto",
+    "editContact": "Editar contacto",
+    "contactInfo": "Información de contacto",
+    "enterContactName": "Ingrese el nombre de contacto",
+    "enterAddress": "Ingrese la dirección",
+    "confirmCreate": "Confirmar crear",
+    "confirmUpdate": "Actualización de confirmación",
+    "selectNetwork": "Seleccionar red",
+    "networkName": "Nombre de red",
+    "remove": "Eliminar",
+    "copyAddress": "Dirección de copia",
+    "editAddress": "Dirección de edición",
+    "deleteHint": "Confirmar para eliminar esta dirección?",
+    "alreadyExist": "Esta dirección ya en su lista de contactos",
+    "invalidAddress": "Dirección no válida"
+  },
+  "SelectToken": {
+    "title": "Seleccionar token",
+    "searchToken": "Token de búsqueda",
+    "searchHint": "Search Token (símbolo, dirección)"
   },
   "Stake": {
     "title": "Apostar",
