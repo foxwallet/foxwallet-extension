@@ -1,4 +1,4 @@
-import init, { PrivateKey } from "aleo_wasm_mainnet";
+import init, { PrivateKey, Address } from "aleo_wasm_mainnet";
 import { encode as bs58Encode, decode as bs58Decode } from "bs58";
 import { CoinBasic } from "../../CoinBasic";
 import { CoinType } from "core/types";
@@ -10,7 +10,6 @@ import { logger } from "@/common/utils/logger";
 class AleoBasic extends CoinBasic<CoinType.ALEO> {
   constructor() {
     super(CoinType.ALEO);
-    // todo: check init aleo wasm
     void init();
   }
 

@@ -5,7 +5,7 @@ import { BaseInputGroup } from "@/components/Custom/Input";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import { showSelectRecordDialog } from "@/components/Send/SelectRecord";
 import { showSelectTransferMethodDialog } from "@/components/Send/SelectTransferMethod";
-import { TokenItem } from "@/components/Wallet/TokenItem";
+import { TokenItemWithBalance } from "@/components/Wallet/TokenItem";
 import { TokenNum } from "@/components/Wallet/TokenNum";
 import { useCoinService } from "@/hooks/useCoinService";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
@@ -22,6 +22,7 @@ import {
 } from "@chakra-ui/react";
 import {
   ALPHA_TOKEN_PROGRAM_ID,
+  ARCANE_PROGRAM_ID,
   BETA_STAKING_PROGRAM_ID,
   NATIVE_TOKEN_PROGRAM_ID,
 } from "core/coins/ALEO/constants";
@@ -29,6 +30,7 @@ import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { parseUnits } from "ethers/lib/utils";
+import type React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -104,6 +106,16 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
       }
       case BETA_STAKING_PROGRAM_ID: {
         return records;
+      }
+      case ARCANE_PROGRAM_ID: {
+        return records
+          .filter((record) => {
+            return record.parsedContent?.token === tokenInfo.tokenId;
+          })
+          .sort(
+            (record1, record2) =>
+              record2.parsedContent?.amount - record1.parsedContent?.amount,
+          );
       }
       default: {
         console.error(`Unsupport programId ${tokenInfo.programId}`);
@@ -206,6 +218,9 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
       case BETA_STAKING_PROGRAM_ID: {
         return currTransferRecord?.parsedContent?.amount;
       }
+      case ARCANE_PROGRAM_ID: {
+        return currTransferRecord?.parsedContent?.amount;
+      }
       default: {
         console.error(`Unsupport programId ${tokenInfo.programId}`);
       }
@@ -306,7 +321,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
     if (!canSubmit) {
       return;
     }
-    if (!amountNum) {
+    if (amountNum === null) {
       return;
     }
     onConfirm({
@@ -357,7 +372,9 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
         <Flex justify={"space-between"} mt={2} align={"center"}>
           <Text>{t("Send:transferToken")}</Text>
           <Flex align={"center"}>
-            <TokenItem
+            <TokenItemWithBalance
+              uniqueId={uniqueId}
+              address={selectedAccount.account.address}
               token={tokenInfo}
               onClick={() => {
                 navigate(
@@ -369,7 +386,8 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
                   },
                 );
               }}
-              hideId
+              showPriceAndChange={false}
+              showBalanceAndValue={false}
               style={{ pr: 1 }}
             />
             <IconChevronRight w={4} h={4} />

@@ -5,7 +5,6 @@ import {
   type DisplayWallet,
   type OneMatchGroupAccount,
 } from "@/scripts/background/store/vault/types/keyring";
-import { CoinType } from "core/types";
 import { getClients } from "@/hooks/useClient";
 import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import {
@@ -13,7 +12,6 @@ import {
   chainUniqueIdToCoinType,
 } from "core/helper/CoinType";
 import { isEqual } from "lodash";
-import { type RootState } from "@/store/store";
 
 type WalletBackupedMnemonicMap = { [walletId in string]: boolean };
 
@@ -53,6 +51,11 @@ export const accountV2 = createModel<RootModel>()({
     ...DEFAULT_ACCOUNT_MODEL,
   },
   reducers: {
+    _reset() {
+      return {
+        ...DEFAULT_ACCOUNT_MODEL,
+      };
+    },
     _setSelectedGroupAccount(
       state,
       payload: { groupAccount: OneMatchGroupAccount },
@@ -263,10 +266,26 @@ export const accountV2 = createModel<RootModel>()({
       dispatch.accountV2._setAllWalletInfo({ walletList });
       return [...walletList];
     },
+    async resetWallet() {
+      const clients = getClients();
+      try {
+        await clients.popupServerClient.resetWallet();
+        dispatch.accountV2._reset();
+        dispatch.account._reset();
+        dispatch.address._resetNameTags();
+        dispatch.multiChain._reset();
+        dispatch.tokens._reset();
+        dispatch.user._reset();
+        dispatch.wallet._reset();
+        return true;
+      } catch (e) {
+        return false;
+      }
+    },
   }),
 });
 
-export const matchAccountsWithUnqiueId = (
+export const matchAccountsWithUniqueId = (
   groupAccount: OneMatchGroupAccount,
   uniqueId: ChainUniqueId,
 ) => {

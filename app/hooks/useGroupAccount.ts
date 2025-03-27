@@ -5,7 +5,7 @@ import {
   allChainConfigsSelector,
   selectedGroupAccountSelector,
 } from "@/store/selectors/account";
-import { matchAccountsWithUnqiueId } from "@/store/accountV2";
+import { matchAccountsWithUniqueId } from "@/store/accountV2";
 import { type OneMatchAccount } from "@/scripts/background/store/vault/types/keyring";
 import { isEqual } from "lodash";
 import { useSelector } from "react-redux";
@@ -29,7 +29,7 @@ export const useGroupAccount = () => {
 
   const getMatchAccountsWithUniqueId = useCallback(
     (uniqueId: ChainUniqueId) => {
-      const accounts = matchAccountsWithUnqiueId(groupAccount, uniqueId);
+      const accounts = matchAccountsWithUniqueId(groupAccount, uniqueId);
       const { accounts: _, ...restGroup } = groupAccount.group;
       return accounts.map((account) => {
         const accountInfo: OneMatchAccount = {

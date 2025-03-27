@@ -2,6 +2,7 @@ import { get, post } from "@/common/utils/request";
 import { type AllTokenResp } from "./token.di";
 import { type Token } from "../../types/Token";
 import { ALPHA_TOKEN_PROGRAM_ID } from "../../constants";
+import { InnerProgramId } from "../../types/ProgramId";
 
 export const TOKEN_IMG_HOST = "https://mainnet.alphaswap.pro/ims/image/";
 
@@ -82,7 +83,7 @@ export class TokenApi {
     if (resp.code !== 0) {
       throw new Error(resp.msg);
     }
-    return resp.data.tokens.map((item) => ({
+    const result = resp.data.tokens.map((item) => ({
       tokenId: `${item.token_id}field`,
       name: item.name,
       symbol: item.symbol,
@@ -90,7 +91,8 @@ export class TokenApi {
       logo: `${TOKEN_IMG_HOST}${item.logo}`,
       // 1 is verified token, 2 is user created token
       official: item.token_type === 1,
-      programId: ALPHA_TOKEN_PROGRAM_ID,
+      programId: ALPHA_TOKEN_PROGRAM_ID as InnerProgramId,
     }));
+    return result;
   }
 }

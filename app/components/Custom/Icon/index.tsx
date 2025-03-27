@@ -18,6 +18,7 @@ import LogoNew from "@/common/assets/image/icon_logo.svg";
 import Copy from "@/common/assets/image/icon_copy.svg";
 import Receive from "@/common/assets/image/icon_receive.svg";
 import Send from "@/common/assets/image/icon_send.svg";
+import Stake from "@/common/assets/image/icon_stake.svg";
 import BuyDisabled from "@/common/assets/image/icon_buy_disabled.svg";
 import SwapDisabled from "@/common/assets/image/icon_swap_disabled.svg";
 import ArrowBackup from "@/common/assets/image/icon_arrow_backup.svg";
@@ -87,6 +88,12 @@ import AllNetworks from "@/common/assets/image/icon_all_networks.svg";
 import TokenPlaceHolder from "@/common/assets/image/icon_token_placeholder.svg";
 import Success from "@/common/assets/image/icon_success.svg";
 import Failed from "@/common/assets/image/icon_failed.svg";
+import Processing from "@/common/assets/image/icon_processing.svg";
+import IconEth from "@/common/assets/image/icon_eth.svg";
+import Agree from "@/common/assets/image/icon_agree.svg";
+import Disagree from "@/common/assets/image/icon_disagree.svg";
+import CopyStyle2 from "@/common/assets/image/icon_copy_style2.svg";
+import EditStyle2 from "@/common/assets/image/icon_edit_style2.svg";
 
 const ThemeIconFill: (i: any) => ChakraComponent<any, any> = (icon: any) => {
   const ThemeIcon = (props: ChakraComponent<any, any>) => {
@@ -121,8 +128,12 @@ export const IconCloseCircle = chakra(CloseCircle);
 export const IconArrowRight = ThemeIconFill(ArrowRight);
 export const IconLogo = chakra(LogoNew);
 export const IconCopy = ThemeIconFill(Copy);
+export const IconCopy2 = ThemeIconFill(CopyStyle2);
+export const IconEdit2 = ThemeIconFill(EditStyle2);
+
 export const IconReceive = chakra(Receive);
 export const IconSend = chakra(Send);
+export const IconStake = chakra(Stake);
 export const IconFaucet = chakra(Faucet);
 export const IconJoinSplit = chakra(JoinSplit);
 export const IconBuyDisabled = chakra(BuyDisabled);
@@ -192,3 +203,7 @@ export const IconAllNetworks = ThemeIconFill(AllNetworks);
 export const IconTokenPlaceHolder = chakra(TokenPlaceHolder);
 export const IconSuccess = chakra(Success);
 export const IconFailed = chakra(Failed);
+export const IconProcessing = chakra(Processing);
+export const IconEVM = chakra(IconEth);
+export const IconAgree = chakra(Agree);
+export const IconDisagree = chakra(Disagree);

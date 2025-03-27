@@ -16,7 +16,6 @@ import {
 import { isEqual, uniqBy } from "lodash";
 import { AleoTxStatus } from "core/coins/ALEO/types/Transaction";
 import { useTransactionSettledToast } from "@/components/Wallet/TransactionSettledToast/useTransactionSettledToast";
-import { NATIVE_TOKEN_TOKEN_ID } from "core/coins/ALEO/constants";
 import { AssetType, type TokenV2 } from "core/types/Token";
 import { type AleoService } from "core/coins/ALEO/service/AleoService";
 import type { TxHistoryPaginationParam } from "core/types/Pagination";
@@ -25,6 +24,12 @@ import {
   type TransactionHistoryResp,
 } from "core/types/TransactionHistory";
 import { logger } from "@/common/utils/logger";
+import {
+  ALPHA_TOKEN_PROGRAM_ID,
+  ARCANE_PROGRAM_ID,
+  BETA_STAKING_PROGRAM_ID,
+  NATIVE_TOKEN_TOKEN_ID,
+} from "core/coins/ALEO/constants";
 
 const NotificationExpiredTime = 1000 * 60 * 60 * 5;
 
@@ -219,44 +224,56 @@ export const useAleoTxHistory = ({
     return uniqueId === InnerChainUniqueId.ALEO_MAINNET;
   }, [uniqueId]);
 
+  let tokenId = token.tokenId;
+  let programId = token.programId;
+
+  if (isAleo) {
+    const { programId: _programId, tokenId: _tokenId } = (
+      coinService as AleoService
+    ).parseContractAddress(token.contractAddress);
+    tokenId = token.tokenId ?? _tokenId;
+    programId = token.programId ?? _programId;
+  }
+
   // local txs
-  const localTxKey = `/localTxs/${uniqueId}/${address}/${token.tokenId}`;
+  const localTxKey = `/localTxs/${uniqueId}/${address}/${token.contractAddress}/${tokenId}/${programId}`;
   const getLocalTxs = useCallback(async () => {
     if (isAleo) {
       const res = await (coinService as AleoService).getLocalTxHistory(
         address,
-        token.tokenId !== NATIVE_TOKEN_TOKEN_ID ? token.programId : undefined,
-        token.tokenId,
+        tokenId !== NATIVE_TOKEN_TOKEN_ID ? programId : undefined,
+        tokenId,
       );
       return res;
     }
     return [];
-  }, [isAleo, coinService, address, token]);
+  }, [isAleo, coinService, address, tokenId, programId]);
   const {
     data: localTxs,
     error: localTxsError,
     isLoading: loadingLocalTxs,
   } = useSWR(localTxKey, getLocalTxs, { refreshInterval });
-  console.log("      localTxs", localTxs);
+  // console.log("      localTxs", localTxs);
 
   // private txs
-  const privateTxsKey = `/privateTxs/${token.contractAddress}/${uniqueId}/${address}/${token.tokenId}`;
+  const privateTxsKey = `/privateTxs/${token.contractAddress}/${uniqueId}/${address}/${tokenId}/${programId}`;
   const getPrivateTxs = useCallback(async () => {
     if (isAleo) {
       const res = await (coinService as AleoService).getPrivateTxHistory(
         address,
-        token.tokenId !== NATIVE_TOKEN_TOKEN_ID ? token.programId : undefined,
-        token.tokenId,
+        tokenId !== NATIVE_TOKEN_TOKEN_ID ? programId : undefined,
+        tokenId,
       );
       return res;
     }
     return [];
-  }, [isAleo, coinService, address, token]);
+  }, [isAleo, coinService, address, tokenId, programId]);
   const {
     data: privateTxs,
     error: privateTxsError,
     isLoading: loadingPrivateTxs,
   } = useSWR(privateTxsKey, getPrivateTxs, { refreshInterval });
+  // console.log("      privateTxs", privateTxs);
 
   // on chain txs by api.aleo.info
   const [endReach, setEndReach] = useState(false);
@@ -270,18 +287,22 @@ export const useAleoTxHistory = ({
     pageSize: 100,
   });
   const key = isAleo
-    ? `/onChainTxs/${token.contractAddress}/${uniqueId}/${address}?page=${currPagination.pageNum}&limit=${currPagination.pageSize}`
+    ? `/onChainTxs/${token.contractAddress}/${uniqueId}/${address}/${tokenId}/${programId}?page=${currPagination.pageNum}&limit=${currPagination.pageSize}`
     : undefined;
 
   const fetchOnChainHistory = useCallback(async () => {
     try {
       let res: TransactionHistoryResp | undefined;
-      if (token.type === AssetType.COIN) {
+
+      if (
+        token.type === AssetType.COIN &&
+        coinService.supportNativeCoinTxHistory()
+      ) {
         res = await coinService.getNativeCoinTxHistory({
           address,
           pagination: currPagination,
         });
-      } else {
+      } else if (coinService.supportTokenTxHistory()) {
         res = await coinService.getTokenTxHistory({
           address,
           token,

@@ -289,6 +289,7 @@ const AddOrEditContactScreen = () => {
             mt={5}
             w={"full"}
             onClick={onRemove}
+            textColor={"white"}
           >
             {t("Contacts:remove")}
           </Button>

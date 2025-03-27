@@ -55,6 +55,7 @@ const SelectJoinSplit = (props: Props) => {
         <DrawerBody>
           <Flex direction={"column"}>
             <Flex
+              cursor={"pointer"}
               key={SelectJoinSplitOption.JOIN}
               mt="2"
               px={"4"}
@@ -74,6 +75,7 @@ const SelectJoinSplit = (props: Props) => {
               </Text>
             </Flex>
             <Flex
+              cursor={"pointer"}
               key={SelectJoinSplitOption.SPLIT}
               mt="2"
               px={"4"}

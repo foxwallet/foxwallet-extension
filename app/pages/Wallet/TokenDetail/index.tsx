@@ -24,25 +24,22 @@ import {
   AleoHistoryType,
   AleoTxAddressType,
 } from "core/coins/ALEO/types/History";
-import { InnerChainUniqueId } from "core/types/ChainUniqueId";
+import {
+  type ChainUniqueId,
+  InnerChainUniqueId,
+} from "core/types/ChainUniqueId";
 import type React from "react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
-import browser from "webextension-polyfill";
 import { useAleoTxHistory, useTxHistory } from "@/hooks/useTxHistory";
 import { useIsSendingAleoTx } from "@/hooks/useSendingTxStatus";
-import { useRecords } from "@/hooks/useRecord";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
 import { useBottomReach } from "@/hooks/useBottomReach";
-import { RecordFilter } from "@/scripts/background/servers/IWalletServer";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import {
-  ALPHA_TOKEN_PROGRAM_ID,
   BETA_STAKING_ALEO_TOKEN_ID,
-  BETA_STAKING_PROGRAM_ID,
-  NATIVE_TOKEN_PROGRAM_ID,
   NATIVE_TOKEN_TOKEN_ID,
 } from "core/coins/ALEO/constants";
 import { serializeData, serializeToken } from "@/common/utils/string";
@@ -56,13 +53,17 @@ import { type TransactionHistoryItem } from "core/types/TransactionHistory";
 import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 import { usePopupSelector } from "@/hooks/useStore";
 import { showCopyContractAddressDialog } from "@/components/Wallet/CopyContractAddressDialog";
-import { AleoTxStatus } from "core/coins/ALEO/types/Transaction";
-import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
 import { TransactionStatus } from "core/types/TransactionStatus";
+import {
+  SimplifiedAleoTxStatus,
+  simplifyAleoTxStatus,
+} from "core/coins/ALEO/utils/utils";
+import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
+import { TokenImage } from "@/components/Wallet/TokenItem";
 
 interface AleoTokenTxHistoryItemProps {
   item: AleoHistoryItem;
-  uniqueId: InnerChainUniqueId;
+  uniqueId: ChainUniqueId;
   token: TokenV2;
   address: string;
 }
@@ -74,7 +75,6 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
   address,
 }) => {
   const { t } = useTranslation();
-  const { coinService } = useCoinService(uniqueId);
   const navigate = useNavigate();
 
   const timeOfItem = dayjs(item.timestamp);
@@ -82,14 +82,6 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
   const timeStr = timeOfItem.format(
     isCurrentYear ? "MM-DD LT" : "YYYY-MM-DD LT",
   );
-
-  const onClick2 = useCallback(() => {
-    if (!item.txId) {
-      return;
-    }
-    const url = coinService.getTxDetailUrl(item.txId);
-    void browser.tabs.create({ url });
-  }, [coinService, item.txId]);
 
   const onClick = useCallback(() => {
     navigate(
@@ -109,7 +101,12 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
       : item.functionName;
     return `(${functionName.split("_").join(" ")})`;
   }, [item.functionName]);
-  const amount = useMemo(() => BigInt(item.amount ?? 0n), [item.amount]);
+  const amount = useMemo(() => {
+    if (item.functionName === "join" || item.functionName === "split") {
+      return 0n;
+    }
+    return BigInt(item.amount ?? 0n);
+  }, [item]);
 
   const addressLabel = useMemo(() => {
     let ret = "";
@@ -128,12 +125,7 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
     return ret;
   }, [item]);
 
-  const status = useMemo(() => {
-    return item.status === AleoTxStatus.FINALIZD ||
-      item.status === AleoTxStatus.COMPLETED
-      ? undefined
-      : item.status.toLowerCase();
-  }, [item.status]);
+  const { txStatus, txStatusStr } = simplifyAleoTxStatus(item.status);
 
   return (
     <TxHistoryItem
@@ -142,7 +134,9 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
       txTitle={txTitle}
       txTitle2={txPublicInfo}
       addressLabel={addressLabel}
-      status={status}
+      status={
+        txStatus === SimplifiedAleoTxStatus.Success ? undefined : txStatusStr
+      }
       amount={amount}
       decimals={token.decimals}
       symbol={token.symbol}
@@ -153,7 +147,7 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
 
 interface TokenTxHistoryItemProps {
   item: TransactionHistoryItem;
-  uniqueId: InnerChainUniqueId;
+  uniqueId: ChainUniqueId;
   token: TokenV2;
   address: string;
 }
@@ -161,7 +155,6 @@ interface TokenTxHistoryItemProps {
 const TokenTxHistoryItem = (props: TokenTxHistoryItemProps) => {
   const { uniqueId, item, token, address } = props;
   const { t } = useTranslation();
-  const { coinService } = useCoinService(uniqueId);
   const navigate = useNavigate();
 
   const timeOfItem = dayjs(item.timestamp);
@@ -416,64 +409,6 @@ const TokenDetailScreen = () => {
   }, [getMore, reachBottom]);
 
   const { sendingAleoTx } = useIsSendingAleoTx();
-  const { records, loading: loadingRecords } = useRecords({
-    uniqueId,
-    address,
-    recordFilter: RecordFilter.UNSPENT,
-    programId: tokenInfo.programId,
-  });
-
-  const tokenRecords = useMemo(() => {
-    switch (tokenInfo.programId) {
-      case NATIVE_TOKEN_PROGRAM_ID: {
-        return records;
-      }
-      case ALPHA_TOKEN_PROGRAM_ID: {
-        return records
-          .filter((record) => {
-            return record.parsedContent?.token === tokenInfo.tokenId;
-          })
-          .sort(
-            (record1, record2) =>
-              record2.parsedContent?.amount - record1.parsedContent?.amount,
-          );
-      }
-      case BETA_STAKING_PROGRAM_ID: {
-        return records;
-      }
-      default: {
-        console.error(`Unsupport programId ${tokenInfo.programId}`);
-        return [];
-      }
-    }
-  }, [records, tokenInfo]);
-
-  const recordStr = useMemo(() => {
-    if (!tokenRecords) {
-      return "";
-    }
-    if (tokenRecords.length === 0) {
-      return t("Send:noRecordExist");
-    }
-    return t("Send:recordStatistics", { COUNT: tokenRecords.length });
-  }, [t, tokenRecords]);
-
-  const recordAmount = useMemo(() => {
-    switch (tokenInfo.programId) {
-      case NATIVE_TOKEN_PROGRAM_ID: {
-        return tokenRecords[0]?.parsedContent?.microcredits;
-      }
-      case ALPHA_TOKEN_PROGRAM_ID: {
-        return tokenRecords[0]?.parsedContent?.amount;
-      }
-      case BETA_STAKING_PROGRAM_ID: {
-        return tokenRecords[0]?.parsedContent?.amount;
-      }
-      default: {
-        console.error(`Unsupport programId ${tokenInfo.programId}`);
-      }
-    }
-  }, [tokenInfo, tokenRecords]);
 
   const onReceive = useCallback(() => {
     navigate(
@@ -546,12 +481,17 @@ const TokenDetailScreen = () => {
   return (
     <PageWithHeader title={t("TokenDetail:title")}>
       <Flex direction={"column"} px={5} py={2.5}>
-        <Flex align={"center"}>
-          {tokenInfo.icon ? (
-            <Image src={tokenInfo.icon} w={6} h={6} borderRadius={12} />
-          ) : (
-            <IconTokenPlaceHolder w={6} h={6} />
-          )}
+        <Flex alignItems={"center"}>
+          <TokenImage
+            token={tokenInfo}
+            uniqueId={uniqueId}
+            imageStyle={{
+              width: 6,
+              height: 6,
+              backgroundColor: "green",
+              borderRadius: 12,
+            }}
+          />
           <Flex direction={"column"} ml={2.5}>
             <Flex>
               <Text fontSize={13} fontWeight={"bold"}>
@@ -591,7 +531,7 @@ const TokenDetailScreen = () => {
                 {tokenInfo.tokenId !== NATIVE_TOKEN_TOKEN_ID &&
                   tokenInfo.tokenId !== BETA_STAKING_ALEO_TOKEN_ID && (
                     <MiddleEllipsisText
-                      text={"tokenInfo.tokenId"}
+                      text={tokenInfo.tokenId ?? ""}
                       width={150}
                       style={{ color: "#777E90", fontSize: 10 }}
                     />

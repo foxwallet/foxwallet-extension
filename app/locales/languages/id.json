@@ -40,7 +40,10 @@
       "dupAccountName": "Nama akun duplikat",
       "delete": "Hapus dompet",
       "deleteRemind": "Harap pastikan dompet dicadangkan dengan benar karena hanya dapat dipulihkan menggunakan frase awal atau kunci pribadi."
-    }
+    },
+    "allNetworks": "SEMUA",
+    "allEVMNetworks": "Semua jaringan EVM",
+    "initWallet": "Menginisialisasi dompet, harap tunggu"
   },
   "Onboard": {
     "Home": {
@@ -50,7 +53,8 @@
     "Upgrade": {
       "reminderTips": "Versi browser saat ini terlalu lama, harap tingkatkan ke versi terbaru untuk menggunakan dompet ekstensi FoxWallet.",
       "upgradeBtn": "Meningkatkan"
-    }
+    },
+    "defaultWalletName": "Dompet-"
   },
   "Agreement": {
     "content1": "Saya setuju dengan FoxWallet",
@@ -99,7 +103,15 @@
     "remind": "Mengingatkan",
     "account": "Akun",
     "ok": "OKE",
-    "wrongPassword": "kata kunci Salah"
+    "wrongPassword": "kata kunci Salah",
+    "noSearchResult": "Tidak ada hasil pencarian",
+    "pleaseWait": "Harap tunggu",
+    "copy": "Menyalin",
+    "reminder": "Pengingat",
+    "success": "Kesuksesan",
+    "failed": "Gagal",
+    "pending": "Tertunda",
+    "loading": "Memuat"
   },
   "Send": {
     "title": "Mengirim",
@@ -140,18 +152,25 @@
     "feeHint": "Anda dapat menggunakan saldo publik atau salah satu catatan pribadi berikut di bawah ini untuk membayar biaya bahan bakar.",
     "sendingAleoTx": "Mengirim transaksi aleo",
     "insufficientBalance": "Saldo tidak mencukupi",
-    "insufficientFee": "Saldo tidak cukup untuk membayar biaya"
+    "insufficientFee": "Saldo tidak cukup untuk membayar biaya",
+    "next": "Berikutnya",
+    "value": "Nilai",
+    "invalidAmount": "Jumlah tidak valid",
+    "processing": "Transaksi sedang diproses, harap tunggu.",
+    "sendingAleoHint": "Anda memiliki transaksi yang berkelanjutan, harap tunggu."
   },
   "PrivateKey": {
     "title": "Kunci pribadi",
     "enterPlaceholder": "Masukkan kunci pribadi",
     "backupTips1": "Harap simpan di tempat yang aman.",
-    "backupTips2": "Frase benih atau kunci pribadi adalah satu-satunya cara untuk memulihkan dompet Anda. Sekali hilang, tidak dapat diambil kembali. Jangan menyimpannya melalui screenshot atau media sosial."
+    "backupTips2": "Frase benih atau kunci pribadi adalah satu-satunya cara untuk memulihkan dompet Anda. Sekali hilang, tidak dapat diambil kembali. Jangan menyimpannya melalui screenshot atau media sosial.",
+    "coinType": "Tipe koin",
+    "selectCoinType": "Pilih Jenis Koin"
   },
   "Receive": {
     "title": "Menerima",
     "scanToTransfer": "Pindai untuk mentransfer",
-    "onlyTips": "Hanya mendukung aset terkait ALEO",
+    "onlyTips": "Hanya mendukung aset terkait {{symbol}}",
     "walletAddr": "Alamat Dompet"
   },
   "Setting": {
@@ -162,17 +181,35 @@
     "settings": "Pengaturan",
     "account": "Akun",
     "switchWallet": "Ganti Dompet",
-    "tutorial": "tutorial"
+    "tutorial": "tutorial",
+    "networks": "Jaringan",
+    "contacts": "Kontak",
+    "connectedSites": "Situs yang terhubung",
+    "resetApplication": "Reset aplikasi"
   },
   "Error": {
-    "invalidPassword": "Kata sandi salah"
+    "invalidPassword": "Kata sandi salah",
+    "invalidAddress": "Alamat tidak valid",
+    "invalidPrivateKey": "Kunci pribadi tidak valid"
   },
   "TokenDetail": {
     "title": "Detail Token",
     "balance": "Keseimbangan",
     "tx_records": "Catatan Transaksi",
     "empty_tx": "Tidak ada catatan transaksi",
-    "jump_explorer": "Penjelajah"
+    "jump_explorer": "Penjelajah",
+    "myAddress": "Alamat saya",
+    "public": "Publik",
+    "private": "Pribadi",
+    "total": "Total",
+    "token_transfer": "Transfer token",
+    "send": "Mengirim",
+    "contract_call": "Hubungi Kontrak Cerdas",
+    "token_approve": "Token menyetujui",
+    "bridge": "Menjembatani",
+    "receive": "Menerima",
+    "copyContractAddressMsg": "Ini adalah alamat kontrak Token, tidak menerima alamat, tidak mentransfer ke alamat ini.",
+    "failed": "Gagal"
   },
   "Language": {
     "title": "Bahasa"
@@ -196,7 +233,8 @@
     "noDecrypt": "Tidak ada izin mendekripsi.",
     "uponRequest": "Dapp mungkin meminta mendekripsi catatan Anda.",
     "autoDecrypt": "Dapp dapat mendekripsi catatan tanpa permintaan.",
-    "onChainHistory": "Dapp dapat mengakses riwayat on-chain Anda."
+    "onChainHistory": "Dapp dapat mengakses riwayat on-chain Anda.",
+    "addChain": "Minta tambahkan {{rantai}}"
   },
   "Currency": {
     "title": "Mata uang"
@@ -216,7 +254,15 @@
   },
   "Reset": {
     "remind": "Semua riwayat Anda untuk akun ini akan disetel ulang dan jaringan akan disinkronkan ulang. Harap konfirmasi untuk melanjutkan.",
-    "account": "Setel ulang akun"
+    "account": "Setel ulang akun",
+    "explain": "Dompet tidak akan membuka kunci? Anda dapat menghapus data aplikasi Anda dan menyiapkan dompet baru",
+    "resetApp": "Reset aplikasi",
+    "confirmDelete": "Konfirmasi penghapusan",
+    "warningTitle": "Apakah Anda yakin ingin menghapus data aplikasi Anda？",
+    "warningTitle2": "Konfirmasi aplikasi reset",
+    "warningContent1": "Dompet, akun, dan data aset Anda akan dihapus secara permanen dari aplikasi ini.",
+    "warningContent2": "Anda hanya dapat mengembalikan dompet ini dengan frasa benih Anda, FoxWallet tidak memiliki frasa benih Anda.",
+    "warningStrong": "Tindakan ini tidak bisa dibatalkan."
   },
   "JoinSplit": {
     "title": "Gabung & Pisahkan",
@@ -248,6 +294,85 @@
   },
   "ManageToken": {
     "title": "Kelola Token",
-    "searchHint": "Token pencarian (ID, Nama, Simbol)"
+    "searchHint": "Token pencarian (ID, Nama, Simbol)",
+    "pleaseWait": "Mencari, ini mungkin memakan waktu cukup lama"
+  },
+  "GasSetting": {
+    "fast": "Cepat",
+    "middle": "Tengah",
+    "slow": "Lambat",
+    "selectGasFee": "Pilih Biaya Gas",
+    "advanced": "Pengaturan lanjutan",
+    "maxPriorityFeeTitle": "Biaya prioritas",
+    "maxPriorityFeeRemind": "Biaya prioritas seharusnya tidak lebih tinggi dari biaya maksimal",
+    "maxPriorityLowRemind": "Biaya prioritas terlalu rendah",
+    "maxPriorityHighRemind": "Biaya prioritas terlalu tinggi",
+    "maxFeeTitle": "Biaya maksimal",
+    "maxFeeHighRemind": "Biaya maksimal terlalu tinggi",
+    "maxFeeLowRemind": "Biaya maksimal terlalu rendah",
+    "gasLimitTitle": "Batas gas"
+  },
+  "TransactionDetail": {
+    "hash": "Hash",
+    "from": "Dari",
+    "to": "Ke",
+    "value": "Nilai",
+    "time": "Waktu",
+    "nonce": "NONCE",
+    "confirmations": "Konfirmasi",
+    "network": "Jaringan",
+    "gasFee": "Biaya gas",
+    "type": "Jenis"
+  },
+  "Networks": {
+    "title": "Jaringan",
+    "searchHint": "Jaringan pencarian",
+    "manageNetworks": "Kelola jaringan",
+    "networkDetail": "Detail Jaringan",
+    "networkName": "Nama Jaringan",
+    "networkNameHint": "Input Nama Jaringan",
+    "symbol": "Simbol mata uang",
+    "rpc": "URL RPC",
+    "rpcHint": "Input URL RPC",
+    "chainId": "ID Rantai",
+    "manageWallet": "Kelola Dompet",
+    "defaultChainRemind": "Rantai default tidak bisa dipilih",
+    "selectNetwork": "Pilih Jaringan",
+    "selectToken": "Pilih token",
+    "pkWalletRemind": "Dompet kunci pribadi hanya menampilkan jaringan yang didukung. Untuk menggunakan semua jaringan, beralih ke dompet fase benih.",
+    "unavailable": "tidak tersedia",
+    "loading": "Memuat...",
+    "height": "Tinggi: {{height}}",
+    "deleteWarning": "Konfigurasi RPC yang dihapus tidak dapat dipulihkan",
+    "invalidRpc": "URL RPC kosong"
+  },
+  "Contacts": {
+    "title": "Kontak",
+    "searchHint": "Alamat pencarian",
+    "addContact": "Tambahkan kontak",
+    "editContact": "Edit kontak",
+    "contactInfo": "Info kontak",
+    "enterContactName": "Masukkan nama kontak",
+    "enterAddress": "Masukkan alamat",
+    "confirmCreate": "Konfirmasi buat",
+    "confirmUpdate": "Konfirmasi Pembaruan",
+    "selectNetwork": "Pilih Jaringan",
+    "networkName": "Nama Jaringan",
+    "remove": "Menghapus",
+    "copyAddress": "Salin alamat",
+    "editAddress": "Edit alamat",
+    "deleteHint": "Konfirmasi untuk menghapus alamat ini?",
+    "alreadyExist": "Alamat ini sudah ada di daftar kontak Anda",
+    "invalidAddress": "Alamat tidak valid"
+  },
+  "SelectToken": {
+    "title": "Pilih token",
+    "searchToken": "Token Cari",
+    "searchHint": "Token Cari (simbol, alamat)"
+  },
+  "Stake": {
+    "title": "Mempertaruhkan",
+    "dialogTitle": "Unduh APLIKASI",
+    "dialogContent": "Fitur staking tidak tersedia di dompet ekstensi. Untuk mempertaruhkan $ALEO, silakan pindai kode QR untuk mengunduh APLIKASI FoxWallet."
   }
 }

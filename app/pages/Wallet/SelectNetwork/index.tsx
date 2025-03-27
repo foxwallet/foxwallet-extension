@@ -21,6 +21,7 @@ import { PageWithHeader } from "@/layouts/Page";
 import { getCurrLanguage, SupportLanguages } from "@/locales/i18";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSearchNetworks } from "@/hooks/useSearchNetworks";
+import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 
 export enum NextAction {
   Receive = "receive",
@@ -111,7 +112,7 @@ const SelectNetworkScreen = () => {
 
   const renderNetworks = useMemo(() => {
     return (
-      <Box overflowY="auto">
+      <Box overflowY="auto" maxH={450} sx={HIDE_SCROLL_BAR_CSS}>
         <VStack spacing={"10px"}>
           {displayList.map((i, index) => {
             const key = i.uniqueId;

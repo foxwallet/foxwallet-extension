@@ -8,6 +8,7 @@ import { IconCheckLineBlack } from "@/components/Custom/Icon";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
+import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 
 function LanguageScreen() {
   const { t } = useTranslation();
@@ -27,7 +28,12 @@ function LanguageScreen() {
   return (
     <PageWithHeader enableBack title={t("Language:title")}>
       <Content>
-        <Flex flexDir={"column"} maxH={500} overflowY={"auto"}>
+        <Flex
+          flexDir={"column"}
+          maxH={500}
+          overflowY={"auto"}
+          sx={HIDE_SCROLL_BAR_CSS}
+        >
           {Object.values(SupportLanguages).map((language) => (
             <Flex
               key={language}

@@ -33,6 +33,9 @@ export const tokens = createModel<RootModel>()({
   name: "tokens",
   state: defaultTokenMaps,
   reducers: {
+    _reset() {
+      return { ...defaultTokenMaps };
+    },
     updateAddressTokens(
       state,
       payload: {

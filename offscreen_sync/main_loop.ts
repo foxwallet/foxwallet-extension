@@ -103,7 +103,6 @@ export class MainLoop {
   async initWorker() {
     for (let i = this.workerList.length; i < WORKER_NUMBER; i++) {
       const aleoWorker = await this.createAleoWorker();
-      // todo: check init aleo wasm
       await aleoWorker.initWasm();
       await aleoWorker.initAleoWorker(i, this.apiList, ENABLE_MEASURE);
       this.workerList[i] = aleoWorker;
@@ -587,6 +586,89 @@ export class MainLoop {
   }
 
   async loop(): Promise<void> {
+    while (true) {
+      await sleep(2000);
+
+      if (!this.onLine) {
+        console.log("===> network not available", this.onLine);
+        this.setNetworkListener();
+        continue;
+      }
+
+      try {
+        const addressList = await this.aleoStorage.getAccountsAddress();
+        console.log("===> addressList ", addressList.length, addressList);
+        const selectedUniqueId = InnerChainUniqueId.ALEO_MAINNET;
+        const groupAccount =
+          await this.accountSettingStorage.getSelectedGroupAccount();
+        if (!groupAccount) {
+          console.error("selected groupAccount not found");
+          continue;
+        }
+
+        const aleoAccount = groupAccount.group.accounts.filter(
+          (item) => item.coinType === CoinType.ALEO,
+        );
+        const address = aleoAccount[0]?.address;
+        if (!address) {
+          console.error("selected aleoAccount not found");
+          continue;
+        }
+
+        const selectedAccount = await this.aleoStorage.getAccountInfo(address);
+        if (!selectedAccount) {
+          console.error("selected account not found");
+          await sleep(3000);
+          continue;
+        }
+
+        const accountToSync = await this.aleoStorage.getAccountInfo(
+          selectedAccount.address,
+        );
+        if (!accountToSync) {
+          console.error("selected accountViewKey not found");
+          continue;
+        }
+
+        const chainId = uniqueIdToAleoChainId(selectedUniqueId);
+        const lastHeight = await this.getLatestHeight(chainId);
+        if (!lastHeight) {
+          // fetch height failed, sleep & retry
+          await sleep(8000);
+          continue;
+        }
+
+        await this.initWorker();
+        const batchMap = await this.initAccountsSyncTask(
+          chainId,
+          [accountToSync],
+          lastHeight,
+        );
+        console.log(
+          "===> syncTaskQueue: ",
+          JSON.stringify(this.syncTaskQuene),
+          JSON.stringify(batchMap),
+        );
+        if (this.syncTaskQuene.length === 0) {
+          // no task, sleep & retry
+          await sleep(8000);
+          continue;
+        }
+        await this.executeSyncBlocks(batchMap);
+      } catch (err) {
+        console.log("===> loop err: ", err);
+        const errMsg = "loop error: " + (err as Error).message;
+        void this.sendMessage({
+          type: OffscreenMessageType.ERROR,
+          origin: MessageOrigin.OFFSCREEN_TO_BACKGROUND,
+          payload: { error: errMsg, data: null },
+        });
+      }
+    }
+  }
+
+  /*
+  async loopOld(): Promise<void> {
     this.onLine = navigator.onLine;
     if (!this.onLine) {
       console.log("===> network not available", this.onLine);
@@ -596,7 +678,7 @@ export class MainLoop {
     try {
       const addressList = await this.aleoStorage.getAccountsAddress();
       console.log("===> addressList ", addressList.length, addressList);
-      const selectedUnqueId = InnerChainUniqueId.ALEO_MAINNET;
+      const selectedUniqueId = InnerChainUniqueId.ALEO_MAINNET;
       const groupAccount =
         await this.accountSettingStorage.getSelectedGroupAccount();
       if (!groupAccount) {
@@ -626,7 +708,7 @@ export class MainLoop {
         return this.loop();
       }
 
-      const chainId = uniqueIdToAleoChainId(selectedUnqueId);
+      const chainId = uniqueIdToAleoChainId(selectedUniqueId);
       const lastHeight = await this.getLatestHeight(chainId);
       if (!lastHeight) {
         // fetch height failed, sleep & retry
@@ -664,4 +746,5 @@ export class MainLoop {
       return this.loop();
     }
   }
+  */
 }

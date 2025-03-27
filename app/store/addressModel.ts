@@ -32,6 +32,9 @@ export const address = createModel<RootModel>()({
     nameTags: {} as NameTags,
   },
   reducers: {
+    _resetNameTags(state) {
+      return { ...state, nameTags: {} };
+    },
     setNameTag(state, payload: { item: NameTagItem }) {
       const { item } = payload;
       return {

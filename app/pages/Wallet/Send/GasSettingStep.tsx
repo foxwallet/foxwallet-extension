@@ -717,6 +717,7 @@ export const GasSettingStep = (props: GasSettingStepProps) => {
         direction={"column"}
         overflowY={"auto"}
         marginBottom={"10px"}
+        maxH={510}
         sx={HIDE_SCROLL_BAR_CSS}
         // bg={"yellow"}
       >
@@ -733,21 +734,21 @@ export const GasSettingStep = (props: GasSettingStepProps) => {
             onSelectGrade={onSelectGrade}
           />
         ) : null}
-        <CustomGasView
-          feeType={gasFee?.type}
-          showData={{
-            showGasPriceSetting,
-            showGasLimitSetting,
-            showMaxFeeSetting,
-          }}
-          gasUnit={gasUnit}
-          currentData={currentData}
-          isAdvanced={advanceSettings}
-          setAdvanced={() => {
-            setAdvanceSettings(true);
-          }}
-          onConfirm={onConfirm}
-        />
+        {/* <CustomGasView */}
+        {/*  feeType={gasFee?.type} */}
+        {/*  showData={{ */}
+        {/*    showGasPriceSetting, */}
+        {/*    showGasLimitSetting, */}
+        {/*    showMaxFeeSetting, */}
+        {/*  }} */}
+        {/*  gasUnit={gasUnit} */}
+        {/*  currentData={currentData} */}
+        {/*  isAdvanced={advanceSettings} */}
+        {/*  setAdvanced={() => { */}
+        {/*    setAdvanceSettings(true); */}
+        {/*  }} */}
+        {/*  onConfirm={onConfirm} */}
+        {/* /> */}
       </Flex>
     </Content>
   );

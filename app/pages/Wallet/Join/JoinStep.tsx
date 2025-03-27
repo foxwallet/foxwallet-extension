@@ -10,16 +10,14 @@ import { Button, Flex, Text } from "@chakra-ui/react";
 import { NATIVE_TOKEN_PROGRAM_ID } from "core/coins/ALEO/constants";
 import { AleoFeeMethod } from "core/coins/ALEO/types/FeeMethod";
 import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
-import {
-  AleoRecordMethod,
-  AleoTransferMethod,
-} from "core/coins/ALEO/types/TransferMethod";
-import { ChainUniqueId, InnerChainUniqueId } from "core/types/ChainUniqueId";
+import { AleoRecordMethod } from "core/coins/ALEO/types/TransferMethod";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { type AleoGasFee } from "core/types/GasFee";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useBalance } from "@/hooks/useBalance";
 import { type AleoService } from "core/coins/ALEO/service/AleoService";
+import { LoadingView } from "@/components/Custom/Loading";
 
 export interface JoinStepProps {
   selectedRecords: RecordDetailWithSpent[];
@@ -42,11 +40,6 @@ export const JoinStep = (props: JoinStepProps) => {
 
   const { nativeCurrency, coinService } = useCoinService(uniqueId);
   const { t } = useTranslation();
-  // const { balance, loadingBalance } = useAleoBalance({
-  //   uniqueId,
-  //   programId: NATIVE_TOKEN_PROGRAM_ID,
-  //   address: selectedAccount.account.address,
-  // });
 
   const { balance, loadingBalance } = useBalance({
     uniqueId,
@@ -159,7 +152,7 @@ export const JoinStep = (props: JoinStepProps) => {
 
   const gasFeeValid = useMemo(() => {
     if (!gasFeeEstimated) {
-      return true;
+      return false;
     }
     switch (currFeeType) {
       case AleoFeeMethod.FEE_PUBLIC: {
@@ -195,11 +188,14 @@ export const JoinStep = (props: JoinStepProps) => {
   ]);
 
   const errorInfo = useMemo(() => {
+    if (loadingGasFee) {
+      return "";
+    }
     if (!gasFeeValid) {
       return t("Send:insufficientFee");
     }
     return "";
-  }, [gasFeeValid, t]);
+  }, [gasFeeValid, loadingGasFee, t]);
 
   const onSubmit = useCallback(() => {
     if (!feeInfo) {
@@ -254,12 +250,19 @@ export const JoinStep = (props: JoinStepProps) => {
           px={4}
           py={3}
           mt={2}
+          h={"44px"}
         >
-          <TokenNum
-            amount={gasFee}
-            decimals={nativeCurrency.decimals}
-            symbol={nativeCurrency.symbol}
-          />
+          {loadingGasFee ? (
+            <Flex justifyContent={"center"} alignItems={"center"} flex={1}>
+              <LoadingView />
+            </Flex>
+          ) : (
+            <TokenNum
+              amount={gasFee}
+              decimals={nativeCurrency.decimals}
+              symbol={nativeCurrency.symbol}
+            />
+          )}
         </Flex>
         <Flex fontSize={"small"} color={"gray.500"} flex={1}>
           {currFeeType === AleoFeeMethod.FEE_PRIVATE ? (

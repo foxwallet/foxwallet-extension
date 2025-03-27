@@ -3,7 +3,7 @@ import {
   IconRemoveCircle,
   IconSearch,
 } from "@/components/Custom/Icon";
-import { TokenItem, TokenItemWithBalance } from "@/components/Wallet/TokenItem";
+import { TokenItemWithBalance } from "@/components/Wallet/TokenItem";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
 import {
@@ -18,8 +18,12 @@ import {
   Input,
   InputGroup,
   InputLeftElement,
+  Text,
 } from "@chakra-ui/react";
-import { BETA_STAKING_PROGRAM_ID } from "core/coins/ALEO/constants";
+import {
+  BETA_STAKING_ALEO_TOKEN_ID,
+  BETA_STAKING_PROGRAM_ID,
+} from "core/coins/ALEO/constants";
 import { isEqual } from "lodash";
 import type React from "react";
 import { useCallback, useMemo, useState } from "react";
@@ -27,8 +31,11 @@ import { useTranslation } from "react-i18next";
 import { useSafeParams } from "@/hooks/useSafeParams";
 import { type TokenV2 } from "core/types/Token";
 import { LoadingView } from "@/components/Custom/Loading";
-import { useSearchTokens } from "@/hooks/useSearchTokens";
+import { useSearchTokens, useSearchTokensByRpc } from "@/hooks/useSearchTokens";
 import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
+import type { AleoService } from "core/coins/ALEO/service/AleoService";
+import { useCoinService } from "@/hooks/useCoinService";
 
 function AddToken() {
   const { t } = useTranslation();
@@ -38,6 +45,14 @@ function AddToken() {
     return getMatchAccountsWithUniqueId(uniqueId)[0];
   }, [getMatchAccountsWithUniqueId, uniqueId]);
   const [searchText, setSearchText] = useState("");
+  const { coinService } = useCoinService(uniqueId);
+  const dispatch = usePopupDispatch();
+
+  const userTokens = usePopupSelector(
+    (state) =>
+      state.tokens.userTokens?.[uniqueId]?.[selectedAccount?.account.address],
+    isEqual,
+  );
 
   const recommendTokens = useRecommendTokens(uniqueId); // 推荐 数量适中
   // console.log("      recommendTokens", recommendTokens);
@@ -45,24 +60,36 @@ function AddToken() {
   const rawAllTokens = useAllTokens(uniqueId); // 所有 数量很多
   // console.log("      rawAllTokens", rawAllTokens);
 
-  const {
-    searchRes,
-    searching: loading,
-    delaySearchStr,
-  } = useSearchTokens(searchText, rawAllTokens);
+  // 使用symbol, contractAddress 在rawAllTokens 搜索
+  const { searchRes: searchInRawAllTokens, searching: loadingInRawAllTokens } =
+    useSearchTokens(searchText, rawAllTokens);
 
-  const userTokens = usePopupSelector(
-    (state) =>
-      state.tokens.userTokens?.[uniqueId]?.[selectedAccount?.account.address],
-    isEqual,
-  );
-  console.log("      userTokens", userTokens);
-  const dispatch = usePopupDispatch();
+  // 使用 contractAddress 在rpc搜索
+  const { searchRes: searchResByRpc, searching: searchingByRpc } =
+    useSearchTokensByRpc(searchText, uniqueId);
+  // console.log("      searchResByRpc", searchResByRpc);
+
+  const loading = useMemo(() => {
+    if (searchInRawAllTokens.length > 0) {
+      return false;
+    } else {
+      return loadingInRawAllTokens || searchingByRpc;
+    }
+  }, [loadingInRawAllTokens, searchInRawAllTokens.length, searchingByRpc]);
 
   // 需要区分用户已添加/没有添加的数据
   const targetTokens = useMemo(() => {
-    return searchText ? [...searchRes] : recommendTokens;
-  }, [searchText, searchRes, recommendTokens]);
+    if (searchText) {
+      if (searchInRawAllTokens.length > 0) {
+        return [...searchInRawAllTokens];
+      } else if (searchResByRpc) {
+        return [searchResByRpc];
+      }
+      return [];
+    } else {
+      return recommendTokens;
+    }
+  }, [searchText, searchInRawAllTokens, searchResByRpc, recommendTokens]);
 
   // 区分结果
   const { matchedTokens, unMatchedTokens } = useMemo(() => {
@@ -87,13 +114,24 @@ function AddToken() {
 
   const selectToken = useCallback(
     (token: TokenV2) => {
+      // betastaking.aleo 特殊处理
+      if (uniqueId === InnerChainUniqueId.ALEO_MAINNET) {
+        const { programId: _programId, tokenId: _tokenId } = (
+          coinService as AleoService
+        ).parseContractAddress(token.contractAddress);
+        if (_programId === BETA_STAKING_PROGRAM_ID) {
+          token.tokenId = BETA_STAKING_ALEO_TOKEN_ID;
+          token.programId = BETA_STAKING_PROGRAM_ID;
+        }
+      }
+
       dispatch.tokens.selectToken({
         uniqueId,
         address: selectedAccount.account.address,
         token,
       });
     },
-    [dispatch.tokens, uniqueId, selectedAccount],
+    [uniqueId, dispatch.tokens, selectedAccount.account.address, coinService],
   );
 
   const unselectToken = useCallback(
@@ -123,7 +161,19 @@ function AddToken() {
           py={2}
         />
       </InputGroup>
-      {loading && <LoadingView w={12} h={12} alignSelf={"center"} mt={2} />}
+      {loading && (
+        <Flex
+          alignItems={"center"}
+          justifyContent={"center"}
+          flexDir={"column"}
+        >
+          <LoadingView w={8} h={8} alignSelf={"center"} mt={2} />
+          <Text mt={2} fontSize={10}>
+            {t("ManageToken:pleaseWait")}
+          </Text>
+        </Flex>
+      )}
+      {}
       <Flex
         flexDir={"column"}
         maxH={"500px"}
@@ -151,6 +201,7 @@ function AddToken() {
                     onClick={() => {
                       unselectToken(token);
                     }}
+                    showPriceAndChange={false}
                   />
                   <Flex
                     cursor={"pointer"}
@@ -181,12 +232,15 @@ function AddToken() {
                 pr={5}
                 _hover={{ bg: "gray.50", borderRadius: "lg" }}
               >
-                <TokenItem
+                <TokenItemWithBalance
+                  uniqueId={uniqueId}
+                  address={selectedAccount.account.address}
                   token={token}
                   onClick={() => {
                     selectToken(token);
                   }}
-                  hideId={token.programId === BETA_STAKING_PROGRAM_ID}
+                  showPriceAndChange={false}
+                  showBalanceAndValue={false}
                 />
                 <Flex
                   cursor={"pointer"}

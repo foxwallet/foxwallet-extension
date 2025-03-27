@@ -113,7 +113,7 @@ export class PopupServerClient implements IClient, IPopupServer {
     if (callback) {
       const { error, data } = payload;
       if (error) {
-        callback(new Error(error), null);
+        callback(new Error(error?.message ?? error), null);
       } else {
         callback(null, data);
       }
@@ -193,6 +193,10 @@ export class PopupServerClient implements IClient, IPopupServer {
     return await this.#send("rescanAleo", {});
   }
 
+  async resetChain(): Promise<boolean> {
+    return await this.#send("resetChain", {});
+  }
+
   async sendAleoTransaction(params: AleoSendTxProps): Promise<void> {
     await this.#send("sendAleoTransaction", params);
   }
@@ -211,6 +215,10 @@ export class PopupServerClient implements IClient, IPopupServer {
 
   async getHDMnemonic(walletId: string): Promise<string> {
     return await this.#send("getHDMnemonic", walletId);
+  }
+
+  async resetWallet(): Promise<boolean> {
+    return await this.#send("resetWallet", {});
   }
 
   async deleteWallet(walletId: string): Promise<DisplayKeyring> {

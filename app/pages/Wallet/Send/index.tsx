@@ -45,7 +45,7 @@ const SendScreen = () => {
 
   const onSend = useCallback(
     async (gasFee: GasFee<CoinType> | undefined, value: bigint | undefined) => {
-      if (!gasFee || !value || !privateKey) {
+      if (!gasFee || value === undefined || !privateKey) {
         return;
       }
 

@@ -20,6 +20,7 @@ import {
 } from "@/common/constants";
 import { TokenSecurity, type TokenV2 } from "core/types/Token";
 import { CacheType, withCache } from "@/common/utils/cache";
+import { type AleoService } from "core/coins/ALEO/service/AleoService";
 
 export type AssetIdentifier = {
   uniqueId: ChainUniqueId;
@@ -35,9 +36,9 @@ export const useTokens = (uniqueId: ChainUniqueId, keyword?: string) => {
     : `/all_tokens/${uniqueId}`;
   const fetchTokens = useCallback(async () => {
     if (keyword) {
-      return await coinService.searchTokens(keyword);
+      return await (coinService as AleoService).searchTokens(keyword);
     }
-    return await coinService.getAllTokens();
+    return await (coinService as AleoService).getAllTokens();
   }, [coinService, keyword]);
 
   const {

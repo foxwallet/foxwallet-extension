@@ -19,11 +19,8 @@ import { SelectRecordsStep } from "@/components/Send/SelectRecordsStep";
 import { AleoTxType } from "core/coins/ALEO/types/History";
 import { NATIVE_TOKEN_TOKEN_ID } from "core/coins/ALEO/constants";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
-import {
-  ChainAssembleMode,
-  InnerChainUniqueId,
-} from "core/types/ChainUniqueId";
-import { useChainMode } from "@/hooks/useChainMode";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
+import { type AleoService } from "core/coins/ALEO/service/AleoService";
 
 function JoinScreen() {
   const { t } = useTranslation();
@@ -74,7 +71,7 @@ function JoinScreen() {
         const pendingTx: AleoLocalTxInfo = {
           localId,
           address,
-          programId: nativeCurrency.address,
+          programId: nativeCurrency.address!,
           functionName: "join",
           inputs,
           baseFee: gasFee.baseFee.toString(),
@@ -87,7 +84,10 @@ function JoinScreen() {
           notification: false,
           tokenId: NATIVE_TOKEN_TOKEN_ID,
         };
-        await coinService.setAddressLocalTx(address, pendingTx);
+        await (coinService as AleoService).setAddressLocalTx(
+          address,
+          pendingTx,
+        );
         popupServerClient
           .sendAleoTransaction({
             uniqueId: chainConfig.uniqueId,
@@ -97,7 +97,7 @@ function JoinScreen() {
             address,
             localId,
             chainId: chainConfig.chainId,
-            programId: nativeCurrency.address,
+            programId: nativeCurrency.address!,
             functionName: "join",
             inputs,
             feeRecord: feeRecord?.plaintext || null,
@@ -110,7 +110,10 @@ function JoinScreen() {
           .catch(async (err) => {
             pendingTx.error = (err as Error).message;
             pendingTx.status = AleoTxStatus.FAILED;
-            await coinService.setAddressLocalTx(address, pendingTx);
+            await (coinService as AleoService).setAddressLocalTx(
+              address,
+              pendingTx,
+            );
           });
         navigate(-1);
       } catch (err) {
@@ -119,7 +122,15 @@ function JoinScreen() {
         setSubmitting(false);
       }
     },
-    [selectedAccount, nativeCurrency, chainConfig, coinService, navigate],
+    [
+      submittingRef,
+      selectedAccount,
+      nativeCurrency.address,
+      coinService,
+      popupServerClient,
+      chainConfig,
+      navigate,
+    ],
   );
 
   const content = useMemo(() => {

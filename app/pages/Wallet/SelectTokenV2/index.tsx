@@ -96,7 +96,7 @@ const SelectTokenScreenV2 = () => {
 
   const renderTokens = useMemo(() => {
     return (
-      <Box overflowY="auto" sx={HIDE_SCROLL_BAR_CSS}>
+      <Box overflowY="auto" sx={HIDE_SCROLL_BAR_CSS} maxH={470}>
         <VStack spacing={"10px"}>
           {displayList.map((item, index) => {
             const { symbol, name, contractAddress, tokenId } = item;
@@ -110,7 +110,7 @@ const SelectTokenScreenV2 = () => {
                 onClick={onSelect}
                 hover
                 showPriceAndChange={action === NextAction.Send}
-                showBalnaceAndValue={action === NextAction.Send}
+                showBalanceAndValue={action === NextAction.Send}
               />
             );
           })}

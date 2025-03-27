@@ -142,3 +142,7 @@ export const parseTokenTransferLogInfo = (
     tokenId,
   };
 };
+
+export const isEthCustomRPC = (chainId: string): boolean => {
+  return /ethereum-[0-9]+/.test(chainId);
+};

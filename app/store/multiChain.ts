@@ -14,6 +14,7 @@ import {
 } from "core/constants/chain";
 import { type AccountOption } from "core/types/CoinBasic";
 import { walletByIdSelector } from "./selectors/account";
+import { produce } from "immer";
 
 export type ChainConfigItems = ChainBaseConfig[];
 
@@ -52,31 +53,29 @@ export const multiChain = createModel<RootModel>()({
     },
 
     changeChainConfig(state, payload: { chainConfig: ChainBaseConfig }) {
-      const { chainConfig } = payload;
-      const uniqueId = chainConfig.uniqueId;
-      if (!uniqueId) {
-        return state;
-      }
-      const chainConfigItems = state.chainConfigItems ?? [];
-      const index = chainConfigItems.findIndex(
-        (config) => config.uniqueId === uniqueId,
-      );
-      if (index < 0) {
-        console.log(
-          `changeChainConfig ${uniqueId} isn't exist in ${JSON.stringify(
-            chainConfig,
-          )}`,
+      return produce(state, (draftState) => {
+        const { chainConfig } = payload;
+        const uniqueId = chainConfig.uniqueId;
+        if (!uniqueId) {
+          return;
+        }
+
+        draftState.chainConfigItems = draftState.chainConfigItems ?? [];
+        const index = draftState.chainConfigItems.findIndex(
+          (config) => config.uniqueId === uniqueId,
         );
-        return {
-          ...state,
-          chainConfigItems: [...chainConfigItems, chainConfig],
-        };
-      }
-      chainConfigItems[index] = { ...chainConfig };
-      return {
-        ...state,
-        chainConfigItems,
-      } as MultiChainModel;
+
+        if (index < 0) {
+          console.log(
+            `changeChainConfig ${uniqueId} isn't exist in ${JSON.stringify(
+              chainConfig,
+            )}`,
+          );
+          draftState.chainConfigItems.push(chainConfig);
+        } else {
+          draftState.chainConfigItems[index] = { ...chainConfig };
+        }
+      });
     },
 
     removeChainConfig(state, payload: { chainConfig: ChainBaseConfig }) {

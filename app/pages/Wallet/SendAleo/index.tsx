@@ -21,6 +21,7 @@ import { useTranslation } from "react-i18next";
 import { AleoTxType } from "core/coins/ALEO/types/History";
 import {
   ALPHA_TOKEN_PROGRAM_ID,
+  ARCANE_PROGRAM_ID,
   BETA_STAKING_PROGRAM_ID,
   NATIVE_TOKEN_PROGRAM_ID,
 } from "core/coins/ALEO/constants";
@@ -112,6 +113,14 @@ function SendScreen() {
         return;
       }
       setSubmitting(true);
+
+      const { programId: _programId, tokenId: _tokenId } = (
+        coinService as AleoService
+      ).parseContractAddress(token.contractAddress);
+
+      const tokenId = token.tokenId ?? _tokenId;
+      const programId = token.programId ?? _programId;
+
       try {
         const address = selectedAccount.account.address;
         let inputs: string[] = [];
@@ -121,7 +130,7 @@ function SendScreen() {
             if (!finalTransferRecord || !finalTransferRecord.plaintext) {
               throw new Error(ERROR_CODE.INVALID_ARGUMENT);
             }
-            switch (token.programId) {
+            switch (programId) {
               case NATIVE_TOKEN_PROGRAM_ID: {
                 inputs = [finalTransferRecord.plaintext, to, `${amount}u64`];
                 break;
@@ -134,12 +143,37 @@ function SendScreen() {
                 inputs = [finalTransferRecord.plaintext, to, `${amount}u128`];
                 break;
               }
+              case ARCANE_PROGRAM_ID: {
+                inputs = [to, `${amount}u128`, finalTransferRecord.plaintext];
+                break;
+              }
             }
             break;
           }
-          case AleoTransferMethod.PUBLIC:
-          case AleoTransferMethod.PUBLIC_TO_PRIVATE: {
+          case AleoTransferMethod.PUBLIC: {
             switch (token.programId) {
+              case NATIVE_TOKEN_PROGRAM_ID: {
+                inputs = [to, `${amount}u64`];
+                break;
+              }
+              case BETA_STAKING_PROGRAM_ID: {
+                inputs = [to, `${amount}u64`];
+                break;
+              }
+              case ALPHA_TOKEN_PROGRAM_ID: {
+                // todo  token.tokenId ?? ""
+                inputs = [token.tokenId ?? "", to, `${amount}u128`];
+                break;
+              }
+              case ARCANE_PROGRAM_ID: {
+                inputs = [token.tokenId ?? "", to, `${amount}u128`];
+                break;
+              }
+            }
+            break;
+          }
+          case AleoTransferMethod.PUBLIC_TO_PRIVATE: {
+            switch (programId) {
               case NATIVE_TOKEN_PROGRAM_ID: {
                 inputs = [to, `${amount}u64`];
                 break;
@@ -152,6 +186,10 @@ function SendScreen() {
                 inputs = [token?.tokenId ?? "", to, `${amount}u128`];
                 break;
               }
+              case ARCANE_PROGRAM_ID: {
+                inputs = [token.tokenId ?? "", to, `${amount}u128`, "false"];
+                break;
+              }
             }
             break;
           }
@@ -161,7 +199,7 @@ function SendScreen() {
         const pendingTx: AleoLocalTxInfo = {
           localId,
           address,
-          programId: token?.programId ?? "",
+          programId: programId ?? "",
           functionName: finalTransferMethod,
           inputs,
           baseFee: gasFee.baseFee.toString(),
@@ -187,7 +225,7 @@ function SendScreen() {
             address,
             localId,
             chainId: chainConfig.chainId,
-            programId: token?.programId ?? "",
+            programId: programId ?? "",
             functionName: finalTransferMethod,
             inputs,
             feeRecord: feeRecord?.plaintext || null,

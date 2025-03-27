@@ -47,6 +47,7 @@ import {
   useAllChainList,
   useGroupAccountChainList,
 } from "@/hooks/useChainList";
+import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 
 export type NetworkListItemProps = {
   item: ChainBaseConfig;
@@ -304,7 +305,11 @@ const NetworksScreen = () => {
         {showEmpty ? (
           <EmptyView searching={false} text={t("Common:noSearchResult")} />
         ) : (
-          <Box overflowY="auto" maxHeight={"calc(100vh - 120px)"}>
+          <Box
+            overflowY="auto"
+            maxHeight={"calc(100vh - 120px)"}
+            sx={HIDE_SCROLL_BAR_CSS}
+          >
             <VStack spacing={"10px"}>
               {dataList.map((item) => {
                 return renderNetworkItem(item);

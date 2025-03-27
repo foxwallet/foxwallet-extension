@@ -385,7 +385,7 @@ export class PopupWalletServer implements IPopupServer {
                 privateKey: pk,
               },
             });
-            const {id} = rawTxWrap;
+            const { id } = rawTxWrap;
             await browser.windows.remove(popupId);
             if (id) {
               resolve(id);
@@ -768,7 +768,6 @@ export class PopupWalletServer implements IPopupServer {
       }
     }
     await this.authManager.initPassword(params.password);
-    await this.keyringManager.reset();
     return true;
   }
 
@@ -1049,6 +1048,21 @@ export class PopupWalletServer implements IPopupServer {
 
   async getHDMnemonic(walletId: string): Promise<string> {
     return await this.keyringManager.getHDMnemonic(walletId);
+  }
+
+  async resetWallet(): Promise<boolean> {
+    try {
+      await stopSync();
+      await Promise.all([
+        this.accountSettingStorage.removeSelectedAccount(),
+        this.keyringManager.resetWallet(),
+      ]);
+      return true;
+    } catch (err) {
+      return false;
+    } finally {
+      syncBlocks();
+    }
   }
 
   async deleteWallet(walletId: string): Promise<DisplayKeyring> {

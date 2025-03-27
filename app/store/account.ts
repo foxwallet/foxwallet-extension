@@ -7,6 +7,11 @@ import {
 import { CoinType } from "core/types";
 import { DEFAULT_CHAIN_UNIQUE_ID } from "core/constants/chain";
 import { type ChainUniqueId } from "core/types/ChainUniqueId";
+import {
+  OneMatchGroupAccount,
+  WalletType,
+} from "@/scripts/background/store/vault/types/keyring";
+import { getClients } from "@/hooks/useClient";
 
 type SelectedAccount = DisplayAccountV1 & {
   walletId: string;
@@ -47,5 +52,12 @@ export const account = createModel<RootModel>()({
   name: "account",
   state: {
     ...DEFAULT_ACCOUNT_MODEL_V1,
+  },
+  reducers: {
+    _reset() {
+      return {
+        ...DEFAULT_ACCOUNT_MODEL_V1,
+      };
+    },
   },
 });

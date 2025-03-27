@@ -13,7 +13,7 @@ import {
   type ChainUniqueId,
 } from "core/types/ChainUniqueId";
 import { uniq } from "lodash";
-import { matchAccountsWithUnqiueId } from "../accountV2";
+import { matchAccountsWithUniqueId } from "../accountV2";
 import { fallbackToEmptyArray } from "@/store/selectors/utils";
 import i18n from "i18next";
 
@@ -117,7 +117,7 @@ export const groupAccountAvailableNetworksSelector = createAppSelector(
       return [];
     }
     return allChainConfigs.filter((item) => {
-      const matchAccount = matchAccountsWithUnqiueId(
+      const matchAccount = matchAccountsWithUniqueId(
         groupAccount,
         item.uniqueId,
       );

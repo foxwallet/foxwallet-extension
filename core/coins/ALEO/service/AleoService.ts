@@ -22,6 +22,7 @@ import {
 import { type AleoGasFee } from "core/types/GasFee";
 import {
   ALPHA_TOKEN_PROGRAM_ID,
+  ARCANE_PROGRAM_ID,
   BETA_STAKING_PROGRAM_ID,
   LOCAL_TX_EXPIRE_TIME,
   NATIVE_TOKEN_PROGRAM_ID,
@@ -70,17 +71,17 @@ import type { InteractiveTokenParams } from "core/types/TokenTransaction";
 import { type BalanceResp, type TokenBalanceParams } from "core/types/Balance";
 import {
   type CoinTxDetailParams,
-  type CoinTxHistoryParams,
   type NativeCoinTxHistoryParams,
   type TransactionStatusInfo,
 } from "core/types/NativeCoinTransaction";
-import {
-  type TransactionHistoryResp,
-  type TxHistoryResp,
-} from "core/types/TransactionHistory";
+import { type TransactionHistoryResp } from "core/types/TransactionHistory";
 import { TransactionStatus } from "core/types/TransactionStatus";
 import { AleoInfoApi } from "core/coins/ALEO/service/api/aleoInfoApi";
 import { parseAleoFeeFuture } from "core/coins/ALEO/utils/utils";
+import {
+  type ArcaneService,
+  createArcaneService,
+} from "core/coins/ALEO/service/instances/arcane";
 
 const CREDITS_MAPPING_NAME = "account";
 
@@ -100,6 +101,7 @@ export class AleoService extends CoinServiceBasic {
   private aleoStorage: IAleoStorage;
   private rpcService: AleoRpcService;
   private apiService: AleoApiService;
+  private arcaneService: ArcaneService;
   private walletService: AleoWalletService;
   private tokenService: AlphaSwapTokenService;
   private cachedSyncBlock: AleoAddressInfo | null = null;
@@ -137,18 +139,25 @@ export class AleoService extends CoinServiceBasic {
         },
       ]);
     }
+    if (this.config.arcaneApi) {
+      this.arcaneService = createArcaneService([
+        {
+          url: this.config.arcaneApi,
+          chainId: this.config.chainId,
+        },
+      ]);
+    }
   }
 
   validateAddress(address: string): boolean {
-    // try {
-    //   const addressObj = Address.from_string(address);
-    //   console.log("===> addressObj: ", addressObj, !!addressObj);
-    //   return !!addressObj;
-    // } catch (err) {
-    //   logger.log("===> isValidAddress failed: ", err, address);
-    //   return false;
-    // }
-    return true;
+    try {
+      const addressObj = Address.from_string(address);
+      console.log("===> addressObj: ", addressObj, !!addressObj);
+      return !!addressObj;
+    } catch (err) {
+      logger.log("===> isValidAddress failed: ", err, address);
+      return false;
+    }
   }
 
   private async getSpentTagsInRange(tags: string[]) {
@@ -176,6 +185,7 @@ export class AleoService extends CoinServiceBasic {
     ]);
     const { referenceHeight, serverHeight } = nodeStatus;
     const maxHeight = Math.max(referenceHeight ?? 0, serverHeight ?? 0);
+    // console.log("      recordRanges", recordRanges, nodeStatus);
 
     const finishHeight = recordRanges
       .map((item) => {
@@ -185,11 +195,19 @@ export class AleoService extends CoinServiceBasic {
       .reduce((prev, curr) => {
         return prev + curr[1] - curr[0] + 1;
       }, 0);
-    return Math.min(
-      // add some buffer to avoid always 99%
-      Math.floor(((finishHeight + 20) / maxHeight) * 100),
-      100,
-    );
+    // console.log("      finishHeight", finishHeight);
+
+    const realProgress = Math.floor((finishHeight / maxHeight) * 100);
+    // console.log("      realProgress", realProgress);
+
+    // 99%时视为100%, 否则会持续显示99%
+    return realProgress < 99 ? realProgress : 100;
+
+    // return Math.min(
+    //   // add some buffer to avoid always 99%
+    //   // Math.floor(((finishHeight + 20) / maxHeight) * 100),
+    //   100,
+    // );
   }
 
   private syncRecords = async (
@@ -294,6 +312,21 @@ export class AleoService extends CoinServiceBasic {
           stAleoRecords[commitment] = record;
         }
         allRecordsMap[BETA_STAKING_PROGRAM_ID] = stAleoRecords;
+      }
+
+      const arcaneRecords = allRecordsMap[ARCANE_PROGRAM_ID];
+      if (arcaneRecords) {
+        for (const [commitment, record] of Object.entries(arcaneRecords)) {
+          if (!record || record.parsedContent) {
+            continue;
+          }
+          record.parsedContent = {
+            token: record.content.token_id.slice(0, -8),
+            amount: record.content.amount.slice(0, -12),
+          };
+          arcaneRecords[commitment] = record;
+        }
+        allRecordsMap[ARCANE_PROGRAM_ID] = arcaneRecords;
       }
 
       const result = {
@@ -1112,13 +1145,27 @@ export class AleoService extends CoinServiceBasic {
     const { recordsMap } = result;
     let records: RecordDetailWithSpent[] = [];
     if (program) {
-      if (program === ALPHA_TOKEN_PROGRAM_ID) {
-        records = Object.values(recordsMap[program] ?? {}).filter((item) => {
-          if (!item) return false;
-          return item.parsedContent?.token === tokenId;
-        }) as RecordDetailWithSpent[];
-      } else {
-        records = Object.values(recordsMap[program] ?? {}).filter(isNotEmpty);
+      switch (program) {
+        case ALPHA_TOKEN_PROGRAM_ID:
+        case ARCANE_PROGRAM_ID: {
+          records = Object.values(recordsMap[program] ?? {}).filter((item) => {
+            if (!item) return false;
+            return item.parsedContent?.token === tokenId;
+          }) as RecordDetailWithSpent[];
+          break;
+        }
+        case BETA_STAKING_PROGRAM_ID: {
+          records = Object.values(recordsMap[program] ?? {}).filter(
+            (item) => !!item,
+          ) as RecordDetailWithSpent[];
+          break;
+        }
+        default: {
+          records = Object.values(recordsMap[program] ?? {}).filter(
+            (item) => !!item,
+          ) as RecordDetailWithSpent[];
+          break;
+        }
       }
     } else {
       const programs = Object.keys(recordsMap);
@@ -1464,6 +1511,24 @@ export class AleoService extends CoinServiceBasic {
         }
         return parseU64(balance);
       }
+      case ARCANE_PROGRAM_ID: {
+        const id = hashBHP256(`{account: ${address}, token_id: ${tokenId}}`);
+        const res = await this.rpcService.getProgramMappingValue(
+          programId,
+          "authorized_balances",
+          id,
+        );
+        if (!res || typeof res !== "string" || res === "null") {
+          return 0n;
+        }
+        const match = res.match(/balance:\s*(\d+)u128?/);
+        const balance = match?.[1];
+        if (!balance) {
+          return 0n;
+        } else {
+          return BigInt(balance);
+        }
+      }
       default: {
         throw new Error("Unsupported program id " + programId);
       }
@@ -1517,6 +1582,28 @@ export class AleoService extends CoinServiceBasic {
           }
         }, 0n);
       }
+      case ARCANE_PROGRAM_ID: {
+        const result = await this.getRecords(
+          address,
+          ARCANE_PROGRAM_ID,
+          RecordFilter.UNSPENT,
+        );
+        return result.reduce((sum, record) => {
+          if (record.parsedContent) {
+            if (record.parsedContent.token !== tokenId) {
+              return sum;
+            } else {
+              return sum + BigInt(record.parsedContent.amount);
+            }
+          } else {
+            if (record.content.token_id.slice(0, -8) !== tokenId) {
+              return sum;
+            } else {
+              return sum + BigInt(record.content.amount.slice(0, -12));
+            }
+          }
+        }, 0n);
+      }
       default: {
         throw new Error("Unsupported program id " + programId);
       }
@@ -1547,9 +1634,9 @@ export class AleoService extends CoinServiceBasic {
     return `${programId}-${tokenId}`;
   };
 
-  private parseContractAddress = (tokenId: string) => {
-    const [programId, tokenIdStr] = tokenId.split("-");
-    return { programId, tokenId: tokenIdStr };
+  parseContractAddress = (contractAddress: string) => {
+    const [programId, tokenId] = contractAddress.split("-");
+    return { programId, tokenId };
   };
 
   async getTokenBalance(
@@ -1575,14 +1662,23 @@ export class AleoService extends CoinServiceBasic {
   }
 
   async getAllTokens() {
-    const tokens = await this.tokenService.getTokens();
-    return [BETA_STAKING_ALEO_TOKEN, ...tokens];
+    const [tokens, arcaneTokens] = await Promise.all([
+      this.tokenService.getTokens(),
+      this.arcaneService.getTokens(),
+    ]);
+    return [BETA_STAKING_ALEO_TOKEN, ...tokens, ...arcaneTokens];
   }
 
   async searchTokens(keyword: string) {
     const searchStAleo = keyword.includes("st") || keyword.includes("ale");
-    const tokens = await this.tokenService.searchTokens(keyword);
-    return searchStAleo ? [BETA_STAKING_ALEO_TOKEN, ...tokens] : tokens;
+
+    const [tokens, arcaneTokens] = await Promise.all([
+      this.tokenService.searchTokens(keyword),
+      this.arcaneService.searchTokens(keyword),
+    ]);
+    return searchStAleo
+      ? [BETA_STAKING_ALEO_TOKEN, ...tokens, ...arcaneTokens]
+      : [...tokens, ...arcaneTokens];
   }
 
   async getUserInteractiveTokens(
@@ -1590,13 +1686,14 @@ export class AleoService extends CoinServiceBasic {
   ): Promise<TokenV2[]> {
     const { address } = params;
     const tokens = await this.getAllTokens();
-    const top10Tokens = tokens.slice(0, 10);
+    // exclude stAleo
+    const top10Tokens = tokens.slice(1, 11);
     const balances = await Promise.all(
       top10Tokens.map(async (token) => {
         try {
           const balance = await this.getTokenBalanceOld(
             address,
-            ALPHA_TOKEN_PROGRAM_ID,
+            token.programId,
             token.tokenId,
           );
           return {
@@ -1839,6 +1936,16 @@ export class AleoService extends CoinServiceBasic {
               record.parsedContent = {
                 amount: record.content.amount.slice(0, -11),
               };
+              break;
+            }
+            case ARCANE_PROGRAM_ID: {
+              record.parsedContent = {
+                token: record.content.token_id.slice(0, -8),
+                amount: record.content.amount.slice(0, -12),
+              };
+              if (record.parsedContent.token !== token.tokenId) {
+                continue;
+              }
               break;
             }
             default: {
@@ -2091,5 +2198,9 @@ export class AleoService extends CoinServiceBasic {
       console.error("getTxStatus error: ", err);
       return undefined;
     }
+  }
+
+  supportTokenTxHistory(): boolean {
+    return false;
   }
 }

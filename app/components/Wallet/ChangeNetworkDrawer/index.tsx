@@ -67,7 +67,12 @@ const ChangeNetworkDrawer = (props: Props) => {
   const { t } = useTranslation();
   const [searchStr, setSearchStr] = useState("");
   const [debounceSearchStr] = useDebounce(searchStr, 500);
-  const { selectedChains } = useUserSelectedChains();
+  const { selectedChains: selectedChainsWithAll, selectedChainsWithoutAll } =
+    useUserSelectedChains();
+
+  const selectedChains = useMemo(() => {
+    return isForAddToken ? selectedChainsWithoutAll : selectedChainsWithAll;
+  }, [isForAddToken, selectedChainsWithAll, selectedChainsWithoutAll]);
 
   const onKeywordChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,9 +84,7 @@ const ChangeNetworkDrawer = (props: Props) => {
 
   const { searchRes, searching: loading } = useSearchNetworks(
     searchStr,
-    selectedChains.filter(
-      (i) => i.mode === ChainAssembleMode.SINGLE,
-    ) as SingleChainDisplayData[],
+    selectedChainsWithoutAll,
   );
 
   const displayList = useMemo(() => {

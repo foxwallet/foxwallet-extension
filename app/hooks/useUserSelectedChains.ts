@@ -4,7 +4,10 @@ import { useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
 import { currSelectedChainsSelector } from "@/store/selectors/account";
 import { isEqual } from "lodash";
-import { type ChainDisplayData } from "@/components/Wallet/ChangeNetworkDrawer";
+import {
+  type ChainDisplayData,
+  type SingleChainDisplayData,
+} from "@/components/Wallet/ChangeNetworkDrawer";
 import { useGroupAccountChainList } from "@/hooks/useChainList";
 
 export const useUserSelectedChains = () => {
@@ -14,8 +17,8 @@ export const useUserSelectedChains = () => {
 
   const chains = useGroupAccountChainList();
 
-  const selectedChains: ChainDisplayData[] = useMemo(() => {
-    const res: ChainDisplayData[] = [];
+  const selectedChainsWithoutAll: SingleChainDisplayData[] = useMemo(() => {
+    const res: SingleChainDisplayData[] = [];
     chains.forEach((item) => {
       if (selectedUniqueIds.includes(item.uniqueId)) {
         res.push({
@@ -24,8 +27,12 @@ export const useUserSelectedChains = () => {
         });
       }
     });
-    return [{ mode: ChainAssembleMode.ALL }, ...res];
+    return res;
   }, [chains, selectedUniqueIds]);
 
-  return { selectedUniqueIds, selectedChains };
+  const selectedChains: ChainDisplayData[] = useMemo(() => {
+    return [{ mode: ChainAssembleMode.ALL }, ...selectedChainsWithoutAll];
+  }, [selectedChainsWithoutAll]);
+
+  return { selectedUniqueIds, selectedChains, selectedChainsWithoutAll };
 };

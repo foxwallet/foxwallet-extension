@@ -10,7 +10,7 @@ import {
 } from "@chakra-ui/react";
 import { promisifyChooseDialogWrapper } from "@/common/utils/dialog";
 import type React from "react";
-import { useMemo, useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { BottomUpDrawer } from "@/components/Custom/BottomUpDrawer";
 import { useTranslation } from "react-i18next";
 import {
@@ -18,17 +18,29 @@ import {
   IconCheckboxSelected,
   IconCheckboxUnselected,
   IconSearch,
+  IconEVM,
 } from "@/components/Custom/Icon";
 import type { ChainBaseConfig } from "core/types/ChainBaseConfig";
 import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import { getCurrLanguage, SupportLanguages } from "@/locales/i18";
+import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
+import { useDebounce } from "use-debounce";
+import { useSearchNetworks } from "@/hooks/useSearchNetworks";
+import { CoinType } from "core/types";
+
+enum AllItemType {
+  All,
+  EVM,
+}
 
 const AllItem = ({
   isAllSelected,
   onSelect,
+  type = AllItemType.All,
 }: {
   isAllSelected: boolean;
   onSelect: () => void;
+  type?: AllItemType;
 }) => {
   const { t } = useTranslation();
 
@@ -43,8 +55,16 @@ const AllItem = ({
       onClick={onSelect}
     >
       <Flex justify={"center"} alignItems="center">
-        <IconAllNetworks w={"24px"} h={"24px"} borderRadius={"50px"} />
-        <Text pl={2}>{t("Wallet:allNetworks")}</Text>
+        {type === AllItemType.All ? (
+          <IconAllNetworks w={"24px"} h={"24px"} borderRadius={"50px"} />
+        ) : (
+          <IconEVM w={"24px"} h={"24px"} borderRadius={"50px"} />
+        )}
+        <Text pl={2}>
+          {type === AllItemType.All
+            ? t("Wallet:allNetworks")
+            : t("Wallet:allEVMNetworks")}
+        </Text>
       </Flex>
       {isAllSelected ? (
         <IconCheckboxSelected w={4} h={4} mr={2} />
@@ -112,6 +132,7 @@ const SelectContactNetworkDrawer = (props: Props) => {
   } = props;
   const { t } = useTranslation();
   const [searchStr, setSearchStr] = useState("");
+  const [debounceSearchStr] = useDebounce(searchStr, 500);
 
   const [userSelectedChains, setUserSelectedChains] = useState<
     ChainBaseConfig[]
@@ -135,6 +156,16 @@ const SelectContactNetworkDrawer = (props: Props) => {
     });
   }, [supportChains, userSelectedChains]);
 
+  const { searchRes, searching: loading } = useSearchNetworks(
+    searchStr,
+    supportChainsWithSelect,
+  );
+  // console.log("      searchRes", searchRes);
+
+  const displayList = useMemo(() => {
+    return debounceSearchStr ? searchRes : supportChainsWithSelect;
+  }, [debounceSearchStr, supportChainsWithSelect, searchRes]);
+
   const onSelectChain = useCallback((data: ChainBaseConfig) => {
     setUserSelectedChains((prev) => {
       const set = new Set(prev.map((item) => item.uniqueId));
@@ -148,9 +179,40 @@ const SelectContactNetworkDrawer = (props: Props) => {
     return supportChains.length === userSelectedChains.length;
   }, [supportChains, userSelectedChains]);
 
-  const selectedAll = useCallback(() => {
+  const selectAll = useCallback(() => {
     setUserSelectedChains(isAllSelected ? [] : supportChains);
   }, [isAllSelected, supportChains]);
+
+  const evmSupportChainsWithSelect = useMemo(() => {
+    return supportChainsWithSelect.filter((item) => {
+      return item.coinType === CoinType.ETH;
+    });
+  }, [supportChainsWithSelect]);
+
+  const isEvmAllSelected = useMemo(() => {
+    const found = evmSupportChainsWithSelect.filter((item) => {
+      return item.isSelected;
+    });
+    return found.length === evmSupportChainsWithSelect.length;
+  }, [evmSupportChainsWithSelect]);
+
+  const selectAllEvm = useCallback(() => {
+    if (isEvmAllSelected) {
+      const evmUniqueIds = new Set(
+        evmSupportChainsWithSelect.map((item) => item.uniqueId),
+      );
+      const ret = userSelectedChains.filter((item) => {
+        return !evmUniqueIds.has(item.uniqueId);
+      });
+      setUserSelectedChains(ret);
+    } else {
+      const mergedSet = new Set([
+        ...evmSupportChainsWithSelect,
+        ...userSelectedChains,
+      ]);
+      setUserSelectedChains(Array.from(mergedSet));
+    }
+  }, [evmSupportChainsWithSelect, isEvmAllSelected, userSelectedChains]);
 
   const onConfirmSelect = useCallback(() => {
     onSelectChains(userSelectedChains);
@@ -182,16 +244,25 @@ const SelectContactNetworkDrawer = (props: Props) => {
               py={2}
             />
           </InputGroup>
-          <VStack mt={4} spacing={"10px"}>
-            {supportChainsWithSelect.map((item, index) => {
-              return (
-                <>
-                  {index === 0 && supportChains.length > 1 && (
-                    <AllItem
-                      isAllSelected={isAllSelected}
-                      onSelect={selectedAll}
-                    />
-                  )}
+          <Flex
+            direction={"column"}
+            maxH={360}
+            overflowY="auto"
+            sx={HIDE_SCROLL_BAR_CSS}
+          >
+            <VStack mt={4} spacing={"10px"}>
+              {supportChains.length > 1 && !debounceSearchStr && (
+                <AllItem isAllSelected={isAllSelected} onSelect={selectAll} />
+              )}
+              {evmSupportChainsWithSelect.length > 1 && !debounceSearchStr && (
+                <AllItem
+                  isAllSelected={isEvmAllSelected}
+                  onSelect={selectAllEvm}
+                  type={AllItemType.EVM}
+                />
+              )}
+              {displayList.map((item, index) => {
+                return (
                   <AddressNetworkItem
                     key={item.uniqueId}
                     item={item}
@@ -199,10 +270,10 @@ const SelectContactNetworkDrawer = (props: Props) => {
                       onSelectChain(data);
                     }}
                   />
-                </>
-              );
-            })}
-          </VStack>
+                );
+              })}
+            </VStack>
+          </Flex>
         </Flex>
       }
       footer={

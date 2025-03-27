@@ -3,10 +3,12 @@ import {
   type ButtonProps,
   Flex,
   IconButton,
+  Spinner,
   TabList,
   Tabs,
   useMultiStyleConfig,
   useTab,
+  Text,
 } from "@chakra-ui/react";
 import { AssetList } from "../AssetList";
 import { useTranslation } from "react-i18next";
@@ -107,6 +109,14 @@ export const HomeTabList = ({ assets }: { assets: TokenV2[] | undefined }) => {
           />
         </Flex>
       </Flex>
+      {assets?.length === 0 && (
+        <Flex alignItems={"center"} justify={"center"} direction={"column"}>
+          <Spinner w={6} h={6} alignSelf={"center"} mt={10} />
+          {/* <Text fontSize={"smaller"} mt={3}> */}
+          {/*  {t("Common:loading")} */}
+          {/* </Text> */}
+        </Flex>
+      )}
       <AssetList assets={assets} />
     </Tabs>
   );

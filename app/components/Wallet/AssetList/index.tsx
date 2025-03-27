@@ -1,10 +1,9 @@
-import { Flex, Image, TabPanel, Text } from "@chakra-ui/react";
+import { TabPanel } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { useCallback } from "react";
 import { TokenItemWithBalance } from "../TokenItem";
 import { serializeToken } from "@/common/utils/string";
 import { type TokenV2 } from "core/types/Token";
-import { useGroupAccountAssets } from "@/hooks/useGroupAccountAssets";
 import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 
 type AssetListProps = {
@@ -14,8 +13,6 @@ type AssetListProps = {
 export const AssetList = (props: AssetListProps) => {
   const navigate = useNavigate();
   const { assets: groupAssets } = props;
-  // const { assets: groupAssets } = useGroupAccountAssets();
-  // console.log("      group assets", { ...groupAssets });
 
   const onTokenDetail = useCallback(
     (token: TokenV2) => {

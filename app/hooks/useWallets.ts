@@ -6,6 +6,7 @@ import { showPasswordVerifyDrawer } from "@/components/Custom/PasswordVerifyDraw
 import { showDeleteWalletWarningDialog } from "@/components/Wallet/DeleteWalletWarningDialog";
 import { useGroupAccount } from "./useGroupAccount";
 import { type OneMatchGroupAccount } from "@/scripts/background/store/vault/types/keyring";
+import sleep from "sleep-promise";
 
 export const useWallets = () => {
   const { popupServerClient } = useClient();
@@ -59,10 +60,26 @@ export const useWallets = () => {
     [dispatch.accountV2],
   );
 
+  // use resetWallet instead
+  const deleteAllWallets = useCallback(async () => {
+    let resWallet = walletList;
+    while (resWallet.length > 0) {
+      console.log("      resWallet.length", resWallet.length);
+      resWallet = await dispatch.accountV2.deleteWallet(resWallet[0].walletId);
+      await sleep(100);
+    }
+  }, [dispatch.accountV2, walletList]);
+
+  const resetWallet = useCallback(async () => {
+    return await dispatch.accountV2.resetWallet();
+  }, [dispatch.accountV2]);
+
   return {
     walletList,
     addAccount,
     deleteWallet,
+    deleteAllWallets,
+    resetWallet,
   };
 };
 

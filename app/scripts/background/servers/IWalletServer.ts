@@ -17,6 +17,7 @@ import {
 import { SiteInfo } from "@/scripts/content/host";
 import { AccountOption, ImportPrivateKeyTypeMap } from "core/types/CoinBasic";
 import { DecryptPermission } from "@/database/types/dapp";
+import {ProviderError, SerializableError} from "@/scripts/content/ErrorCode";
 
 export type PopupServerMethod = keyof IPopupServer;
 
@@ -168,6 +169,8 @@ export interface IPopupServer {
 
   rescanAleo(): Promise<boolean>;
 
+  resetChain(): Promise<boolean>;
+
   sendAleoTransaction(params: AleoSendTxProps): Promise<void>;
 
   isSendingAleoTransaction(): Promise<boolean>;
@@ -177,6 +180,8 @@ export interface IPopupServer {
   onRequestFinish(params: RequestFinfishProps): Promise<void>;
 
   getHDMnemonic(walletId: string): Promise<string>;
+
+  resetWallet(): Promise<boolean>;
 
   deleteWallet(walletId: string): Promise<DisplayKeyring>;
 
@@ -508,14 +513,24 @@ export async function executeServerMethod<T>(
       }))
       .catch((error) => {
         logger.error("executeServerMethod error: ", error);
-        return {
-          error: error,
-          data: null,
-        };
+        if (
+          error instanceof ProviderError ||
+          error instanceof SerializableError
+        ) {
+          return {
+            error: error,
+            data: null,
+          };
+        } else {
+          return {
+            error: new SerializableError(error?.message ?? error),
+            data: null,
+          };
+        }
       });
   } catch (err: any) {
     return {
-      error: err,
+      error: new SerializableError(err?.message ?? err),
       data: null,
     };
   }

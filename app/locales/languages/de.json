@@ -40,7 +40,10 @@
       "dupAccountName": "Doppelter Kontoname",
       "delete": "Wallet löschen",
       "deleteRemind": "Bitte stellen Sie sicher, dass das Wallet ordnungsgemäß gesichert ist, da es nur mit der Seed-Phrase oder dem privaten Schlüssel wiederhergestellt werden kann."
-    }
+    },
+    "allNetworks": "ALLE",
+    "allEVMNetworks": "Alle EVM -Netzwerke",
+    "initWallet": "Initialisierungsbrieftasche, bitte warten Sie"
   },
   "Onboard": {
     "Home": {
@@ -50,7 +53,8 @@
     "Upgrade": {
       "reminderTips": "Die aktuelle Browserversion ist zu alt. Bitte aktualisieren Sie auf die neueste Version, um die FoxWallet-Erweiterungsbrieftasche verwenden zu können.",
       "upgradeBtn": "Aktualisierung"
-    }
+    },
+    "defaultWalletName": "Geldbörse-"
   },
   "Agreement": {
     "content1": "Ich stimme FoxWallet zu",
@@ -99,7 +103,15 @@
     "remind": "Erinnern",
     "account": "Konto",
     "ok": "OK",
-    "wrongPassword": "Falsches Passwort"
+    "wrongPassword": "Falsches Passwort",
+    "noSearchResult": "Kein Suchergebnis",
+    "pleaseWait": "Bitte warten",
+    "copy": "Kopie",
+    "reminder": "Erinnerung",
+    "success": "Erfolg",
+    "failed": "Fehlgeschlagen",
+    "pending": "Ausstehend",
+    "loading": "Laden"
   },
   "Send": {
     "title": "Schicken",
@@ -140,18 +152,25 @@
     "feeHint": "Sie können entweder das öffentliche Guthaben oder eine der folgenden privaten Aufzeichnungen verwenden, um die Gasgebühr zu bezahlen.",
     "sendingAleoTx": "Aleo-Transaktion wird gesendet",
     "insufficientBalance": "Mangelhaftes Gleichgewicht",
-    "insufficientFee": "Unzureichendes Guthaben zur Zahlung der Gebühr"
+    "insufficientFee": "Unzureichendes Guthaben zur Zahlung der Gebühr",
+    "next": "Nächste",
+    "value": "Wert",
+    "invalidAmount": "Ungültiger Betrag",
+    "processing": "Transaktion ist verarbeitet, bitte warten.",
+    "sendingAleoHint": "Sie haben eine laufende Transaktion, bitte warten."
   },
   "PrivateKey": {
     "title": "Privat Schlüssel",
     "enterPlaceholder": "Geben Sie den privaten Schlüssel ein",
     "backupTips1": "Bitte bewahren Sie es an einem sicheren Ort auf.",
-    "backupTips2": "Seed-Phrase oder privater Schlüssel sind die einzige Möglichkeit, Ihr Wallet wiederherzustellen. Sobald es verloren geht, kann es nicht mehr wiederhergestellt werden. Speichern Sie sie nicht über Screenshots oder soziale Medien."
+    "backupTips2": "Seed-Phrase oder privater Schlüssel sind die einzige Möglichkeit, Ihr Wallet wiederherzustellen. Sobald es verloren geht, kann es nicht mehr wiederhergestellt werden. Speichern Sie sie nicht über Screenshots oder soziale Medien.",
+    "coinType": "Münztyp",
+    "selectCoinType": "Wählen Sie Münztyp"
   },
   "Receive": {
     "title": "Erhalten",
     "scanToTransfer": "Zum Übertragen scannen",
-    "onlyTips": "Unterstützen Sie nur ALEO-bezogene Assets",
+    "onlyTips": "Unterstützen Sie nur {{symbol}}-bezogene Assets",
     "walletAddr": "Wallet-Adresse"
   },
   "Setting": {
@@ -162,17 +181,35 @@
     "settings": "Einstellungen",
     "account": "Konto",
     "switchWallet": "Wallet wechseln",
-    "tutorial": "Anleitung"
+    "tutorial": "Anleitung",
+    "networks": "Netzwerke",
+    "contacts": "Kontakte",
+    "connectedSites": "Verbundene Websites",
+    "resetApplication": "Anwendung zurücksetzen"
   },
   "Error": {
-    "invalidPassword": "Ungültiges Passwort"
+    "invalidPassword": "Ungültiges Passwort",
+    "invalidAddress": "Ungültige Adresse",
+    "invalidPrivateKey": "Ungültiger privater Schlüssel"
   },
   "TokenDetail": {
     "title": "Token-Details",
     "balance": "Gleichgewicht",
     "tx_records": "Transaktionsaufzeichnungen",
     "empty_tx": "Keine Transaktionsaufzeichnungen",
-    "jump_explorer": "Forscher"
+    "jump_explorer": "Forscher",
+    "myAddress": "Meine Adresse",
+    "public": "Öffentlich",
+    "private": "Privat",
+    "total": "Gesamt",
+    "token_transfer": "Token -Transfer",
+    "send": "Schicken",
+    "contract_call": "Rufen Sie Smart Contract an",
+    "token_approve": "Token zustimmen",
+    "bridge": "Brücke",
+    "receive": "Erhalten",
+    "copyContractAddressMsg": "Dies ist die Vertragsadresse von Token, die keine Adresse erhalten, und übertragen Sie diese Adresse nicht.",
+    "failed": "Fehlgeschlagen"
   },
   "Language": {
     "title": "Sprache"
@@ -196,7 +233,8 @@
     "noDecrypt": "Keine Entschlüsselungsberechtigung.",
     "uponRequest": "Dapp kann die Entschlüsselung Ihres Datensatzes anfordern.",
     "autoDecrypt": "Dapp kann Datensätze ohne Anfrage entschlüsseln.",
-    "onChainHistory": "Dapp kann auf Ihren On-Chain-Verlauf zugreifen."
+    "onChainHistory": "Dapp kann auf Ihren On-Chain-Verlauf zugreifen.",
+    "addChain": "Anfrage hinzufügen {{chain}}"
   },
   "Currency": {
     "title": "Währung"
@@ -216,7 +254,15 @@
   },
   "Reset": {
     "remind": "Ihr gesamter Verlauf für dieses Konto wird zurückgesetzt und das Netzwerk wird erneut synchronisiert. Bitte bestätigen Sie, um fortzufahren.",
-    "account": "Konto zurücksetzen"
+    "account": "Konto zurücksetzen",
+    "explain": "Brieftasche wird nicht freigeschaltet? Sie können Ihre App -Daten löschen und eine neue Brieftasche einrichten",
+    "resetApp": "Anwendung zurücksetzen",
+    "confirmDelete": "Bestätigen Sie die Löschung",
+    "warningTitle": "Sind Sie sicher, dass Sie Ihre App -Daten löschen möchten?",
+    "warningTitle2": "RESET -Anwendung bestätigen",
+    "warningContent1": "Ihre Brieftaschen, Konten und Vermögensdaten werden dauerhaft aus dieser App gelöscht.",
+    "warningContent2": "Sie können diese Brieftasche nur mit Ihrem Samenphrase wiederherstellen. Foxwallet besitzt Ihren Samenphrase nicht.",
+    "warningStrong": "Diese Aktion kann nicht rückgängig gemacht werden."
   },
   "JoinSplit": {
     "title": "Beitreten und teilen",
@@ -248,6 +294,85 @@
   },
   "ManageToken": {
     "title": "Token verwalten",
-    "searchHint": "Suchtoken (ID, Name, Symbol)"
+    "searchHint": "Suchtoken (ID, Name, Symbol)",
+    "pleaseWait": "Durch die Suche kann dies eine Weile dauern"
+  },
+  "GasSetting": {
+    "fast": "Schnell",
+    "middle": "Mitte",
+    "slow": "Langsam",
+    "selectGasFee": "Wählen Sie Gasgebühr",
+    "advanced": "Erweiterte Einstellung",
+    "maxPriorityFeeTitle": "Prioritätsgebühr",
+    "maxPriorityFeeRemind": "Die Prioritätsgebühr sollte nicht höher als die maximale Gebühr sein",
+    "maxPriorityLowRemind": "Prioritätsgebühr zu niedrig",
+    "maxPriorityHighRemind": "Prioritätsgebühr zu hoch",
+    "maxFeeTitle": "Maximale Gebühr",
+    "maxFeeHighRemind": "Maximale Gebühr zu hoch",
+    "maxFeeLowRemind": "Max. Gebühr zu niedrig",
+    "gasLimitTitle": "Gasgrenze"
+  },
+  "TransactionDetail": {
+    "hash": "Hash",
+    "from": "Aus",
+    "to": "Zu",
+    "value": "Wert",
+    "time": "Zeit",
+    "nonce": "Nonce",
+    "confirmations": "Bestätigungen",
+    "network": "Netzwerk",
+    "gasFee": "Gasgebühr",
+    "type": "Typ"
+  },
+  "Networks": {
+    "title": "Netzwerke",
+    "searchHint": "Suchnetzwerke",
+    "manageNetworks": "Netzwerke verwalten",
+    "networkDetail": "Netzwerkdetail",
+    "networkName": "Netzwerkname",
+    "networkNameHint": "Netzwerkname eingeben",
+    "symbol": "Währungssymbol",
+    "rpc": "RPC -URL",
+    "rpcHint": "RPC -URL eingeben",
+    "chainId": "Ketten -ID",
+    "manageWallet": "Brieftasche verwalten",
+    "defaultChainRemind": "Die Standardkette kann nicht nicht ausgewählt werden",
+    "selectNetwork": "Wählen Sie Netzwerk",
+    "selectToken": "Wählen Sie Token",
+    "pkWalletRemind": "Private Schlüsselbrieftasche zeigt nur die unterstützten Netzwerke an. Um alle Netzwerke zu verwenden, wechseln Sie zu einer Samenphasen -Brieftasche.",
+    "unavailable": "nicht verfügbar",
+    "loading": "Laden...",
+    "height": "Höhe: {{Höhe}}",
+    "deleteWarning": "Die gelöschte RPC -Konfiguration kann nicht wiederhergestellt werden",
+    "invalidRpc": "RPC -URL ist leer"
+  },
+  "Contacts": {
+    "title": "Kontakte",
+    "searchHint": "Suchadresse",
+    "addContact": "Kontakt hinzufügen",
+    "editContact": "Kontakt bearbeiten",
+    "contactInfo": "Kontaktinformationen",
+    "enterContactName": "Geben Sie den Kontaktnamen ein",
+    "enterAddress": "Adresse eingeben",
+    "confirmCreate": "Bestätigen Sie Create",
+    "confirmUpdate": "Aktualisierung bestätigen",
+    "selectNetwork": "Wählen Sie Netzwerk",
+    "networkName": "Netzwerkname",
+    "remove": "Entfernen",
+    "copyAddress": "Adresse kopieren",
+    "editAddress": "Adresse bearbeiten",
+    "deleteHint": "Bestätigen Sie, um diese Adresse zu entfernen?",
+    "alreadyExist": "Diese Adresse bereits in Ihrer Kontaktliste",
+    "invalidAddress": "Ungültige Adresse"
+  },
+  "SelectToken": {
+    "title": "Wählen Sie Token",
+    "searchToken": "Suche Token",
+    "searchHint": "Suche Token (Symbol, Adresse)"
+  },
+  "Stake": {
+    "title": "Einsatz",
+    "dialogTitle": "APP herunterladen",
+    "dialogContent": "Die Absteckfunktion ist im Erweiterungs-Wallet nicht verfügbar. Um $ALEO zu setzen, scannen Sie bitte den QR-Code, um die FoxWallet-APP herunterzuladen."
   }
 }

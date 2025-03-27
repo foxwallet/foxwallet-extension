@@ -34,7 +34,6 @@ export class BLS12377HDWallet<T extends CoinType> implements BaseHDWallet<T> {
     switch (this.symbol) {
       case CoinType.ALEO: {
         try {
-          // todo: check init aleo wasm
           await init();
           const wallet = this.coinRoot.deriveChild(i);
           const pk = PrivateKey.from_seed_unchecked(wallet.key);

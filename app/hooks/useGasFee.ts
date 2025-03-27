@@ -49,19 +49,17 @@ export const useGasFee = <T extends CoinType>(params: GasFeeReq<T>) => {
   }, [from, to, token, uniqueId, value, data]);
 
   const isValidData = useMemo(() => {
-    if (chainConfig.coinType === CoinType.ETH) {
-      return true;
-    }
     if (value === undefined) {
       return false;
     }
     return (
       value >= 0n &&
       coinService.validateAddress(from) &&
-      coinService.validateAddress(to)
+      coinService.validateAddress(to) &&
+      chainConfig.coinType === CoinType.ETH
     );
   }, [chainConfig.coinType, coinService, from, to, value]);
-  console.log("isValidData", isValidData);
+  // console.log("isValidData", isValidData);
 
   const fetchGas = useCallback(async () => {
     if (!isValidData) {

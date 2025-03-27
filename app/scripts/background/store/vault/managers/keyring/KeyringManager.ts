@@ -47,9 +47,6 @@ export class KeyringManager {
     await initAleoWasm();
   }
 
-  // TODO: reset
-  async reset() {}
-
   #getToken() {
     const token = this.#authManager.getToken();
     if (!token) {
@@ -448,7 +445,7 @@ export class KeyringManager {
         }
       }
     }
-    const account = await coinBasicFactory(coinType).deriveAccount(
+    const account = coinBasicFactory(coinType).deriveAccount(
       privateKey,
       privateKeyType,
     );
@@ -647,5 +644,10 @@ export class KeyringManager {
       throw new Error("Empty keyring");
     }
     return await this.#storage.deleteWallet(walletId);
+  }
+
+
+  async resetWallet() {
+    return await this.#storage.resetWallet();
   }
 }

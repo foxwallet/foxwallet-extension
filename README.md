@@ -38,6 +38,7 @@ FoxWallet browser extension currently supports Google Chrome. Ensure your Chrome
 - Environment: Require Node version 18
 
 ```shell
+yarn wasm
 yarn
 yarn build:dev
 ```
@@ -53,6 +54,12 @@ cd ../.. && yarn build:dev
 ```
 
 > If you ensure that your Node.js version is compatible, you can directly run `yarn wasm` in the root directory to compile the WASM package, and then run `yarn build:dev`.
+
+## Locale
+
+```
+yarn translate -p [your port]
+```
 
 ## Features of Aleo
 

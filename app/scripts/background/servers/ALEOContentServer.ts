@@ -44,7 +44,7 @@ import {
   NATIVE_TOKEN_TOKEN_ID,
 } from "core/coins/ALEO/constants";
 import { DecryptPermission } from "@/database/types/dapp";
-import { matchAccountsWithUnqiueId } from "@/store/accountV2";
+import { matchAccountsWithUniqueId } from "@/store/accountV2";
 import { AleoService } from "core/coins/ALEO/service/AleoService";
 import { SerializableError } from "@/scripts/content/ErrorCode";
 
@@ -89,7 +89,7 @@ export class ALEOContentWalletServer implements IContentServer<CoinType.ALEO> {
     const groupAccount =
       await this.accountSettingStorage.getSelectedGroupAccount();
     if (groupAccount) {
-      const selectedAccount = matchAccountsWithUnqiueId(
+      const selectedAccount = matchAccountsWithUniqueId(
         groupAccount,
         InnerChainUniqueId.ALEO_MAINNET,
       )[0];

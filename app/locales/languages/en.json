@@ -4,6 +4,7 @@
     "backupTips": "You haven't backed up your wallet yet",
     "backupBtnTitle": "Backup now",
     "tabAsset": "Asset",
+    "initWallet": "Initializing wallet, please wait",
     "Create": {
       "title": "Create Wallet",
       "explain": "Create a new HD wallet.",
@@ -41,7 +42,8 @@
       "delete": "Delete wallet",
       "deleteRemind": "Please ensure the wallet is properly backed up as it can only be restored using the seed phrase or private key."
     },
-    "allNetworks": "ALL"
+    "allNetworks": "ALL",
+    "allEVMNetworks": "ALL EVM Networks"
   },
   "Onboard": {
     "Home": {
@@ -212,7 +214,8 @@
     "nonce": "Nonce",
     "confirmations": "Confirmations",
     "network": "Network",
-    "gasFee": "Gas Fee"
+    "gasFee": "Gas Fee",
+    "type": "Type"
   },
   "Tx": {
     "successToast": "Transaction Successful!",
@@ -229,7 +232,8 @@
     "switchWallet": "Switch Wallet",
     "networks": "Networks",
     "contacts": "Contacts",
-    "connectedSites": "Connected Sites"
+    "connectedSites": "Connected Sites",
+    "resetApplication": "Reset Application"
   },
   "Networks": {
     "title": "Networks",
@@ -242,6 +246,11 @@
     "rpc": "RPC URL",
     "rpcHint": "Input RPC URL",
     "chainId": "Chain ID",
+    "unavailable": "unavailable",
+    "loading": "Loading...",
+    "height": "Height: {{height}}",
+    "deleteWarning": "Deleted RPC configuration can't be recovered",
+    "invalidRpc": "RPC url is empty",
     "manageWallet": "Manage Wallet",
     "defaultChainRemind": "Default chain can't be unselected",
     "selectNetwork": "Select Network",
@@ -316,11 +325,20 @@
   },
   "Reset": {
     "remind": "All of your history for this account will be reset and network will be resynced. Please confrim to proceed.",
-    "account": "Reset account"
+    "account": "Reset Aleo account",
+    "explain": "Wallet won't unlock? You can ERASE your app data and setup a new wallet",
+    "resetApp": "Reset Application",
+    "confirmDelete": "Confirm Deletion",
+    "warningTitle": "Are you sure you want to erase your app data？",
+    "warningTitle2": "Confirm reset application",
+    "warningContent1": "Your wallets, accounts and assets data will be permanently deleted from this app. ",
+    "warningContent2": "You can only restore this wallet with your seed phrase, FoxWallet does not own your seed phrase. ",
+    "warningStrong": "This action cannot be undone."
   },
   "ManageToken": {
     "title": "Manage Token",
-    "searchHint": "Search token(Symbol, Address)"
+    "searchHint": "Search token(Symbol, Address)",
+    "pleaseWait": "Searching, this might take a while"
   },
   "Common": {
     "confirm": "Confirm",
@@ -344,10 +362,19 @@
     "copy": "Copy",
     "reminder": "Reminder",
     "success": "Success",
-    "failed": "Failed"
+    "failed": "Failed",
+    "pending": "Pending",
+    "loading":"Loading"
   },
   "Error": {
     "invalidPassword": "Invalid password",
-    "invalidAddress": "Invalid address"
+    "invalidAddress": "Invalid address",
+    "invalidPrivateKey": "Invalid Private Key",
+    "insufficientGas": "Insufficient balance for gas"
+  },
+  "Stake": {
+    "title": "Stake",
+    "dialogTitle": "Download APP",
+    "dialogContent": "The staking feature is unavailable in the extension wallet. To stake $ALEO, please scan the QR code to download the FoxWallet APP."
   }
 }

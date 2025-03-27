@@ -1,11 +1,11 @@
 import {
+  IconAllNetworks,
   IconArrowRight,
   IconCopy,
   IconEyeClose,
   IconEyeOn,
   IconLoading,
   IconLock,
-  IconLogo,
 } from "@/components/Custom/Icon";
 import {
   Box,
@@ -101,7 +101,9 @@ export const AccountInfoHeader = ({
 
   const copyAddress = useCallback(async () => {
     if (isAllMode) {
-      await showCopyAddressDrawer();
+      await showCopyAddressDrawer({
+        account: groupAccount,
+      });
     } else {
       try {
         if (availableAccounts.length === 0) {
@@ -125,12 +127,14 @@ export const AccountInfoHeader = ({
         console.log("copyAddress err ", err);
       }
     }
-  }, [availableAccounts, availableChains, chainMode, isAllMode, showToast]);
-
-  // const { balance } = useBalance({
-  //   uniqueId,
-  //   address: availableAccounts[0].account.address,
-  // });
+  }, [
+    availableAccounts,
+    availableChains,
+    chainMode,
+    groupAccount,
+    isAllMode,
+    showToast,
+  ]);
 
   const bgGradient = useColorModeValue(
     "linear(to-br, #ECFFF2, #FFFFFF, #ECFFF2)",
@@ -140,7 +144,7 @@ export const AccountInfoHeader = ({
 
   const changeNetwork = useCallback(async () => {
     await showChangeNetworkDrawer({
-      title: groupAccount.wallet.walletName,
+      title: wallet.selectedWallet?.walletName ?? "",
       chainMode,
       onWallet: () => {
         navigate("/manage_wallet");
@@ -155,7 +159,7 @@ export const AccountInfoHeader = ({
         });
       },
     });
-  }, [chainMode, dispatch.wallet, groupAccount.wallet, navigate]);
+  }, [chainMode, dispatch.wallet, groupAccount, navigate, wallet]);
 
   const copyAddressHint: string = useMemo(() => {
     if (availableAccounts.length === 1) {
@@ -163,6 +167,31 @@ export const AccountInfoHeader = ({
     }
     return t("Common:copy");
   }, [availableAccounts, t]);
+
+  const showSendingAleo = useMemo(() => {
+    if (sendingAleoTx) {
+      if (chainMode.mode === ChainAssembleMode.ALL) {
+        return true;
+      } else if (chainMode.uniqueId === InnerChainUniqueId.ALEO_MAINNET) {
+        return true;
+      }
+      return false;
+    }
+    return false;
+  }, [chainMode, sendingAleoTx]);
+
+  const aleoAccountAddress = useMemo(() => {
+    if (chainMode.mode === ChainAssembleMode.ALL) {
+      const aleoAccount = availableAccounts.find((account) => {
+        return account.account.coinType === CoinType.ALEO;
+      });
+      return aleoAccount?.account.address;
+    } else if (chainMode.uniqueId === InnerChainUniqueId.ALEO_MAINNET) {
+      return availableAccounts[0].account.address;
+    } else {
+      return undefined;
+    }
+  }, [availableAccounts, chainMode]);
 
   return (
     <>
@@ -189,7 +218,7 @@ export const AccountInfoHeader = ({
             onClick={changeNetwork}
           >
             {isAllMode ? (
-              <IconLogo w={5} h={5} />
+              <IconAllNetworks w={5} h={5} />
             ) : (
               <Image
                 src={availableChains[0].logo}
@@ -244,15 +273,10 @@ export const AccountInfoHeader = ({
           </Flex>
         )}
         {/* value */}
-        <Flex direction={"row"} align={"center"} justify={"center"} mt={2}>
+        <Flex direction={"row"} align={"center"} justify={"center"} mt={3}>
           <Flex align={"center"}>
             <Box fontSize={24} fontWeight={600}>
               {showBalance ? (
-                // <TokenNum
-                //   amount={balance?.total ?? 0n}
-                //   decimals={nativeCurrency.decimals}
-                //   symbol={nativeCurrency.symbol}
-                // />
                 <Text ml={3}>{`$${totalUsdValue}`}</Text>
               ) : (
                 "*****"
@@ -275,7 +299,7 @@ export const AccountInfoHeader = ({
         {/* Action Item */}
         <ActionPanel chainMode={chainMode} />
       </Box>
-      {!!sendingAleoTx && (
+      {showSendingAleo && (
         <Flex
           bgColor={"green.50"}
           p={2}
@@ -285,7 +309,11 @@ export const AccountInfoHeader = ({
           mt={2}
           mx={6}
           onClick={() => {
-            navigate(`/token_detail/${InnerChainUniqueId.ALEO_MAINNET}`);
+            if (aleoAccountAddress) {
+              navigate(
+                `/token_detail/${InnerChainUniqueId.ALEO_MAINNET}/${aleoAccountAddress}`,
+              );
+            }
           }}
         >
           <IconLoading

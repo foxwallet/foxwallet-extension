@@ -40,7 +40,10 @@
       "dupAccountName": "Yinelenen hesap adı",
       "delete": "Cüzdanı sil",
       "deleteRemind": "Yalnızca çekirdek ifade veya özel anahtar kullanılarak geri yüklenebileceği için lütfen cüzdanın düzgün şekilde yedeklendiğinden emin olun."
-    }
+    },
+    "allNetworks": "TÜM",
+    "allEVMNetworks": "Tüm EVM ağları",
+    "initWallet": "Cüzdanı başlat, lütfen bekleyin"
   },
   "Onboard": {
     "Home": {
@@ -50,7 +53,8 @@
     "Upgrade": {
       "reminderTips": "Mevcut tarayıcı sürümü çok eski. FoxWallet eklenti cüzdanını kullanmak için lütfen en son sürüme yükseltin.",
       "upgradeBtn": "Güncelleme"
-    }
+    },
+    "defaultWalletName": "Cüzdan-"
   },
   "Agreement": {
     "content1": "FoxWallet'i kabul ediyorum",
@@ -99,7 +103,15 @@
     "remind": "Hatırlatmak",
     "account": "Hesap",
     "ok": "TAMAM",
-    "wrongPassword": "yanlış parola"
+    "wrongPassword": "yanlış parola",
+    "noSearchResult": "Arama Sonucu Yok",
+    "pleaseWait": "Lütfen bekleyin",
+    "copy": "Kopya",
+    "reminder": "Hatırlatma",
+    "success": "Başarı",
+    "failed": "Arızalı",
+    "pending": "Askıda olması",
+    "loading": "Yükleme"
   },
   "Send": {
     "title": "Göndermek",
@@ -140,18 +152,25 @@
     "feeHint": "Gaz ücretini ödemek için kamu bakiyesini veya aşağıdaki özel kayıtlardan herhangi birini kullanabilirsiniz.",
     "sendingAleoTx": "Aleo işlemi gönderiliyor",
     "insufficientBalance": "Yetersiz bakiye",
-    "insufficientFee": "Ücret ödemek için yeterli bakiye yok"
+    "insufficientFee": "Ücret ödemek için yeterli bakiye yok",
+    "next": "Sonraki",
+    "value": "Değer",
+    "invalidAmount": "Geçersiz miktar",
+    "processing": "İşlem işliyor, lütfen bekleyin.",
+    "sendingAleoHint": "Devam eden bir işleminiz var, lütfen bekleyin."
   },
   "PrivateKey": {
     "title": "Özel anahtar",
     "enterPlaceholder": "Özel anahtarı girin",
     "backupTips1": "Lütfen onu güvenli bir yerde saklayın.",
-    "backupTips2": "Cüzdanınızı kurtarmanın tek yolu tohum cümlesi veya özel anahtardır. Kaybedildikten sonra geri getirilemez. Bunları ekran görüntüleri veya sosyal medya aracılığıyla kaydetmeyin."
+    "backupTips2": "Cüzdanınızı kurtarmanın tek yolu tohum cümlesi veya özel anahtardır. Kaybedildikten sonra geri getirilemez. Bunları ekran görüntüleri veya sosyal medya aracılığıyla kaydetmeyin.",
+    "coinType": "Madeni para tipi",
+    "selectCoinType": "Para Türünü Seçin"
   },
   "Receive": {
     "title": "Almak",
     "scanToTransfer": "Aktarmak için tarayın",
-    "onlyTips": "Yalnızca ALEO ile ilgili varlıkları destekleyin",
+    "onlyTips": "Yalnızca {{symbol}} ile ilgili varlıkları destekleyin",
     "walletAddr": "Cüzdan Adresi"
   },
   "Setting": {
@@ -162,17 +181,35 @@
     "settings": "Ayarlar",
     "account": "Hesap",
     "switchWallet": "Cüzdanı Değiştir",
-    "tutorial": "öğretici"
+    "tutorial": "öğretici",
+    "networks": "Ağlar",
+    "contacts": "Kontaklar",
+    "connectedSites": "Bağlı Siteler",
+    "resetApplication": "Uygulama Sıfırla"
   },
   "Error": {
-    "invalidPassword": "Geçersiz şifre"
+    "invalidPassword": "Geçersiz şifre",
+    "invalidAddress": "Geçersiz adres",
+    "invalidPrivateKey": "Geçersiz Özel Anahtar"
   },
   "TokenDetail": {
     "title": "Jeton Detayı",
     "balance": "Denge",
     "tx_records": "İşlem Kayıtları",
     "empty_tx": "İşlem kaydı yok",
-    "jump_explorer": "Kaşif"
+    "jump_explorer": "Kaşif",
+    "myAddress": "Benim Adresim",
+    "public": "Halk",
+    "private": "Özel",
+    "total": "Toplam",
+    "token_transfer": "Jeton transferi",
+    "send": "Göndermek",
+    "contract_call": "Akıllı sözleşmeyi arayın",
+    "token_approve": "Jeton Onay",
+    "bridge": "Köprü",
+    "receive": "Almak",
+    "copyContractAddressMsg": "Bu, jetonun sözleşme adresi, adres almayan, bu adrese aktarmayın.",
+    "failed": "Arızalı"
   },
   "Language": {
     "title": "Dil"
@@ -196,7 +233,8 @@
     "noDecrypt": "Şifre çözme izni yok.",
     "uponRequest": "Dapp, kaydınızın şifresinin çözülmesini talep edebilir.",
     "autoDecrypt": "Dapp, istek olmadan kaydın şifresini çözebilir.",
-    "onChainHistory": "Dapp, zincir üzerindeki geçmişinize erişebilir."
+    "onChainHistory": "Dapp, zincir üzerindeki geçmişinize erişebilir.",
+    "addChain": "İstek ekle {{zincir}}"
   },
   "Currency": {
     "title": "Para birimi"
@@ -216,7 +254,15 @@
   },
   "Reset": {
     "remind": "Bu hesaba ilişkin tüm geçmişiniz sıfırlanacak ve ağ yeniden senkronize edilecek. Devam etmek için lütfen onaylayın.",
-    "account": "Hesabı sıfırla"
+    "account": "Hesabı sıfırla",
+    "explain": "Cüzdan kilidini açmayacak mı? Uygulama verilerinizi silebilir ve yeni bir cüzdan ayarlayabilirsiniz",
+    "resetApp": "Uygulama Sıfırla",
+    "confirmDelete": "Silinimi onaylayın",
+    "warningTitle": "Uygulama verilerinizi silmek istediğinden emin misiniz?",
+    "warningTitle2": "Sıfırlama uygulamasını onaylayın",
+    "warningContent1": "Cüzdanlarınız, hesaplarınız ve varlık verileriniz bu uygulamadan kalıcı olarak silinecektir.",
+    "warningContent2": "Bu cüzdanı sadece tohum ifadenizle geri yükleyebilirsiniz, Foxwallet tohum ifadenize sahip değildir.",
+    "warningStrong": "Bu eylem geri alınamaz."
   },
   "JoinSplit": {
     "title": "Katıl ve Böl",
@@ -248,6 +294,85 @@
   },
   "ManageToken": {
     "title": "Tokenı Yönet",
-    "searchHint": "Arama jetonu(Kimlik, Ad, Sembol)"
+    "searchHint": "Arama jetonu(Kimlik, Ad, Sembol)",
+    "pleaseWait": "Arama, bu biraz zaman alabilir"
+  },
+  "GasSetting": {
+    "fast": "Hızlı",
+    "middle": "Orta",
+    "slow": "Yavaş",
+    "selectGasFee": "Gaz Ücretini Seçin",
+    "advanced": "Gelişmiş ayar",
+    "maxPriorityFeeTitle": "Öncelik ücreti",
+    "maxPriorityFeeRemind": "Öncelik ücreti maksimum ücretten daha yüksek olmamalı",
+    "maxPriorityLowRemind": "Öncelik Ücreti Çok Düşük",
+    "maxPriorityHighRemind": "Öncelik Ücreti Çok Yüksek",
+    "maxFeeTitle": "Maksimum ücret",
+    "maxFeeHighRemind": "Maksimum ücret çok yüksek",
+    "maxFeeLowRemind": "Maksimum ücret çok düşük",
+    "gasLimitTitle": "Gaz sınırı"
+  },
+  "TransactionDetail": {
+    "hash": "Doğramak",
+    "from": "İtibaren",
+    "to": "İle",
+    "value": "Değer",
+    "time": "Zaman",
+    "nonce": "Nonce",
+    "confirmations": "Onaylar",
+    "network": "Ağ",
+    "gasFee": "Gaz ücreti",
+    "type": "Tip"
+  },
+  "Networks": {
+    "title": "Ağlar",
+    "searchHint": "Arama Ağları",
+    "manageNetworks": "Ağları Yönetin",
+    "networkDetail": "Ağ Detayları",
+    "networkName": "Ağ adı",
+    "networkNameHint": "Giriş Ağ Adı",
+    "symbol": "Para sembolü",
+    "rpc": "RPC URL",
+    "rpcHint": "Giriş RPC URL'si",
+    "chainId": "Zincir kimliği",
+    "manageWallet": "Cüzdanı yönet",
+    "defaultChainRemind": "Varsayılan zincir seçilmez",
+    "selectNetwork": "Ağ'ı seçin",
+    "selectToken": "Token'i seçin",
+    "pkWalletRemind": "Özel anahtar cüzdan yalnızca desteklenen ağları görüntüler. Tüm ağları kullanmak için bir tohum fazı cüzdanına geçin.",
+    "unavailable": "müsait olmayan",
+    "loading": "Yükleme ...",
+    "height": "Yükseklik: {{yükseklik}}",
+    "deleteWarning": "Silinmiş RPC yapılandırması kurtarılamıyor",
+    "invalidRpc": "RPC URL'si boş"
+  },
+  "Contacts": {
+    "title": "Kontaklar",
+    "searchHint": "Arama adresi",
+    "addContact": "İletişim Ekle",
+    "editContact": "Kişi Düzenle",
+    "contactInfo": "İletişim Bilgileri",
+    "enterContactName": "İletişim adı girin",
+    "enterAddress": "Adresi girin",
+    "confirmCreate": "Yaratmayı onaylayın",
+    "confirmUpdate": "Güncellemeyi onaylayın",
+    "selectNetwork": "Ağ'ı seçin",
+    "networkName": "Ağ adı",
+    "remove": "Kaldırmak",
+    "copyAddress": "Kopyala adresi",
+    "editAddress": "Adresi Düzenle",
+    "deleteHint": "Bu adresi kaldırmayı onaylayın?",
+    "alreadyExist": "Bu adres zaten kişi listenizde",
+    "invalidAddress": "Geçersiz adres"
+  },
+  "SelectToken": {
+    "title": "Token'i seçin",
+    "searchToken": "Jeton Ara",
+    "searchHint": "Ara jeton (sembol, adres)"
+  },
+  "Stake": {
+    "title": "Bahis",
+    "dialogTitle": "Uygulamayı İndir",
+    "dialogContent": "Staking özelliği uzatma cüzdanında mevcut değildir. $ALEO stake etmek için lütfen FoxWallet Uygulamasını indirmek üzere QR kodunu tarayın."
   }
 }

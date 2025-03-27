@@ -15,39 +15,55 @@ import { BottomUpDrawer } from "@/components/Custom/BottomUpDrawer";
 import { useTranslation } from "react-i18next";
 import { IconCopy, IconSearch, IconMore } from "@/components/Custom/Icon";
 import { useDebounce } from "use-debounce";
-import { type OneMatchAccount } from "@/scripts/background/store/vault/types/keyring";
-import { useGroupAccount } from "@/hooks/useGroupAccount";
+import { type OneMatchGroupAccount } from "@/scripts/background/store/vault/types/keyring";
 import MiddleEllipsisText from "@/components/Custom/MiddleEllipsisText";
 import Hover from "@/components/Custom/Hover";
-import { useChainMode } from "@/hooks/useChainMode";
 import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
 import { useSearchNetworks } from "@/hooks/useSearchNetworks";
 import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
 import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
+import { useUserSelectedChains } from "@/hooks/useUserSelectedChains";
 
 interface Props {
   isOpen: boolean;
+  account?: OneMatchGroupAccount;
   onCancel: () => void;
   onConfirm: () => void;
 }
 
 export type ChainItemProps = {
   item: ChainBaseConfig;
-  onCopyAddress: (acc: OneMatchAccount) => void;
+  onCopyAddress: (address: string) => void;
+  account?: OneMatchGroupAccount;
   hasMore?: boolean;
   onMore?: (config: ChainBaseConfig) => void;
 };
 
 export const CopyAddressChainItem = (props: ChainItemProps) => {
-  const { onCopyAddress, item, hasMore = false, onMore } = props;
-  const { getMatchAccountsWithUniqueId } = useGroupAccount();
-  const selectedAccount = getMatchAccountsWithUniqueId(item.uniqueId)[0];
+  const {
+    onCopyAddress,
+    item,
+    hasMore = false,
+    onMore,
+    account: groupAccount,
+  } = props;
+
+  const address = useMemo(() => {
+    const accs = groupAccount?.group.accounts;
+    if (accs && accs?.length > 0) {
+      const acc = accs.find((a) => {
+        return a.coinType === item.coinType;
+      });
+      return acc?.address ?? "";
+    }
+    return "";
+  }, [groupAccount, item]);
+
   return (
     <Flex
       w={"full"}
       h={"60px"}
       align={"center"}
-      cursor={"pointer"}
       borderRadius={"4px"}
       borderWidth={"1px"}
       borderColor={"#e6e8ec"}
@@ -71,7 +87,7 @@ export const CopyAddressChainItem = (props: ChainItemProps) => {
         <Text fontSize={"small"}>{item.chainName}</Text>
         <Hover
           onClick={() => {
-            onCopyAddress(selectedAccount);
+            onCopyAddress(address);
           }}
           bg={"#f9f9f9"}
           borderRadius={"5px"}
@@ -84,10 +100,7 @@ export const CopyAddressChainItem = (props: ChainItemProps) => {
               color={"#777E90"}
               w={"full"}
             >
-              <MiddleEllipsisText
-                text={selectedAccount.account.address}
-                width={hasMore ? 230 : 260}
-              />
+              <MiddleEllipsisText text={address} width={hasMore ? 230 : 260} />
             </Flex>
             <IconCopy w={3} h={3} ml={1} />
           </Flex>
@@ -108,12 +121,12 @@ export const CopyAddressChainItem = (props: ChainItemProps) => {
 };
 
 const CopyAddressDrawer = (props: Props) => {
-  const { isOpen, onCancel, onConfirm } = props;
+  const { isOpen, onCancel, onConfirm, account } = props;
   const { t } = useTranslation();
   const { showToast } = useCopyToast();
-  const { availableChains } = useChainMode();
   const [searchStr, setSearchStr] = useState("");
   const [debounceSearchStr] = useDebounce(searchStr, 500);
+  const { selectedChainsWithoutAll } = useUserSelectedChains();
 
   const onKeywordChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -125,17 +138,17 @@ const CopyAddressDrawer = (props: Props) => {
 
   const { searchRes, searching: loading } = useSearchNetworks(
     searchStr,
-    availableChains,
+    selectedChainsWithoutAll,
   );
 
   const displayChains = useMemo(() => {
-    return debounceSearchStr ? searchRes : availableChains;
-  }, [debounceSearchStr, availableChains, searchRes]);
+    return debounceSearchStr ? searchRes : selectedChainsWithoutAll;
+  }, [debounceSearchStr, selectedChainsWithoutAll, searchRes]);
 
   const onCopyAddress = useCallback(
-    async (data: OneMatchAccount) => {
+    async (address: string) => {
       onCancel?.();
-      await navigator.clipboard.writeText(data.account.address);
+      await navigator.clipboard.writeText(address);
       showToast();
     },
     [onCancel, showToast],
@@ -151,6 +164,7 @@ const CopyAddressDrawer = (props: Props) => {
                 item={item}
                 onCopyAddress={onCopyAddress}
                 key={item.uniqueId}
+                account={account}
                 // hasMore={true}
               />
             );
@@ -158,7 +172,7 @@ const CopyAddressDrawer = (props: Props) => {
         </VStack>
       </Box>
     );
-  }, [displayChains, onCopyAddress]);
+  }, [account, displayChains, onCopyAddress]);
 
   return (
     <BottomUpDrawer

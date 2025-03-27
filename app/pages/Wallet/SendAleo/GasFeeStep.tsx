@@ -15,7 +15,10 @@ import {
 } from "core/coins/ALEO/constants";
 import { AleoFeeMethod } from "core/coins/ALEO/types/FeeMethod";
 import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
-import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
+import {
+  AleoRecordMethod,
+  AleoTransferMethod,
+} from "core/coins/ALEO/types/TransferMethod";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { type AleoGasFee } from "core/types/GasFee";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -24,6 +27,7 @@ import { useBalance } from "@/hooks/useBalance";
 import { type TokenV2 } from "core/types/Token";
 import { type AleoService } from "core/coins/ALEO/service/AleoService";
 import { type Balance } from "@/hooks/useAleoBalance";
+import { type InnerProgramId } from "core/coins/ALEO/types/ProgramId";
 
 interface GasFeeProps {
   receiverAddress: string;
@@ -110,7 +114,10 @@ export const GasFeeStep = (props: GasFeeProps) => {
       try {
         const { baseFee, priorityFee } = await (
           coinService as AleoService
-        ).getGasFee(token.programId ?? NATIVE_TOKEN_PROGRAM_ID, method);
+        ).getGasFee(
+          (token.programId ?? NATIVE_TOKEN_PROGRAM_ID) as InnerProgramId,
+          method,
+        );
         setFeeInfo({ baseFee, priorityFee });
       } catch (err) {
         setFeeInfo(null);
@@ -271,6 +278,12 @@ export const GasFeeStep = (props: GasFeeProps) => {
       },
       [AleoTransferMethod.PRIVATE_TO_PUBLIC]: {
         title: t("Send:privateToPublic"),
+      },
+      [AleoRecordMethod.SPLIT]: {
+        title: t("JoinSplit:split"),
+      },
+      [AleoRecordMethod.JOIN]: {
+        title: t("JoinSplit:join"),
       },
     };
   }, [t]);

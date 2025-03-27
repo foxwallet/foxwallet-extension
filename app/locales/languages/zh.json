@@ -40,7 +40,10 @@
       "dupAccountName": "帐户名重复",
       "delete": "删除钱包",
       "deleteRemind": "请确保钱包已正确备份，因为只能使用种子短语或私钥来恢复钱包。"
-    }
+    },
+    "allNetworks": "全部",
+    "allEVMNetworks": "所有EVM网络",
+    "initWallet": "初始化钱包，请等待"
   },
   "Onboard": {
     "Home": {
@@ -50,7 +53,8 @@
     "Upgrade": {
       "reminderTips": "当前浏览器版本过旧，请升级至最新版本以使用 FoxWallet。",
       "upgradeBtn": "升级"
-    }
+    },
+    "defaultWalletName": "钱包-"
   },
   "Agreement": {
     "content1": "我同意 FoxWallet 的 ",
@@ -74,7 +78,15 @@
     "remind": "提醒",
     "account": "帐户",
     "ok": "好的",
-    "wrongPassword": "密码错误"
+    "wrongPassword": "密码错误",
+    "noSearchResult": "没有搜索结果",
+    "pleaseWait": "请稍等",
+    "copy": "复制",
+    "reminder": "提醒",
+    "success": "成功",
+    "failed": "失败",
+    "pending": "进行中",
+    "loading": "加载中"
   },
   "Password": {
     "title": "密码",
@@ -112,7 +124,7 @@
     "balance": "金额",
     "amount": "数量",
     "amountPlaceholder": "输入金额",
-    "available": "可用的",
+    "available": "可用余额",
     "privateRecordExplain": "由于Aleo的实现方式，单次转账的最大金额受到所使用记录的金额的限制。",
     "payPrivateRecord": "使用隐私记录付款。",
     "noRecord": "没有可转账的记录。",
@@ -133,46 +145,71 @@
     "selectTransferMethod": "选择转账方式",
     "privateRecord": "隐私记录",
     "publicBalance": "公开余额",
-    "gasFee": "手续费",
+    "gasFee": "矿工费",
     "selectFeeMethod": "付手续费方式",
     "publicFee": "公共余额支付费用",
     "privateFee": "隐私记录支付费用",
     "feeHint": "您可以使用公共余额或以下任何隐私记录来支付手续费。",
     "sendingAleoTx": "正在发送aleo交易",
     "insufficientBalance": "余额不足",
-    "insufficientFee": "余额不足以支付费用"
+    "insufficientFee": "余额不足以支付 Gas 费",
+    "next": "下一步",
+    "value": "金额",
+    "invalidAmount": "无效的金额",
+    "processing": "交易正在处理，请等待。",
+    "sendingAleoHint": "您正在进行交易，请等待。"
   },
   "PrivateKey": {
     "title": "私钥",
     "enterPlaceholder": "输入私钥",
     "backupTips1": "请将其保存在安全的地方。",
-    "backupTips2": "助记词或私钥是恢复钱包的唯一方法。一旦丢失，将无法找回。不要通过屏幕截图或社交媒体保存它们。"
+    "backupTips2": "助记词或私钥是恢复钱包的唯一方法。一旦丢失，将无法找回。不要通过屏幕截图或社交媒体保存它们。",
+    "coinType": "地址类型",
+    "selectCoinType": "选择地址类型"
   },
   "Receive": {
     "title": "接收",
-    "scanToTransfer": "扫描转账",
-    "onlyTips": "仅支持ALEO相关资产",
+    "scanToTransfer": "扫码转账",
+    "onlyTips": "仅支持 {{symbol}} 相关资产",
     "walletAddr": "钱包地址"
   },
   "Setting": {
     "title": "设置",
     "guide": "指导",
     "community": "社区",
-    "securityTips": "安全提示",
+    "securityTips": "安全建议",
     "settings": "设置",
-    "account": "帐户",
+    "account": "管理帐户",
     "switchWallet": "切换钱包",
-    "tutorial": "教程"
+    "tutorial": "教程",
+    "networks": "管理网络",
+    "contacts": "地址簿",
+    "connectedSites": "已连接网站",
+    "resetApplication": "重置应用"
   },
   "Error": {
-    "invalidPassword": "无效的密码"
+    "invalidPassword": "无效的密码",
+    "invalidAddress": "无效的地址",
+    "invalidPrivateKey": "无效的私钥"
   },
   "TokenDetail": {
     "title": "代币详情",
     "balance": "余额",
     "tx_records": "交易记录",
     "empty_tx": "无交易记录",
-    "jump_explorer": "浏览器"
+    "jump_explorer": "浏览器",
+    "myAddress": "我的地址",
+    "public": "公开",
+    "private": "隐私",
+    "total": "全部的",
+    "token_transfer": "Token 转账",
+    "send": "发送",
+    "contract_call": "智能合约",
+    "token_approve": "Token 授权",
+    "bridge": "桥",
+    "receive": "收款",
+    "copyContractAddressMsg": "此地址为当前Token的合约地址，非收币地址，请勿向此地址进行转账。",
+    "failed": "失败"
   },
   "Language": {
     "title": "语言"
@@ -217,7 +254,15 @@
   },
   "Reset": {
     "remind": "您此帐户的所有历史记录都将被重置，网络将重新同步。请确认后再继续。",
-    "account": "重置账户"
+    "account": "重置账户",
+    "explain": "无法解锁？您可以清除应用数据并创建新钱包",
+    "resetApp": "重置应用",
+    "confirmDelete": "确认删除",
+    "warningTitle": "您确定要删除所有的数据吗？",
+    "warningTitle2": "确认重置",
+    "warningContent1": "您的钱包、账户和资产数据将从此应用中永久删除。",
+    "warningContent2": "你只能使用助记词还原这个钱包，FoxWallet 不存储有你的助记词和私钥信息。",
+    "warningStrong": "此操作无法撤销。"
   },
   "JoinSplit": {
     "title": "合并&拆分",
@@ -249,6 +294,85 @@
   },
   "ManageToken": {
     "title": "管理代币",
-    "searchHint": "搜索（ID、名称、符号）"
+    "searchHint": "搜索（ID、名称、符号）",
+    "pleaseWait": "搜索，这可能需要一段时间"
+  },
+  "GasSetting": {
+    "fast": "快速",
+    "middle": "中等",
+    "slow": "缓慢",
+    "selectGasFee": "选择 Gas Fee",
+    "advanced": "高级设置",
+    "maxPriorityFeeTitle": "Priority Fee",
+    "maxPriorityFeeRemind": "Priority Fee 不可超过 Max Fee",
+    "maxPriorityLowRemind": "Priority Fee 太低",
+    "maxPriorityHighRemind": "Priority Fee 太高",
+    "maxFeeTitle": "Max Fee",
+    "maxFeeHighRemind": "Max Fee 太高",
+    "maxFeeLowRemind": "Max Fee 太低",
+    "gasLimitTitle": "Gas Limit"
+  },
+  "TransactionDetail": {
+    "hash": "Hash",
+    "from": "从",
+    "to": "到",
+    "value": "金额",
+    "time": "时间",
+    "nonce": "nonce",
+    "confirmations": "确认",
+    "network": "网络",
+    "gasFee": "Gas Fee",
+    "type": "类型"
+  },
+  "Networks": {
+    "title": "网络",
+    "searchHint": "搜索网络",
+    "manageNetworks": "管理网络",
+    "networkDetail": "网络详情",
+    "networkName": "网络名称",
+    "networkNameHint": "输入网络名称",
+    "symbol": "货币符号",
+    "rpc": "RPC URL",
+    "rpcHint": "输入RPC URL",
+    "chainId": "连锁ID",
+    "manageWallet": "管理钱包",
+    "defaultChainRemind": "默认链不能取消勾选",
+    "selectNetwork": "选择网络",
+    "selectToken": "选择 Token",
+    "pkWalletRemind": "私钥钱包仅显示受支持的网络。要使用所有网络，请切换到助记词钱包。",
+    "unavailable": "不可用",
+    "loading": "加载中...",
+    "height": "高度：{{height}}",
+    "deleteWarning": "删除的RPC配置无法恢复",
+    "invalidRpc": "RPC URL为空"
+  },
+  "Contacts": {
+    "title": "地址簿",
+    "searchHint": "搜索地址",
+    "addContact": "添加联系人",
+    "editContact": "编辑联系人",
+    "contactInfo": "联系人信息",
+    "enterContactName": "输入联系人名称",
+    "enterAddress": "输入地址",
+    "confirmCreate": "确认创建",
+    "confirmUpdate": "确认更新",
+    "selectNetwork": "选择网络",
+    "networkName": "网络名称",
+    "remove": "删除",
+    "copyAddress": "复制地址",
+    "editAddress": "编辑地址",
+    "deleteHint": "确认删除此联系人？",
+    "alreadyExist": "此地址已经在您的联系人列表中",
+    "invalidAddress": "无效的地址"
+  },
+  "SelectToken": {
+    "title": "选择 Token",
+    "searchToken": "搜索 Token",
+    "searchHint": "搜索 Token（符号，地址）"
+  },
+  "Stake": {
+    "title": "质押",
+    "dialogTitle": "下载APP",
+    "dialogContent": "扩展钱包中不支持质押功能。质押$ALEO，请扫描二维码下载FoxWallet APP。"
   }
 }

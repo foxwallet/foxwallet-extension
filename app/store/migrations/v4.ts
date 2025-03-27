@@ -1,6 +1,8 @@
-import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { type RootState } from "../store";
 import { type MultiChainModel } from "../multiChain";
+import { DEFAULT_USER_SELECTED_CHAINS } from "core/constants/chain";
+import { WalletType } from "@/scripts/background/store/vault/types/keyring";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 
 export const migrationV4 = (state: RootState): RootState => {
   try {
@@ -13,9 +15,15 @@ export const migrationV4 = (state: RootState): RootState => {
     };
     const walletIds = Object.keys(allWalletInfo);
     walletIds.forEach((walletId) => {
-      multiChain.walletChainMap[walletId] = {
-        userSelectedChains: [InnerChainUniqueId.ALEO_MAINNET],
-      };
+      if (allWalletInfo[walletId].walletType === WalletType.HD) {
+        multiChain.walletChainMap[walletId] = {
+          userSelectedChains: [...DEFAULT_USER_SELECTED_CHAINS],
+        };
+      } else {
+        multiChain.walletChainMap[walletId] = {
+          userSelectedChains: [InnerChainUniqueId.ALEO_MAINNET],
+        };
+      }
     });
 
     const newAccountModel = {

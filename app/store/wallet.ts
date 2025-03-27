@@ -41,7 +41,7 @@ export const wallet = createModel<RootModel>()({
   name: "wallet",
   state: defaultWallet,
   reducers: {
-    _resetWallet() {
+    _reset() {
       return defaultWallet;
     },
     _updateSelectedChain(

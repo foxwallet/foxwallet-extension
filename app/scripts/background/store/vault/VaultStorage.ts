@@ -1,5 +1,5 @@
 import { CoinType, CoinTypeV1 } from "core/types";
-import { walletStorageInstance } from "../../../../common/utils/localstorage";
+import { walletStorageInstance } from "@/common/utils/localstorage";
 import {
   AccountMethod,
   AccountWithViewKey,
@@ -22,13 +22,10 @@ import { VaultV1 } from "./types/keyringV1";
 import { Mutex } from "async-mutex";
 import { nanoid } from "nanoid";
 import {
-  AccountSettingStorage,
   accountSettingStorage,
 } from "../account/AccountStorage";
 import { AccountSettingStorageV1 } from "../account/AccountStorageV1";
 import { DEFAULT_ALEO_ACCOUNT_OPTION } from "core/coins/ALEO/config/derivation";
-import { PopupServerClient } from "@/common/utils/client";
-import { getClients } from "@/hooks/useClient";
 import { keyringManager } from "@/scripts/background";
 
 const mutex = new Mutex();
@@ -53,7 +50,7 @@ export class VaultStorage {
     const store: Vault = {
       cipher,
       keyring: {
-        version: 2,
+        version: vaultVersion,
       },
     };
     return await this.setVault(store);
@@ -336,7 +333,11 @@ export class VaultStorage {
     });
   }
 
-  async deleteWallet(walletId: string): Promise<void> {
+  async resetWallet(): Promise<void> {
+    return await this.setKeyring({});
+  }
+
+    async deleteWallet(walletId: string): Promise<void> {
     const keyring = (await this.getKeyring()) || {};
     const hdWallets = keyring[WalletType.HD] || [];
     const simpleWallets = keyring[WalletType.SIMPLE] || [];

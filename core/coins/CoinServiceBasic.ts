@@ -368,4 +368,8 @@ export abstract class CoinServiceBasic {
     );
     return undefined;
   }
+
+  validateContractAddress(contract: string): boolean {
+    return this.validateAddress(contract);
+  }
 }

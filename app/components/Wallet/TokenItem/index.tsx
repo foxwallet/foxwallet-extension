@@ -1,18 +1,91 @@
-import { type ChakraProps, Flex, Image, Text } from "@chakra-ui/react";
-import { TokenNum } from "../TokenNum";
-import { useCallback, useMemo } from "react";
-import { usePopupSelector } from "@/hooks/useStore";
-import Hover from "@/components/Custom/Hover";
-import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import {
-  BETA_STAKING_PROGRAM_ID,
-  NATIVE_TOKEN_PROGRAM_ID,
-} from "core/coins/ALEO/constants";
-import { type TokenV2 } from "core/types/Token";
+  type ChakraProps,
+  Flex,
+  Image,
+  type ImageProps,
+  Text,
+} from "@chakra-ui/react";
+import { TokenNum } from "../TokenNum";
+import { useCallback, useMemo, useState } from "react";
+import { usePopupSelector } from "@/hooks/useStore";
+import { type ChainUniqueId } from "core/types/ChainUniqueId";
+import { AssetType, type TokenV2 } from "core/types/Token";
 import { IconTokenPlaceHolder } from "@/components/Custom/Icon";
-import { useBalance } from "@/hooks/useBalance";
 import { commaCurrency, commaInteger } from "@/common/utils/comma";
 import { formatPrice } from "@/common/utils/num";
+import { useBalance } from "@/hooks/useBalance";
+import { useCoinService } from "@/hooks/useCoinService";
+
+export const TokenImage = ({
+  token,
+  uniqueId,
+  imageStyle,
+}: {
+  token: TokenV2;
+  uniqueId: ChainUniqueId;
+  imageStyle?: ImageProps;
+}) => {
+  const [tokenImageOK, setTokenImageOK] = useState(true);
+  const { nativeCurrency } = useCoinService(uniqueId);
+
+  return token.type === AssetType.COIN ? (
+    <Image
+      src={nativeCurrency.logo}
+      w={8}
+      h={8}
+      borderRadius={16}
+      {...imageStyle}
+    />
+  ) : token.icon && tokenImageOK ? (
+    <Image
+      src={token.icon}
+      w={8}
+      h={8}
+      borderRadius={16}
+      onError={() => {
+        setTokenImageOK(false);
+      }}
+      {...imageStyle}
+    />
+  ) : (
+    <IconTokenPlaceHolder w={8} h={8} {...imageStyle} />
+  );
+};
+
+const TokenImageWithChainLogo = ({
+  token,
+  uniqueId,
+  showChainLogo,
+  imageStyle,
+}: {
+  token: TokenV2;
+  uniqueId: ChainUniqueId;
+  showChainLogo: boolean;
+  imageStyle?: ImageProps;
+}) => {
+  const { chainConfig } = useCoinService(uniqueId);
+
+  return (
+    <Flex w={9} h={9} position="relative">
+      <TokenImage token={token} uniqueId={uniqueId} imageStyle={imageStyle} />
+      {showChainLogo && (
+        <Flex
+          justify={"center"}
+          alignItems={"center"}
+          bg={"white"}
+          w={4}
+          h={4}
+          bottom={0}
+          right={0}
+          position={"absolute"}
+          borderRadius={8}
+        >
+          <Image src={chainConfig.logo} w={3.5} h={3.5} borderRadius={8} />
+        </Flex>
+      )}
+    </Flex>
+  );
+};
 
 export const TokenItemWithBalance = ({
   uniqueId,
@@ -22,7 +95,9 @@ export const TokenItemWithBalance = ({
   hover,
   leftElement,
   showPriceAndChange = true,
-  showBalnaceAndValue = true,
+  showBalanceAndValue = true,
+  showChainLogo = true,
+  style,
 }: {
   uniqueId: ChainUniqueId;
   address: string;
@@ -31,11 +106,16 @@ export const TokenItemWithBalance = ({
   leftElement?: React.ReactNode;
   hover?: boolean;
   showPriceAndChange?: boolean;
-  showBalnaceAndValue?: boolean;
+  showBalanceAndValue?: boolean;
+  showChainLogo?: boolean;
+  style?: ChakraProps;
 }) => {
   const showBalanceGlobal = usePopupSelector(
     (state) => state.accountV2.showBalance,
   );
+
+  const { balance } = useBalance({ uniqueId, address, token });
+  // console.log("      balance", balance);
 
   const { price, change, value } = token;
   const priceStr = useMemo(() => {
@@ -63,8 +143,6 @@ export const TokenItemWithBalance = ({
     return `$${commaCurrency(value)}`;
   }, [value]);
 
-  // const { balance } = useBalance({ uniqueId, address, token });
-
   const onTokenDetail = useCallback(() => {
     onClick(token);
   }, [onClick, token]);
@@ -80,14 +158,15 @@ export const TokenItemWithBalance = ({
       _hover={{ bg: hover ? "gray.50" : undefined }}
       cursor={"pointer"}
       w={"full"}
+      {...style}
     >
       <Flex align={"center"}>
         {leftElement}
-        {token.icon ? (
-          <Image src={token.icon} w={8} h={8} borderRadius={16} />
-        ) : (
-          <IconTokenPlaceHolder w={8} h={8} />
-        )}
+        <TokenImageWithChainLogo
+          token={token}
+          uniqueId={uniqueId}
+          showChainLogo={showChainLogo}
+        />
         <Flex flexDir={"column"} ml={2.5}>
           <Text fontSize={13} fontWeight={600}>
             {token.symbol}
@@ -102,7 +181,7 @@ export const TokenItemWithBalance = ({
           )}
         </Flex>
       </Flex>
-      {showBalnaceAndValue &&
+      {showBalanceAndValue &&
         (showBalanceGlobal ? (
           <Flex
             direction={"column"}
@@ -111,7 +190,7 @@ export const TokenItemWithBalance = ({
             // bg={"yellow"}
           >
             <TokenNum
-              amount={token?.total}
+              amount={balance?.total ?? token?.total}
               decimals={token.decimals}
               symbol={""}
             />
@@ -165,7 +244,7 @@ export const TokenItem = ({
           <Image src={token.icon} w={8} h={8} borderRadius={16} />
         ) : (
           <IconTokenPlaceHolder w={8} h={8} />
-        )}{" "}
+        )}
         <Flex flexDir={"column"} ml={2.5}>
           <Text fontSize={13} fontWeight={600}>
             {token.symbol}

@@ -1,4 +1,3 @@
-import { Token } from "./Token";
 import { type AleoTxStatus } from "./Transaction";
 
 export enum AleoHistoryType {

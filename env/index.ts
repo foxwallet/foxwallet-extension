@@ -146,6 +146,28 @@ export const ReserveChainConfigs = {
       JSON.parse(import.meta.env.VITE_BLAST_BLOCKBOOK_LIST) as string[],
     ),
   },
+  bsquared: {
+    rpcList: shuffle(
+      JSON.parse(import.meta.env.VITE_BSQUARED_RPC_LIST) as string[],
+    ),
+    blockscoutApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_BSQUARED_BLOCKSCOUT_LIST) as string[],
+    ),
+    blockbookApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_BSQUARED_BLOCKBOOK_LIST) as string[],
+    ),
+  },
+  caga: {
+    rpcList: shuffle(
+      JSON.parse(import.meta.env.VITE_CAGA_RPC_LIST) as string[],
+    ),
+    blockscoutApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_CAGA_BLOCKSCOUT_LIST) as string[],
+    ),
+    blockbookApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_CAGA_BLOCKBOOK_LIST) as string[],
+    ),
+  },
   celo: {
     rpcList: shuffle(
       JSON.parse(import.meta.env.VITE_CELO_RPC_LIST) as string[],
@@ -157,6 +179,37 @@ export const ReserveChainConfigs = {
       JSON.parse(import.meta.env.VITE_CELO_BLOCKBOOK_LIST) as string[],
     ),
   },
+  core: {
+    rpcList: shuffle(
+      JSON.parse(import.meta.env.VITE_CORE_RPC_LIST) as string[],
+    ),
+    blockscoutApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_CORE_BLOCKSCOUT_LIST) as string[],
+    ),
+    blockbookApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_CORE_BLOCKBOOK_LIST) as string[],
+    ),
+  },
+  cro: {
+    rpcList: shuffle(JSON.parse(import.meta.env.VITE_CRO_RPC_LIST) as string[]),
+    blockscoutApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_CRO_BLOCKSCOUT_LIST) as string[],
+    ),
+    blockbookApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_CRO_BLOCKBOOK_LIST) as string[],
+    ),
+  },
+  "eos-evm": {
+    rpcList: shuffle(
+      JSON.parse(import.meta.env.VITE_EOS_EVM_RPC_LIST) as string[],
+    ),
+    blockscoutApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_EOS_EVM_BLOCKSCOUT_LIST) as string[],
+    ),
+    blockbookApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_EOS_EVM_BLOCKBOOK_LIST) as string[],
+    ),
+  },
   bnb: {
     rpcList: shuffle(JSON.parse(import.meta.env.VITE_BNB_RPC_LIST) as string[]),
     blockscoutApiList: shuffle(
@@ -164,6 +217,103 @@ export const ReserveChainConfigs = {
     ),
     blockbookApiList: shuffle(
       JSON.parse(import.meta.env.VITE_BNB_BLOCKBOOK_LIST) as string[],
+    ),
+  },
+  fantom: {
+    rpcList: shuffle(
+      JSON.parse(import.meta.env.VITE_FANTOM_RPC_LIST) as string[],
+    ),
+    blockscoutApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_FANTOM_BLOCKSCOUT_LIST) as string[],
+    ),
+    blockbookApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_FANTOM_BLOCKBOOK_LIST) as string[],
+    ),
+  },
+  gnosis: {
+    rpcList: shuffle(
+      JSON.parse(import.meta.env.VITE_GNOSIS_RPC_LIST) as string[],
+    ),
+    blockscoutApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_GNOSIS_BLOCKSCOUT_LIST) as string[],
+    ),
+    blockbookApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_GNOSIS_BLOCKBOOK_LIST) as string[],
+    ),
+  },
+  inevm: {
+    rpcList: shuffle(
+      JSON.parse(import.meta.env.VITE_INEVM_RPC_LIST) as string[],
+    ),
+    blockscoutApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_INEVM_BLOCKSCOUT_LIST) as string[],
+    ),
+    blockbookApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_INEVM_BLOCKBOOK_LIST) as string[],
+    ),
+  },
+  joc: {
+    rpcList: shuffle(JSON.parse(import.meta.env.VITE_JOC_RPC_LIST) as string[]),
+    blockscoutApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_JOC_BLOCKSCOUT_LIST) as string[],
+    ),
+    blockbookApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_JOC_BLOCKBOOK_LIST) as string[],
+    ),
+  },
+  kava: {
+    rpcList: shuffle(
+      JSON.parse(import.meta.env.VITE_KAVA_RPC_LIST) as string[],
+    ),
+    blockscoutApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_KAVA_BLOCKSCOUT_LIST) as string[],
+    ),
+    blockbookApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_KAVA_BLOCKBOOK_LIST) as string[],
+    ),
+  },
+  linea: {
+    rpcList: shuffle(
+      JSON.parse(import.meta.env.VITE_LINEA_RPC_LIST) as string[],
+    ),
+    blockscoutApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_LINEA_BLOCKSCOUT_LIST) as string[],
+    ),
+    blockbookApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_LINEA_BLOCKBOOK_LIST) as string[],
+    ),
+  },
+  lumia: {
+    rpcList: shuffle(
+      JSON.parse(import.meta.env.VITE_LUMIA_RPC_LIST) as string[],
+    ),
+    blockscoutApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_LUMIA_BLOCKSCOUT_LIST) as string[],
+    ),
+    blockbookApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_LUMIA_BLOCKBOOK_LIST) as string[],
+    ),
+  },
+  mantle: {
+    rpcList: shuffle(
+      JSON.parse(import.meta.env.VITE_MANTLE_RPC_LIST) as string[],
+    ),
+    blockscoutApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_MANTLE_BLOCKSCOUT_LIST) as string[],
+    ),
+    blockbookApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_MANTLE_BLOCKBOOK_LIST) as string[],
+    ),
+  },
+  morph: {
+    rpcList: shuffle(
+      JSON.parse(import.meta.env.VITE_MORPH_RPC_LIST) as string[],
+    ),
+    blockscoutApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_MORPH_BLOCKSCOUT_LIST) as string[],
+    ),
+    blockbookApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_MORPH_BLOCKBOOK_LIST) as string[],
     ),
   },
   polygon: {
@@ -224,6 +374,50 @@ export const ReserveChainConfigs = {
   "filecoin-evm": {
     rpcList: shuffle(
       JSON.parse(import.meta.env.VITE_FILECOIN_EVM_RPC_LIST) as string[],
+    ),
+  },
+  scroll: {
+    rpcList: shuffle(
+      JSON.parse(import.meta.env.VITE_SCROLL_RPC_LIST) as string[],
+    ),
+    blockscoutApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_SCROLL_BLOCKSCOUT_LIST) as string[],
+    ),
+    blockbookApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_SCROLL_BLOCKBOOK_LIST) as string[],
+    ),
+  },
+  taiko: {
+    rpcList: shuffle(
+      JSON.parse(import.meta.env.VITE_TAIKO_RPC_LIST) as string[],
+    ),
+    blockscoutApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_TAIKO_BLOCKSCOUT_LIST) as string[],
+    ),
+    blockbookApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_TAIKO_BLOCKBOOK_LIST) as string[],
+    ),
+  },
+  zchains: {
+    rpcList: shuffle(
+      JSON.parse(import.meta.env.VITE_ZCHAINS_RPC_LIST) as string[],
+    ),
+    blockscoutApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_ZCHAINS_BLOCKSCOUT_LIST) as string[],
+    ),
+    blockbookApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_ZCHAINS_BLOCKBOOK_LIST) as string[],
+    ),
+  },
+  "zksync-era": {
+    rpcList: shuffle(
+      JSON.parse(import.meta.env.VITE_ZKSYNC_ERA_RPC_LIST) as string[],
+    ),
+    blockscoutApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_ZKSYNC_ERA_BLOCKSCOUT_LIST) as string[],
+    ),
+    blockbookApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_ZKSYNC_ERA_BLOCKBOOK_LIST) as string[],
     ),
   },
   sepolia: {
