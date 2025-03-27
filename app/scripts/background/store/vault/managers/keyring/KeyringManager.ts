@@ -27,7 +27,7 @@ import {
   AddAccountProps,
   ImportPrivateKeyProps,
 } from "../../../../servers/IWalletServer";
-import initAleoWasm from "aleo_wasm";
+import initAleoWasm from "aleo_wasm_mainnet";
 import { ERROR_CODE } from "@/common/types/error";
 import { coinBasicFactory } from "core/coins/CoinBasicFactory";
 import { vaultVersion } from "@/scripts/background/store/vault/types/version";
