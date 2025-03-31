@@ -78,7 +78,7 @@ export default defineConfig(({ mode }) => ({
     react(),
     wasmPack([
       "./@provablehq/mainnet/aleo_wasm_mainnet",
-      "./@provablehq/testnet/aleo_wasm_testnet",
+      // "./@provablehq/testnet/aleo_wasm_testnet",
     ]),
     crx({ manifest }),
   ],
