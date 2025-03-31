@@ -76,7 +76,10 @@ export default defineConfig(({ mode }) => ({
       protocolImports: true,
     }),
     react(),
-    wasmPack(["./@aleohq/aleo_wasm"]),
+    wasmPack([
+      "./@provablehq/mainnet/aleo_wasm_mainnet",
+      // "./@provablehq/testnet/aleo_wasm_testnet",
+    ]),
     crx({ manifest }),
   ],
 }));

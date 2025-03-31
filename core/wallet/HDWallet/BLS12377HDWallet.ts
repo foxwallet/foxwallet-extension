@@ -11,7 +11,7 @@ import {
 import { getCoinDerivation } from "../../helper/CoinBasic";
 import { CoreError } from "../../types/Error";
 import { encryptStr } from "../../utils/encrypt";
-import init, { PrivateKey } from "aleo_wasm";
+import init, { PrivateKey } from "aleo_wasm_mainnet";
 import { DEFAULT_ALEO_ACCOUNT_OPTION } from "core/coins/ALEO/config/derivation";
 
 export class BLS12377HDWallet<T extends CoinType> implements BaseHDWallet<T> {

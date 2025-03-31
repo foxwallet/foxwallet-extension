@@ -21,7 +21,6 @@ dist-ssr
 
 coverage/
 **/target
-**/pkg
 **/pkg-parallel
 
 .env

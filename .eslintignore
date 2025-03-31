@@ -3,6 +3,7 @@
 **/node_modules/
 **/@aleohq/
 **/scripts/
+**/@provablehq/
 manifest.ts
 vite.config.ts
 public/injector.js

@@ -1,0 +1,4 @@
+[submodule "fox-aleo-sdk"]
+	path = fox-aleo-sdk
+	url = https://github.com/foxwallet/aleo_sdk.git
+	branch = fox/mainnet

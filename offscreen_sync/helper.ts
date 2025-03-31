@@ -1,4 +1,9 @@
-import { PrivateKey, RecordCiphertext, Future, ViewKey } from "aleo_wasm";
+import {
+  PrivateKey,
+  RecordCiphertext,
+  ViewKey,
+  FoxFuture,
+} from "aleo_wasm_mainnet";
 import { type FutureJSON } from "./aleo.di";
 
 export const parsePrivateKey = (privateKeyStr: string): PrivateKey => {
@@ -36,7 +41,7 @@ export const parseFuture = (futureStr?: string): FutureJSON | undefined => {
     return undefined;
   }
   try {
-    const future = Future.fromString(futureStr);
+    const future = FoxFuture.fromString(futureStr);
     const futureObj = JSON.parse(future.toJSON());
     return futureObj;
   } catch (err) {
