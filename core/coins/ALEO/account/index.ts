@@ -1,4 +1,4 @@
-import init, { PrivateKey, Address } from "aleo_wasm";
+import init, { PrivateKey, Address } from "aleo_wasm_mainnet";
 import { encode as bs58Encode, decode as bs58Decode } from "bs58";
 import { CoinBasic } from "../../CoinBasic";
 import { CoinType } from "core/types";

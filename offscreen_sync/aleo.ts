@@ -5,8 +5,8 @@ import {
   RecordPlaintext,
   PrivateKey,
   RecordCiphertext,
-  Future,
-} from "aleo_wasm";
+  FoxFuture,
+} from "aleo_wasm_mainnet";
 import { Measure, MeasureAsync } from "@/common/utils/measure";
 import { ALEO_SYNC_HEIGHT_SIZE } from "@/common/constants";
 import { shuffle } from "@/common/utils/array";
@@ -108,7 +108,7 @@ export class AleoWorker {
       return undefined;
     }
     try {
-      const future = Future.fromString(futureStr);
+      const future = FoxFuture.fromString(futureStr);
       const futureObj = JSON.parse(future.toJSON());
       return futureObj;
     } catch (err) {
@@ -175,7 +175,7 @@ export class AleoWorker {
   private computeTag(skTag: Field, commitment: string): string | undefined {
     try {
       const commitmentField = Field.fromString(commitment);
-      const tag = RecordPlaintext.tag(skTag, commitmentField);
+      const tag = RecordPlaintext.foxTag(skTag, commitmentField);
       return tag;
     } catch (err) {
       this.error("===> computeTag error: ", err);

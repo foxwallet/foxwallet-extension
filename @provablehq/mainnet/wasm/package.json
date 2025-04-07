@@ -1,0 +1,36 @@
+{
+  "name": "@provablehq/wasm-mainnet",
+  "version": "0.8.7",
+  "description": "SnarkVM WASM binaries with javascript bindings",
+  "collaborators": [
+    "The Provable Team"
+  ],
+  "license": "GPL-3.0",
+  "type": "module",
+  "main": "./index.js",
+  "browser": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": "./index.js",
+    "./worker.js": "./worker.js"
+  },
+  "files": [
+    "src",
+    "LICENSE.md",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ProvableHQ/sdk.git"
+  },
+  "keywords": [
+    "Aleo",
+    "Blockchain",
+    "Zero Knowledge",
+    "ZK"
+  ],
+  "bugs": {
+    "url": "https://github.com/ProvableHQ/sdk/issues"
+  },
+  "homepage": "https://github.com/ProvableHQ/sdk#readme"
+}
