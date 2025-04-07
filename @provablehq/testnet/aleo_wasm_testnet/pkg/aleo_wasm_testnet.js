@@ -252,6 +252,61 @@ function _assertClass(instance, klass) {
         throw new Error(`expected instance of ${klass.name}`);
     }
 }
+
+let stack_pointer = 128;
+
+function addBorrowedObject(obj) {
+    if (stack_pointer == 1) throw new Error('out of js stack');
+    heap[--stack_pointer] = obj;
+    return stack_pointer;
+}
+/**
+ * @param {string} value
+ * @returns {string}
+ */
+export function hashBHP256(value) {
+    let deferred3_0;
+    let deferred3_1;
+    try {
+        const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+        const ptr0 = passStringToWasm0(value, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.hashBHP256(retptr, ptr0, len0);
+        var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+        var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+        var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+        var r3 = getDataViewMemory0().getInt32(retptr + 4 * 3, true);
+        var ptr2 = r0;
+        var len2 = r1;
+        if (r3) {
+            ptr2 = 0; len2 = 0;
+            throw takeObject(r2);
+        }
+        deferred3_0 = ptr2;
+        deferred3_1 = len2;
+        return getStringFromWasm0(ptr2, len2);
+    } finally {
+        wasm.__wbindgen_add_to_stack_pointer(16);
+        wasm.__wbindgen_export_1(deferred3_0, deferred3_1, 1);
+    }
+}
+
+function passArray8ToWasm0(arg, malloc) {
+    const ptr = malloc(arg.length * 1, 1) >>> 0;
+    getUint8ArrayMemory0().set(arg, ptr / 1);
+    WASM_VECTOR_LEN = arg.length;
+    return ptr;
+}
+/**
+ * @param {URL} url
+ * @param {number} num_threads
+ * @returns {Promise<void>}
+ */
+export function initThreadPool(url, num_threads) {
+    const ret = wasm.initThreadPool(addHeapObject(url), num_threads);
+    return takeObject(ret);
+}
+
 /**
  * Verify an execution with a single function and a single transition. Executions with multiple
  * transitions or functions will fail to verify. Also, this does not verify that the state root of
@@ -289,6 +344,10 @@ export function verifyFunctionExecution(execution, verifying_key, program, funct
     }
 }
 
+function getArrayU8FromWasm0(ptr, len) {
+    ptr = ptr >>> 0;
+    return getUint8ArrayMemory0().subarray(ptr / 1, ptr / 1 + len);
+}
 /**
  * @param {number} receiver
  */
@@ -296,64 +355,17 @@ export function runRayonThread(receiver) {
     wasm.runRayonThread(receiver);
 }
 
-function passArray8ToWasm0(arg, malloc) {
-    const ptr = malloc(arg.length * 1, 1) >>> 0;
-    getUint8ArrayMemory0().set(arg, ptr / 1);
-    WASM_VECTOR_LEN = arg.length;
-    return ptr;
-}
-/**
- * @param {URL} url
- * @param {number} num_threads
- * @returns {Promise<void>}
- */
-export function initThreadPool(url, num_threads) {
-    const ret = wasm.initThreadPool(addHeapObject(url), num_threads);
-    return takeObject(ret);
-}
-
-function getArrayU8FromWasm0(ptr, len) {
-    ptr = ptr >>> 0;
-    return getUint8ArrayMemory0().subarray(ptr / 1, ptr / 1 + len);
-}
-/**
- * @param {string} value
- * @returns {string}
- */
-export function hashBHP256(value) {
-    let deferred3_0;
-    let deferred3_1;
-    try {
-        const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-        const ptr0 = passStringToWasm0(value, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
-        const len0 = WASM_VECTOR_LEN;
-        wasm.hashBHP256(retptr, ptr0, len0);
-        var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
-        var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-        var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
-        var r3 = getDataViewMemory0().getInt32(retptr + 4 * 3, true);
-        var ptr2 = r0;
-        var len2 = r1;
-        if (r3) {
-            ptr2 = 0; len2 = 0;
-            throw takeObject(r2);
-        }
-        deferred3_0 = ptr2;
-        deferred3_1 = len2;
-        return getStringFromWasm0(ptr2, len2);
-    } finally {
-        wasm.__wbindgen_add_to_stack_pointer(16);
-        wasm.__wbindgen_export_1(deferred3_0, deferred3_1, 1);
-    }
-}
-
-function __wbg_adapter_38(arg0, arg1, arg2) {
+function __wbg_adapter_40(arg0, arg1, arg2) {
     wasm.__wbindgen_export_5(arg0, arg1, addHeapObject(arg2));
 }
 
-function __wbg_adapter_459(arg0, arg1, arg2, arg3) {
+function __wbg_adapter_577(arg0, arg1, arg2, arg3) {
     wasm.__wbindgen_export_6(arg0, arg1, addHeapObject(arg2), addHeapObject(arg3));
 }
+
+const __wbindgen_enum_RequestCredentials = ["omit", "same-origin", "include"];
+
+const __wbindgen_enum_RequestMode = ["same-origin", "no-cors", "cors", "navigate"];
 
 const AddressFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
@@ -421,6 +433,147 @@ export class Address {
         return Address.__wrap(ret);
     }
     /**
+     * Get an address from a series of bytes.
+     *
+     * @param {Uint8Array} bytes A left endian byte array representing the address.
+     *
+     * @returns {Address} The address object.
+     * @param {Uint8Array} bytes
+     * @returns {Address}
+     */
+    static fromBytesLe(bytes) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.address_fromBytesLe(retptr, addHeapObject(bytes));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Address.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Get the left endian byte array representation of the address.
+     * @returns {Uint8Array}
+     */
+    toBytesLe() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.address_toBytesLe(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return takeObject(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Get an address from a series of bits represented as a boolean array.
+     *
+     * @param {Array} bits A left endian boolean array representing the bits of the address.
+     *
+     * @returns {Address} The address object.
+     * @param {Array<any>} bits
+     * @returns {Address}
+     */
+    static fromBitsLe(bits) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.address_fromBitsLe(retptr, addHeapObject(bits));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Address.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Get the left endian boolean array representation of the bits of the address.
+     * @returns {Array<any>}
+     */
+    toBitsLe() {
+        const ret = wasm.address_toBitsLe(this.__wbg_ptr);
+        return takeObject(ret);
+    }
+    /**
+     * Get an address object from an array of fields.
+     *
+     * @param {Array} fields An array of fields.
+     *
+     * @returns {Plaintext} The address object.
+     * @param {Array<any>} fields
+     * @returns {Address}
+     */
+    static fromFields(fields) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.address_fromFields(retptr, addHeapObject(fields));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Address.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Get the field array representation of the address.
+     * @returns {Array<any>}
+     */
+    toFields() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.address_toFields(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return takeObject(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Get an address object from a group.
+     *
+     * @param {Group} group The group object.
+     *
+     * @returns {Address} The address object.
+     * @param {Group} group
+     * @returns {Address}
+     */
+    static fromGroup(group) {
+        _assertClass(group, Group);
+        var ptr0 = group.__destroy_into_raw();
+        const ret = wasm.address_fromGroup(ptr0);
+        return Address.__wrap(ret);
+    }
+    /**
+     * Get the group representation of the address object.
+     * @returns {Group}
+     */
+    toGroup() {
+        const ret = wasm.address_toGroup(this.__wbg_ptr);
+        return Group.__wrap(ret);
+    }
+    /**
      * Create an aleo address object from a string representation of an address
      *
      * @param {string} address String representation of an addressm
@@ -458,6 +611,14 @@ export class Address {
         }
     }
     /**
+     * Get the plaintext representation of the address.
+     * @returns {Plaintext}
+     */
+    toPlaintext() {
+        const ret = wasm.address_toPlaintext(this.__wbg_ptr);
+        return Plaintext.__wrap(ret);
+    }
+    /**
      * Verify a signature for a message signed by the address
      *
      * @param {Uint8Array} Byte array representing a message signed by the address
@@ -472,6 +633,582 @@ export class Address {
         _assertClass(signature, Signature);
         const ret = wasm.address_verify(this.__wbg_ptr, ptr0, len0, signature.__wbg_ptr);
         return ret !== 0;
+    }
+}
+
+const BHP1024Finalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_bhp1024_free(ptr >>> 0, 1));
+
+export class BHP1024 {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(BHP1024.prototype);
+        obj.__wbg_ptr = ptr;
+        BHP1024Finalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        BHP1024Finalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_bhp1024_free(ptr, 0);
+    }
+    /**
+     * Create a BHP hasher with an input size of 1024 bits.
+     */
+    constructor() {
+        const ret = wasm.bhp1024_new();
+        this.__wbg_ptr = ret >>> 0;
+        BHP1024Finalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * Create a BHP hasher with an input size of 1024 bits with a custom domain separator.
+     * @param {string} domain_separator
+     * @returns {BHP1024}
+     */
+    static setup(domain_separator) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            const ptr0 = passStringToWasm0(domain_separator, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+            const len0 = WASM_VECTOR_LEN;
+            wasm.bhp1024_setup(retptr, ptr0, len0);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return BHP1024.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Returns the BHP hash with an input hasher of 1024 bits.
+     * @param {Array<any>} input
+     * @returns {Field}
+     */
+    hash(input) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.bhp1024_hash(retptr, this.__wbg_ptr, addHeapObject(input));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Field.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Returns a BHP hash with an input hasher of 1024 bits.
+     * @param {Array<any>} input
+     * @returns {Group}
+     */
+    hashToGroup(input) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.bhp1024_hashToGroup(retptr, this.__wbg_ptr, addHeapObject(input));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Group.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Returns a BHP commitment with an input hasher of 1024 bits and randomizer.
+     * @param {Array<any>} input
+     * @param {Scalar} randomizer
+     * @returns {Field}
+     */
+    commit(input, randomizer) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            _assertClass(randomizer, Scalar);
+            var ptr0 = randomizer.__destroy_into_raw();
+            wasm.bhp1024_commit(retptr, this.__wbg_ptr, addHeapObject(input), ptr0);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Field.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Returns a BHP commitment with an input hasher of 1024 bits and randomizer.
+     * @param {Array<any>} input
+     * @param {Scalar} randomizer
+     * @returns {Group}
+     */
+    commitToGroup(input, randomizer) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            _assertClass(randomizer, Scalar);
+            var ptr0 = randomizer.__destroy_into_raw();
+            wasm.bhp1024_commitToGroup(retptr, this.__wbg_ptr, addHeapObject(input), ptr0);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Group.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+}
+
+const BHP256Finalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_bhp256_free(ptr >>> 0, 1));
+
+export class BHP256 {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(BHP256.prototype);
+        obj.__wbg_ptr = ptr;
+        BHP256Finalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        BHP256Finalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_bhp256_free(ptr, 0);
+    }
+    /**
+     * Create a BHP hasher with an input size of 256 bits.
+     */
+    constructor() {
+        const ret = wasm.bhp256_new();
+        this.__wbg_ptr = ret >>> 0;
+        BHP256Finalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * Create a BHP hasher with an input size of 256 bits with a custom domain separator.
+     * @param {string} domain_separator
+     * @returns {BHP256}
+     */
+    static setup(domain_separator) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            const ptr0 = passStringToWasm0(domain_separator, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+            const len0 = WASM_VECTOR_LEN;
+            wasm.bhp256_setup(retptr, ptr0, len0);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return BHP256.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Returns the BHP hash with an input hasher of 256 bits.
+     * @param {Array<any>} input
+     * @returns {Field}
+     */
+    hash(input) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.bhp256_hash(retptr, this.__wbg_ptr, addHeapObject(input));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Field.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Returns a BHP hash with an input hasher of 256 bits.
+     * @param {Array<any>} input
+     * @returns {Group}
+     */
+    hashToGroup(input) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.bhp256_hashToGroup(retptr, this.__wbg_ptr, addHeapObject(input));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Group.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Returns a BHP commitment with an input hasher of 256 bits and randomizer.
+     * @param {Array<any>} input
+     * @param {Scalar} randomizer
+     * @returns {Field}
+     */
+    commit(input, randomizer) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            _assertClass(randomizer, Scalar);
+            var ptr0 = randomizer.__destroy_into_raw();
+            wasm.bhp256_commit(retptr, this.__wbg_ptr, addHeapObject(input), ptr0);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Field.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Returns a BHP commitment with an input hasher of 256 bits and randomizer.
+     * @param {Array<any>} input
+     * @param {Scalar} randomizer
+     * @returns {Group}
+     */
+    commitToGroup(input, randomizer) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            _assertClass(randomizer, Scalar);
+            var ptr0 = randomizer.__destroy_into_raw();
+            wasm.bhp256_commitToGroup(retptr, this.__wbg_ptr, addHeapObject(input), ptr0);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Group.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+}
+
+const BHP512Finalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_bhp512_free(ptr >>> 0, 1));
+
+export class BHP512 {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(BHP512.prototype);
+        obj.__wbg_ptr = ptr;
+        BHP512Finalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        BHP512Finalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_bhp512_free(ptr, 0);
+    }
+    /**
+     * Create a BHP hasher with an input size of 512 bits.
+     */
+    constructor() {
+        const ret = wasm.bhp512_new();
+        this.__wbg_ptr = ret >>> 0;
+        BHP512Finalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * Create a BHP hasher with an input size of 512 bits with a custom domain separator.
+     * @param {string} domain_separator
+     * @returns {BHP512}
+     */
+    static setup(domain_separator) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            const ptr0 = passStringToWasm0(domain_separator, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+            const len0 = WASM_VECTOR_LEN;
+            wasm.bhp512_setup(retptr, ptr0, len0);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return BHP512.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Returns the BHP hash with an input hasher of 512 bits.
+     * @param {Array<any>} input
+     * @returns {Field}
+     */
+    hash(input) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.bhp512_hash(retptr, this.__wbg_ptr, addHeapObject(input));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Field.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Returns a BHP hash with an input hasher of 512 bits.
+     * @param {Array<any>} input
+     * @returns {Group}
+     */
+    hashToGroup(input) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.bhp512_hashToGroup(retptr, this.__wbg_ptr, addHeapObject(input));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Group.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Returns a BHP commitment with an input hasher of 512 bits and randomizer.
+     * @param {Array<any>} input
+     * @param {Scalar} randomizer
+     * @returns {Field}
+     */
+    commit(input, randomizer) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            _assertClass(randomizer, Scalar);
+            var ptr0 = randomizer.__destroy_into_raw();
+            wasm.bhp512_commit(retptr, this.__wbg_ptr, addHeapObject(input), ptr0);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Field.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Returns a BHP commitment with an input hasher of 512 bits and randomizer.
+     * @param {Array<any>} input
+     * @param {Scalar} randomizer
+     * @returns {Group}
+     */
+    commitToGroup(input, randomizer) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            _assertClass(randomizer, Scalar);
+            var ptr0 = randomizer.__destroy_into_raw();
+            wasm.bhp512_commitToGroup(retptr, this.__wbg_ptr, addHeapObject(input), ptr0);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Group.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+}
+
+const BHP768Finalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_bhp768_free(ptr >>> 0, 1));
+
+export class BHP768 {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(BHP768.prototype);
+        obj.__wbg_ptr = ptr;
+        BHP768Finalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        BHP768Finalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_bhp768_free(ptr, 0);
+    }
+    /**
+     * Create a BHP hasher with an input size of 768 bits.
+     */
+    constructor() {
+        const ret = wasm.bhp768_new();
+        this.__wbg_ptr = ret >>> 0;
+        BHP768Finalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * Create a BHP hasher with an input size of 768 bits with a custom domain separator.
+     * @param {string} domain_separator
+     * @returns {BHP768}
+     */
+    static setup(domain_separator) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            const ptr0 = passStringToWasm0(domain_separator, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+            const len0 = WASM_VECTOR_LEN;
+            wasm.bhp768_setup(retptr, ptr0, len0);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return BHP768.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Returns the BHP hash with an input hasher of 768 bits.
+     * @param {Array<any>} input
+     * @returns {Field}
+     */
+    hash(input) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.bhp768_hash(retptr, this.__wbg_ptr, addHeapObject(input));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Field.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Returns a BHP hash with an input hasher of 768 bits.
+     * @param {Array<any>} input
+     * @returns {Group}
+     */
+    hashToGroup(input) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.bhp768_hashToGroup(retptr, this.__wbg_ptr, addHeapObject(input));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Group.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Returns a BHP commitment with an input hasher of 768 bits and randomizer.
+     * @param {Array<any>} input
+     * @param {Scalar} randomizer
+     * @returns {Field}
+     */
+    commit(input, randomizer) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            _assertClass(randomizer, Scalar);
+            var ptr0 = randomizer.__destroy_into_raw();
+            wasm.bhp768_commit(retptr, this.__wbg_ptr, addHeapObject(input), ptr0);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Field.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Returns a BHP commitment with an input hasher of 768 bits and randomizer.
+     * @param {Array<any>} input
+     * @param {Scalar} randomizer
+     * @returns {Group}
+     */
+    commitToGroup(input, randomizer) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            _assertClass(randomizer, Scalar);
+            var ptr0 = randomizer.__destroy_into_raw();
+            wasm.bhp768_commitToGroup(retptr, this.__wbg_ptr, addHeapObject(input), ptr0);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Group.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
     }
 }
 
@@ -509,8 +1246,8 @@ export class Ciphertext {
     /**
      * Decrypt the ciphertext using the given view key.
      *
-     * @param {ViewKey} The view key of the account that encrypted the ciphertext.
-     * @param {Group} The nonce used to encrypt the ciphertext.
+     * @param {ViewKey} viewKey The view key of the account that encrypted the ciphertext.
+     * @param {Group} nonce The nonce used to encrypt the ciphertext.
      *
      * @returns {Plaintext} The decrypted plaintext.
      * @param {ViewKey} view_key
@@ -537,7 +1274,69 @@ export class Ciphertext {
         }
     }
     /**
-     * Decrypts a ciphertext into plaintext using the given transition view key.
+     * Decrypt a ciphertext using the view key of the transition signer, transition public key, and
+     * (program, function, index) tuple.
+     * @param {ViewKey} view_key
+     * @param {Group} transition_public_key
+     * @param {string} program
+     * @param {string} function_name
+     * @param {number} index
+     * @returns {Plaintext}
+     */
+    decryptWithTransitionInfo(view_key, transition_public_key, program, function_name, index) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            _assertClass(view_key, ViewKey);
+            var ptr0 = view_key.__destroy_into_raw();
+            _assertClass(transition_public_key, Group);
+            var ptr1 = transition_public_key.__destroy_into_raw();
+            const ptr2 = passStringToWasm0(program, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+            const len2 = WASM_VECTOR_LEN;
+            const ptr3 = passStringToWasm0(function_name, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+            const len3 = WASM_VECTOR_LEN;
+            wasm.ciphertext_decryptWithTransitionInfo(retptr, this.__wbg_ptr, ptr0, ptr1, ptr2, len2, ptr3, len3, index);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Plaintext.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Decrypt a ciphertext using the transition view key and a (program, function, index) tuple.
+     * @param {Field} transition_view_key
+     * @param {string} program
+     * @param {string} function_name
+     * @param {number} index
+     * @returns {Plaintext}
+     */
+    decryptWithTransitionViewKey(transition_view_key, program, function_name, index) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            _assertClass(transition_view_key, Field);
+            var ptr0 = transition_view_key.__destroy_into_raw();
+            const ptr1 = passStringToWasm0(program, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+            const len1 = WASM_VECTOR_LEN;
+            const ptr2 = passStringToWasm0(function_name, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+            const len2 = WASM_VECTOR_LEN;
+            wasm.ciphertext_decryptWithTransitionViewKey(retptr, this.__wbg_ptr, ptr0, ptr1, len1, ptr2, len2, index);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Plaintext.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Decrypts a ciphertext into plaintext using the given ciphertext view key.
      *
      * @param {Field} transition_view_key The transition view key that was used to encrypt the ciphertext.
      *
@@ -582,6 +1381,100 @@ export class Ciphertext {
                 throw takeObject(r1);
             }
             return Ciphertext.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Get the left endian byte array representation of the ciphertext.
+     * @returns {Uint8Array}
+     */
+    toBytesLe() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.ciphertext_toBytes(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return takeObject(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Get a ciphertext object from a series of bits represented as a boolean array.
+     *
+     * @param {Array} bits A left endian boolean array representing the bits of the ciphertext.
+     *
+     * @returns {Ciphertext} The ciphertext object.
+     * @param {Array<any>} bits
+     * @returns {Ciphertext}
+     */
+    static fromBitsLe(bits) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.ciphertext_fromBitsLe(retptr, addHeapObject(bits));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Ciphertext.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Get the left endian boolean array representation of the bits of the ciphertext.
+     * @returns {Array<any>}
+     */
+    toBitsLe() {
+        const ret = wasm.ciphertext_toBitsLe(this.__wbg_ptr);
+        return takeObject(ret);
+    }
+    /**
+     * Get a ciphertext object from an array of fields.
+     *
+     * @param {Array} fields An array of fields.
+     *
+     * @returns {Ciphertext} The ciphertext object.
+     * @param {Array<any>} fields
+     * @returns {Ciphertext}
+     */
+    static fromFields(fields) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.ciphertext_fromFields(retptr, addHeapObject(fields));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Ciphertext.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Get the field array representation of the ciphertext.
+     * @returns {Array<any>}
+     */
+    toFields() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.ciphertext_toFields(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return takeObject(r0);
         } finally {
             wasm.__wbindgen_add_to_stack_pointer(16);
         }
@@ -1004,6 +1897,13 @@ export class Field {
         return obj;
     }
 
+    static __unwrap(jsValue) {
+        if (!(jsValue instanceof Field)) {
+            return 0;
+        }
+        return jsValue.__destroy_into_raw();
+    }
+
     __destroy_into_raw() {
         const ptr = this.__wbg_ptr;
         this.__wbg_ptr = 0;
@@ -1016,7 +1916,7 @@ export class Field {
         wasm.__wbg_field_free(ptr, 0);
     }
     /**
-     * Creates a field object from a string representation of a field.
+     * Creates a field object from a string representation of a field element.
      * @param {string} field
      * @returns {Field}
      */
@@ -1038,15 +1938,7 @@ export class Field {
         }
     }
     /**
-     * Create a plaintext element from a group element.
-     * @returns {Plaintext}
-     */
-    toPlaintext() {
-        const ret = wasm.field_toPlaintext(this.__wbg_ptr);
-        return Plaintext.__wrap(ret);
-    }
-    /**
-     * Returns the string representation of the field.
+     * Returns the string representation of the field element.
      * @returns {string}
      */
     toString() {
@@ -1066,7 +1958,84 @@ export class Field {
         }
     }
     /**
-     * ----- Modified by FoxWallet -----
+     * Create a field element from a Uint8Array of left endian bytes.
+     * @param {Uint8Array} bytes
+     * @returns {Field}
+     */
+    static fromBytesLe(bytes) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.field_fromBytesLe(retptr, addBorrowedObject(bytes));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Field.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            heap[stack_pointer++] = undefined;
+        }
+    }
+    /**
+     * Encode the field element as a Uint8Array of left endian bytes.
+     * @returns {Uint8Array}
+     */
+    toBytesLe() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.field_toBytesLe(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return takeObject(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Reconstruct a field element from a boolean array representation.
+     * @param {Array<any>} bits
+     * @returns {Field}
+     */
+    static fromBitsLe(bits) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.field_fromBitsLe(retptr, addBorrowedObject(bits));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Field.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            heap[stack_pointer++] = undefined;
+        }
+    }
+    /**
+     * Get the left endian boolean array representation of the field element.
+     * @returns {Array<any>}
+     */
+    toBitsLe() {
+        const ret = wasm.field_toBitsLe(this.__wbg_ptr);
+        return takeObject(ret);
+    }
+    /**
+     * Create a plaintext from the field element.
+     * @returns {Plaintext}
+     */
+    toPlaintext() {
+        const ret = wasm.field_toPlaintext(this.__wbg_ptr);
+        return Plaintext.__wrap(ret);
+    }
+    /**
+     * Clone the field element.
      * @returns {Field}
      */
     clone() {
@@ -1140,7 +2109,7 @@ export class Field {
         return Field.__wrap(ret);
     }
     /**
-     * Get the zero element of the field.
+     * Get the additive identity element of the field.
      * @returns {Field}
      */
     static zero() {
@@ -1148,7 +2117,7 @@ export class Field {
         return Field.__wrap(ret);
     }
     /**
-     * Get the one element of the field.
+     * Get the multiplicative identity of the field.
      * @returns {Field}
      */
     static one() {
@@ -1383,7 +2352,7 @@ export class Group {
         wasm.__wbg_group_free(ptr, 0);
     }
     /**
-     * Creates a group object from a string representation of a group.
+     * Creates a group object from a string representation of a group element.
      * @param {string} group
      * @returns {Group}
      */
@@ -1405,7 +2374,7 @@ export class Group {
         }
     }
     /**
-     * Returns the string representation of the group.
+     * Returns the string representation of the group element.
      * @returns {string}
      */
     toString() {
@@ -1425,6 +2394,94 @@ export class Group {
         }
     }
     /**
+     * Create a group element from a Uint8Array of left endian bytes.
+     * @param {Uint8Array} bytes
+     * @returns {Group}
+     */
+    static fromBytesLe(bytes) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.group_fromBytesLe(retptr, addBorrowedObject(bytes));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Group.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            heap[stack_pointer++] = undefined;
+        }
+    }
+    /**
+     * Encode the group element as a Uint8Array of left endian bytes.
+     * @returns {Uint8Array}
+     */
+    toBytesLe() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.group_toBytesLe(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return takeObject(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Reconstruct a group element from a boolean array representation.
+     * @param {Array<any>} bits
+     * @returns {Group}
+     */
+    static fromBitsLe(bits) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.group_fromBitsLe(retptr, addBorrowedObject(bits));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Group.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            heap[stack_pointer++] = undefined;
+        }
+    }
+    /**
+     * Get the left endian boolean array representation of the group element.
+     * @returns {Array<any>}
+     */
+    toBitsLe() {
+        const ret = wasm.group_toBitsLe(this.__wbg_ptr);
+        return takeObject(ret);
+    }
+    /**
+     * Get the field array representation of the group.
+     * @returns {Array<any>}
+     */
+    toFields() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.group_toFields(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return takeObject(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
      * Get the x-coordinate of the group element.
      * @returns {Field}
      */
@@ -1439,6 +2496,14 @@ export class Group {
     toPlaintext() {
         const ret = wasm.group_toPlaintext(this.__wbg_ptr);
         return Plaintext.__wrap(ret);
+    }
+    /**
+     * Clone the group element.
+     * @returns {Group}
+     */
+    clone() {
+        const ret = wasm.group_clone(this.__wbg_ptr);
+        return Group.__wrap(ret);
     }
     /**
      * Generate a random group element.
@@ -2027,6 +3092,232 @@ export class OfflineQuery {
     }
 }
 
+const Pedersen128Finalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_pedersen128_free(ptr >>> 0, 1));
+
+export class Pedersen128 {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(Pedersen128.prototype);
+        obj.__wbg_ptr = ptr;
+        Pedersen128Finalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        Pedersen128Finalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_pedersen128_free(ptr, 0);
+    }
+    /**
+     * Create a Pedersen hasher for a given (up to) 128-bit input.
+     */
+    constructor() {
+        const ret = wasm.pedersen128_new();
+        this.__wbg_ptr = ret >>> 0;
+        Pedersen128Finalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * Create a Pedersen hasher for a given (up to) 128-bit input with a custom domain separator.
+     * @param {string} domain_separator
+     * @returns {Pedersen128}
+     */
+    static setup(domain_separator) {
+        const ptr0 = passStringToWasm0(domain_separator, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.pedersen128_setup(ptr0, len0);
+        return Pedersen128.__wrap(ret);
+    }
+    /**
+     * Returns the Pedersen hash for a given (up to) 128-bit input.
+     * @param {Array<any>} input
+     * @returns {Field}
+     */
+    hash(input) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.pedersen128_hash(retptr, this.__wbg_ptr, addHeapObject(input));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Field.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Returns a Pedersen commitment for the given (up to) 128-bit input and randomizer.
+     * @param {Array<any>} input
+     * @param {Scalar} randomizer
+     * @returns {Field}
+     */
+    commit(input, randomizer) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            _assertClass(randomizer, Scalar);
+            var ptr0 = randomizer.__destroy_into_raw();
+            wasm.pedersen128_commit(retptr, this.__wbg_ptr, addHeapObject(input), ptr0);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Field.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Returns a Pedersen commitment for the given (up to) 128-bit input and randomizer.
+     * @param {Array<any>} input
+     * @param {Scalar} randomizer
+     * @returns {Group}
+     */
+    commitToGroup(input, randomizer) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            _assertClass(randomizer, Scalar);
+            var ptr0 = randomizer.__destroy_into_raw();
+            wasm.pedersen128_commitToGroup(retptr, this.__wbg_ptr, addHeapObject(input), ptr0);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Group.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+}
+
+const Pedersen64Finalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_pedersen64_free(ptr >>> 0, 1));
+
+export class Pedersen64 {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(Pedersen64.prototype);
+        obj.__wbg_ptr = ptr;
+        Pedersen64Finalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        Pedersen64Finalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_pedersen64_free(ptr, 0);
+    }
+    /**
+     * Create a Pedersen hasher for a given (up to) 64-bit input.
+     */
+    constructor() {
+        const ret = wasm.pedersen64_new();
+        this.__wbg_ptr = ret >>> 0;
+        Pedersen64Finalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * Create a Pedersen64 hasher for a given (up to) 64-bit input with a custom domain separator.
+     * @param {string} domain_separator
+     * @returns {Pedersen64}
+     */
+    static setup(domain_separator) {
+        const ptr0 = passStringToWasm0(domain_separator, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.pedersen64_setup(ptr0, len0);
+        return Pedersen64.__wrap(ret);
+    }
+    /**
+     * Returns the Pedersen hash for a given (up to) 64-bit input.
+     * @param {Array<any>} input
+     * @returns {Field}
+     */
+    hash(input) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.pedersen64_hash(retptr, this.__wbg_ptr, addHeapObject(input));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Field.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Returns a Pedersen commitment for the given (up to) 64-bit input and randomizer.
+     * @param {Array<any>} input
+     * @param {Scalar} randomizer
+     * @returns {Field}
+     */
+    commit(input, randomizer) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            _assertClass(randomizer, Scalar);
+            var ptr0 = randomizer.__destroy_into_raw();
+            wasm.pedersen64_commit(retptr, this.__wbg_ptr, addHeapObject(input), ptr0);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Field.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Returns a Pedersen commitment for the given (up to) 64-bit input and randomizer.
+     * @param {Array<any>} input
+     * @param {Scalar} randomizer
+     * @returns {Group}
+     */
+    commitToGroup(input, randomizer) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            _assertClass(randomizer, Scalar);
+            var ptr0 = randomizer.__destroy_into_raw();
+            wasm.pedersen64_commitToGroup(retptr, this.__wbg_ptr, addHeapObject(input), ptr0);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Group.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+}
+
 const PlaintextFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
     : new FinalizationRegistry(ptr => wasm.__wbg_plaintext_free(ptr >>> 0, 1));
@@ -2213,15 +3504,88 @@ export class Plaintext {
         }
     }
     /**
-     * Generate a random plaintext element from a series of bytes.
-     *
-     * @param {Uint8Array} bytes A left endian byte array representing the plaintext.
+     * Get the left endian byte array representation of the plaintext.
      * @returns {Uint8Array}
      */
     toBytesLe() {
         try {
             const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
             wasm.plaintext_toBytesLe(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return takeObject(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Get a plaintext object from a series of bits represented as a boolean array.
+     *
+     * @param {Array} bits A left endian boolean array representing the bits plaintext.
+     *
+     * @returns {Plaintext} The plaintext object.
+     * @param {Array<any>} bits
+     * @returns {Plaintext}
+     */
+    static fromBitsLe(bits) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.plaintext_fromBitsLe(retptr, addHeapObject(bits));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Plaintext.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Get the left endian boolean array representation of the bits of the plaintext.
+     * @returns {Array<any>}
+     */
+    toBitsLe() {
+        const ret = wasm.plaintext_toBitsLe(this.__wbg_ptr);
+        return takeObject(ret);
+    }
+    /**
+     * Get a plaintext object from an array of fields.
+     *
+     * @param {Array} fields An array of fields.
+     *
+     * @returns {Plaintext} The plaintext object.
+     * @param {Array<any>} fields
+     * @returns {Plaintext}
+     */
+    static fromFields(fields) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.plaintext_fromFields(retptr, addHeapObject(fields));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Plaintext.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Get the field array representation of the plaintext.
+     * @returns {Array<any>}
+     */
+    toFields() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.plaintext_toFields(retptr, this.__wbg_ptr);
             var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
             var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
             var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
@@ -2294,6 +3658,423 @@ export class Plaintext {
                 throw takeObject(r1);
             }
             return takeObject(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+}
+
+const Poseidon2Finalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_poseidon2_free(ptr >>> 0, 1));
+
+export class Poseidon2 {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(Poseidon2.prototype);
+        obj.__wbg_ptr = ptr;
+        Poseidon2Finalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        Poseidon2Finalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_poseidon2_free(ptr, 0);
+    }
+    /**
+     * Create a Poseidon hasher with an input rate of 2.
+     */
+    constructor() {
+        const ret = wasm.poseidon2_new();
+        this.__wbg_ptr = ret >>> 0;
+        Poseidon2Finalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * Create a Poseidon hasher with an input rate of 2 and a custom domain separator.
+     * @param {string} domain_separator
+     * @returns {Poseidon2}
+     */
+    static setup(domain_separator) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            const ptr0 = passStringToWasm0(domain_separator, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+            const len0 = WASM_VECTOR_LEN;
+            wasm.poseidon2_setup(retptr, ptr0, len0);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Poseidon2.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Returns the Poseidon hash with an input rate of 2.
+     * @param {Array<any>} input
+     * @returns {Field}
+     */
+    hash(input) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.poseidon2_hash(retptr, this.__wbg_ptr, addHeapObject(input));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Field.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Returns the extended Poseidon hash with an input rate of 2.
+     * @param {Array<any>} input
+     * @param {number} num_outputs
+     * @returns {Array<any>}
+     */
+    hashMany(input, num_outputs) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.poseidon2_hashMany(retptr, this.__wbg_ptr, addHeapObject(input), num_outputs);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return takeObject(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Returns the Poseidon hash with an input rate of 2 on the scalar field.
+     * @param {Array<any>} input
+     * @returns {Scalar}
+     */
+    hashToScalar(input) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.poseidon2_hashToScalar(retptr, this.__wbg_ptr, addHeapObject(input));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Scalar.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Returns the Poseidon hash with an input rate of 2 on the affine curve.
+     * @param {Array<any>} input
+     * @returns {Group}
+     */
+    hashToGroup(input) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.poseidon2_hashToGroup(retptr, this.__wbg_ptr, addHeapObject(input));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Group.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+}
+
+const Poseidon4Finalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_poseidon4_free(ptr >>> 0, 1));
+
+export class Poseidon4 {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(Poseidon4.prototype);
+        obj.__wbg_ptr = ptr;
+        Poseidon4Finalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        Poseidon4Finalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_poseidon4_free(ptr, 0);
+    }
+    /**
+     * Create a Poseidon hasher with an input rate of 4.
+     */
+    constructor() {
+        const ret = wasm.poseidon4_new();
+        this.__wbg_ptr = ret >>> 0;
+        Poseidon4Finalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * Create a Poseidon hasher with an input rate of 4 and a custom domain separator.
+     * @param {string} domain_separator
+     * @returns {Poseidon4}
+     */
+    static setup(domain_separator) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            const ptr0 = passStringToWasm0(domain_separator, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+            const len0 = WASM_VECTOR_LEN;
+            wasm.poseidon4_setup(retptr, ptr0, len0);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Poseidon4.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Returns the Poseidon hash with an input rate of 4.
+     * @param {Array<any>} input
+     * @returns {Field}
+     */
+    hash(input) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.poseidon4_hash(retptr, this.__wbg_ptr, addHeapObject(input));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Field.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Returns the extended Poseidon hash with an input rate of 4.
+     * @param {Array<any>} input
+     * @param {number} num_outputs
+     * @returns {Array<any>}
+     */
+    hashMany(input, num_outputs) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.poseidon4_hashMany(retptr, this.__wbg_ptr, addHeapObject(input), num_outputs);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return takeObject(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Returns the Poseidon hash with an input rate of 4 on the scalar field.
+     * @param {Array<any>} input
+     * @returns {Scalar}
+     */
+    hashToScalar(input) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.poseidon4_hashToScalar(retptr, this.__wbg_ptr, addHeapObject(input));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Scalar.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Returns the Poseidon hash with an input rate of 4 on the affine curve.
+     * @param {Array<any>} input
+     * @returns {Group}
+     */
+    hashToGroup(input) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.poseidon4_hashToGroup(retptr, this.__wbg_ptr, addHeapObject(input));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Group.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+}
+
+const Poseidon8Finalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_poseidon8_free(ptr >>> 0, 1));
+
+export class Poseidon8 {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(Poseidon8.prototype);
+        obj.__wbg_ptr = ptr;
+        Poseidon8Finalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        Poseidon8Finalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_poseidon8_free(ptr, 0);
+    }
+    /**
+     * Create a Poseidon hasher with an input rate of 8.
+     */
+    constructor() {
+        const ret = wasm.poseidon8_new();
+        this.__wbg_ptr = ret >>> 0;
+        Poseidon8Finalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * Create a Poseidon hasher with an input rate of 8 and a custom domain separator.
+     * @param {string} domain_separator
+     * @returns {Poseidon8}
+     */
+    static setup(domain_separator) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            const ptr0 = passStringToWasm0(domain_separator, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+            const len0 = WASM_VECTOR_LEN;
+            wasm.poseidon8_setup(retptr, ptr0, len0);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Poseidon8.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Returns the Poseidon hash with an input rate of 8.
+     * @param {Array<any>} input
+     * @returns {Field}
+     */
+    hash(input) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.poseidon8_hash(retptr, this.__wbg_ptr, addHeapObject(input));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Field.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Returns the extended Poseidon hash with an input rate of 8.
+     * @param {Array<any>} input
+     * @param {number} num_outputs
+     * @returns {Array<any>}
+     */
+    hashMany(input, num_outputs) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.poseidon8_hashMany(retptr, this.__wbg_ptr, addHeapObject(input), num_outputs);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return takeObject(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Returns the Poseidon hash with an input rate of 8 on the scalar field.
+     * @param {Array<any>} input
+     * @returns {Scalar}
+     */
+    hashToScalar(input) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.poseidon8_hashToScalar(retptr, this.__wbg_ptr, addHeapObject(input));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Scalar.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Returns the Poseidon hash with an input rate of 8 on the affine curve.
+     * @param {Array<any>} input
+     * @returns {Group}
+     */
+    hashToGroup(input) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.poseidon8_hashToGroup(retptr, this.__wbg_ptr, addHeapObject(input));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Group.__wrap(r0);
         } finally {
             wasm.__wbindgen_add_to_stack_pointer(16);
         }
@@ -2609,7 +4390,7 @@ export class PrivateKeyCiphertext {
         let deferred1_1;
         try {
             const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.ciphertext_toString(retptr, this.__wbg_ptr);
+            wasm.privatekeyciphertext_toString(retptr, this.__wbg_ptr);
             var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
             var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
             deferred1_0 = r0;
@@ -3114,327 +4895,6 @@ export class ProgramManager {
         wasm.__wbg_programmanager_free(ptr, 0);
     }
     /**
-     * Synthesize proving and verifying keys for a program
-     *
-     * @param program {string} The program source code of the program to synthesize keys for
-     * @param function_id {string} The function to synthesize keys for
-     * @param inputs {Array} The inputs to the function
-     * @param imports {Object | undefined} The imports for the program
-     * @param {PrivateKey} private_key
-     * @param {string} program
-     * @param {string} function_id
-     * @param {Array<any>} inputs
-     * @param {object | null} [imports]
-     * @returns {Promise<KeyPair>}
-     */
-    static synthesizeKeyPair(private_key, program, function_id, inputs, imports) {
-        _assertClass(private_key, PrivateKey);
-        const ptr0 = passStringToWasm0(program, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
-        const len0 = WASM_VECTOR_LEN;
-        const ptr1 = passStringToWasm0(function_id, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
-        const len1 = WASM_VECTOR_LEN;
-        const ret = wasm.programmanager_synthesizeKeyPair(private_key.__wbg_ptr, ptr0, len0, ptr1, len1, addHeapObject(inputs), isLikeNone(imports) ? 0 : addHeapObject(imports));
-        return takeObject(ret);
-    }
-    /**
-     * Send credits from one Aleo account to another
-     *
-     * @param private_key The private key of the sender
-     * @param amount_credits The amount of credits to send
-     * @param recipient The recipient of the transaction
-     * @param transfer_type The type of the transfer (options: "private", "public", "private_to_public", "public_to_private")
-     * @param amount_record The record to fund the amount from
-     * @param fee_credits The amount of credits to pay as a fee
-     * @param fee_record The record to spend the fee from
-     * @param url The url of the Aleo network node to send the transaction to
-     * @param transfer_verifying_key (optional) Provide a verifying key to use for the transfer
-     * function
-     * @param fee_proving_key (optional) Provide a proving key to use for the fee execution
-     * @param fee_verifying_key (optional) Provide a verifying key to use for the fee execution
-     * @returns {Transaction}
-     * @param {PrivateKey} private_key
-     * @param {number} amount_credits
-     * @param {string} recipient
-     * @param {string} transfer_type
-     * @param {RecordPlaintext | null | undefined} amount_record
-     * @param {number} fee_credits
-     * @param {RecordPlaintext | null} [fee_record]
-     * @param {string | null} [url]
-     * @param {ProvingKey | null} [transfer_proving_key]
-     * @param {VerifyingKey | null} [transfer_verifying_key]
-     * @param {ProvingKey | null} [fee_proving_key]
-     * @param {VerifyingKey | null} [fee_verifying_key]
-     * @param {OfflineQuery | null} [offline_query]
-     * @returns {Promise<Transaction>}
-     */
-    static buildTransferTransaction(private_key, amount_credits, recipient, transfer_type, amount_record, fee_credits, fee_record, url, transfer_proving_key, transfer_verifying_key, fee_proving_key, fee_verifying_key, offline_query) {
-        _assertClass(private_key, PrivateKey);
-        const ptr0 = passStringToWasm0(recipient, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
-        const len0 = WASM_VECTOR_LEN;
-        const ptr1 = passStringToWasm0(transfer_type, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
-        const len1 = WASM_VECTOR_LEN;
-        let ptr2 = 0;
-        if (!isLikeNone(amount_record)) {
-            _assertClass(amount_record, RecordPlaintext);
-            ptr2 = amount_record.__destroy_into_raw();
-        }
-        let ptr3 = 0;
-        if (!isLikeNone(fee_record)) {
-            _assertClass(fee_record, RecordPlaintext);
-            ptr3 = fee_record.__destroy_into_raw();
-        }
-        var ptr4 = isLikeNone(url) ? 0 : passStringToWasm0(url, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
-        var len4 = WASM_VECTOR_LEN;
-        let ptr5 = 0;
-        if (!isLikeNone(transfer_proving_key)) {
-            _assertClass(transfer_proving_key, ProvingKey);
-            ptr5 = transfer_proving_key.__destroy_into_raw();
-        }
-        let ptr6 = 0;
-        if (!isLikeNone(transfer_verifying_key)) {
-            _assertClass(transfer_verifying_key, VerifyingKey);
-            ptr6 = transfer_verifying_key.__destroy_into_raw();
-        }
-        let ptr7 = 0;
-        if (!isLikeNone(fee_proving_key)) {
-            _assertClass(fee_proving_key, ProvingKey);
-            ptr7 = fee_proving_key.__destroy_into_raw();
-        }
-        let ptr8 = 0;
-        if (!isLikeNone(fee_verifying_key)) {
-            _assertClass(fee_verifying_key, VerifyingKey);
-            ptr8 = fee_verifying_key.__destroy_into_raw();
-        }
-        let ptr9 = 0;
-        if (!isLikeNone(offline_query)) {
-            _assertClass(offline_query, OfflineQuery);
-            ptr9 = offline_query.__destroy_into_raw();
-        }
-        const ret = wasm.programmanager_buildTransferTransaction(private_key.__wbg_ptr, amount_credits, ptr0, len0, ptr1, len1, ptr2, fee_credits, ptr3, ptr4, len4, ptr5, ptr6, ptr7, ptr8, ptr9);
-        return takeObject(ret);
-    }
-    /**
-     * Deploy an Aleo program
-     *
-     * @param private_key The private key of the sender
-     * @param program The source code of the program being deployed
-     * @param imports A javascript object holding the source code of any imported programs in the
-     * form \{"program_name1": "program_source_code", "program_name2": "program_source_code", ..\}.
-     * Note that all imported programs must be deployed on chain before the main program in order
-     * for the deployment to succeed
-     * @param fee_credits The amount of credits to pay as a fee
-     * @param fee_record The record to spend the fee from
-     * @param url The url of the Aleo network node to send the transaction to
-     * @param imports (optional) Provide a list of imports to use for the program deployment in the
-     * form of a javascript object where the keys are a string of the program name and the values
-     * are a string representing the program source code \{ "hello.aleo": "hello.aleo source code" \}
-     * @param fee_proving_key (optional) Provide a proving key to use for the fee execution
-     * @param fee_verifying_key (optional) Provide a verifying key to use for the fee execution
-     * @returns {Transaction}
-     * @param {PrivateKey} private_key
-     * @param {string} program
-     * @param {bigint} base_fee
-     * @param {bigint} priority_fee
-     * @param {RecordPlaintext | null} [fee_record]
-     * @param {string | null} [url]
-     * @param {object | null} [imports]
-     * @param {ProvingKey | null} [fee_proving_key]
-     * @param {VerifyingKey | null} [fee_verifying_key]
-     * @param {OfflineQuery | null} [offline_query]
-     * @returns {Promise<Transaction>}
-     */
-    static buildDeploymentTransaction(private_key, program, base_fee, priority_fee, fee_record, url, imports, fee_proving_key, fee_verifying_key, offline_query) {
-        _assertClass(private_key, PrivateKey);
-        const ptr0 = passStringToWasm0(program, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
-        const len0 = WASM_VECTOR_LEN;
-        let ptr1 = 0;
-        if (!isLikeNone(fee_record)) {
-            _assertClass(fee_record, RecordPlaintext);
-            ptr1 = fee_record.__destroy_into_raw();
-        }
-        var ptr2 = isLikeNone(url) ? 0 : passStringToWasm0(url, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
-        var len2 = WASM_VECTOR_LEN;
-        let ptr3 = 0;
-        if (!isLikeNone(fee_proving_key)) {
-            _assertClass(fee_proving_key, ProvingKey);
-            ptr3 = fee_proving_key.__destroy_into_raw();
-        }
-        let ptr4 = 0;
-        if (!isLikeNone(fee_verifying_key)) {
-            _assertClass(fee_verifying_key, VerifyingKey);
-            ptr4 = fee_verifying_key.__destroy_into_raw();
-        }
-        let ptr5 = 0;
-        if (!isLikeNone(offline_query)) {
-            _assertClass(offline_query, OfflineQuery);
-            ptr5 = offline_query.__destroy_into_raw();
-        }
-        const ret = wasm.programmanager_buildDeploymentTransaction(private_key.__wbg_ptr, ptr0, len0, base_fee, priority_fee, ptr1, ptr2, len2, isLikeNone(imports) ? 0 : addHeapObject(imports), ptr3, ptr4, ptr5);
-        return takeObject(ret);
-    }
-    /**
-     * Estimate the fee for a program deployment
-     *
-     * Disclaimer: Fee estimation is experimental and may not represent a correct estimate on any current or future network
-     *
-     * @param program The source code of the program being deployed
-     * @param imports (optional) Provide a list of imports to use for the deployment fee estimation
-     * in the form of a javascript object where the keys are a string of the program name and the values
-     * are a string representing the program source code \{ "hello.aleo": "hello.aleo source code" \}
-     * @returns {u64}
-     * @param {string} program
-     * @param {object | null} [imports]
-     * @returns {Promise<bigint>}
-     */
-    static estimateDeploymentFee(program, imports) {
-        const ptr0 = passStringToWasm0(program, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.programmanager_estimateDeploymentFee(ptr0, len0, isLikeNone(imports) ? 0 : addHeapObject(imports));
-        return takeObject(ret);
-    }
-    /**
-     * Estimate the component of the deployment cost which comes from the fee for the program name.
-     * Note that this cost does not represent the entire cost of deployment. It is additional to
-     * the cost of the size (in bytes) of the deployment.
-     *
-     * Disclaimer: Fee estimation is experimental and may not represent a correct estimate on any current or future network
-     *
-     * @param name The name of the program to be deployed
-     * @returns {u64}
-     * @param {string} name
-     * @returns {bigint}
-     */
-    static estimateProgramNameCost(name) {
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            const ptr0 = passStringToWasm0(name, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
-            const len0 = WASM_VECTOR_LEN;
-            wasm.programmanager_estimateProgramNameCost(retptr, ptr0, len0);
-            var r0 = getDataViewMemory0().getBigInt64(retptr + 8 * 0, true);
-            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
-            var r3 = getDataViewMemory0().getInt32(retptr + 4 * 3, true);
-            if (r3) {
-                throw takeObject(r2);
-            }
-            return BigInt.asUintN(64, r0);
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-        }
-    }
-    /**
-     * Split an Aleo credits record into two separate records. This function does not require a fee.
-     *
-     * @param private_key The private key of the sender
-     * @param split_amount The amount of the credit split. This amount will be subtracted from the
-     * value of the record and two new records will be created with the split amount and the remainder
-     * @param amount_record The record to split
-     * @param url The url of the Aleo network node to send the transaction to
-     * @param split_proving_key (optional) Provide a proving key to use for the split function
-     * @param split_verifying_key (optional) Provide a verifying key to use for the split function
-     * @returns {Transaction} Transaction object
-     * @param {PrivateKey} private_key
-     * @param {number} split_amount
-     * @param {RecordPlaintext} amount_record
-     * @param {string | null} [url]
-     * @param {ProvingKey | null} [split_proving_key]
-     * @param {VerifyingKey | null} [split_verifying_key]
-     * @param {OfflineQuery | null} [offline_query]
-     * @returns {Promise<Transaction>}
-     */
-    static buildSplitTransaction(private_key, split_amount, amount_record, url, split_proving_key, split_verifying_key, offline_query) {
-        _assertClass(private_key, PrivateKey);
-        _assertClass(amount_record, RecordPlaintext);
-        var ptr0 = amount_record.__destroy_into_raw();
-        var ptr1 = isLikeNone(url) ? 0 : passStringToWasm0(url, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
-        var len1 = WASM_VECTOR_LEN;
-        let ptr2 = 0;
-        if (!isLikeNone(split_proving_key)) {
-            _assertClass(split_proving_key, ProvingKey);
-            ptr2 = split_proving_key.__destroy_into_raw();
-        }
-        let ptr3 = 0;
-        if (!isLikeNone(split_verifying_key)) {
-            _assertClass(split_verifying_key, VerifyingKey);
-            ptr3 = split_verifying_key.__destroy_into_raw();
-        }
-        let ptr4 = 0;
-        if (!isLikeNone(offline_query)) {
-            _assertClass(offline_query, OfflineQuery);
-            ptr4 = offline_query.__destroy_into_raw();
-        }
-        const ret = wasm.programmanager_buildSplitTransaction(private_key.__wbg_ptr, split_amount, ptr0, ptr1, len1, ptr2, ptr3, ptr4);
-        return takeObject(ret);
-    }
-    /**
-     * Join two records together to create a new record with an amount of credits equal to the sum
-     * of the credits of the two original records
-     *
-     * @param private_key The private key of the sender
-     * @param record_1 The first record to combine
-     * @param record_2 The second record to combine
-     * @param fee_credits The amount of credits to pay as a fee
-     * @param fee_record The record to spend the fee from
-     * @param url The url of the Aleo network node to send the transaction to
-     * @param join_proving_key (optional) Provide a proving key to use for the join function
-     * @param join_verifying_key (optional) Provide a verifying key to use for the join function
-     * @param fee_proving_key (optional) Provide a proving key to use for the fee execution
-     * @param fee_verifying_key (optional) Provide a verifying key to use for the fee execution
-     * @returns {Transaction} Transaction object
-     * @param {PrivateKey} private_key
-     * @param {RecordPlaintext} record_1
-     * @param {RecordPlaintext} record_2
-     * @param {number} fee_credits
-     * @param {RecordPlaintext | null} [fee_record]
-     * @param {string | null} [url]
-     * @param {ProvingKey | null} [join_proving_key]
-     * @param {VerifyingKey | null} [join_verifying_key]
-     * @param {ProvingKey | null} [fee_proving_key]
-     * @param {VerifyingKey | null} [fee_verifying_key]
-     * @param {OfflineQuery | null} [offline_query]
-     * @returns {Promise<Transaction>}
-     */
-    static buildJoinTransaction(private_key, record_1, record_2, fee_credits, fee_record, url, join_proving_key, join_verifying_key, fee_proving_key, fee_verifying_key, offline_query) {
-        _assertClass(private_key, PrivateKey);
-        _assertClass(record_1, RecordPlaintext);
-        var ptr0 = record_1.__destroy_into_raw();
-        _assertClass(record_2, RecordPlaintext);
-        var ptr1 = record_2.__destroy_into_raw();
-        let ptr2 = 0;
-        if (!isLikeNone(fee_record)) {
-            _assertClass(fee_record, RecordPlaintext);
-            ptr2 = fee_record.__destroy_into_raw();
-        }
-        var ptr3 = isLikeNone(url) ? 0 : passStringToWasm0(url, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
-        var len3 = WASM_VECTOR_LEN;
-        let ptr4 = 0;
-        if (!isLikeNone(join_proving_key)) {
-            _assertClass(join_proving_key, ProvingKey);
-            ptr4 = join_proving_key.__destroy_into_raw();
-        }
-        let ptr5 = 0;
-        if (!isLikeNone(join_verifying_key)) {
-            _assertClass(join_verifying_key, VerifyingKey);
-            ptr5 = join_verifying_key.__destroy_into_raw();
-        }
-        let ptr6 = 0;
-        if (!isLikeNone(fee_proving_key)) {
-            _assertClass(fee_proving_key, ProvingKey);
-            ptr6 = fee_proving_key.__destroy_into_raw();
-        }
-        let ptr7 = 0;
-        if (!isLikeNone(fee_verifying_key)) {
-            _assertClass(fee_verifying_key, VerifyingKey);
-            ptr7 = fee_verifying_key.__destroy_into_raw();
-        }
-        let ptr8 = 0;
-        if (!isLikeNone(offline_query)) {
-            _assertClass(offline_query, OfflineQuery);
-            ptr8 = offline_query.__destroy_into_raw();
-        }
-        const ret = wasm.programmanager_buildJoinTransaction(private_key.__wbg_ptr, ptr0, ptr1, fee_credits, ptr2, ptr3, len3, ptr4, ptr5, ptr6, ptr7, ptr8);
-        return takeObject(ret);
-    }
-    /**
      * Execute an arbitrary function locally
      *
      * @param {PrivateKey} private_key The private key of the sender
@@ -3658,6 +5118,327 @@ export class ProgramManager {
         } finally {
             wasm.__wbindgen_add_to_stack_pointer(16);
         }
+    }
+    /**
+     * Synthesize proving and verifying keys for a program
+     *
+     * @param program {string} The program source code of the program to synthesize keys for
+     * @param function_id {string} The function to synthesize keys for
+     * @param inputs {Array} The inputs to the function
+     * @param imports {Object | undefined} The imports for the program
+     * @param {PrivateKey} private_key
+     * @param {string} program
+     * @param {string} function_id
+     * @param {Array<any>} inputs
+     * @param {object | null} [imports]
+     * @returns {Promise<KeyPair>}
+     */
+    static synthesizeKeyPair(private_key, program, function_id, inputs, imports) {
+        _assertClass(private_key, PrivateKey);
+        const ptr0 = passStringToWasm0(program, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(function_id, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.programmanager_synthesizeKeyPair(private_key.__wbg_ptr, ptr0, len0, ptr1, len1, addHeapObject(inputs), isLikeNone(imports) ? 0 : addHeapObject(imports));
+        return takeObject(ret);
+    }
+    /**
+     * Split an Aleo credits record into two separate records. This function does not require a fee.
+     *
+     * @param private_key The private key of the sender
+     * @param split_amount The amount of the credit split. This amount will be subtracted from the
+     * value of the record and two new records will be created with the split amount and the remainder
+     * @param amount_record The record to split
+     * @param url The url of the Aleo network node to send the transaction to
+     * @param split_proving_key (optional) Provide a proving key to use for the split function
+     * @param split_verifying_key (optional) Provide a verifying key to use for the split function
+     * @returns {Transaction} Transaction object
+     * @param {PrivateKey} private_key
+     * @param {number} split_amount
+     * @param {RecordPlaintext} amount_record
+     * @param {string | null} [url]
+     * @param {ProvingKey | null} [split_proving_key]
+     * @param {VerifyingKey | null} [split_verifying_key]
+     * @param {OfflineQuery | null} [offline_query]
+     * @returns {Promise<Transaction>}
+     */
+    static buildSplitTransaction(private_key, split_amount, amount_record, url, split_proving_key, split_verifying_key, offline_query) {
+        _assertClass(private_key, PrivateKey);
+        _assertClass(amount_record, RecordPlaintext);
+        var ptr0 = amount_record.__destroy_into_raw();
+        var ptr1 = isLikeNone(url) ? 0 : passStringToWasm0(url, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+        var len1 = WASM_VECTOR_LEN;
+        let ptr2 = 0;
+        if (!isLikeNone(split_proving_key)) {
+            _assertClass(split_proving_key, ProvingKey);
+            ptr2 = split_proving_key.__destroy_into_raw();
+        }
+        let ptr3 = 0;
+        if (!isLikeNone(split_verifying_key)) {
+            _assertClass(split_verifying_key, VerifyingKey);
+            ptr3 = split_verifying_key.__destroy_into_raw();
+        }
+        let ptr4 = 0;
+        if (!isLikeNone(offline_query)) {
+            _assertClass(offline_query, OfflineQuery);
+            ptr4 = offline_query.__destroy_into_raw();
+        }
+        const ret = wasm.programmanager_buildSplitTransaction(private_key.__wbg_ptr, split_amount, ptr0, ptr1, len1, ptr2, ptr3, ptr4);
+        return takeObject(ret);
+    }
+    /**
+     * Deploy an Aleo program
+     *
+     * @param private_key The private key of the sender
+     * @param program The source code of the program being deployed
+     * @param imports A javascript object holding the source code of any imported programs in the
+     * form \{"program_name1": "program_source_code", "program_name2": "program_source_code", ..\}.
+     * Note that all imported programs must be deployed on chain before the main program in order
+     * for the deployment to succeed
+     * @param fee_credits The amount of credits to pay as a fee
+     * @param fee_record The record to spend the fee from
+     * @param url The url of the Aleo network node to send the transaction to
+     * @param imports (optional) Provide a list of imports to use for the program deployment in the
+     * form of a javascript object where the keys are a string of the program name and the values
+     * are a string representing the program source code \{ "hello.aleo": "hello.aleo source code" \}
+     * @param fee_proving_key (optional) Provide a proving key to use for the fee execution
+     * @param fee_verifying_key (optional) Provide a verifying key to use for the fee execution
+     * @returns {Transaction}
+     * @param {PrivateKey} private_key
+     * @param {string} program
+     * @param {bigint} base_fee
+     * @param {bigint} priority_fee
+     * @param {RecordPlaintext | null} [fee_record]
+     * @param {string | null} [url]
+     * @param {object | null} [imports]
+     * @param {ProvingKey | null} [fee_proving_key]
+     * @param {VerifyingKey | null} [fee_verifying_key]
+     * @param {OfflineQuery | null} [offline_query]
+     * @returns {Promise<Transaction>}
+     */
+    static buildDeploymentTransaction(private_key, program, base_fee, priority_fee, fee_record, url, imports, fee_proving_key, fee_verifying_key, offline_query) {
+        _assertClass(private_key, PrivateKey);
+        const ptr0 = passStringToWasm0(program, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+        const len0 = WASM_VECTOR_LEN;
+        let ptr1 = 0;
+        if (!isLikeNone(fee_record)) {
+            _assertClass(fee_record, RecordPlaintext);
+            ptr1 = fee_record.__destroy_into_raw();
+        }
+        var ptr2 = isLikeNone(url) ? 0 : passStringToWasm0(url, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+        var len2 = WASM_VECTOR_LEN;
+        let ptr3 = 0;
+        if (!isLikeNone(fee_proving_key)) {
+            _assertClass(fee_proving_key, ProvingKey);
+            ptr3 = fee_proving_key.__destroy_into_raw();
+        }
+        let ptr4 = 0;
+        if (!isLikeNone(fee_verifying_key)) {
+            _assertClass(fee_verifying_key, VerifyingKey);
+            ptr4 = fee_verifying_key.__destroy_into_raw();
+        }
+        let ptr5 = 0;
+        if (!isLikeNone(offline_query)) {
+            _assertClass(offline_query, OfflineQuery);
+            ptr5 = offline_query.__destroy_into_raw();
+        }
+        const ret = wasm.programmanager_buildDeploymentTransaction(private_key.__wbg_ptr, ptr0, len0, base_fee, priority_fee, ptr1, ptr2, len2, isLikeNone(imports) ? 0 : addHeapObject(imports), ptr3, ptr4, ptr5);
+        return takeObject(ret);
+    }
+    /**
+     * Estimate the fee for a program deployment
+     *
+     * Disclaimer: Fee estimation is experimental and may not represent a correct estimate on any current or future network
+     *
+     * @param program The source code of the program being deployed
+     * @param imports (optional) Provide a list of imports to use for the deployment fee estimation
+     * in the form of a javascript object where the keys are a string of the program name and the values
+     * are a string representing the program source code \{ "hello.aleo": "hello.aleo source code" \}
+     * @returns {u64}
+     * @param {string} program
+     * @param {object | null} [imports]
+     * @returns {Promise<bigint>}
+     */
+    static estimateDeploymentFee(program, imports) {
+        const ptr0 = passStringToWasm0(program, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.programmanager_estimateDeploymentFee(ptr0, len0, isLikeNone(imports) ? 0 : addHeapObject(imports));
+        return takeObject(ret);
+    }
+    /**
+     * Estimate the component of the deployment cost which comes from the fee for the program name.
+     * Note that this cost does not represent the entire cost of deployment. It is additional to
+     * the cost of the size (in bytes) of the deployment.
+     *
+     * Disclaimer: Fee estimation is experimental and may not represent a correct estimate on any current or future network
+     *
+     * @param name The name of the program to be deployed
+     * @returns {u64}
+     * @param {string} name
+     * @returns {bigint}
+     */
+    static estimateProgramNameCost(name) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            const ptr0 = passStringToWasm0(name, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+            const len0 = WASM_VECTOR_LEN;
+            wasm.programmanager_estimateProgramNameCost(retptr, ptr0, len0);
+            var r0 = getDataViewMemory0().getBigInt64(retptr + 8 * 0, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            var r3 = getDataViewMemory0().getInt32(retptr + 4 * 3, true);
+            if (r3) {
+                throw takeObject(r2);
+            }
+            return BigInt.asUintN(64, r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Send credits from one Aleo account to another
+     *
+     * @param private_key The private key of the sender
+     * @param amount_credits The amount of credits to send
+     * @param recipient The recipient of the transaction
+     * @param transfer_type The type of the transfer (options: "private", "public", "private_to_public", "public_to_private")
+     * @param amount_record The record to fund the amount from
+     * @param fee_credits The amount of credits to pay as a fee
+     * @param fee_record The record to spend the fee from
+     * @param url The url of the Aleo network node to send the transaction to
+     * @param transfer_verifying_key (optional) Provide a verifying key to use for the transfer
+     * function
+     * @param fee_proving_key (optional) Provide a proving key to use for the fee execution
+     * @param fee_verifying_key (optional) Provide a verifying key to use for the fee execution
+     * @returns {Transaction}
+     * @param {PrivateKey} private_key
+     * @param {number} amount_credits
+     * @param {string} recipient
+     * @param {string} transfer_type
+     * @param {RecordPlaintext | null | undefined} amount_record
+     * @param {number} fee_credits
+     * @param {RecordPlaintext | null} [fee_record]
+     * @param {string | null} [url]
+     * @param {ProvingKey | null} [transfer_proving_key]
+     * @param {VerifyingKey | null} [transfer_verifying_key]
+     * @param {ProvingKey | null} [fee_proving_key]
+     * @param {VerifyingKey | null} [fee_verifying_key]
+     * @param {OfflineQuery | null} [offline_query]
+     * @returns {Promise<Transaction>}
+     */
+    static buildTransferTransaction(private_key, amount_credits, recipient, transfer_type, amount_record, fee_credits, fee_record, url, transfer_proving_key, transfer_verifying_key, fee_proving_key, fee_verifying_key, offline_query) {
+        _assertClass(private_key, PrivateKey);
+        const ptr0 = passStringToWasm0(recipient, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(transfer_type, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+        const len1 = WASM_VECTOR_LEN;
+        let ptr2 = 0;
+        if (!isLikeNone(amount_record)) {
+            _assertClass(amount_record, RecordPlaintext);
+            ptr2 = amount_record.__destroy_into_raw();
+        }
+        let ptr3 = 0;
+        if (!isLikeNone(fee_record)) {
+            _assertClass(fee_record, RecordPlaintext);
+            ptr3 = fee_record.__destroy_into_raw();
+        }
+        var ptr4 = isLikeNone(url) ? 0 : passStringToWasm0(url, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+        var len4 = WASM_VECTOR_LEN;
+        let ptr5 = 0;
+        if (!isLikeNone(transfer_proving_key)) {
+            _assertClass(transfer_proving_key, ProvingKey);
+            ptr5 = transfer_proving_key.__destroy_into_raw();
+        }
+        let ptr6 = 0;
+        if (!isLikeNone(transfer_verifying_key)) {
+            _assertClass(transfer_verifying_key, VerifyingKey);
+            ptr6 = transfer_verifying_key.__destroy_into_raw();
+        }
+        let ptr7 = 0;
+        if (!isLikeNone(fee_proving_key)) {
+            _assertClass(fee_proving_key, ProvingKey);
+            ptr7 = fee_proving_key.__destroy_into_raw();
+        }
+        let ptr8 = 0;
+        if (!isLikeNone(fee_verifying_key)) {
+            _assertClass(fee_verifying_key, VerifyingKey);
+            ptr8 = fee_verifying_key.__destroy_into_raw();
+        }
+        let ptr9 = 0;
+        if (!isLikeNone(offline_query)) {
+            _assertClass(offline_query, OfflineQuery);
+            ptr9 = offline_query.__destroy_into_raw();
+        }
+        const ret = wasm.programmanager_buildTransferTransaction(private_key.__wbg_ptr, amount_credits, ptr0, len0, ptr1, len1, ptr2, fee_credits, ptr3, ptr4, len4, ptr5, ptr6, ptr7, ptr8, ptr9);
+        return takeObject(ret);
+    }
+    /**
+     * Join two records together to create a new record with an amount of credits equal to the sum
+     * of the credits of the two original records
+     *
+     * @param private_key The private key of the sender
+     * @param record_1 The first record to combine
+     * @param record_2 The second record to combine
+     * @param fee_credits The amount of credits to pay as a fee
+     * @param fee_record The record to spend the fee from
+     * @param url The url of the Aleo network node to send the transaction to
+     * @param join_proving_key (optional) Provide a proving key to use for the join function
+     * @param join_verifying_key (optional) Provide a verifying key to use for the join function
+     * @param fee_proving_key (optional) Provide a proving key to use for the fee execution
+     * @param fee_verifying_key (optional) Provide a verifying key to use for the fee execution
+     * @returns {Transaction} Transaction object
+     * @param {PrivateKey} private_key
+     * @param {RecordPlaintext} record_1
+     * @param {RecordPlaintext} record_2
+     * @param {number} fee_credits
+     * @param {RecordPlaintext | null} [fee_record]
+     * @param {string | null} [url]
+     * @param {ProvingKey | null} [join_proving_key]
+     * @param {VerifyingKey | null} [join_verifying_key]
+     * @param {ProvingKey | null} [fee_proving_key]
+     * @param {VerifyingKey | null} [fee_verifying_key]
+     * @param {OfflineQuery | null} [offline_query]
+     * @returns {Promise<Transaction>}
+     */
+    static buildJoinTransaction(private_key, record_1, record_2, fee_credits, fee_record, url, join_proving_key, join_verifying_key, fee_proving_key, fee_verifying_key, offline_query) {
+        _assertClass(private_key, PrivateKey);
+        _assertClass(record_1, RecordPlaintext);
+        var ptr0 = record_1.__destroy_into_raw();
+        _assertClass(record_2, RecordPlaintext);
+        var ptr1 = record_2.__destroy_into_raw();
+        let ptr2 = 0;
+        if (!isLikeNone(fee_record)) {
+            _assertClass(fee_record, RecordPlaintext);
+            ptr2 = fee_record.__destroy_into_raw();
+        }
+        var ptr3 = isLikeNone(url) ? 0 : passStringToWasm0(url, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+        var len3 = WASM_VECTOR_LEN;
+        let ptr4 = 0;
+        if (!isLikeNone(join_proving_key)) {
+            _assertClass(join_proving_key, ProvingKey);
+            ptr4 = join_proving_key.__destroy_into_raw();
+        }
+        let ptr5 = 0;
+        if (!isLikeNone(join_verifying_key)) {
+            _assertClass(join_verifying_key, VerifyingKey);
+            ptr5 = join_verifying_key.__destroy_into_raw();
+        }
+        let ptr6 = 0;
+        if (!isLikeNone(fee_proving_key)) {
+            _assertClass(fee_proving_key, ProvingKey);
+            ptr6 = fee_proving_key.__destroy_into_raw();
+        }
+        let ptr7 = 0;
+        if (!isLikeNone(fee_verifying_key)) {
+            _assertClass(fee_verifying_key, VerifyingKey);
+            ptr7 = fee_verifying_key.__destroy_into_raw();
+        }
+        let ptr8 = 0;
+        if (!isLikeNone(offline_query)) {
+            _assertClass(offline_query, OfflineQuery);
+            ptr8 = offline_query.__destroy_into_raw();
+        }
+        const ret = wasm.programmanager_buildJoinTransaction(private_key.__wbg_ptr, ptr0, ptr1, fee_credits, ptr2, ptr3, len3, ptr4, ptr5, ptr6, ptr7, ptr8);
+        return takeObject(ret);
     }
 }
 
@@ -4168,6 +5949,76 @@ export class RecordCiphertext {
             wasm.__wbindgen_add_to_stack_pointer(16);
         }
     }
+    /**
+     * Get a record ciphertext object from a series of bytes.
+     *
+     * @param {Uint8Array} bytes A left endian byte array representing the record ciphertext.
+     *
+     * @returns {RecordCiphertext}
+     * @param {Uint8Array} bytes
+     * @returns {RecordCiphertext}
+     */
+    static fromBytesLe(bytes) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.recordciphertext_fromBytesLe(retptr, addHeapObject(bytes));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return RecordCiphertext.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Get the left endian byte array representation of the record ciphertext.
+     * @returns {Uint8Array}
+     */
+    toBytesLe() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.recordciphertext_toBytesLe(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return takeObject(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Get the left endian boolean array representation of the record ciphertext bits.
+     * @returns {Array<any>}
+     */
+    toBitsLe() {
+        const ret = wasm.recordciphertext_toBitsLe(this.__wbg_ptr);
+        return takeObject(ret);
+    }
+    /**
+     * Get the field array representation of the record ciphertext.
+     * @returns {Array<any>}
+     */
+    toFields() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.recordciphertext_toFields(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return takeObject(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
 }
 
 const RecordPlaintextFinalization = (typeof FinalizationRegistry === 'undefined')
@@ -4376,6 +6227,80 @@ export class RecordPlaintext {
         }
     }
     /**
+     * Get a record plaintext object from a series of bytes.
+     *
+     * @param {Uint8Array} bytes A left endian byte array representing the record plaintext.
+     *
+     * @returns {RecordPlaintext} The record plaintext.
+     * @param {Uint8Array} bytes
+     * @returns {RecordPlaintext}
+     */
+    static fromBytesLe(bytes) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.recordplaintext_fromBytesLe(retptr, addHeapObject(bytes));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return RecordPlaintext.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Returns the left endian byte array representation of the record plaintext.
+     *
+     * @returns {Uint8Array} Byte array representation of the record plaintext.
+     * @returns {Uint8Array}
+     */
+    toBytesLe() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.recordplaintext_toBytesLe(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return takeObject(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Returns the left endian boolean array representation of the record plaintext bits.
+     *
+     * @returns {Array} Boolean array representation of the record plaintext bits.
+     * @returns {Array<any>}
+     */
+    toBitsLe() {
+        const ret = wasm.recordplaintext_toBitsLe(this.__wbg_ptr);
+        return takeObject(ret);
+    }
+    /**
+     * Get the field array representation of the record plaintext.
+     * @returns {Array<any>}
+     */
+    toFields() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.recordplaintext_toFields(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return takeObject(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
      * Returns the amount of microcredits in the record
      *
      * @returns {u64} Amount of microcredits in the record
@@ -4555,35 +6480,7 @@ export class Scalar {
         wasm.__wbg_scalar_free(ptr, 0);
     }
     /**
-     * Returns the string representation of the group.
-     * @returns {string}
-     */
-    toString() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.scalar_toString(retptr, this.__wbg_ptr);
-            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
-            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            deferred1_0 = r0;
-            deferred1_1 = r1;
-            return getStringFromWasm0(r0, r1);
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-            wasm.__wbindgen_export_1(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
-     * Create a plaintext element from a group element.
-     * @returns {Plaintext}
-     */
-    toPlaintext() {
-        const ret = wasm.scalar_toPlaintext(this.__wbg_ptr);
-        return Plaintext.__wrap(ret);
-    }
-    /**
-     * Creates a group object from a string representation of a group.
+     * Creates a scalar object from a string representation of a scalar element.
      * @param {string} group
      * @returns {Scalar}
      */
@@ -4605,7 +6502,112 @@ export class Scalar {
         }
     }
     /**
-     * Generate a random group element.
+     * Returns the string representation of the scalar element.
+     * @returns {string}
+     */
+    toString() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.scalar_toString(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            deferred1_0 = r0;
+            deferred1_1 = r1;
+            return getStringFromWasm0(r0, r1);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            wasm.__wbindgen_export_1(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * Create a scalar element from a Uint8Array of left endian bytes.
+     * @param {Uint8Array} bytes
+     * @returns {Scalar}
+     */
+    static fromBytesLe(bytes) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.scalar_fromBytesLe(retptr, addBorrowedObject(bytes));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Scalar.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            heap[stack_pointer++] = undefined;
+        }
+    }
+    /**
+     * Encode the scalar element as a Uint8Array of left endian bytes.
+     * @returns {Uint8Array}
+     */
+    toBytesLe() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.scalar_toBytesLe(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return takeObject(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Reconstruct a scalar element from a boolean array representation.
+     * @param {Array<any>} bits
+     * @returns {Scalar}
+     */
+    static fromBitsLe(bits) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.scalar_fromBitsLe(retptr, addBorrowedObject(bits));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Scalar.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            heap[stack_pointer++] = undefined;
+        }
+    }
+    /**
+     * Get the left endian boolean array representation of the scalar element.
+     * @returns {Array<any>}
+     */
+    toBitsLe() {
+        const ret = wasm.scalar_toBitsLe(this.__wbg_ptr);
+        return takeObject(ret);
+    }
+    /**
+     * Create a plaintext element from a scalar element.
+     * @returns {Plaintext}
+     */
+    toPlaintext() {
+        const ret = wasm.scalar_toPlaintext(this.__wbg_ptr);
+        return Plaintext.__wrap(ret);
+    }
+    /**
+     * Clone the scalar element.
+     * @returns {Scalar}
+     */
+    clone() {
+        const ret = wasm.scalar_clone(this.__wbg_ptr);
+        return Scalar.__wrap(ret);
+    }
+    /**
+     * Generate a random scalar element.
      * @returns {Scalar}
      */
     static random() {
@@ -4679,7 +6681,7 @@ export class Scalar {
         return Scalar.__wrap(ret);
     }
     /**
-     * Creates a one valued element of the scalar field.
+     * Get the multiplicative identity of the scalar field.
      * @returns {Scalar}
      */
     static one() {
@@ -4687,7 +6689,7 @@ export class Scalar {
         return Scalar.__wrap(ret);
     }
     /**
-     * Creates a zero valued element of the scalar field
+     * Get the additive identity of the scalar field.
      * @returns {Scalar}
      */
     static zero() {
@@ -4794,6 +6796,100 @@ export class Signature {
         return ret !== 0;
     }
     /**
+     * Get a signature from a series of bytes.
+     *
+     * @param {Uint8Array} bytes A left endian byte array representing the signature.
+     *
+     * @returns {Signature} The signature object.
+     * @param {Uint8Array} bytes
+     * @returns {Signature}
+     */
+    static fromBytesLe(bytes) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.signature_fromBytesLe(retptr, addHeapObject(bytes));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Signature.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Get the left endian byte array representation of the signature.
+     * @returns {Uint8Array}
+     */
+    toBytesLe() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.signature_toBytesLe(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return takeObject(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Get a signature from a series of bits represented as a boolean array.
+     *
+     * @param {Array} bits A left endian boolean array representing the bits of the signature.
+     *
+     * @returns {Signature} The signature object.
+     * @param {Array<any>} bits
+     * @returns {Signature}
+     */
+    static fromBitsLe(bits) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.signature_fromBitsLe(retptr, addHeapObject(bits));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Signature.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Get the left endian boolean array representation of the bits of the signature.
+     * @returns {Array<any>}
+     */
+    toBitsLe() {
+        const ret = wasm.signature_toBitsLe(this.__wbg_ptr);
+        return takeObject(ret);
+    }
+    /**
+     * Get the field array representation of the signature.
+     * @returns {Array<any>}
+     */
+    toFields() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.signature_toFields(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return takeObject(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
      * Get a signature from a string representation of a signature
      *
      * @param {string} signature String representation of a signature
@@ -4828,6 +6924,14 @@ export class Signature {
             wasm.__wbindgen_add_to_stack_pointer(16);
             wasm.__wbindgen_export_1(deferred1_0, deferred1_1, 1);
         }
+    }
+    /**
+     * Get the plaintext representation of the signature.
+     * @returns {Plaintext}
+     */
+    toPlaintext() {
+        const ret = wasm.signature_toPlaintext(this.__wbg_ptr);
+        return Plaintext.__wrap(ret);
     }
     /**
      * ----- Modified by FoxWallet -----
@@ -5471,8 +7575,18 @@ export class Transition {
      * @returns {Group}
      */
     tpk() {
-        const ret = wasm.transition_tpk(this.__wbg_ptr);
+        const ret = wasm.address_toGroup(this.__wbg_ptr);
         return Group.__wrap(ret);
+    }
+    /**
+     * Get the transition view key of the transition.
+     * @param {ViewKey} view_key
+     * @returns {Field}
+     */
+    tvk(view_key) {
+        _assertClass(view_key, ViewKey);
+        const ret = wasm.transition_tvk(this.__wbg_ptr, view_key.__wbg_ptr);
+        return Field.__wrap(ret);
     }
     /**
      * Get the transition commitment of the transition.
@@ -6030,7 +8144,7 @@ export class ViewKey {
      * @returns {Address}
      */
     to_address() {
-        const ret = wasm.viewkey_to_address(this.__wbg_ptr);
+        const ret = wasm.address_from_view_key(this.__wbg_ptr);
         return Address.__wrap(ret);
     }
     /**
@@ -6038,7 +8152,7 @@ export class ViewKey {
      * @returns {Scalar}
      */
     to_scalar() {
-        const ret = wasm.viewkey_clone(this.__wbg_ptr);
+        const ret = wasm.signature_challenge(this.__wbg_ptr);
         return Scalar.__wrap(ret);
     }
     /**
@@ -6099,7 +8213,7 @@ export class ViewKey {
      * @returns {ViewKey}
      */
     clone() {
-        const ret = wasm.viewkey_clone(this.__wbg_ptr);
+        const ret = wasm.signature_challenge(this.__wbg_ptr);
         return ViewKey.__wrap(ret);
     }
 }
@@ -6138,29 +8252,29 @@ async function __wbg_load(module, imports) {
 function __wbg_get_imports() {
     const imports = {};
     imports.wbg = {};
-    imports.wbg.__wbg_abort_b2f5cff224272d63 = function(arg0) {
+    imports.wbg.__wbg_abort_775ef1d17fc65868 = function(arg0) {
         getObject(arg0).abort();
     };
     imports.wbg.__wbg_address_new = function(arg0) {
         const ret = Address.__wrap(arg0);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbg_append_bb16b42637444e9d = function() { return handleError(function (arg0, arg1, arg2, arg3, arg4) {
+    imports.wbg.__wbg_append_8c7dd8d641a5f01b = function() { return handleError(function (arg0, arg1, arg2, arg3, arg4) {
         getObject(arg0).append(getStringFromWasm0(arg1, arg2), getStringFromWasm0(arg3, arg4));
     }, arguments) };
-    imports.wbg.__wbg_arrayBuffer_b6fff4ef4ec59b14 = function() { return handleError(function (arg0) {
+    imports.wbg.__wbg_arrayBuffer_d1b44c4390db422f = function() { return handleError(function (arg0) {
         const ret = getObject(arg0).arrayBuffer();
         return addHeapObject(ret);
     }, arguments) };
-    imports.wbg.__wbg_buffer_ef9774282e5dab94 = function(arg0) {
+    imports.wbg.__wbg_buffer_609cc3eee51ed158 = function(arg0) {
         const ret = getObject(arg0).buffer;
         return addHeapObject(ret);
     };
-    imports.wbg.__wbg_call_0ad083564791763a = function() { return handleError(function (arg0, arg1) {
+    imports.wbg.__wbg_call_672a4d21634d4a24 = function() { return handleError(function (arg0, arg1) {
         const ret = getObject(arg0).call(getObject(arg1));
         return addHeapObject(ret);
     }, arguments) };
-    imports.wbg.__wbg_call_a34b6b4765f27be0 = function() { return handleError(function (arg0, arg1, arg2) {
+    imports.wbg.__wbg_call_7cccdd69e0791ae2 = function() { return handleError(function (arg0, arg1, arg2) {
         const ret = getObject(arg0).call(getObject(arg1), getObject(arg2));
         return addHeapObject(ret);
     }, arguments) };
@@ -6172,7 +8286,7 @@ function __wbg_get_imports() {
         const ret = getObject(arg0).crypto;
         return addHeapObject(ret);
     };
-    imports.wbg.__wbg_done_f4c254830a095eaf = function(arg0) {
+    imports.wbg.__wbg_done_769e5ede4b31c67b = function(arg0) {
         const ret = getObject(arg0).done;
         return ret;
     };
@@ -6191,7 +8305,7 @@ function __wbg_get_imports() {
         const ret = ExecutionResponse.__wrap(arg0);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbg_fetch_ebfbf72e60b90f6b = function(arg0, arg1) {
+    imports.wbg.__wbg_fetch_509096533071c657 = function(arg0, arg1) {
         const ret = getObject(arg0).fetch(getObject(arg1));
         return addHeapObject(ret);
     };
@@ -6203,38 +8317,34 @@ function __wbg_get_imports() {
         const ret = Field.__wrap(arg0);
         return addHeapObject(ret);
     };
+    imports.wbg.__wbg_field_unwrap = function(arg0) {
+        const ret = Field.__unwrap(takeObject(arg0));
+        return ret;
+    };
     imports.wbg.__wbg_getRandomValues_bcb4912f16000dc4 = function() { return handleError(function (arg0, arg1) {
         getObject(arg0).getRandomValues(getObject(arg1));
     }, arguments) };
-    imports.wbg.__wbg_get_0c3cc364764a0b98 = function(arg0, arg1) {
-        const ret = getObject(arg0)[arg1 >>> 0];
-        return addHeapObject(ret);
-    };
-    imports.wbg.__wbg_get_b996a12be035ef4f = function() { return handleError(function (arg0, arg1) {
+    imports.wbg.__wbg_get_67b2ba62fc30de12 = function() { return handleError(function (arg0, arg1) {
         const ret = Reflect.get(getObject(arg0), getObject(arg1));
         return addHeapObject(ret);
     }, arguments) };
-    imports.wbg.__wbg_globalThis_6b4d52a0b6aaeaea = function() { return handleError(function () {
-        const ret = globalThis.globalThis;
+    imports.wbg.__wbg_get_b9b93047fe3cf45b = function(arg0, arg1) {
+        const ret = getObject(arg0)[arg1 >>> 0];
         return addHeapObject(ret);
-    }, arguments) };
-    imports.wbg.__wbg_global_49324ce12193de77 = function() { return handleError(function () {
-        const ret = global.global;
-        return addHeapObject(ret);
-    }, arguments) };
+    };
     imports.wbg.__wbg_group_new = function(arg0) {
         const ret = Group.__wrap(arg0);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbg_has_bdec43a5ed4cb454 = function() { return handleError(function (arg0, arg1) {
+    imports.wbg.__wbg_has_a5ea9117f258a0ec = function() { return handleError(function (arg0, arg1) {
         const ret = Reflect.has(getObject(arg0), getObject(arg1));
         return ret;
     }, arguments) };
-    imports.wbg.__wbg_headers_1cb36cb1f63b1803 = function(arg0) {
+    imports.wbg.__wbg_headers_9cb51cfd2ac780a4 = function(arg0) {
         const ret = getObject(arg0).headers;
         return addHeapObject(ret);
     };
-    imports.wbg.__wbg_instanceof_Response_5b683150ad96eb73 = function(arg0) {
+    imports.wbg.__wbg_instanceof_Response_f2cc20d9f7dfd644 = function(arg0) {
         let result;
         try {
             result = getObject(arg0) instanceof Response;
@@ -6244,7 +8354,7 @@ function __wbg_get_imports() {
         const ret = result;
         return ret;
     };
-    imports.wbg.__wbg_iterator_c0c688f37fa815e6 = function() {
+    imports.wbg.__wbg_iterator_9a24c88df860dc65 = function() {
         const ret = Symbol.iterator;
         return addHeapObject(ret);
     };
@@ -6252,49 +8362,33 @@ function __wbg_get_imports() {
         const ret = KeyPair.__wrap(arg0);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbg_length_12246a78d2f65d3a = function(arg0) {
+    imports.wbg.__wbg_length_a446193dc22c12f8 = function(arg0) {
         const ret = getObject(arg0).length;
         return ret;
     };
-    imports.wbg.__wbg_length_c24da17096edfe57 = function(arg0) {
+    imports.wbg.__wbg_length_e2d2a49132c1b256 = function(arg0) {
         const ret = getObject(arg0).length;
         return ret;
     };
-    imports.wbg.__wbg_log_97788164d480348f = function(arg0, arg1) {
+    imports.wbg.__wbg_log_fe160dcd4f4a7df5 = function(arg0, arg1) {
         console.log(getStringFromWasm0(arg0, arg1));
     };
     imports.wbg.__wbg_msCrypto_0a36e2ec3a343d26 = function(arg0) {
         const ret = getObject(arg0).msCrypto;
         return addHeapObject(ret);
     };
-    imports.wbg.__wbg_new_2252d3c38373cda1 = function() { return handleError(function () {
-        const ret = new AbortController();
-        return addHeapObject(ret);
-    }, arguments) };
-    imports.wbg.__wbg_new_3095e6bbfba47371 = function() { return handleError(function () {
+    imports.wbg.__wbg_new_018dcc2d6c8c2f6a = function() { return handleError(function () {
         const ret = new Headers();
         return addHeapObject(ret);
     }, arguments) };
-    imports.wbg.__wbg_new_59845962d1127937 = function(arg0) {
-        const ret = new Uint8Array(getObject(arg0));
-        return addHeapObject(ret);
-    };
-    imports.wbg.__wbg_new_67abf4a77618ee3e = function() {
-        const ret = new Object();
-        return addHeapObject(ret);
-    };
-    imports.wbg.__wbg_new_8a6f238a6ece86ea = function() {
-        const ret = new Error();
-        return addHeapObject(ret);
-    };
-    imports.wbg.__wbg_new_ac7361beaf933ba6 = function(arg0, arg1) {
+    imports.wbg.__wbg_new_23a2665fac83c611 = function(arg0, arg1) {
         try {
             var state0 = {a: arg0, b: arg1};
             var cb0 = (arg0, arg1) => {
                 const a = state0.a;
                 state0.a = 0;
                 try {
-                    return __wbg_adapter_459(a, state0.b, arg0, arg1);
+                    return __wbg_adapter_577(a, state0.b, arg0, arg1);
                 } finally {
                     state0.a = a;
                 }
@@ -6305,39 +8399,55 @@ function __wbg_get_imports() {
             state0.a = state0.b = 0;
         }
     };
-    imports.wbg.__wbg_new_e2d07398d7689006 = function() {
+    imports.wbg.__wbg_new_405e22f390576ce2 = function() {
+        const ret = new Object();
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbg_new_78feb108b6472713 = function() {
         const ret = new Array();
         return addHeapObject(ret);
     };
-    imports.wbg.__wbg_new_e3571d6e4dd4f06d = function() { return handleError(function () {
+    imports.wbg.__wbg_new_86231e225ca6b962 = function() { return handleError(function () {
         const ret = new XMLHttpRequest();
         return addHeapObject(ret);
     }, arguments) };
-    imports.wbg.__wbg_newnoargs_a136448eeb7d48ac = function(arg0, arg1) {
+    imports.wbg.__wbg_new_8a6f238a6ece86ea = function() {
+        const ret = new Error();
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbg_new_a12002a7f91c75be = function(arg0) {
+        const ret = new Uint8Array(getObject(arg0));
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbg_new_e25e5aab09ff45db = function() { return handleError(function () {
+        const ret = new AbortController();
+        return addHeapObject(ret);
+    }, arguments) };
+    imports.wbg.__wbg_newnoargs_105ed471475aaf50 = function(arg0, arg1) {
         const ret = new Function(getStringFromWasm0(arg0, arg1));
         return addHeapObject(ret);
     };
-    imports.wbg.__wbg_newwithbyteoffsetandlength_84908302a4c137cf = function(arg0, arg1, arg2) {
+    imports.wbg.__wbg_newwithbyteoffsetandlength_d97e637ebe145a9a = function(arg0, arg1, arg2) {
         const ret = new Uint8Array(getObject(arg0), arg1 >>> 0, arg2 >>> 0);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbg_newwithlength_4c216eaaf23f2f9a = function(arg0) {
+    imports.wbg.__wbg_newwithlength_a381634e90c276d4 = function(arg0) {
         const ret = new Uint8Array(arg0 >>> 0);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbg_newwithlength_88b49de1eb24d63e = function(arg0) {
+    imports.wbg.__wbg_newwithlength_c4c419ef0bc8a1f8 = function(arg0) {
         const ret = new Array(arg0 >>> 0);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbg_newwithstrandinit_5bf797e91a4e2e6f = function() { return handleError(function (arg0, arg1, arg2) {
+    imports.wbg.__wbg_newwithstrandinit_06c535e0a867c635 = function() { return handleError(function (arg0, arg1, arg2) {
         const ret = new Request(getStringFromWasm0(arg0, arg1), getObject(arg2));
         return addHeapObject(ret);
     }, arguments) };
-    imports.wbg.__wbg_next_928df8c15fc0c9b0 = function(arg0) {
+    imports.wbg.__wbg_next_25feadfc0913fea9 = function(arg0) {
         const ret = getObject(arg0).next;
         return addHeapObject(ret);
     };
-    imports.wbg.__wbg_next_9dc0926f351c7090 = function() { return handleError(function (arg0) {
+    imports.wbg.__wbg_next_6574e1a8a62d1055 = function() { return handleError(function (arg0) {
         const ret = getObject(arg0).next();
         return addHeapObject(ret);
     }, arguments) };
@@ -6345,10 +8455,10 @@ function __wbg_get_imports() {
         const ret = getObject(arg0).node;
         return addHeapObject(ret);
     };
-    imports.wbg.__wbg_open_e2f6ca0462aadce2 = function() { return handleError(function (arg0, arg1, arg2, arg3, arg4, arg5) {
+    imports.wbg.__wbg_open_13a598ea50d82926 = function() { return handleError(function (arg0, arg1, arg2, arg3, arg4, arg5) {
         getObject(arg0).open(getStringFromWasm0(arg1, arg2), getStringFromWasm0(arg3, arg4), arg5 !== 0);
     }, arguments) };
-    imports.wbg.__wbg_overrideMimeType_68beb9f7183983ea = function() { return handleError(function (arg0, arg1, arg2) {
+    imports.wbg.__wbg_overrideMimeType_36ce5eeae20aff9f = function() { return handleError(function (arg0, arg1, arg2) {
         getObject(arg0).overrideMimeType(getStringFromWasm0(arg1, arg2));
     }, arguments) };
     imports.wbg.__wbg_plaintext_new = function(arg0) {
@@ -6359,16 +8469,16 @@ function __wbg_get_imports() {
         const ret = getObject(arg0).process;
         return addHeapObject(ret);
     };
-    imports.wbg.__wbg_push_e7d7247e69dad3ee = function(arg0, arg1) {
+    imports.wbg.__wbg_push_737cfc8c1432c2c6 = function(arg0, arg1) {
         const ret = getObject(arg0).push(getObject(arg1));
         return ret;
     };
-    imports.wbg.__wbg_queueMicrotask_6808622725a52272 = function(arg0) {
+    imports.wbg.__wbg_queueMicrotask_97d92b4fcc8a61c5 = function(arg0) {
+        queueMicrotask(getObject(arg0));
+    };
+    imports.wbg.__wbg_queueMicrotask_d3219def82552485 = function(arg0) {
         const ret = getObject(arg0).queueMicrotask;
         return addHeapObject(ret);
-    };
-    imports.wbg.__wbg_queueMicrotask_ef0e86b0263a71ee = function(arg0) {
-        queueMicrotask(getObject(arg0));
     };
     imports.wbg.__wbg_randomFillSync_ab2cfe79ebbf2740 = function() { return handleError(function (arg0, arg1) {
         getObject(arg0).randomFillSync(takeObject(arg1));
@@ -6385,39 +8495,53 @@ function __wbg_get_imports() {
         const ret = module.require;
         return addHeapObject(ret);
     }, arguments) };
-    imports.wbg.__wbg_resolve_267ff08e7e1d2ce4 = function(arg0) {
+    imports.wbg.__wbg_resolve_4851785c9c5f573d = function(arg0) {
         const ret = Promise.resolve(getObject(arg0));
         return addHeapObject(ret);
     };
-    imports.wbg.__wbg_responseText_298a0bb59baae4cb = function() { return handleError(function (arg0, arg1) {
+    imports.wbg.__wbg_responseText_ad050aa7f8afec9f = function() { return handleError(function (arg0, arg1) {
         const ret = getObject(arg1).responseText;
         var ptr1 = isLikeNone(ret) ? 0 : passStringToWasm0(ret, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
         var len1 = WASM_VECTOR_LEN;
         getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
         getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
     }, arguments) };
-    imports.wbg.__wbg_response_987e031b5a50cb0a = function() { return handleError(function (arg0) {
+    imports.wbg.__wbg_response_49e10f8ee7f418db = function() { return handleError(function (arg0) {
         const ret = getObject(arg0).response;
         return addHeapObject(ret);
     }, arguments) };
-    imports.wbg.__wbg_self_cca3ca60d61220f4 = function() { return handleError(function () {
-        const ret = self.self;
-        return addHeapObject(ret);
-    }, arguments) };
-    imports.wbg.__wbg_send_ebe0b50f67d0a9b3 = function() { return handleError(function (arg0) {
+    imports.wbg.__wbg_send_40a47636ff90f64d = function() { return handleError(function (arg0) {
         getObject(arg0).send();
     }, arguments) };
-    imports.wbg.__wbg_set_1b50d2de855a9d50 = function() { return handleError(function (arg0, arg1, arg2) {
+    imports.wbg.__wbg_set_37837023f3d740e8 = function(arg0, arg1, arg2) {
+        getObject(arg0)[arg1 >>> 0] = takeObject(arg2);
+    };
+    imports.wbg.__wbg_set_65595bdd868b3009 = function(arg0, arg1, arg2) {
+        getObject(arg0).set(getObject(arg1), arg2 >>> 0);
+    };
+    imports.wbg.__wbg_set_bb8cecf6a62b9f46 = function() { return handleError(function (arg0, arg1, arg2) {
         const ret = Reflect.set(getObject(arg0), getObject(arg1), getObject(arg2));
         return ret;
     }, arguments) };
-    imports.wbg.__wbg_set_5deee49b10b2b780 = function(arg0, arg1, arg2) {
-        getObject(arg0).set(getObject(arg1), arg2 >>> 0);
+    imports.wbg.__wbg_setbody_5923b78a95eedf29 = function(arg0, arg1) {
+        getObject(arg0).body = getObject(arg1);
     };
-    imports.wbg.__wbg_set_93ba9407b5476ec6 = function(arg0, arg1, arg2) {
-        getObject(arg0)[arg1 >>> 0] = takeObject(arg2);
+    imports.wbg.__wbg_setcredentials_c3a22f1cd105a2c6 = function(arg0, arg1) {
+        getObject(arg0).credentials = __wbindgen_enum_RequestCredentials[arg1];
     };
-    imports.wbg.__wbg_signal_78d7b08c603f7438 = function(arg0) {
+    imports.wbg.__wbg_setheaders_834c0bdb6a8949ad = function(arg0, arg1) {
+        getObject(arg0).headers = getObject(arg1);
+    };
+    imports.wbg.__wbg_setmethod_3c5280fe5d890842 = function(arg0, arg1, arg2) {
+        getObject(arg0).method = getStringFromWasm0(arg1, arg2);
+    };
+    imports.wbg.__wbg_setmode_5dc300b865044b65 = function(arg0, arg1) {
+        getObject(arg0).mode = __wbindgen_enum_RequestMode[arg1];
+    };
+    imports.wbg.__wbg_setsignal_75b21ef3a81de905 = function(arg0, arg1) {
+        getObject(arg0).signal = getObject(arg1);
+    };
+    imports.wbg.__wbg_signal_aaf9ad74119f20a4 = function(arg0) {
         const ret = getObject(arg0).signal;
         return addHeapObject(ret);
     };
@@ -6425,7 +8549,7 @@ function __wbg_get_imports() {
         const ret = Signature.__wrap(arg0);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbg_spawnWorker_523c45e7583f07a4 = function(arg0, arg1, arg2, arg3) {
+    imports.wbg.__wbg_spawnWorker_4dedb9ae363627d8 = function(arg0, arg1, arg2, arg3) {
         const ret = spawnWorker(getObject(arg0), getObject(arg1), getObject(arg2), arg3 >>> 0);
         return addHeapObject(ret);
     };
@@ -6436,27 +8560,43 @@ function __wbg_get_imports() {
         getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
         getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
     };
-    imports.wbg.__wbg_status_207ae987303c7b46 = function() { return handleError(function (arg0) {
+    imports.wbg.__wbg_static_accessor_GLOBAL_88a902d13a557d07 = function() {
+        const ret = typeof global === 'undefined' ? null : global;
+        return isLikeNone(ret) ? 0 : addHeapObject(ret);
+    };
+    imports.wbg.__wbg_static_accessor_GLOBAL_THIS_56578be7e9f832b0 = function() {
+        const ret = typeof globalThis === 'undefined' ? null : globalThis;
+        return isLikeNone(ret) ? 0 : addHeapObject(ret);
+    };
+    imports.wbg.__wbg_static_accessor_SELF_37c5d418e4bf5819 = function() {
+        const ret = typeof self === 'undefined' ? null : self;
+        return isLikeNone(ret) ? 0 : addHeapObject(ret);
+    };
+    imports.wbg.__wbg_static_accessor_WINDOW_5de37043a91a9c40 = function() {
+        const ret = typeof window === 'undefined' ? null : window;
+        return isLikeNone(ret) ? 0 : addHeapObject(ret);
+    };
+    imports.wbg.__wbg_status_12bcf88a8ff51470 = function() { return handleError(function (arg0) {
         const ret = getObject(arg0).status;
         return ret;
     }, arguments) };
-    imports.wbg.__wbg_status_f596e12a59e37fac = function(arg0) {
+    imports.wbg.__wbg_status_f6360336ca686bf0 = function(arg0) {
         const ret = getObject(arg0).status;
         return ret;
     };
-    imports.wbg.__wbg_stringify_841980d1bf485619 = function() { return handleError(function (arg0) {
+    imports.wbg.__wbg_stringify_f7ed6987935b4a24 = function() { return handleError(function (arg0) {
         const ret = JSON.stringify(getObject(arg0));
         return addHeapObject(ret);
     }, arguments) };
-    imports.wbg.__wbg_subarray_2dc34705c0dc7cdb = function(arg0, arg1, arg2) {
+    imports.wbg.__wbg_subarray_aa9065fa9dc5df96 = function(arg0, arg1, arg2) {
         const ret = getObject(arg0).subarray(arg1 >>> 0, arg2 >>> 0);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbg_then_84907e7a6730461e = function(arg0, arg1) {
+    imports.wbg.__wbg_then_44b73946d2fb3e7d = function(arg0, arg1) {
         const ret = getObject(arg0).then(getObject(arg1));
         return addHeapObject(ret);
     };
-    imports.wbg.__wbg_then_db12746ab6cec3f6 = function(arg0, arg1, arg2) {
+    imports.wbg.__wbg_then_48b406749878a531 = function(arg0, arg1, arg2) {
         const ret = getObject(arg0).then(getObject(arg1), getObject(arg2));
         return addHeapObject(ret);
     };
@@ -6468,14 +8608,14 @@ function __wbg_get_imports() {
         const ret = Transition.__wrap(arg0);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbg_url_af72aa58d8ae19c5 = function(arg0, arg1) {
+    imports.wbg.__wbg_url_ae10c34ca209681d = function(arg0, arg1) {
         const ret = getObject(arg1).url;
         const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
         const len1 = WASM_VECTOR_LEN;
         getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
         getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
     };
-    imports.wbg.__wbg_value_51f8a88d4a1805fb = function(arg0) {
+    imports.wbg.__wbg_value_cd1ffa7b1ab794f1 = function(arg0) {
         const ret = getObject(arg0).value;
         return addHeapObject(ret);
     };
@@ -6487,10 +8627,6 @@ function __wbg_get_imports() {
         const ret = getObject(arg0).versions;
         return addHeapObject(ret);
     };
-    imports.wbg.__wbg_window_2aba046d3fc4ad7c = function() { return handleError(function () {
-        const ret = window.window;
-        return addHeapObject(ret);
-    }, arguments) };
     imports.wbg.__wbindgen_bigint_from_i128 = function(arg0, arg1) {
         const ret = arg0 << BigInt(64) | BigInt.asUintN(64, arg1);
         return addHeapObject(ret);
@@ -6507,6 +8643,11 @@ function __wbg_get_imports() {
         const ret = BigInt.asUintN(64, arg0);
         return addHeapObject(ret);
     };
+    imports.wbg.__wbindgen_boolean_get = function(arg0) {
+        const v = getObject(arg0);
+        const ret = typeof(v) === 'boolean' ? (v ? 1 : 0) : 2;
+        return ret;
+    };
     imports.wbg.__wbindgen_cb_drop = function(arg0) {
         const obj = takeObject(arg0).original;
         if (obj.cnt-- == 1) {
@@ -6516,8 +8657,8 @@ function __wbg_get_imports() {
         const ret = false;
         return ret;
     };
-    imports.wbg.__wbindgen_closure_wrapper6717 = function(arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 817, __wbg_adapter_38);
+    imports.wbg.__wbindgen_closure_wrapper7093 = function(arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 822, __wbg_adapter_40);
         return addHeapObject(ret);
     };
     imports.wbg.__wbindgen_debug_string = function(arg0, arg1) {

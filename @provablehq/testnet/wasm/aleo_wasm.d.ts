@@ -42,6 +42,54 @@ export class Address {
    */
   static from_compute_key(compute_key: ComputeKey): Address;
   /**
+   * Get an address from a series of bytes.
+   *
+   * @param {Uint8Array} bytes A left endian byte array representing the address.
+   *
+   * @returns {Address} The address object.
+   */
+  static fromBytesLe(bytes: Uint8Array): Address;
+  /**
+   * Get the left endian byte array representation of the address.
+   */
+  toBytesLe(): Uint8Array;
+  /**
+   * Get an address from a series of bits represented as a boolean array.
+   *
+   * @param {Array} bits A left endian boolean array representing the bits of the address.
+   *
+   * @returns {Address} The address object.
+   */
+  static fromBitsLe(bits: Array<any>): Address;
+  /**
+   * Get the left endian boolean array representation of the bits of the address.
+   */
+  toBitsLe(): Array<any>;
+  /**
+   * Get an address object from an array of fields.
+   *
+   * @param {Array} fields An array of fields.
+   *
+   * @returns {Plaintext} The address object.
+   */
+  static fromFields(fields: Array<any>): Address;
+  /**
+   * Get the field array representation of the address.
+   */
+  toFields(): Array<any>;
+  /**
+   * Get an address object from a group.
+   *
+   * @param {Group} group The group object.
+   *
+   * @returns {Address} The address object.
+   */
+  static fromGroup(group: Group): Address;
+  /**
+   * Get the group representation of the address object.
+   */
+  toGroup(): Group;
+  /**
    * Create an aleo address object from a string representation of an address
    *
    * @param {string} address String representation of an addressm
@@ -56,12 +104,124 @@ export class Address {
    */
   to_string(): string;
   /**
+   * Get the plaintext representation of the address.
+   */
+  toPlaintext(): Plaintext;
+  /**
    * Verify a signature for a message signed by the address
    *
    * @param {Uint8Array} Byte array representing a message signed by the address
    * @returns {boolean} Boolean representing whether or not the signature is valid
    */
   verify(message: Uint8Array, signature: Signature): boolean;
+}
+export class BHP1024 {
+  free(): void;
+  /**
+   * Create a BHP hasher with an input size of 1024 bits.
+   */
+  constructor();
+  /**
+   * Create a BHP hasher with an input size of 1024 bits with a custom domain separator.
+   */
+  static setup(domain_separator: string): BHP1024;
+  /**
+   * Returns the BHP hash with an input hasher of 1024 bits.
+   */
+  hash(input: Array<any>): Field;
+  /**
+   * Returns a BHP hash with an input hasher of 1024 bits.
+   */
+  hashToGroup(input: Array<any>): Group;
+  /**
+   * Returns a BHP commitment with an input hasher of 1024 bits and randomizer.
+   */
+  commit(input: Array<any>, randomizer: Scalar): Field;
+  /**
+   * Returns a BHP commitment with an input hasher of 1024 bits and randomizer.
+   */
+  commitToGroup(input: Array<any>, randomizer: Scalar): Group;
+}
+export class BHP256 {
+  free(): void;
+  /**
+   * Create a BHP hasher with an input size of 256 bits.
+   */
+  constructor();
+  /**
+   * Create a BHP hasher with an input size of 256 bits with a custom domain separator.
+   */
+  static setup(domain_separator: string): BHP256;
+  /**
+   * Returns the BHP hash with an input hasher of 256 bits.
+   */
+  hash(input: Array<any>): Field;
+  /**
+   * Returns a BHP hash with an input hasher of 256 bits.
+   */
+  hashToGroup(input: Array<any>): Group;
+  /**
+   * Returns a BHP commitment with an input hasher of 256 bits and randomizer.
+   */
+  commit(input: Array<any>, randomizer: Scalar): Field;
+  /**
+   * Returns a BHP commitment with an input hasher of 256 bits and randomizer.
+   */
+  commitToGroup(input: Array<any>, randomizer: Scalar): Group;
+}
+export class BHP512 {
+  free(): void;
+  /**
+   * Create a BHP hasher with an input size of 512 bits.
+   */
+  constructor();
+  /**
+   * Create a BHP hasher with an input size of 512 bits with a custom domain separator.
+   */
+  static setup(domain_separator: string): BHP512;
+  /**
+   * Returns the BHP hash with an input hasher of 512 bits.
+   */
+  hash(input: Array<any>): Field;
+  /**
+   * Returns a BHP hash with an input hasher of 512 bits.
+   */
+  hashToGroup(input: Array<any>): Group;
+  /**
+   * Returns a BHP commitment with an input hasher of 512 bits and randomizer.
+   */
+  commit(input: Array<any>, randomizer: Scalar): Field;
+  /**
+   * Returns a BHP commitment with an input hasher of 512 bits and randomizer.
+   */
+  commitToGroup(input: Array<any>, randomizer: Scalar): Group;
+}
+export class BHP768 {
+  free(): void;
+  /**
+   * Create a BHP hasher with an input size of 768 bits.
+   */
+  constructor();
+  /**
+   * Create a BHP hasher with an input size of 768 bits with a custom domain separator.
+   */
+  static setup(domain_separator: string): BHP768;
+  /**
+   * Returns the BHP hash with an input hasher of 768 bits.
+   */
+  hash(input: Array<any>): Field;
+  /**
+   * Returns a BHP hash with an input hasher of 768 bits.
+   */
+  hashToGroup(input: Array<any>): Group;
+  /**
+   * Returns a BHP commitment with an input hasher of 768 bits and randomizer.
+   */
+  commit(input: Array<any>, randomizer: Scalar): Field;
+  /**
+   * Returns a BHP commitment with an input hasher of 768 bits and randomizer.
+   */
+  commitToGroup(input: Array<any>, randomizer: Scalar): Group;
 }
 /**
  * SnarkVM Ciphertext object. A Ciphertext represents an symmetrically encrypted plaintext. This
@@ -76,14 +236,23 @@ export class Ciphertext {
   /**
    * Decrypt the ciphertext using the given view key.
    *
-   * @param {ViewKey} The view key of the account that encrypted the ciphertext.
-   * @param {Group} The nonce used to encrypt the ciphertext.
+   * @param {ViewKey} viewKey The view key of the account that encrypted the ciphertext.
+   * @param {Group} nonce The nonce used to encrypt the ciphertext.
    *
    * @returns {Plaintext} The decrypted plaintext.
    */
   decrypt(view_key: ViewKey, nonce: Group): Plaintext;
   /**
-   * Decrypts a ciphertext into plaintext using the given transition view key.
+   * Decrypt a ciphertext using the view key of the transition signer, transition public key, and
+   * (program, function, index) tuple.
+   */
+  decryptWithTransitionInfo(view_key: ViewKey, transition_public_key: Group, program: string, function_name: string, index: number): Plaintext;
+  /**
+   * Decrypt a ciphertext using the transition view key and a (program, function, index) tuple.
+   */
+  decryptWithTransitionViewKey(transition_view_key: Field, program: string, function_name: string, index: number): Plaintext;
+  /**
+   * Decrypts a ciphertext into plaintext using the given ciphertext view key.
    *
    * @param {Field} transition_view_key The transition view key that was used to encrypt the ciphertext.
    *
@@ -98,6 +267,34 @@ export class Ciphertext {
    * @returns {Ciphertext} The Ciphertext object.
    */
   static fromBytesLe(bytes: Uint8Array): Ciphertext;
+  /**
+   * Get the left endian byte array representation of the ciphertext.
+   */
+  toBytesLe(): Uint8Array;
+  /**
+   * Get a ciphertext object from a series of bits represented as a boolean array.
+   *
+   * @param {Array} bits A left endian boolean array representing the bits of the ciphertext.
+   *
+   * @returns {Ciphertext} The ciphertext object.
+   */
+  static fromBitsLe(bits: Array<any>): Ciphertext;
+  /**
+   * Get the left endian boolean array representation of the bits of the ciphertext.
+   */
+  toBitsLe(): Array<any>;
+  /**
+   * Get a ciphertext object from an array of fields.
+   *
+   * @param {Array} fields An array of fields.
+   *
+   * @returns {Ciphertext} The ciphertext object.
+   */
+  static fromFields(fields: Array<any>): Ciphertext;
+  /**
+   * Get the field array representation of the ciphertext.
+   */
+  toFields(): Array<any>;
   /**
    * Deserialize a Ciphertext string into a Ciphertext object.
    *
@@ -247,19 +444,35 @@ export class Field {
   private constructor();
   free(): void;
   /**
-   * Creates a field object from a string representation of a field.
+   * Creates a field object from a string representation of a field element.
    */
   static fromString(field: string): Field;
   /**
-   * Create a plaintext element from a group element.
-   */
-  toPlaintext(): Plaintext;
-  /**
-   * Returns the string representation of the field.
+   * Returns the string representation of the field element.
    */
   toString(): string;
   /**
-   * ----- Modified by FoxWallet -----
+   * Create a field element from a Uint8Array of left endian bytes.
+   */
+  static fromBytesLe(bytes: Uint8Array): Field;
+  /**
+   * Encode the field element as a Uint8Array of left endian bytes.
+   */
+  toBytesLe(): Uint8Array;
+  /**
+   * Reconstruct a field element from a boolean array representation.
+   */
+  static fromBitsLe(bits: Array<any>): Field;
+  /**
+   * Get the left endian boolean array representation of the field element.
+   */
+  toBitsLe(): Array<any>;
+  /**
+   * Create a plaintext from the field element.
+   */
+  toPlaintext(): Plaintext;
+  /**
+   * Clone the field element.
    */
   clone(): Field;
   /**
@@ -291,11 +504,11 @@ export class Field {
    */
   inverse(): Field;
   /**
-   * Get the zero element of the field.
+   * Get the additive identity element of the field.
    */
   static zero(): Field;
   /**
-   * Get the one element of the field.
+   * Get the multiplicative identity of the field.
    */
   static one(): Field;
   /**
@@ -366,13 +579,33 @@ export class Group {
   private constructor();
   free(): void;
   /**
-   * Creates a group object from a string representation of a group.
+   * Creates a group object from a string representation of a group element.
    */
   static fromString(group: string): Group;
   /**
-   * Returns the string representation of the group.
+   * Returns the string representation of the group element.
    */
   toString(): string;
+  /**
+   * Create a group element from a Uint8Array of left endian bytes.
+   */
+  static fromBytesLe(bytes: Uint8Array): Group;
+  /**
+   * Encode the group element as a Uint8Array of left endian bytes.
+   */
+  toBytesLe(): Uint8Array;
+  /**
+   * Reconstruct a group element from a boolean array representation.
+   */
+  static fromBitsLe(bits: Array<any>): Group;
+  /**
+   * Get the left endian boolean array representation of the group element.
+   */
+  toBitsLe(): Array<any>;
+  /**
+   * Get the field array representation of the group.
+   */
+  toFields(): Array<any>;
   /**
    * Get the x-coordinate of the group element.
    */
@@ -381,6 +614,10 @@ export class Group {
    * Create a plaintext element from a group element.
    */
   toPlaintext(): Plaintext;
+  /**
+   * Clone the group element.
+   */
+  clone(): Group;
   /**
    * Generate a random group element.
    */
@@ -500,6 +737,52 @@ export class OfflineQuery {
    */
   static fromString(s: string): OfflineQuery;
 }
+export class Pedersen128 {
+  free(): void;
+  /**
+   * Create a Pedersen hasher for a given (up to) 128-bit input.
+   */
+  constructor();
+  /**
+   * Create a Pedersen hasher for a given (up to) 128-bit input with a custom domain separator.
+   */
+  static setup(domain_separator: string): Pedersen128;
+  /**
+   * Returns the Pedersen hash for a given (up to) 128-bit input.
+   */
+  hash(input: Array<any>): Field;
+  /**
+   * Returns a Pedersen commitment for the given (up to) 128-bit input and randomizer.
+   */
+  commit(input: Array<any>, randomizer: Scalar): Field;
+  /**
+   * Returns a Pedersen commitment for the given (up to) 128-bit input and randomizer.
+   */
+  commitToGroup(input: Array<any>, randomizer: Scalar): Group;
+}
+export class Pedersen64 {
+  free(): void;
+  /**
+   * Create a Pedersen hasher for a given (up to) 64-bit input.
+   */
+  constructor();
+  /**
+   * Create a Pedersen64 hasher for a given (up to) 64-bit input with a custom domain separator.
+   */
+  static setup(domain_separator: string): Pedersen64;
+  /**
+   * Returns the Pedersen hash for a given (up to) 64-bit input.
+   */
+  hash(input: Array<any>): Field;
+  /**
+   * Returns a Pedersen commitment for the given (up to) 64-bit input and randomizer.
+   */
+  commit(input: Array<any>, randomizer: Scalar): Field;
+  /**
+   * Returns a Pedersen commitment for the given (up to) 64-bit input and randomizer.
+   */
+  commitToGroup(input: Array<any>, randomizer: Scalar): Group;
+}
 /**
  * SnarkVM Plaintext object. Plaintext is a fundamental monadic type used to represent Aleo
  * primitive types (boolean, field, group, i8, i16, i32, i64, i128, u8, u16, u32, u64, u128,
@@ -561,11 +844,33 @@ export class Plaintext {
    */
   static fromBytesLe(bytes: Uint8Array): Plaintext;
   /**
-   * Generate a random plaintext element from a series of bytes.
-   *
-   * @param {Uint8Array} bytes A left endian byte array representing the plaintext.
+   * Get the left endian byte array representation of the plaintext.
    */
   toBytesLe(): Uint8Array;
+  /**
+   * Get a plaintext object from a series of bits represented as a boolean array.
+   *
+   * @param {Array} bits A left endian boolean array representing the bits plaintext.
+   *
+   * @returns {Plaintext} The plaintext object.
+   */
+  static fromBitsLe(bits: Array<any>): Plaintext;
+  /**
+   * Get the left endian boolean array representation of the bits of the plaintext.
+   */
+  toBitsLe(): Array<any>;
+  /**
+   * Get a plaintext object from an array of fields.
+   *
+   * @param {Array} fields An array of fields.
+   *
+   * @returns {Plaintext} The plaintext object.
+   */
+  static fromFields(fields: Array<any>): Plaintext;
+  /**
+   * Get the field array representation of the plaintext.
+   */
+  toFields(): Array<any>;
   /**
    * Returns the string representation of the plaintext.
    *
@@ -584,6 +889,87 @@ export class Plaintext {
    * @returns {Object} The JS object representation of the plaintext.
    */
   toObject(): any;
+}
+export class Poseidon2 {
+  free(): void;
+  /**
+   * Create a Poseidon hasher with an input rate of 2.
+   */
+  constructor();
+  /**
+   * Create a Poseidon hasher with an input rate of 2 and a custom domain separator.
+   */
+  static setup(domain_separator: string): Poseidon2;
+  /**
+   * Returns the Poseidon hash with an input rate of 2.
+   */
+  hash(input: Array<any>): Field;
+  /**
+   * Returns the extended Poseidon hash with an input rate of 2.
+   */
+  hashMany(input: Array<any>, num_outputs: number): Array<any>;
+  /**
+   * Returns the Poseidon hash with an input rate of 2 on the scalar field.
+   */
+  hashToScalar(input: Array<any>): Scalar;
+  /**
+   * Returns the Poseidon hash with an input rate of 2 on the affine curve.
+   */
+  hashToGroup(input: Array<any>): Group;
+}
+export class Poseidon4 {
+  free(): void;
+  /**
+   * Create a Poseidon hasher with an input rate of 4.
+   */
+  constructor();
+  /**
+   * Create a Poseidon hasher with an input rate of 4 and a custom domain separator.
+   */
+  static setup(domain_separator: string): Poseidon4;
+  /**
+   * Returns the Poseidon hash with an input rate of 4.
+   */
+  hash(input: Array<any>): Field;
+  /**
+   * Returns the extended Poseidon hash with an input rate of 4.
+   */
+  hashMany(input: Array<any>, num_outputs: number): Array<any>;
+  /**
+   * Returns the Poseidon hash with an input rate of 4 on the scalar field.
+   */
+  hashToScalar(input: Array<any>): Scalar;
+  /**
+   * Returns the Poseidon hash with an input rate of 4 on the affine curve.
+   */
+  hashToGroup(input: Array<any>): Group;
+}
+export class Poseidon8 {
+  free(): void;
+  /**
+   * Create a Poseidon hasher with an input rate of 8.
+   */
+  constructor();
+  /**
+   * Create a Poseidon hasher with an input rate of 8 and a custom domain separator.
+   */
+  static setup(domain_separator: string): Poseidon8;
+  /**
+   * Returns the Poseidon hash with an input rate of 8.
+   */
+  hash(input: Array<any>): Field;
+  /**
+   * Returns the extended Poseidon hash with an input rate of 8.
+   */
+  hashMany(input: Array<any>, num_outputs: number): Array<any>;
+  /**
+   * Returns the Poseidon hash with an input rate of 8 on the scalar field.
+   */
+  hashToScalar(input: Array<any>): Scalar;
+  /**
+   * Returns the Poseidon hash with an input rate of 8 on the affine curve.
+   */
+  hashToGroup(input: Array<any>): Group;
 }
 /**
  * Private key of an Aleo account
@@ -1357,6 +1743,26 @@ export class RecordCiphertext {
    * @returns {Field} tag of the record.
    */
   static tag(graph_key: GraphKey, commitment: Field): Field;
+  /**
+   * Get a record ciphertext object from a series of bytes.
+   *
+   * @param {Uint8Array} bytes A left endian byte array representing the record ciphertext.
+   *
+   * @returns {RecordCiphertext}
+   */
+  static fromBytesLe(bytes: Uint8Array): RecordCiphertext;
+  /**
+   * Get the left endian byte array representation of the record ciphertext.
+   */
+  toBytesLe(): Uint8Array;
+  /**
+   * Get the left endian boolean array representation of the record ciphertext bits.
+   */
+  toBitsLe(): Array<any>;
+  /**
+   * Get the field array representation of the record ciphertext.
+   */
+  toFields(): Array<any>;
 }
 /**
  * Plaintext representation of an Aleo record
@@ -1436,6 +1842,30 @@ export class RecordPlaintext {
    */
   toString(): string;
   /**
+   * Get a record plaintext object from a series of bytes.
+   *
+   * @param {Uint8Array} bytes A left endian byte array representing the record plaintext.
+   *
+   * @returns {RecordPlaintext} The record plaintext.
+   */
+  static fromBytesLe(bytes: Uint8Array): RecordPlaintext;
+  /**
+   * Returns the left endian byte array representation of the record plaintext.
+   *
+   * @returns {Uint8Array} Byte array representation of the record plaintext.
+   */
+  toBytesLe(): Uint8Array;
+  /**
+   * Returns the left endian boolean array representation of the record plaintext bits.
+   *
+   * @returns {Array} Boolean array representation of the record plaintext bits.
+   */
+  toBitsLe(): Array<any>;
+  /**
+   * Get the field array representation of the record plaintext.
+   */
+  toFields(): Array<any>;
+  /**
    * Returns the amount of microcredits in the record
    *
    * @returns {u64} Amount of microcredits in the record
@@ -1477,19 +1907,39 @@ export class Scalar {
   private constructor();
   free(): void;
   /**
-   * Returns the string representation of the group.
-   */
-  toString(): string;
-  /**
-   * Create a plaintext element from a group element.
-   */
-  toPlaintext(): Plaintext;
-  /**
-   * Creates a group object from a string representation of a group.
+   * Creates a scalar object from a string representation of a scalar element.
    */
   static fromString(group: string): Scalar;
   /**
-   * Generate a random group element.
+   * Returns the string representation of the scalar element.
+   */
+  toString(): string;
+  /**
+   * Create a scalar element from a Uint8Array of left endian bytes.
+   */
+  static fromBytesLe(bytes: Uint8Array): Scalar;
+  /**
+   * Encode the scalar element as a Uint8Array of left endian bytes.
+   */
+  toBytesLe(): Uint8Array;
+  /**
+   * Reconstruct a scalar element from a boolean array representation.
+   */
+  static fromBitsLe(bits: Array<any>): Scalar;
+  /**
+   * Get the left endian boolean array representation of the scalar element.
+   */
+  toBitsLe(): Array<any>;
+  /**
+   * Create a plaintext element from a scalar element.
+   */
+  toPlaintext(): Plaintext;
+  /**
+   * Clone the scalar element.
+   */
+  clone(): Scalar;
+  /**
+   * Generate a random scalar element.
    */
   static random(): Scalar;
   /**
@@ -1521,11 +1971,11 @@ export class Scalar {
    */
   inverse(): Scalar;
   /**
-   * Creates a one valued element of the scalar field.
+   * Get the multiplicative identity of the scalar field.
    */
   static one(): Scalar;
   /**
-   * Creates a zero valued element of the scalar field
+   * Get the additive identity of the scalar field.
    */
   static zero(): Scalar;
   /**
@@ -1570,6 +2020,34 @@ export class Signature {
    */
   verify(address: Address, message: Uint8Array): boolean;
   /**
+   * Get a signature from a series of bytes.
+   *
+   * @param {Uint8Array} bytes A left endian byte array representing the signature.
+   *
+   * @returns {Signature} The signature object.
+   */
+  static fromBytesLe(bytes: Uint8Array): Signature;
+  /**
+   * Get the left endian byte array representation of the signature.
+   */
+  toBytesLe(): Uint8Array;
+  /**
+   * Get a signature from a series of bits represented as a boolean array.
+   *
+   * @param {Array} bits A left endian boolean array representing the bits of the signature.
+   *
+   * @returns {Signature} The signature object.
+   */
+  static fromBitsLe(bits: Array<any>): Signature;
+  /**
+   * Get the left endian boolean array representation of the bits of the signature.
+   */
+  toBitsLe(): Array<any>;
+  /**
+   * Get the field array representation of the signature.
+   */
+  toFields(): Array<any>;
+  /**
    * Get a signature from a string representation of a signature
    *
    * @param {string} signature String representation of a signature
@@ -1582,6 +2060,10 @@ export class Signature {
    * @returns {string} String representation of a signature
    */
   to_string(): string;
+  /**
+   * Get the plaintext representation of the signature.
+   */
+  toPlaintext(): Plaintext;
   /**
    * ----- Modified by FoxWallet -----
    */
@@ -1841,6 +2323,10 @@ export class Transition {
    * Get the transition public key of the transition.
    */
   tpk(): Group;
+  /**
+   * Get the transition view key of the transition.
+   */
+  tvk(view_key: ViewKey): Field;
   /**
    * Get the transition commitment of the transition.
    */

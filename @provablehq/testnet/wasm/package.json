@@ -1,6 +1,6 @@
 {
   "name": "@provablehq/wasm-testnet",
-  "version": "0.8.0",
+  "version": "0.8.7",
   "description": "SnarkVM WASM binaries with javascript bindings",
   "collaborators": [
     "The Provable Team"

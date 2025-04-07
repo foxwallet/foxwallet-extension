@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+export function hashBHP256(value: string): string;
 /**
  * Verify an execution with a single function and a single transition. Executions with multiple
  * transitions or functions will fail to verify. Also, this does not verify that the state root of
@@ -14,7 +15,6 @@
 export function verifyFunctionExecution(execution: Execution, verifying_key: VerifyingKey, program: Program, function_id: string): boolean;
 export function runRayonThread(receiver: number): void;
 export function initThreadPool(url: URL, num_threads: number): Promise<void>;
-export function hashBHP256(value: string): string;
 /**
  * Public address of an Aleo account
  */
@@ -42,6 +42,54 @@ export class Address {
    */
   static from_compute_key(compute_key: ComputeKey): Address;
   /**
+   * Get an address from a series of bytes.
+   *
+   * @param {Uint8Array} bytes A left endian byte array representing the address.
+   *
+   * @returns {Address} The address object.
+   */
+  static fromBytesLe(bytes: Uint8Array): Address;
+  /**
+   * Get the left endian byte array representation of the address.
+   */
+  toBytesLe(): Uint8Array;
+  /**
+   * Get an address from a series of bits represented as a boolean array.
+   *
+   * @param {Array} bits A left endian boolean array representing the bits of the address.
+   *
+   * @returns {Address} The address object.
+   */
+  static fromBitsLe(bits: Array<any>): Address;
+  /**
+   * Get the left endian boolean array representation of the bits of the address.
+   */
+  toBitsLe(): Array<any>;
+  /**
+   * Get an address object from an array of fields.
+   *
+   * @param {Array} fields An array of fields.
+   *
+   * @returns {Plaintext} The address object.
+   */
+  static fromFields(fields: Array<any>): Address;
+  /**
+   * Get the field array representation of the address.
+   */
+  toFields(): Array<any>;
+  /**
+   * Get an address object from a group.
+   *
+   * @param {Group} group The group object.
+   *
+   * @returns {Address} The address object.
+   */
+  static fromGroup(group: Group): Address;
+  /**
+   * Get the group representation of the address object.
+   */
+  toGroup(): Group;
+  /**
    * Create an aleo address object from a string representation of an address
    *
    * @param {string} address String representation of an addressm
@@ -56,12 +104,124 @@ export class Address {
    */
   to_string(): string;
   /**
+   * Get the plaintext representation of the address.
+   */
+  toPlaintext(): Plaintext;
+  /**
    * Verify a signature for a message signed by the address
    *
    * @param {Uint8Array} Byte array representing a message signed by the address
    * @returns {boolean} Boolean representing whether or not the signature is valid
    */
   verify(message: Uint8Array, signature: Signature): boolean;
+}
+export class BHP1024 {
+  free(): void;
+  /**
+   * Create a BHP hasher with an input size of 1024 bits.
+   */
+  constructor();
+  /**
+   * Create a BHP hasher with an input size of 1024 bits with a custom domain separator.
+   */
+  static setup(domain_separator: string): BHP1024;
+  /**
+   * Returns the BHP hash with an input hasher of 1024 bits.
+   */
+  hash(input: Array<any>): Field;
+  /**
+   * Returns a BHP hash with an input hasher of 1024 bits.
+   */
+  hashToGroup(input: Array<any>): Group;
+  /**
+   * Returns a BHP commitment with an input hasher of 1024 bits and randomizer.
+   */
+  commit(input: Array<any>, randomizer: Scalar): Field;
+  /**
+   * Returns a BHP commitment with an input hasher of 1024 bits and randomizer.
+   */
+  commitToGroup(input: Array<any>, randomizer: Scalar): Group;
+}
+export class BHP256 {
+  free(): void;
+  /**
+   * Create a BHP hasher with an input size of 256 bits.
+   */
+  constructor();
+  /**
+   * Create a BHP hasher with an input size of 256 bits with a custom domain separator.
+   */
+  static setup(domain_separator: string): BHP256;
+  /**
+   * Returns the BHP hash with an input hasher of 256 bits.
+   */
+  hash(input: Array<any>): Field;
+  /**
+   * Returns a BHP hash with an input hasher of 256 bits.
+   */
+  hashToGroup(input: Array<any>): Group;
+  /**
+   * Returns a BHP commitment with an input hasher of 256 bits and randomizer.
+   */
+  commit(input: Array<any>, randomizer: Scalar): Field;
+  /**
+   * Returns a BHP commitment with an input hasher of 256 bits and randomizer.
+   */
+  commitToGroup(input: Array<any>, randomizer: Scalar): Group;
+}
+export class BHP512 {
+  free(): void;
+  /**
+   * Create a BHP hasher with an input size of 512 bits.
+   */
+  constructor();
+  /**
+   * Create a BHP hasher with an input size of 512 bits with a custom domain separator.
+   */
+  static setup(domain_separator: string): BHP512;
+  /**
+   * Returns the BHP hash with an input hasher of 512 bits.
+   */
+  hash(input: Array<any>): Field;
+  /**
+   * Returns a BHP hash with an input hasher of 512 bits.
+   */
+  hashToGroup(input: Array<any>): Group;
+  /**
+   * Returns a BHP commitment with an input hasher of 512 bits and randomizer.
+   */
+  commit(input: Array<any>, randomizer: Scalar): Field;
+  /**
+   * Returns a BHP commitment with an input hasher of 512 bits and randomizer.
+   */
+  commitToGroup(input: Array<any>, randomizer: Scalar): Group;
+}
+export class BHP768 {
+  free(): void;
+  /**
+   * Create a BHP hasher with an input size of 768 bits.
+   */
+  constructor();
+  /**
+   * Create a BHP hasher with an input size of 768 bits with a custom domain separator.
+   */
+  static setup(domain_separator: string): BHP768;
+  /**
+   * Returns the BHP hash with an input hasher of 768 bits.
+   */
+  hash(input: Array<any>): Field;
+  /**
+   * Returns a BHP hash with an input hasher of 768 bits.
+   */
+  hashToGroup(input: Array<any>): Group;
+  /**
+   * Returns a BHP commitment with an input hasher of 768 bits and randomizer.
+   */
+  commit(input: Array<any>, randomizer: Scalar): Field;
+  /**
+   * Returns a BHP commitment with an input hasher of 768 bits and randomizer.
+   */
+  commitToGroup(input: Array<any>, randomizer: Scalar): Group;
 }
 /**
  * SnarkVM Ciphertext object. A Ciphertext represents an symmetrically encrypted plaintext. This
@@ -76,14 +236,23 @@ export class Ciphertext {
   /**
    * Decrypt the ciphertext using the given view key.
    *
-   * @param {ViewKey} The view key of the account that encrypted the ciphertext.
-   * @param {Group} The nonce used to encrypt the ciphertext.
+   * @param {ViewKey} viewKey The view key of the account that encrypted the ciphertext.
+   * @param {Group} nonce The nonce used to encrypt the ciphertext.
    *
    * @returns {Plaintext} The decrypted plaintext.
    */
   decrypt(view_key: ViewKey, nonce: Group): Plaintext;
   /**
-   * Decrypts a ciphertext into plaintext using the given transition view key.
+   * Decrypt a ciphertext using the view key of the transition signer, transition public key, and
+   * (program, function, index) tuple.
+   */
+  decryptWithTransitionInfo(view_key: ViewKey, transition_public_key: Group, program: string, function_name: string, index: number): Plaintext;
+  /**
+   * Decrypt a ciphertext using the transition view key and a (program, function, index) tuple.
+   */
+  decryptWithTransitionViewKey(transition_view_key: Field, program: string, function_name: string, index: number): Plaintext;
+  /**
+   * Decrypts a ciphertext into plaintext using the given ciphertext view key.
    *
    * @param {Field} transition_view_key The transition view key that was used to encrypt the ciphertext.
    *
@@ -98,6 +267,34 @@ export class Ciphertext {
    * @returns {Ciphertext} The Ciphertext object.
    */
   static fromBytesLe(bytes: Uint8Array): Ciphertext;
+  /**
+   * Get the left endian byte array representation of the ciphertext.
+   */
+  toBytesLe(): Uint8Array;
+  /**
+   * Get a ciphertext object from a series of bits represented as a boolean array.
+   *
+   * @param {Array} bits A left endian boolean array representing the bits of the ciphertext.
+   *
+   * @returns {Ciphertext} The ciphertext object.
+   */
+  static fromBitsLe(bits: Array<any>): Ciphertext;
+  /**
+   * Get the left endian boolean array representation of the bits of the ciphertext.
+   */
+  toBitsLe(): Array<any>;
+  /**
+   * Get a ciphertext object from an array of fields.
+   *
+   * @param {Array} fields An array of fields.
+   *
+   * @returns {Ciphertext} The ciphertext object.
+   */
+  static fromFields(fields: Array<any>): Ciphertext;
+  /**
+   * Get the field array representation of the ciphertext.
+   */
+  toFields(): Array<any>;
   /**
    * Deserialize a Ciphertext string into a Ciphertext object.
    *
@@ -247,19 +444,35 @@ export class Field {
   private constructor();
   free(): void;
   /**
-   * Creates a field object from a string representation of a field.
+   * Creates a field object from a string representation of a field element.
    */
   static fromString(field: string): Field;
   /**
-   * Create a plaintext element from a group element.
-   */
-  toPlaintext(): Plaintext;
-  /**
-   * Returns the string representation of the field.
+   * Returns the string representation of the field element.
    */
   toString(): string;
   /**
-   * ----- Modified by FoxWallet -----
+   * Create a field element from a Uint8Array of left endian bytes.
+   */
+  static fromBytesLe(bytes: Uint8Array): Field;
+  /**
+   * Encode the field element as a Uint8Array of left endian bytes.
+   */
+  toBytesLe(): Uint8Array;
+  /**
+   * Reconstruct a field element from a boolean array representation.
+   */
+  static fromBitsLe(bits: Array<any>): Field;
+  /**
+   * Get the left endian boolean array representation of the field element.
+   */
+  toBitsLe(): Array<any>;
+  /**
+   * Create a plaintext from the field element.
+   */
+  toPlaintext(): Plaintext;
+  /**
+   * Clone the field element.
    */
   clone(): Field;
   /**
@@ -291,11 +504,11 @@ export class Field {
    */
   inverse(): Field;
   /**
-   * Get the zero element of the field.
+   * Get the additive identity element of the field.
    */
   static zero(): Field;
   /**
-   * Get the one element of the field.
+   * Get the multiplicative identity of the field.
    */
   static one(): Field;
   /**
@@ -366,13 +579,33 @@ export class Group {
   private constructor();
   free(): void;
   /**
-   * Creates a group object from a string representation of a group.
+   * Creates a group object from a string representation of a group element.
    */
   static fromString(group: string): Group;
   /**
-   * Returns the string representation of the group.
+   * Returns the string representation of the group element.
    */
   toString(): string;
+  /**
+   * Create a group element from a Uint8Array of left endian bytes.
+   */
+  static fromBytesLe(bytes: Uint8Array): Group;
+  /**
+   * Encode the group element as a Uint8Array of left endian bytes.
+   */
+  toBytesLe(): Uint8Array;
+  /**
+   * Reconstruct a group element from a boolean array representation.
+   */
+  static fromBitsLe(bits: Array<any>): Group;
+  /**
+   * Get the left endian boolean array representation of the group element.
+   */
+  toBitsLe(): Array<any>;
+  /**
+   * Get the field array representation of the group.
+   */
+  toFields(): Array<any>;
   /**
    * Get the x-coordinate of the group element.
    */
@@ -381,6 +614,10 @@ export class Group {
    * Create a plaintext element from a group element.
    */
   toPlaintext(): Plaintext;
+  /**
+   * Clone the group element.
+   */
+  clone(): Group;
   /**
    * Generate a random group element.
    */
@@ -500,6 +737,52 @@ export class OfflineQuery {
    */
   static fromString(s: string): OfflineQuery;
 }
+export class Pedersen128 {
+  free(): void;
+  /**
+   * Create a Pedersen hasher for a given (up to) 128-bit input.
+   */
+  constructor();
+  /**
+   * Create a Pedersen hasher for a given (up to) 128-bit input with a custom domain separator.
+   */
+  static setup(domain_separator: string): Pedersen128;
+  /**
+   * Returns the Pedersen hash for a given (up to) 128-bit input.
+   */
+  hash(input: Array<any>): Field;
+  /**
+   * Returns a Pedersen commitment for the given (up to) 128-bit input and randomizer.
+   */
+  commit(input: Array<any>, randomizer: Scalar): Field;
+  /**
+   * Returns a Pedersen commitment for the given (up to) 128-bit input and randomizer.
+   */
+  commitToGroup(input: Array<any>, randomizer: Scalar): Group;
+}
+export class Pedersen64 {
+  free(): void;
+  /**
+   * Create a Pedersen hasher for a given (up to) 64-bit input.
+   */
+  constructor();
+  /**
+   * Create a Pedersen64 hasher for a given (up to) 64-bit input with a custom domain separator.
+   */
+  static setup(domain_separator: string): Pedersen64;
+  /**
+   * Returns the Pedersen hash for a given (up to) 64-bit input.
+   */
+  hash(input: Array<any>): Field;
+  /**
+   * Returns a Pedersen commitment for the given (up to) 64-bit input and randomizer.
+   */
+  commit(input: Array<any>, randomizer: Scalar): Field;
+  /**
+   * Returns a Pedersen commitment for the given (up to) 64-bit input and randomizer.
+   */
+  commitToGroup(input: Array<any>, randomizer: Scalar): Group;
+}
 /**
  * SnarkVM Plaintext object. Plaintext is a fundamental monadic type used to represent Aleo
  * primitive types (boolean, field, group, i8, i16, i32, i64, i128, u8, u16, u32, u64, u128,
@@ -561,11 +844,33 @@ export class Plaintext {
    */
   static fromBytesLe(bytes: Uint8Array): Plaintext;
   /**
-   * Generate a random plaintext element from a series of bytes.
-   *
-   * @param {Uint8Array} bytes A left endian byte array representing the plaintext.
+   * Get the left endian byte array representation of the plaintext.
    */
   toBytesLe(): Uint8Array;
+  /**
+   * Get a plaintext object from a series of bits represented as a boolean array.
+   *
+   * @param {Array} bits A left endian boolean array representing the bits plaintext.
+   *
+   * @returns {Plaintext} The plaintext object.
+   */
+  static fromBitsLe(bits: Array<any>): Plaintext;
+  /**
+   * Get the left endian boolean array representation of the bits of the plaintext.
+   */
+  toBitsLe(): Array<any>;
+  /**
+   * Get a plaintext object from an array of fields.
+   *
+   * @param {Array} fields An array of fields.
+   *
+   * @returns {Plaintext} The plaintext object.
+   */
+  static fromFields(fields: Array<any>): Plaintext;
+  /**
+   * Get the field array representation of the plaintext.
+   */
+  toFields(): Array<any>;
   /**
    * Returns the string representation of the plaintext.
    *
@@ -584,6 +889,87 @@ export class Plaintext {
    * @returns {Object} The JS object representation of the plaintext.
    */
   toObject(): any;
+}
+export class Poseidon2 {
+  free(): void;
+  /**
+   * Create a Poseidon hasher with an input rate of 2.
+   */
+  constructor();
+  /**
+   * Create a Poseidon hasher with an input rate of 2 and a custom domain separator.
+   */
+  static setup(domain_separator: string): Poseidon2;
+  /**
+   * Returns the Poseidon hash with an input rate of 2.
+   */
+  hash(input: Array<any>): Field;
+  /**
+   * Returns the extended Poseidon hash with an input rate of 2.
+   */
+  hashMany(input: Array<any>, num_outputs: number): Array<any>;
+  /**
+   * Returns the Poseidon hash with an input rate of 2 on the scalar field.
+   */
+  hashToScalar(input: Array<any>): Scalar;
+  /**
+   * Returns the Poseidon hash with an input rate of 2 on the affine curve.
+   */
+  hashToGroup(input: Array<any>): Group;
+}
+export class Poseidon4 {
+  free(): void;
+  /**
+   * Create a Poseidon hasher with an input rate of 4.
+   */
+  constructor();
+  /**
+   * Create a Poseidon hasher with an input rate of 4 and a custom domain separator.
+   */
+  static setup(domain_separator: string): Poseidon4;
+  /**
+   * Returns the Poseidon hash with an input rate of 4.
+   */
+  hash(input: Array<any>): Field;
+  /**
+   * Returns the extended Poseidon hash with an input rate of 4.
+   */
+  hashMany(input: Array<any>, num_outputs: number): Array<any>;
+  /**
+   * Returns the Poseidon hash with an input rate of 4 on the scalar field.
+   */
+  hashToScalar(input: Array<any>): Scalar;
+  /**
+   * Returns the Poseidon hash with an input rate of 4 on the affine curve.
+   */
+  hashToGroup(input: Array<any>): Group;
+}
+export class Poseidon8 {
+  free(): void;
+  /**
+   * Create a Poseidon hasher with an input rate of 8.
+   */
+  constructor();
+  /**
+   * Create a Poseidon hasher with an input rate of 8 and a custom domain separator.
+   */
+  static setup(domain_separator: string): Poseidon8;
+  /**
+   * Returns the Poseidon hash with an input rate of 8.
+   */
+  hash(input: Array<any>): Field;
+  /**
+   * Returns the extended Poseidon hash with an input rate of 8.
+   */
+  hashMany(input: Array<any>, num_outputs: number): Array<any>;
+  /**
+   * Returns the Poseidon hash with an input rate of 8 on the scalar field.
+   */
+  hashToScalar(input: Array<any>): Scalar;
+  /**
+   * Returns the Poseidon hash with an input rate of 8 on the affine curve.
+   */
+  hashToGroup(input: Array<any>): Group;
 }
 /**
  * Private key of an Aleo account
@@ -943,89 +1329,6 @@ export class ProgramManager {
   private constructor();
   free(): void;
   /**
-   * Synthesize proving and verifying keys for a program
-   *
-   * @param program {string} The program source code of the program to synthesize keys for
-   * @param function_id {string} The function to synthesize keys for
-   * @param inputs {Array} The inputs to the function
-   * @param imports {Object | undefined} The imports for the program
-   */
-  static synthesizeKeyPair(private_key: PrivateKey, program: string, function_id: string, inputs: Array<any>, imports?: object | null): Promise<KeyPair>;
-  /**
-   * Deploy an Aleo program
-   *
-   * @param private_key The private key of the sender
-   * @param program The source code of the program being deployed
-   * @param imports A javascript object holding the source code of any imported programs in the
-   * form \{"program_name1": "program_source_code", "program_name2": "program_source_code", ..\}.
-   * Note that all imported programs must be deployed on chain before the main program in order
-   * for the deployment to succeed
-   * @param fee_credits The amount of credits to pay as a fee
-   * @param fee_record The record to spend the fee from
-   * @param url The url of the Aleo network node to send the transaction to
-   * @param imports (optional) Provide a list of imports to use for the program deployment in the
-   * form of a javascript object where the keys are a string of the program name and the values
-   * are a string representing the program source code \{ "hello.aleo": "hello.aleo source code" \}
-   * @param fee_proving_key (optional) Provide a proving key to use for the fee execution
-   * @param fee_verifying_key (optional) Provide a verifying key to use for the fee execution
-   * @returns {Transaction}
-   */
-  static buildDeploymentTransaction(private_key: PrivateKey, program: string, base_fee: bigint, priority_fee: bigint, fee_record?: RecordPlaintext | null, url?: string | null, imports?: object | null, fee_proving_key?: ProvingKey | null, fee_verifying_key?: VerifyingKey | null, offline_query?: OfflineQuery | null): Promise<Transaction>;
-  /**
-   * Estimate the fee for a program deployment
-   *
-   * Disclaimer: Fee estimation is experimental and may not represent a correct estimate on any current or future network
-   *
-   * @param program The source code of the program being deployed
-   * @param imports (optional) Provide a list of imports to use for the deployment fee estimation
-   * in the form of a javascript object where the keys are a string of the program name and the values
-   * are a string representing the program source code \{ "hello.aleo": "hello.aleo source code" \}
-   * @returns {u64}
-   */
-  static estimateDeploymentFee(program: string, imports?: object | null): Promise<bigint>;
-  /**
-   * Estimate the component of the deployment cost which comes from the fee for the program name.
-   * Note that this cost does not represent the entire cost of deployment. It is additional to
-   * the cost of the size (in bytes) of the deployment.
-   *
-   * Disclaimer: Fee estimation is experimental and may not represent a correct estimate on any current or future network
-   *
-   * @param name The name of the program to be deployed
-   * @returns {u64}
-   */
-  static estimateProgramNameCost(name: string): bigint;
-  /**
-   * Split an Aleo credits record into two separate records. This function does not require a fee.
-   *
-   * @param private_key The private key of the sender
-   * @param split_amount The amount of the credit split. This amount will be subtracted from the
-   * value of the record and two new records will be created with the split amount and the remainder
-   * @param amount_record The record to split
-   * @param url The url of the Aleo network node to send the transaction to
-   * @param split_proving_key (optional) Provide a proving key to use for the split function
-   * @param split_verifying_key (optional) Provide a verifying key to use for the split function
-   * @returns {Transaction} Transaction object
-   */
-  static buildSplitTransaction(private_key: PrivateKey, split_amount: number, amount_record: RecordPlaintext, url?: string | null, split_proving_key?: ProvingKey | null, split_verifying_key?: VerifyingKey | null, offline_query?: OfflineQuery | null): Promise<Transaction>;
-  /**
-   * Send credits from one Aleo account to another
-   *
-   * @param private_key The private key of the sender
-   * @param amount_credits The amount of credits to send
-   * @param recipient The recipient of the transaction
-   * @param transfer_type The type of the transfer (options: "private", "public", "private_to_public", "public_to_private")
-   * @param amount_record The record to fund the amount from
-   * @param fee_credits The amount of credits to pay as a fee
-   * @param fee_record The record to spend the fee from
-   * @param url The url of the Aleo network node to send the transaction to
-   * @param transfer_verifying_key (optional) Provide a verifying key to use for the transfer
-   * function
-   * @param fee_proving_key (optional) Provide a proving key to use for the fee execution
-   * @param fee_verifying_key (optional) Provide a verifying key to use for the fee execution
-   * @returns {Transaction}
-   */
-  static buildTransferTransaction(private_key: PrivateKey, amount_credits: number, recipient: string, transfer_type: string, amount_record: RecordPlaintext | null | undefined, fee_credits: number, fee_record?: RecordPlaintext | null, url?: string | null, transfer_proving_key?: ProvingKey | null, transfer_verifying_key?: VerifyingKey | null, fee_proving_key?: ProvingKey | null, fee_verifying_key?: VerifyingKey | null, offline_query?: OfflineQuery | null): Promise<Transaction>;
-  /**
    * Execute an arbitrary function locally
    *
    * @param {PrivateKey} private_key The private key of the sender
@@ -1119,6 +1422,89 @@ export class ProgramManager {
    * @returns {Transaction} Transaction object
    */
   static buildJoinTransaction(private_key: PrivateKey, record_1: RecordPlaintext, record_2: RecordPlaintext, fee_credits: number, fee_record?: RecordPlaintext | null, url?: string | null, join_proving_key?: ProvingKey | null, join_verifying_key?: VerifyingKey | null, fee_proving_key?: ProvingKey | null, fee_verifying_key?: VerifyingKey | null, offline_query?: OfflineQuery | null): Promise<Transaction>;
+  /**
+   * Split an Aleo credits record into two separate records. This function does not require a fee.
+   *
+   * @param private_key The private key of the sender
+   * @param split_amount The amount of the credit split. This amount will be subtracted from the
+   * value of the record and two new records will be created with the split amount and the remainder
+   * @param amount_record The record to split
+   * @param url The url of the Aleo network node to send the transaction to
+   * @param split_proving_key (optional) Provide a proving key to use for the split function
+   * @param split_verifying_key (optional) Provide a verifying key to use for the split function
+   * @returns {Transaction} Transaction object
+   */
+  static buildSplitTransaction(private_key: PrivateKey, split_amount: number, amount_record: RecordPlaintext, url?: string | null, split_proving_key?: ProvingKey | null, split_verifying_key?: VerifyingKey | null, offline_query?: OfflineQuery | null): Promise<Transaction>;
+  /**
+   * Synthesize proving and verifying keys for a program
+   *
+   * @param program {string} The program source code of the program to synthesize keys for
+   * @param function_id {string} The function to synthesize keys for
+   * @param inputs {Array} The inputs to the function
+   * @param imports {Object | undefined} The imports for the program
+   */
+  static synthesizeKeyPair(private_key: PrivateKey, program: string, function_id: string, inputs: Array<any>, imports?: object | null): Promise<KeyPair>;
+  /**
+   * Deploy an Aleo program
+   *
+   * @param private_key The private key of the sender
+   * @param program The source code of the program being deployed
+   * @param imports A javascript object holding the source code of any imported programs in the
+   * form \{"program_name1": "program_source_code", "program_name2": "program_source_code", ..\}.
+   * Note that all imported programs must be deployed on chain before the main program in order
+   * for the deployment to succeed
+   * @param fee_credits The amount of credits to pay as a fee
+   * @param fee_record The record to spend the fee from
+   * @param url The url of the Aleo network node to send the transaction to
+   * @param imports (optional) Provide a list of imports to use for the program deployment in the
+   * form of a javascript object where the keys are a string of the program name and the values
+   * are a string representing the program source code \{ "hello.aleo": "hello.aleo source code" \}
+   * @param fee_proving_key (optional) Provide a proving key to use for the fee execution
+   * @param fee_verifying_key (optional) Provide a verifying key to use for the fee execution
+   * @returns {Transaction}
+   */
+  static buildDeploymentTransaction(private_key: PrivateKey, program: string, base_fee: bigint, priority_fee: bigint, fee_record?: RecordPlaintext | null, url?: string | null, imports?: object | null, fee_proving_key?: ProvingKey | null, fee_verifying_key?: VerifyingKey | null, offline_query?: OfflineQuery | null): Promise<Transaction>;
+  /**
+   * Estimate the fee for a program deployment
+   *
+   * Disclaimer: Fee estimation is experimental and may not represent a correct estimate on any current or future network
+   *
+   * @param program The source code of the program being deployed
+   * @param imports (optional) Provide a list of imports to use for the deployment fee estimation
+   * in the form of a javascript object where the keys are a string of the program name and the values
+   * are a string representing the program source code \{ "hello.aleo": "hello.aleo source code" \}
+   * @returns {u64}
+   */
+  static estimateDeploymentFee(program: string, imports?: object | null): Promise<bigint>;
+  /**
+   * Estimate the component of the deployment cost which comes from the fee for the program name.
+   * Note that this cost does not represent the entire cost of deployment. It is additional to
+   * the cost of the size (in bytes) of the deployment.
+   *
+   * Disclaimer: Fee estimation is experimental and may not represent a correct estimate on any current or future network
+   *
+   * @param name The name of the program to be deployed
+   * @returns {u64}
+   */
+  static estimateProgramNameCost(name: string): bigint;
+  /**
+   * Send credits from one Aleo account to another
+   *
+   * @param private_key The private key of the sender
+   * @param amount_credits The amount of credits to send
+   * @param recipient The recipient of the transaction
+   * @param transfer_type The type of the transfer (options: "private", "public", "private_to_public", "public_to_private")
+   * @param amount_record The record to fund the amount from
+   * @param fee_credits The amount of credits to pay as a fee
+   * @param fee_record The record to spend the fee from
+   * @param url The url of the Aleo network node to send the transaction to
+   * @param transfer_verifying_key (optional) Provide a verifying key to use for the transfer
+   * function
+   * @param fee_proving_key (optional) Provide a proving key to use for the fee execution
+   * @param fee_verifying_key (optional) Provide a verifying key to use for the fee execution
+   * @returns {Transaction}
+   */
+  static buildTransferTransaction(private_key: PrivateKey, amount_credits: number, recipient: string, transfer_type: string, amount_record: RecordPlaintext | null | undefined, fee_credits: number, fee_record?: RecordPlaintext | null, url?: string | null, transfer_proving_key?: ProvingKey | null, transfer_verifying_key?: VerifyingKey | null, fee_proving_key?: ProvingKey | null, fee_verifying_key?: VerifyingKey | null, offline_query?: OfflineQuery | null): Promise<Transaction>;
 }
 /**
  * Proving key for a function within an Aleo program
@@ -1357,6 +1743,26 @@ export class RecordCiphertext {
    * @returns {Field} tag of the record.
    */
   static tag(graph_key: GraphKey, commitment: Field): Field;
+  /**
+   * Get a record ciphertext object from a series of bytes.
+   *
+   * @param {Uint8Array} bytes A left endian byte array representing the record ciphertext.
+   *
+   * @returns {RecordCiphertext}
+   */
+  static fromBytesLe(bytes: Uint8Array): RecordCiphertext;
+  /**
+   * Get the left endian byte array representation of the record ciphertext.
+   */
+  toBytesLe(): Uint8Array;
+  /**
+   * Get the left endian boolean array representation of the record ciphertext bits.
+   */
+  toBitsLe(): Array<any>;
+  /**
+   * Get the field array representation of the record ciphertext.
+   */
+  toFields(): Array<any>;
 }
 /**
  * Plaintext representation of an Aleo record
@@ -1436,6 +1842,30 @@ export class RecordPlaintext {
    */
   toString(): string;
   /**
+   * Get a record plaintext object from a series of bytes.
+   *
+   * @param {Uint8Array} bytes A left endian byte array representing the record plaintext.
+   *
+   * @returns {RecordPlaintext} The record plaintext.
+   */
+  static fromBytesLe(bytes: Uint8Array): RecordPlaintext;
+  /**
+   * Returns the left endian byte array representation of the record plaintext.
+   *
+   * @returns {Uint8Array} Byte array representation of the record plaintext.
+   */
+  toBytesLe(): Uint8Array;
+  /**
+   * Returns the left endian boolean array representation of the record plaintext bits.
+   *
+   * @returns {Array} Boolean array representation of the record plaintext bits.
+   */
+  toBitsLe(): Array<any>;
+  /**
+   * Get the field array representation of the record plaintext.
+   */
+  toFields(): Array<any>;
+  /**
    * Returns the amount of microcredits in the record
    *
    * @returns {u64} Amount of microcredits in the record
@@ -1477,19 +1907,39 @@ export class Scalar {
   private constructor();
   free(): void;
   /**
-   * Returns the string representation of the group.
-   */
-  toString(): string;
-  /**
-   * Create a plaintext element from a group element.
-   */
-  toPlaintext(): Plaintext;
-  /**
-   * Creates a group object from a string representation of a group.
+   * Creates a scalar object from a string representation of a scalar element.
    */
   static fromString(group: string): Scalar;
   /**
-   * Generate a random group element.
+   * Returns the string representation of the scalar element.
+   */
+  toString(): string;
+  /**
+   * Create a scalar element from a Uint8Array of left endian bytes.
+   */
+  static fromBytesLe(bytes: Uint8Array): Scalar;
+  /**
+   * Encode the scalar element as a Uint8Array of left endian bytes.
+   */
+  toBytesLe(): Uint8Array;
+  /**
+   * Reconstruct a scalar element from a boolean array representation.
+   */
+  static fromBitsLe(bits: Array<any>): Scalar;
+  /**
+   * Get the left endian boolean array representation of the scalar element.
+   */
+  toBitsLe(): Array<any>;
+  /**
+   * Create a plaintext element from a scalar element.
+   */
+  toPlaintext(): Plaintext;
+  /**
+   * Clone the scalar element.
+   */
+  clone(): Scalar;
+  /**
+   * Generate a random scalar element.
    */
   static random(): Scalar;
   /**
@@ -1521,11 +1971,11 @@ export class Scalar {
    */
   inverse(): Scalar;
   /**
-   * Creates a one valued element of the scalar field.
+   * Get the multiplicative identity of the scalar field.
    */
   static one(): Scalar;
   /**
-   * Creates a zero valued element of the scalar field
+   * Get the additive identity of the scalar field.
    */
   static zero(): Scalar;
   /**
@@ -1570,6 +2020,34 @@ export class Signature {
    */
   verify(address: Address, message: Uint8Array): boolean;
   /**
+   * Get a signature from a series of bytes.
+   *
+   * @param {Uint8Array} bytes A left endian byte array representing the signature.
+   *
+   * @returns {Signature} The signature object.
+   */
+  static fromBytesLe(bytes: Uint8Array): Signature;
+  /**
+   * Get the left endian byte array representation of the signature.
+   */
+  toBytesLe(): Uint8Array;
+  /**
+   * Get a signature from a series of bits represented as a boolean array.
+   *
+   * @param {Array} bits A left endian boolean array representing the bits of the signature.
+   *
+   * @returns {Signature} The signature object.
+   */
+  static fromBitsLe(bits: Array<any>): Signature;
+  /**
+   * Get the left endian boolean array representation of the bits of the signature.
+   */
+  toBitsLe(): Array<any>;
+  /**
+   * Get the field array representation of the signature.
+   */
+  toFields(): Array<any>;
+  /**
    * Get a signature from a string representation of a signature
    *
    * @param {string} signature String representation of a signature
@@ -1582,6 +2060,10 @@ export class Signature {
    * @returns {string} String representation of a signature
    */
   to_string(): string;
+  /**
+   * Get the plaintext representation of the signature.
+   */
+  toPlaintext(): Plaintext;
   /**
    * ----- Modified by FoxWallet -----
    */
@@ -1841,6 +2323,10 @@ export class Transition {
    * Get the transition public key of the transition.
    */
   tpk(): Group;
+  /**
+   * Get the transition view key of the transition.
+   */
+  tvk(view_key: ViewKey): Field;
   /**
    * Get the transition commitment of the transition.
    */
@@ -2129,6 +2615,156 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
+  readonly __wbg_plaintext_free: (a: number, b: number) => void;
+  readonly plaintext_find: (a: number, b: number, c: number, d: number) => void;
+  readonly plaintext_encrypt: (a: number, b: number, c: number, d: number) => void;
+  readonly plaintext_encryptSymmetric: (a: number, b: number, c: number) => void;
+  readonly plaintext_fromString: (a: number, b: number, c: number) => void;
+  readonly plaintext_toJSON: (a: number, b: number) => void;
+  readonly plaintext_fromBytesLe: (a: number, b: number) => void;
+  readonly plaintext_toBytesLe: (a: number, b: number) => void;
+  readonly plaintext_fromBitsLe: (a: number, b: number) => void;
+  readonly plaintext_toBitsLe: (a: number) => number;
+  readonly plaintext_fromFields: (a: number, b: number) => void;
+  readonly plaintext_toFields: (a: number, b: number) => void;
+  readonly plaintext_toString: (a: number, b: number) => void;
+  readonly plaintext_plaintextType: (a: number, b: number) => void;
+  readonly plaintext_toObject: (a: number, b: number) => void;
+  readonly programmanager_executeFunctionOffline: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number, m: number, n: number) => number;
+  readonly programmanager_buildExecutionTransaction: (a: number, b: number, c: number, d: number, e: number, f: number, g: bigint, h: bigint, i: number, j: number, k: number, l: number, m: number, n: number, o: number, p: number, q: number) => number;
+  readonly programmanager_estimateExecutionFee: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number) => number;
+  readonly programmanager_estimateFinalizeFee: (a: number, b: number, c: number, d: number, e: number) => void;
+  readonly __wbg_offlinequery_free: (a: number, b: number) => void;
+  readonly offlinequery_new: (a: number, b: number, c: number, d: number) => void;
+  readonly offlinequery_addBlockHeight: (a: number, b: number) => void;
+  readonly offlinequery_addStatePath: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+  readonly offlinequery_toString: (a: number, b: number) => void;
+  readonly offlinequery_fromString: (a: number, b: number, c: number) => void;
+  readonly __wbg_field_free: (a: number, b: number) => void;
+  readonly field_fromString: (a: number, b: number, c: number) => void;
+  readonly field_toString: (a: number, b: number) => void;
+  readonly field_fromBytesLe: (a: number, b: number) => void;
+  readonly field_toBytesLe: (a: number, b: number) => void;
+  readonly field_fromBitsLe: (a: number, b: number) => void;
+  readonly field_toBitsLe: (a: number) => number;
+  readonly field_toPlaintext: (a: number) => number;
+  readonly field_clone: (a: number) => number;
+  readonly field_random: () => number;
+  readonly field_add: (a: number, b: number) => number;
+  readonly field_subtract: (a: number, b: number) => number;
+  readonly field_multiply: (a: number, b: number) => number;
+  readonly field_divide: (a: number, b: number) => number;
+  readonly field_pow: (a: number, b: number) => number;
+  readonly field_inverse: (a: number) => number;
+  readonly field_zero: () => number;
+  readonly field_one: () => number;
+  readonly field_double: (a: number) => number;
+  readonly field_equals: (a: number, b: number) => number;
+  readonly __wbg_foxfuture_free: (a: number, b: number) => void;
+  readonly foxfuture_fromString: (a: number, b: number, c: number) => void;
+  readonly foxfuture_toString: (a: number, b: number) => void;
+  readonly foxfuture_toJSON: (a: number, b: number) => void;
+  readonly __wbg_computekey_free: (a: number, b: number) => void;
+  readonly computekey_from_private_key: (a: number) => number;
+  readonly computekey_address: (a: number) => number;
+  readonly computekey_sk_prf: (a: number) => number;
+  readonly computekey_pk_sig: (a: number) => number;
+  readonly computekey_pr_sig: (a: number) => number;
+  readonly hashBHP256: (a: number, b: number, c: number) => void;
+  readonly __wbg_keypair_free: (a: number, b: number) => void;
+  readonly keypair_new: (a: number, b: number) => number;
+  readonly keypair_provingKey: (a: number, b: number) => void;
+  readonly keypair_verifyingKey: (a: number, b: number) => void;
+  readonly __wbg_graphkey_free: (a: number, b: number) => void;
+  readonly graphkey_from_view_key: (a: number) => number;
+  readonly graphkey_from_string: (a: number, b: number) => number;
+  readonly graphkey_to_string: (a: number, b: number) => void;
+  readonly graphkey_sk_tag: (a: number) => number;
+  readonly __wbg_bhp768_free: (a: number, b: number) => void;
+  readonly bhp768_new: () => number;
+  readonly bhp768_setup: (a: number, b: number, c: number) => void;
+  readonly bhp768_hash: (a: number, b: number, c: number) => void;
+  readonly bhp768_hashToGroup: (a: number, b: number, c: number) => void;
+  readonly bhp768_commit: (a: number, b: number, c: number, d: number) => void;
+  readonly bhp768_commitToGroup: (a: number, b: number, c: number, d: number) => void;
+  readonly __wbg_pedersen64_free: (a: number, b: number) => void;
+  readonly pedersen64_new: () => number;
+  readonly pedersen64_setup: (a: number, b: number) => number;
+  readonly pedersen64_hash: (a: number, b: number, c: number) => void;
+  readonly pedersen64_commit: (a: number, b: number, c: number, d: number) => void;
+  readonly pedersen64_commitToGroup: (a: number, b: number, c: number, d: number) => void;
+  readonly __wbg_poseidon8_free: (a: number, b: number) => void;
+  readonly poseidon8_new: () => number;
+  readonly poseidon8_setup: (a: number, b: number, c: number) => void;
+  readonly poseidon8_hash: (a: number, b: number, c: number) => void;
+  readonly poseidon8_hashMany: (a: number, b: number, c: number, d: number) => void;
+  readonly poseidon8_hashToScalar: (a: number, b: number, c: number) => void;
+  readonly poseidon8_hashToGroup: (a: number, b: number, c: number) => void;
+  readonly programmanager_buildJoinTransaction: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number) => number;
+  readonly __wbg_metadata_free: (a: number, b: number) => void;
+  readonly __wbg_get_metadata_name: (a: number, b: number) => void;
+  readonly __wbg_set_metadata_name: (a: number, b: number, c: number) => void;
+  readonly __wbg_get_metadata_locator: (a: number, b: number) => void;
+  readonly __wbg_set_metadata_locator: (a: number, b: number, c: number) => void;
+  readonly __wbg_get_metadata_prover: (a: number, b: number) => void;
+  readonly __wbg_set_metadata_prover: (a: number, b: number, c: number) => void;
+  readonly __wbg_get_metadata_verifier: (a: number, b: number) => void;
+  readonly __wbg_set_metadata_verifier: (a: number, b: number, c: number) => void;
+  readonly __wbg_get_metadata_verifyingKey: (a: number, b: number) => void;
+  readonly __wbg_set_metadata_verifyingKey: (a: number, b: number, c: number) => void;
+  readonly metadata_baseUrl: (a: number) => void;
+  readonly metadata_bond_public: () => number;
+  readonly metadata_bond_validator: () => number;
+  readonly metadata_claim_unbond_public: () => number;
+  readonly metadata_fee_private: () => number;
+  readonly metadata_fee_public: () => number;
+  readonly metadata_inclusion: () => number;
+  readonly metadata_join: () => number;
+  readonly metadata_set_validator_state: () => number;
+  readonly metadata_split: () => number;
+  readonly metadata_transfer_private: () => number;
+  readonly metadata_transfer_private_to_public: () => number;
+  readonly metadata_transfer_public: () => number;
+  readonly metadata_transfer_public_as_signer: () => number;
+  readonly metadata_transfer_public_to_private: () => number;
+  readonly metadata_unbond_public: () => number;
+  readonly __wbg_address_free: (a: number, b: number) => void;
+  readonly address_from_private_key: (a: number) => number;
+  readonly address_from_view_key: (a: number) => number;
+  readonly address_from_compute_key: (a: number) => number;
+  readonly address_fromBytesLe: (a: number, b: number) => void;
+  readonly address_toBytesLe: (a: number, b: number) => void;
+  readonly address_fromBitsLe: (a: number, b: number) => void;
+  readonly address_toBitsLe: (a: number) => number;
+  readonly address_fromFields: (a: number, b: number) => void;
+  readonly address_toFields: (a: number, b: number) => void;
+  readonly address_fromGroup: (a: number) => number;
+  readonly address_toGroup: (a: number) => number;
+  readonly address_from_string: (a: number, b: number) => number;
+  readonly address_to_string: (a: number, b: number) => void;
+  readonly address_toPlaintext: (a: number) => number;
+  readonly address_verify: (a: number, b: number, c: number, d: number) => number;
+  readonly __wbg_signature_free: (a: number, b: number) => void;
+  readonly signature_sign: (a: number, b: number, c: number) => number;
+  readonly signature_to_address: (a: number) => number;
+  readonly signature_challenge: (a: number) => number;
+  readonly signature_response: (a: number) => number;
+  readonly signature_verify: (a: number, b: number, c: number, d: number) => number;
+  readonly signature_fromBytesLe: (a: number, b: number) => void;
+  readonly signature_toBytesLe: (a: number, b: number) => void;
+  readonly signature_fromBitsLe: (a: number, b: number) => void;
+  readonly signature_toBitsLe: (a: number) => number;
+  readonly signature_toFields: (a: number, b: number) => void;
+  readonly signature_from_string: (a: number, b: number) => number;
+  readonly signature_to_string: (a: number, b: number) => void;
+  readonly signature_toPlaintext: (a: number) => number;
+  readonly signature_to_hex: (a: number, b: number) => void;
+  readonly __wbg_viewkey_free: (a: number, b: number) => void;
+  readonly viewkey_from_private_key: (a: number) => number;
+  readonly viewkey_from_string: (a: number, b: number) => number;
+  readonly viewkey_to_string: (a: number, b: number) => void;
+  readonly viewkey_decrypt: (a: number, b: number, c: number, d: number) => void;
+  readonly viewkey_skTag: (a: number, b: number) => void;
   readonly __wbg_transaction_free: (a: number, b: number) => void;
   readonly transaction_fromString: (a: number, b: number, c: number) => void;
   readonly transaction_fromBytesLe: (a: number, b: number) => void;
@@ -2167,9 +2803,22 @@ export interface InitOutput {
   readonly transition_records: (a: number) => number;
   readonly transition_inputs: (a: number, b: number) => number;
   readonly transition_outputs: (a: number, b: number) => number;
-  readonly transition_tpk: (a: number) => number;
+  readonly transition_tvk: (a: number, b: number) => number;
   readonly transition_tcm: (a: number) => number;
   readonly transition_scm: (a: number) => number;
+  readonly __wbg_ciphertext_free: (a: number, b: number) => void;
+  readonly ciphertext_decrypt: (a: number, b: number, c: number, d: number) => void;
+  readonly ciphertext_decryptWithTransitionInfo: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => void;
+  readonly ciphertext_decryptWithTransitionViewKey: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => void;
+  readonly ciphertext_decryptSymmetric: (a: number, b: number, c: number) => void;
+  readonly ciphertext_fromBytesLe: (a: number, b: number) => void;
+  readonly ciphertext_fromBitsLe: (a: number, b: number) => void;
+  readonly ciphertext_toBitsLe: (a: number) => number;
+  readonly ciphertext_fromFields: (a: number, b: number) => void;
+  readonly ciphertext_toFields: (a: number, b: number) => void;
+  readonly ciphertext_fromString: (a: number, b: number, c: number) => void;
+  readonly ciphertext_toBytes: (a: number, b: number) => void;
+  readonly ciphertext_toString: (a: number, b: number) => void;
   readonly __wbg_execution_free: (a: number, b: number) => void;
   readonly execution_toString: (a: number, b: number) => void;
   readonly execution_fromString: (a: number, b: number, c: number) => void;
@@ -2177,6 +2826,44 @@ export interface InitOutput {
   readonly execution_proof: (a: number, b: number) => void;
   readonly execution_transitions: (a: number) => number;
   readonly verifyFunctionExecution: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+  readonly programmanager_buildSplitTransaction: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
+  readonly __wbg_program_free: (a: number, b: number) => void;
+  readonly program_fromString: (a: number, b: number, c: number) => void;
+  readonly program_toString: (a: number, b: number) => void;
+  readonly program_hasFunction: (a: number, b: number, c: number) => number;
+  readonly program_getFunctions: (a: number) => number;
+  readonly program_getFunctionInputs: (a: number, b: number, c: number, d: number) => void;
+  readonly program_getMappings: (a: number, b: number) => void;
+  readonly program_getRecordMembers: (a: number, b: number, c: number, d: number) => void;
+  readonly program_getStructMembers: (a: number, b: number, c: number, d: number) => void;
+  readonly program_matchRecordPlaintext: (a: number, b: number, c: number, d: number) => void;
+  readonly program_getCreditsProgram: () => number;
+  readonly program_id: (a: number, b: number) => void;
+  readonly program_address: (a: number, b: number) => void;
+  readonly program_isEqual: (a: number, b: number) => number;
+  readonly program_getImports: (a: number) => number;
+  readonly provingkey_isBondPublicProver: (a: number) => number;
+  readonly provingkey_isBondValidatorProver: (a: number) => number;
+  readonly provingkey_isClaimUnbondPublicProver: (a: number) => number;
+  readonly provingkey_isFeePrivateProver: (a: number) => number;
+  readonly provingkey_isFeePublicProver: (a: number) => number;
+  readonly provingkey_isInclusionProver: (a: number) => number;
+  readonly provingkey_isJoinProver: (a: number) => number;
+  readonly provingkey_isSetValidatorStateProver: (a: number) => number;
+  readonly provingkey_isSplitProver: (a: number) => number;
+  readonly provingkey_isTransferPrivateProver: (a: number) => number;
+  readonly provingkey_isTransferPrivateToPublicProver: (a: number) => number;
+  readonly provingkey_isTransferPublicProver: (a: number) => number;
+  readonly provingkey_isTransferPublicAsSignerProver: (a: number) => number;
+  readonly provingkey_isTransferPublicToPrivateProver: (a: number) => number;
+  readonly provingkey_isUnbondPublicProver: (a: number) => number;
+  readonly __wbg_provingkey_free: (a: number, b: number) => void;
+  readonly provingkey_checksum: (a: number, b: number) => void;
+  readonly provingkey_copy: (a: number) => number;
+  readonly provingkey_fromBytes: (a: number, b: number, c: number) => void;
+  readonly provingkey_fromString: (a: number, b: number, c: number) => void;
+  readonly provingkey_toBytes: (a: number, b: number) => void;
+  readonly provingkey_toString: (a: number, b: number) => void;
   readonly __wbg_executionresponse_free: (a: number, b: number) => void;
   readonly executionresponse_getOutputs: (a: number) => number;
   readonly executionresponse_getExecution: (a: number) => number;
@@ -2215,6 +2902,23 @@ export interface InitOutput {
   readonly verifyingkey_isTransferPublicAsSignerVerifier: (a: number) => number;
   readonly verifyingkey_isTransferPublicToPrivateVerifier: (a: number) => number;
   readonly verifyingkey_isUnbondPublicVerifier: (a: number) => number;
+  readonly __wbg_verifyingkey_free: (a: number, b: number) => void;
+  readonly verifyingkey_checksum: (a: number, b: number) => void;
+  readonly verifyingkey_copy: (a: number) => number;
+  readonly verifyingkey_fromBytes: (a: number, b: number, c: number) => void;
+  readonly verifyingkey_fromString: (a: number, b: number, c: number) => void;
+  readonly verifyingkey_toBytes: (a: number, b: number) => void;
+  readonly verifyingkey_toString: (a: number, b: number) => void;
+  readonly __wbg_recordciphertext_free: (a: number, b: number) => void;
+  readonly recordciphertext_fromString: (a: number, b: number, c: number) => void;
+  readonly recordciphertext_toString: (a: number, b: number) => void;
+  readonly recordciphertext_decrypt: (a: number, b: number, c: number) => void;
+  readonly recordciphertext_isOwner: (a: number, b: number) => number;
+  readonly recordciphertext_tag: (a: number, b: number, c: number) => void;
+  readonly recordciphertext_fromBytesLe: (a: number, b: number) => void;
+  readonly recordciphertext_toBytesLe: (a: number, b: number) => void;
+  readonly recordciphertext_toBitsLe: (a: number) => number;
+  readonly recordciphertext_toFields: (a: number, b: number) => void;
   readonly __wbg_recordplaintext_free: (a: number, b: number) => void;
   readonly recordplaintext_commitment: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
   readonly recordplaintext_fromString: (a: number, b: number, c: number) => void;
@@ -2222,6 +2926,10 @@ export interface InitOutput {
   readonly recordplaintext_owner: (a: number, b: number) => void;
   readonly recordplaintext_toJsObject: (a: number, b: number) => void;
   readonly recordplaintext_toString: (a: number, b: number) => void;
+  readonly recordplaintext_fromBytesLe: (a: number, b: number) => void;
+  readonly recordplaintext_toBytesLe: (a: number, b: number) => void;
+  readonly recordplaintext_toBitsLe: (a: number) => number;
+  readonly recordplaintext_toFields: (a: number, b: number) => void;
   readonly recordplaintext_microcredits: (a: number) => bigint;
   readonly recordplaintext_nonce: (a: number, b: number) => void;
   readonly recordplaintext_serialNumberString: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
@@ -2229,134 +2937,11 @@ export interface InitOutput {
   readonly recordplaintext_foxTag: (a: number, b: number, c: number) => void;
   readonly recordplaintext_tag: (a: number, b: number, c: number, d: number) => void;
   readonly runRayonThread: (a: number) => void;
-  readonly __wbg_viewkey_free: (a: number, b: number) => void;
-  readonly viewkey_from_private_key: (a: number) => number;
-  readonly viewkey_from_string: (a: number, b: number) => number;
-  readonly viewkey_to_string: (a: number, b: number) => void;
-  readonly viewkey_to_address: (a: number) => number;
-  readonly viewkey_decrypt: (a: number, b: number, c: number, d: number) => void;
-  readonly viewkey_skTag: (a: number, b: number) => void;
-  readonly viewkey_clone: (a: number) => number;
-  readonly __wbg_programmanager_free: (a: number, b: number) => void;
-  readonly programmanager_synthesizeKeyPair: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => number;
-  readonly __wbg_program_free: (a: number, b: number) => void;
-  readonly program_fromString: (a: number, b: number, c: number) => void;
-  readonly program_toString: (a: number, b: number) => void;
-  readonly program_hasFunction: (a: number, b: number, c: number) => number;
-  readonly program_getFunctions: (a: number) => number;
-  readonly program_getFunctionInputs: (a: number, b: number, c: number, d: number) => void;
-  readonly program_getMappings: (a: number, b: number) => void;
-  readonly program_getRecordMembers: (a: number, b: number, c: number, d: number) => void;
-  readonly program_getStructMembers: (a: number, b: number, c: number, d: number) => void;
-  readonly program_matchRecordPlaintext: (a: number, b: number, c: number, d: number) => void;
-  readonly program_getCreditsProgram: () => number;
-  readonly program_id: (a: number, b: number) => void;
-  readonly program_address: (a: number, b: number) => void;
-  readonly program_isEqual: (a: number, b: number) => number;
-  readonly program_getImports: (a: number) => number;
   readonly viewkey_to_scalar: (a: number) => number;
-  readonly __wbg_plaintext_free: (a: number, b: number) => void;
-  readonly plaintext_find: (a: number, b: number, c: number, d: number) => void;
-  readonly plaintext_encrypt: (a: number, b: number, c: number, d: number) => void;
-  readonly plaintext_encryptSymmetric: (a: number, b: number, c: number) => void;
-  readonly plaintext_fromString: (a: number, b: number, c: number) => void;
-  readonly plaintext_toJSON: (a: number, b: number) => void;
-  readonly plaintext_fromBytesLe: (a: number, b: number) => void;
-  readonly plaintext_toBytesLe: (a: number, b: number) => void;
-  readonly plaintext_toString: (a: number, b: number) => void;
-  readonly plaintext_plaintextType: (a: number, b: number) => void;
-  readonly plaintext_toObject: (a: number, b: number) => void;
-  readonly __wbg_offlinequery_free: (a: number, b: number) => void;
-  readonly offlinequery_new: (a: number, b: number, c: number, d: number) => void;
-  readonly offlinequery_addBlockHeight: (a: number, b: number) => void;
-  readonly offlinequery_addStatePath: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
-  readonly offlinequery_toString: (a: number, b: number) => void;
-  readonly offlinequery_fromString: (a: number, b: number, c: number) => void;
-  readonly __wbg_metadata_free: (a: number, b: number) => void;
-  readonly __wbg_get_metadata_name: (a: number, b: number) => void;
-  readonly __wbg_set_metadata_name: (a: number, b: number, c: number) => void;
-  readonly __wbg_get_metadata_locator: (a: number, b: number) => void;
-  readonly __wbg_set_metadata_locator: (a: number, b: number, c: number) => void;
-  readonly __wbg_get_metadata_prover: (a: number, b: number) => void;
-  readonly __wbg_set_metadata_prover: (a: number, b: number, c: number) => void;
-  readonly __wbg_get_metadata_verifier: (a: number, b: number) => void;
-  readonly __wbg_set_metadata_verifier: (a: number, b: number, c: number) => void;
-  readonly __wbg_get_metadata_verifyingKey: (a: number, b: number) => void;
-  readonly __wbg_set_metadata_verifyingKey: (a: number, b: number, c: number) => void;
-  readonly metadata_baseUrl: (a: number) => void;
-  readonly metadata_bond_public: () => number;
-  readonly metadata_bond_validator: () => number;
-  readonly metadata_claim_unbond_public: () => number;
-  readonly metadata_fee_private: () => number;
-  readonly metadata_fee_public: () => number;
-  readonly metadata_inclusion: () => number;
-  readonly metadata_join: () => number;
-  readonly metadata_set_validator_state: () => number;
-  readonly metadata_split: () => number;
-  readonly metadata_transfer_private: () => number;
-  readonly metadata_transfer_private_to_public: () => number;
-  readonly metadata_transfer_public: () => number;
-  readonly metadata_transfer_public_as_signer: () => number;
-  readonly metadata_transfer_public_to_private: () => number;
-  readonly metadata_unbond_public: () => number;
-  readonly __wbg_field_free: (a: number, b: number) => void;
-  readonly field_fromString: (a: number, b: number, c: number) => void;
-  readonly field_toPlaintext: (a: number) => number;
-  readonly field_toString: (a: number, b: number) => void;
-  readonly field_clone: (a: number) => number;
-  readonly field_random: () => number;
-  readonly field_add: (a: number, b: number) => number;
-  readonly field_subtract: (a: number, b: number) => number;
-  readonly field_multiply: (a: number, b: number) => number;
-  readonly field_divide: (a: number, b: number) => number;
-  readonly field_pow: (a: number, b: number) => number;
-  readonly field_inverse: (a: number) => number;
-  readonly field_zero: () => number;
-  readonly field_one: () => number;
-  readonly field_double: (a: number) => number;
-  readonly field_equals: (a: number, b: number) => number;
-  readonly __wbg_group_free: (a: number, b: number) => void;
-  readonly group_fromString: (a: number, b: number, c: number) => void;
-  readonly group_toString: (a: number, b: number) => void;
-  readonly group_toXCoordinate: (a: number) => number;
-  readonly group_toPlaintext: (a: number) => number;
-  readonly group_random: () => number;
-  readonly group_add: (a: number, b: number) => number;
-  readonly group_subtract: (a: number, b: number) => number;
-  readonly group_scalarMultiply: (a: number, b: number) => number;
-  readonly group_double: (a: number) => number;
-  readonly group_inverse: (a: number) => number;
-  readonly group_equals: (a: number, b: number) => number;
-  readonly group_zero: () => number;
-  readonly group_generator: () => number;
-  readonly __wbg_foxfuture_free: (a: number, b: number) => void;
-  readonly foxfuture_fromString: (a: number, b: number, c: number) => void;
-  readonly foxfuture_toString: (a: number, b: number) => void;
-  readonly foxfuture_toJSON: (a: number, b: number) => void;
-  readonly __wbg_computekey_free: (a: number, b: number) => void;
-  readonly computekey_from_private_key: (a: number) => number;
-  readonly computekey_address: (a: number) => number;
-  readonly computekey_sk_prf: (a: number) => number;
-  readonly computekey_pk_sig: (a: number) => number;
-  readonly computekey_pr_sig: (a: number) => number;
-  readonly __wbg_graphkey_free: (a: number, b: number) => void;
-  readonly graphkey_from_view_key: (a: number) => number;
-  readonly graphkey_from_string: (a: number, b: number) => number;
-  readonly graphkey_to_string: (a: number, b: number) => void;
-  readonly graphkey_sk_tag: (a: number) => number;
-  readonly __wbg_recordciphertext_free: (a: number, b: number) => void;
-  readonly recordciphertext_fromString: (a: number, b: number, c: number) => void;
-  readonly recordciphertext_toString: (a: number, b: number) => void;
-  readonly recordciphertext_decrypt: (a: number, b: number, c: number) => void;
-  readonly recordciphertext_isOwner: (a: number, b: number) => number;
-  readonly recordciphertext_tag: (a: number, b: number, c: number) => void;
-  readonly __wbg_address_free: (a: number, b: number) => void;
-  readonly address_from_private_key: (a: number) => number;
-  readonly address_from_view_key: (a: number) => number;
-  readonly address_from_compute_key: (a: number) => number;
-  readonly address_from_string: (a: number, b: number) => number;
-  readonly address_to_string: (a: number, b: number) => void;
-  readonly address_verify: (a: number, b: number, c: number, d: number) => number;
+  readonly viewkey_clone: (a: number) => number;
+  readonly transition_tpk: (a: number) => number;
+  readonly viewkey_to_address: (a: number) => number;
+  readonly ciphertext_toBytesLe: (a: number, b: number) => void;
   readonly __wbg_privatekey_free: (a: number, b: number) => void;
   readonly privatekey_new: () => number;
   readonly privatekey_from_seed_unchecked: (a: number, b: number) => number;
@@ -2368,33 +2953,87 @@ export interface InitOutput {
   readonly privatekey_newEncrypted: (a: number, b: number, c: number) => void;
   readonly privatekey_toCiphertext: (a: number, b: number, c: number, d: number) => void;
   readonly privatekey_fromPrivateKeyCiphertext: (a: number, b: number, c: number, d: number) => void;
+  readonly __wbg_privatekeyciphertext_free: (a: number, b: number) => void;
   readonly privatekeyciphertext_decryptToPrivateKey: (a: number, b: number, c: number, d: number) => void;
+  readonly privatekeyciphertext_toString: (a: number, b: number) => void;
   readonly privatekeyciphertext_fromString: (a: number, b: number, c: number) => void;
-  readonly __wbg_signature_free: (a: number, b: number) => void;
-  readonly signature_sign: (a: number, b: number, c: number) => number;
-  readonly signature_to_address: (a: number) => number;
-  readonly signature_challenge: (a: number) => number;
-  readonly signature_response: (a: number) => number;
-  readonly signature_verify: (a: number, b: number, c: number, d: number) => number;
-  readonly signature_from_string: (a: number, b: number) => number;
-  readonly signature_to_string: (a: number, b: number) => void;
-  readonly signature_to_hex: (a: number, b: number) => void;
-  readonly __wbg_ciphertext_free: (a: number, b: number) => void;
-  readonly ciphertext_decrypt: (a: number, b: number, c: number, d: number) => void;
-  readonly ciphertext_decryptSymmetric: (a: number, b: number, c: number) => void;
-  readonly ciphertext_fromBytesLe: (a: number, b: number) => void;
-  readonly ciphertext_fromString: (a: number, b: number, c: number) => void;
-  readonly ciphertext_toBytes: (a: number, b: number) => void;
-  readonly ciphertext_toString: (a: number, b: number) => void;
+  readonly __wbg_bhp512_free: (a: number, b: number) => void;
+  readonly bhp512_new: () => number;
+  readonly bhp512_setup: (a: number, b: number, c: number) => void;
+  readonly bhp512_hash: (a: number, b: number, c: number) => void;
+  readonly bhp512_hashToGroup: (a: number, b: number, c: number) => void;
+  readonly bhp512_commit: (a: number, b: number, c: number, d: number) => void;
+  readonly bhp512_commitToGroup: (a: number, b: number, c: number, d: number) => void;
+  readonly __wbg_bhp1024_free: (a: number, b: number) => void;
+  readonly bhp1024_new: () => number;
+  readonly bhp1024_setup: (a: number, b: number, c: number) => void;
+  readonly bhp1024_hash: (a: number, b: number, c: number) => void;
+  readonly bhp1024_hashToGroup: (a: number, b: number, c: number) => void;
+  readonly bhp1024_commit: (a: number, b: number, c: number, d: number) => void;
+  readonly bhp1024_commitToGroup: (a: number, b: number, c: number, d: number) => void;
+  readonly __wbg_programmanager_free: (a: number, b: number) => void;
+  readonly programmanager_synthesizeKeyPair: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => number;
+  readonly privatekeyciphertext_encryptPrivateKey: (a: number, b: number, c: number, d: number) => void;
+  readonly __wbg_bhp256_free: (a: number, b: number) => void;
+  readonly bhp256_new: () => number;
+  readonly bhp256_setup: (a: number, b: number, c: number) => void;
+  readonly bhp256_hash: (a: number, b: number, c: number) => void;
+  readonly bhp256_hashToGroup: (a: number, b: number, c: number) => void;
+  readonly bhp256_commit: (a: number, b: number, c: number, d: number) => void;
+  readonly bhp256_commitToGroup: (a: number, b: number, c: number, d: number) => void;
+  readonly __wbg_pedersen128_free: (a: number, b: number) => void;
+  readonly pedersen128_new: () => number;
+  readonly pedersen128_setup: (a: number, b: number) => number;
+  readonly pedersen128_hash: (a: number, b: number, c: number) => void;
+  readonly pedersen128_commit: (a: number, b: number, c: number, d: number) => void;
+  readonly pedersen128_commitToGroup: (a: number, b: number, c: number, d: number) => void;
+  readonly __wbg_poseidon2_free: (a: number, b: number) => void;
+  readonly poseidon2_new: () => number;
+  readonly poseidon2_setup: (a: number, b: number, c: number) => void;
+  readonly poseidon2_hash: (a: number, b: number, c: number) => void;
+  readonly poseidon2_hashMany: (a: number, b: number, c: number, d: number) => void;
+  readonly poseidon2_hashToScalar: (a: number, b: number, c: number) => void;
+  readonly poseidon2_hashToGroup: (a: number, b: number, c: number) => void;
+  readonly __wbg_poseidon4_free: (a: number, b: number) => void;
+  readonly poseidon4_new: () => number;
+  readonly poseidon4_setup: (a: number, b: number, c: number) => void;
+  readonly poseidon4_hash: (a: number, b: number, c: number) => void;
+  readonly poseidon4_hashMany: (a: number, b: number, c: number, d: number) => void;
+  readonly poseidon4_hashToScalar: (a: number, b: number, c: number) => void;
+  readonly poseidon4_hashToGroup: (a: number, b: number, c: number) => void;
   readonly programmanager_buildDeploymentTransaction: (a: number, b: number, c: number, d: bigint, e: bigint, f: number, g: number, h: number, i: number, j: number, k: number, l: number) => number;
   readonly programmanager_estimateDeploymentFee: (a: number, b: number, c: number) => number;
   readonly programmanager_estimateProgramNameCost: (a: number, b: number, c: number) => void;
-  readonly programmanager_buildSplitTransaction: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
   readonly programmanager_buildTransferTransaction: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number, m: number, n: number, o: number, p: number) => number;
+  readonly __wbg_group_free: (a: number, b: number) => void;
+  readonly group_fromString: (a: number, b: number, c: number) => void;
+  readonly group_toString: (a: number, b: number) => void;
+  readonly group_fromBytesLe: (a: number, b: number) => void;
+  readonly group_toBytesLe: (a: number, b: number) => void;
+  readonly group_fromBitsLe: (a: number, b: number) => void;
+  readonly group_toBitsLe: (a: number) => number;
+  readonly group_toFields: (a: number, b: number) => void;
+  readonly group_toXCoordinate: (a: number) => number;
+  readonly group_toPlaintext: (a: number) => number;
+  readonly group_clone: (a: number) => number;
+  readonly group_random: () => number;
+  readonly group_add: (a: number, b: number) => number;
+  readonly group_subtract: (a: number, b: number) => number;
+  readonly group_scalarMultiply: (a: number, b: number) => number;
+  readonly group_double: (a: number) => number;
+  readonly group_inverse: (a: number) => number;
+  readonly group_equals: (a: number, b: number) => number;
+  readonly group_zero: () => number;
+  readonly group_generator: () => number;
   readonly __wbg_scalar_free: (a: number, b: number) => void;
-  readonly scalar_toString: (a: number, b: number) => void;
-  readonly scalar_toPlaintext: (a: number) => number;
   readonly scalar_fromString: (a: number, b: number, c: number) => void;
+  readonly scalar_toString: (a: number, b: number) => void;
+  readonly scalar_fromBytesLe: (a: number, b: number) => void;
+  readonly scalar_toBytesLe: (a: number, b: number) => void;
+  readonly scalar_fromBitsLe: (a: number, b: number) => void;
+  readonly scalar_toBitsLe: (a: number) => number;
+  readonly scalar_toPlaintext: (a: number) => number;
+  readonly scalar_clone: (a: number) => number;
   readonly scalar_random: () => number;
   readonly scalar_add: (a: number, b: number) => number;
   readonly scalar_subtract: (a: number, b: number) => number;
@@ -2406,49 +3045,7 @@ export interface InitOutput {
   readonly scalar_one: () => number;
   readonly scalar_zero: () => number;
   readonly scalar_equals: (a: number, b: number) => number;
-  readonly privatekeyciphertext_encryptPrivateKey: (a: number, b: number, c: number, d: number) => void;
-  readonly privatekeyciphertext_toString: (a: number, b: number) => void;
-  readonly __wbg_privatekeyciphertext_free: (a: number, b: number) => void;
   readonly initThreadPool: (a: number, b: number) => number;
-  readonly __wbg_keypair_free: (a: number, b: number) => void;
-  readonly keypair_new: (a: number, b: number) => number;
-  readonly keypair_provingKey: (a: number, b: number) => void;
-  readonly keypair_verifyingKey: (a: number, b: number) => void;
-  readonly programmanager_executeFunctionOffline: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number, m: number, n: number) => number;
-  readonly programmanager_buildExecutionTransaction: (a: number, b: number, c: number, d: number, e: number, f: number, g: bigint, h: bigint, i: number, j: number, k: number, l: number, m: number, n: number, o: number, p: number, q: number) => number;
-  readonly programmanager_estimateExecutionFee: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number) => number;
-  readonly programmanager_estimateFinalizeFee: (a: number, b: number, c: number, d: number, e: number) => void;
-  readonly programmanager_buildJoinTransaction: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number) => number;
-  readonly provingkey_isBondPublicProver: (a: number) => number;
-  readonly provingkey_isBondValidatorProver: (a: number) => number;
-  readonly provingkey_isClaimUnbondPublicProver: (a: number) => number;
-  readonly provingkey_isFeePrivateProver: (a: number) => number;
-  readonly provingkey_isFeePublicProver: (a: number) => number;
-  readonly provingkey_isInclusionProver: (a: number) => number;
-  readonly provingkey_isJoinProver: (a: number) => number;
-  readonly provingkey_isSetValidatorStateProver: (a: number) => number;
-  readonly provingkey_isSplitProver: (a: number) => number;
-  readonly provingkey_isTransferPrivateProver: (a: number) => number;
-  readonly provingkey_isTransferPrivateToPublicProver: (a: number) => number;
-  readonly provingkey_isTransferPublicProver: (a: number) => number;
-  readonly provingkey_isTransferPublicAsSignerProver: (a: number) => number;
-  readonly provingkey_isTransferPublicToPrivateProver: (a: number) => number;
-  readonly provingkey_isUnbondPublicProver: (a: number) => number;
-  readonly __wbg_provingkey_free: (a: number, b: number) => void;
-  readonly provingkey_checksum: (a: number, b: number) => void;
-  readonly provingkey_copy: (a: number) => number;
-  readonly provingkey_fromBytes: (a: number, b: number, c: number) => void;
-  readonly provingkey_fromString: (a: number, b: number, c: number) => void;
-  readonly provingkey_toBytes: (a: number, b: number) => void;
-  readonly provingkey_toString: (a: number, b: number) => void;
-  readonly __wbg_verifyingkey_free: (a: number, b: number) => void;
-  readonly verifyingkey_checksum: (a: number, b: number) => void;
-  readonly verifyingkey_copy: (a: number) => number;
-  readonly verifyingkey_fromBytes: (a: number, b: number, c: number) => void;
-  readonly verifyingkey_fromString: (a: number, b: number, c: number) => void;
-  readonly verifyingkey_toBytes: (a: number, b: number) => void;
-  readonly verifyingkey_toString: (a: number, b: number) => void;
-  readonly hashBHP256: (a: number, b: number, c: number) => void;
   readonly __wbindgen_export_0: (a: number) => void;
   readonly __wbindgen_export_1: (a: number, b: number, c: number) => void;
   readonly __wbindgen_export_2: (a: number, b: number) => number;

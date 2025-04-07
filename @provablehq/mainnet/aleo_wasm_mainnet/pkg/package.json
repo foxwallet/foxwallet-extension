@@ -5,7 +5,7 @@
     "The Provable Team"
   ],
   "description": "WebAssembly based toolkit for developing zero-knowledge applications with Aleo",
-  "version": "0.8.0",
+  "version": "0.8.7",
   "license": "GPL-3.0",
   "repository": {
     "type": "git",
