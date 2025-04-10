@@ -419,9 +419,7 @@ export class VaultStorage {
           index: number;
         } | undefined = undefined;
         switch (currentVersion) {
-          case 3: {
-            break;
-          }
+          case 3:
           case 2: {
             await keyringManager.completeAccountsForHdWallet();
             const oldSelectedAccount =
@@ -519,15 +517,13 @@ export class VaultStorage {
               },
             };
             await this.setVault(newVault);
+            // deriving accounts from other networks
+            await keyringManager.completeAccountsForHdWallet();
 
             const oldSelectedAccount =
               await AccountSettingStorageV1.getInstance().getSelectedAccount(
                 CoinType.ALEO,
               );
-            // 2->3 ?
-            await keyringManager.completeAccountsForHdWallet();
-
-
             if (oldSelectedAccount) {
               oldSelectedAccountInfo = {
                 walletId: oldSelectedAccount.walletId,
