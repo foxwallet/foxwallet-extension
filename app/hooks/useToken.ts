@@ -21,6 +21,7 @@ import {
 import { TokenSecurity, type TokenV2 } from "core/types/Token";
 import { CacheType, withCache } from "@/common/utils/cache";
 import { type AleoService } from "core/coins/ALEO/service/AleoService";
+import { usePopupDispatch } from "./useStore";
 
 export type AssetIdentifier = {
   uniqueId: ChainUniqueId;
@@ -148,6 +149,8 @@ export const useGroupInteractiveTokens = (
   data: AssetIdentifier[],
   autoRequest: boolean = true,
 ) => {
+  const dispatch = usePopupDispatch();
+
   const fetchTokens = useCallback(async () => {
     const itemsToUpdate = data.filter((item) => item.needUpdate !== false);
     const promises = itemsToUpdate.map(async (item) => {
@@ -177,11 +180,23 @@ export const useGroupInteractiveTokens = (
         (result): result is PromiseFulfilledResult<any> =>
           result.status === "fulfilled",
       )
-      .map((result) => result.value);
-    // console.log("      validResults", validResults);
-
+      .map((result) => result.value)
+      .map((item) => {
+        const { uniqueId, address, tokens } = item;
+        dispatch.tokens.updateAddressTokens({
+          uniqueId,
+          address,
+          tokens,
+        });
+        dispatch.tokens.updateTimestamp({
+          uniqueId,
+          address,
+          newUpdateTimestamp: Date.now(),
+        });
+        return item;
+      });
     return validResults;
-  }, [data]);
+  }, [data, dispatch.tokens]);
 
   const key = useMemo(() => {
     const sortedData = [...data].sort(
