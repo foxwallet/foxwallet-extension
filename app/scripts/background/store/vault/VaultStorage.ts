@@ -337,7 +337,7 @@ export class VaultStorage {
     return await this.setKeyring({});
   }
 
-    async deleteWallet(walletId: string): Promise<void> {
+  async deleteWallet(walletId: string): Promise<void> {
     const keyring = (await this.getKeyring()) || {};
     const hdWallets = keyring[WalletType.HD] || [];
     const simpleWallets = keyring[WalletType.SIMPLE] || [];

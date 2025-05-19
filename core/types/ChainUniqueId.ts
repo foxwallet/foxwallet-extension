@@ -22,6 +22,7 @@ export enum InnerChainUniqueId {
   FILECOIN_EVM = "filecoin-evm",
   GNOSIS = "gnosis",
   INEVM = "inevm",
+  INITVERSE = "initverse",
   JOC = "joc",
   KAVA = "kava",
   LINEA = "linea",
