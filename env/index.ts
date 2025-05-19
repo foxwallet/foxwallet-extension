@@ -252,6 +252,17 @@ export const ReserveChainConfigs = {
       JSON.parse(import.meta.env.VITE_INEVM_BLOCKBOOK_LIST) as string[],
     ),
   },
+  initverse: {
+    rpcList: shuffle(
+      JSON.parse(import.meta.env.VITE_INITVERSE_RPC_LIST) as string[],
+    ),
+    blockscoutApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_INITVERSE_BLOCKSCOUT_LIST) as string[],
+    ),
+    blockbookApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_INITVERSE_BLOCKBOOK_LIST) as string[],
+    ),
+  },
   joc: {
     rpcList: shuffle(JSON.parse(import.meta.env.VITE_JOC_RPC_LIST) as string[]),
     blockscoutApiList: shuffle(

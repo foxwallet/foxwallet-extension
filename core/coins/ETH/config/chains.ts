@@ -27,6 +27,7 @@ import EOSLogo from "core/assets/images/chains/eos.webp";
 import FantomLogo from "core/assets/images/chains/fantom.webp";
 import GnosisLogo from "core/assets/images/chains/gnosis.webp";
 import InevmLogo from "core/assets/images/chains/inevm.webp";
+import InitverseLogo from "core/assets/images/chains/initverse.webp";
 import JocLogo from "core/assets/images/chains/joc.webp";
 import KavaLogo from "core/assets/images/chains/kava.webp";
 import LineaLogo from "core/assets/images/chains/linea.webp";
@@ -853,6 +854,29 @@ export const ETH_CHAIN_CONFIGS: { [key in string]: ETHConfig } = {
       token: "/address/{addr}/tokens/{token}/token-transfers#address-tabs",
     },
     checkApproval: "https://revoke.cash/address/{addr}?chainId={chainId}",
+  },
+  INITVERSE: {
+    coinType: CoinType.ETH,
+    uniqueId: InnerChainUniqueId.INITVERSE,
+    autoAdd: true,
+    logo: InitverseLogo,
+    chainId: "7233",
+    chainName: "INIchain",
+    nativeCurrency: {
+      name: "INI",
+      symbol: "INI",
+      decimals: 18,
+      logo: InitverseLogo,
+    },
+    rpcList: ReserveChainConfigs[InnerChainUniqueId.INITVERSE].rpcList,
+    explorerUrls: {
+      [ExplorerLanguages.EN]: "https://iniscan.com/",
+    },
+    explorerPaths: {
+      tx: "/tx/{txid}",
+      address: "/address/{addr}",
+      token: "/address/{addr}/tokens/{token}/token-transfers#address-tabs",
+    },
   },
   JOC: {
     coinType: CoinType.ETH,
