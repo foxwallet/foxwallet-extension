@@ -861,7 +861,7 @@ export const ETH_CHAIN_CONFIGS: { [key in string]: ETHConfig } = {
     autoAdd: true,
     logo: InitverseLogo,
     chainId: "7233",
-    chainName: "INIchain",
+    chainName: "INIChain",
     nativeCurrency: {
       name: "INI",
       symbol: "INI",
