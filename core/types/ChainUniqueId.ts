@@ -29,6 +29,9 @@ export enum InnerChainUniqueId {
   LUMIA = "lumia",
   MANTLE = "mantle",
   MORPH = "morph",
+  PLUME_LEGACY = "plume", // legacy
+  PLUME_NITRO = "plume-nitro", // latest mainnet
+  PLUME_TEST = "plume-test",
   POLYGON = "polygon",
   POLYGON_ZKEVM = "polygon-zkevm",
   NEAR = "near",
