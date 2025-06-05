@@ -34,6 +34,9 @@ import LineaLogo from "core/assets/images/chains/linea.webp";
 import LumiaLogo from "core/assets/images/chains/lumia.webp";
 import MantleLogo from "core/assets/images/chains/mantle.webp";
 import MorphLogo from "core/assets/images/chains/morph.webp";
+import PlumeLogo from "core/assets/images/chains/plume_nitro.webp";
+import PlumeLegacyLogo from "core/assets/images/chains/plume_legacy.webp";
+import PlumeTestLogo from "core/assets/images/chains/plume_test.webp";
 import PolygonLogo from "core/assets/images/chains/polygon.webp";
 import NEARLogo from "core/assets/images/chains/aurora.webp";
 import OKXLogo from "core/assets/images/chains/okx.webp";
@@ -1200,6 +1203,83 @@ export const ETH_CHAIN_CONFIGS: { [key in string]: ETHConfig } = {
     ],
     checkApproval: "https://revoke.cash/address/{addr}?chainId={chainId}",
   },
+  PLUME_LEGACY: {
+    coinType: CoinType.ETH,
+    uniqueId: InnerChainUniqueId.PLUME_LEGACY,
+    logo: PlumeLegacyLogo,
+    chainId: "98865",
+    chainName: "Plume Legacy",
+    nativeCurrency: {
+      name: "ETH",
+      symbol: "ETH",
+      decimals: 18,
+      logo: EthTokenLogo,
+    },
+    rpcList: ReserveChainConfigs[InnerChainUniqueId.PLUME_LEGACY].rpcList,
+    blockscoutApiList:
+      ReserveChainConfigs[InnerChainUniqueId.PLUME_LEGACY].blockscoutApiList,
+    explorerUrls: {
+      [ExplorerLanguages.EN]: "https://explorer.plumenetwork.xyz",
+    },
+    explorerPaths: {
+      tx: "/tx/{txid}",
+      address: "/address/{addr}",
+      token: "/address/{addr}/tokens/{token}/token-transfers#address-tabs",
+    },
+    communities: [
+      {
+        name: "X(Twitter)",
+        url: "https://twitter.com/plumenetwork",
+      },
+      {
+        name: "Discord",
+        url: "https://discord.gg/plume",
+      },
+      {
+        name: "Telegram",
+        url: "https://t.me/plumenetwork",
+      },
+    ],
+  },
+  PLUME_NITRO: {
+    coinType: CoinType.ETH,
+    uniqueId: InnerChainUniqueId.PLUME_NITRO,
+    logo: PlumeLogo,
+    chainId: "98866",
+    chainName: "Plume",
+    nativeCurrency: {
+      name: "PLUME",
+      symbol: "PLUME",
+      decimals: 18,
+      logo: PlumeLogo,
+      address: "0x0000000000000000000000000000000000000000",
+    },
+    rpcList: ReserveChainConfigs[InnerChainUniqueId.PLUME_NITRO].rpcList,
+    blockscoutApiList:
+      ReserveChainConfigs[InnerChainUniqueId.PLUME_NITRO].blockscoutApiList,
+    explorerUrls: {
+      [ExplorerLanguages.EN]: "https://explorer.plume.org",
+    },
+    explorerPaths: {
+      tx: "/tx/{txid}",
+      address: "/address/{addr}",
+      token: "/address/{addr}/tokens/{token}/token-transfers#address-tabs",
+    },
+    communities: [
+      {
+        name: "X(Twitter)",
+        url: "https://twitter.com/plumenetwork",
+      },
+      {
+        name: "Discord",
+        url: "https://discord.gg/plume",
+      },
+      {
+        name: "Telegram",
+        url: "https://t.me/plumenetwork",
+      },
+    ],
+  },
   POLYGON: {
     coinType: CoinType.ETH,
     uniqueId: InnerChainUniqueId.POLYGON,
@@ -1449,6 +1529,46 @@ export const ETH_CHAIN_CONFIGS: { [key in string]: ETHConfig } = {
       },
     ],
     checkApproval: "https://revoke.cash/address/{addr}?chainId={chainId}",
+  },
+  PLUME_TEST: {
+    coinType: CoinType.ETH,
+    uniqueId: InnerChainUniqueId.PLUME_TEST,
+    testnet: true,
+    logo: PlumeTestLogo,
+    chainId: "161221135",
+    chainName: "Plume Testnet",
+    nativeCurrency: {
+      name: "ETH",
+      symbol: "ETH",
+      decimals: 18,
+      logo: EthTokenLogo,
+    },
+    rpcList: ReserveChainConfigs[InnerChainUniqueId.PLUME_TEST].rpcList,
+    blockscoutApiList:
+      ReserveChainConfigs[InnerChainUniqueId.PLUME_TEST].blockscoutApiList,
+    explorerUrls: {
+      [ExplorerLanguages.EN]: "https://plume-testnet.explorer.caldera.xyz/",
+    },
+    explorerPaths: {
+      tx: "/tx/{txid}",
+      address: "/address/{addr}",
+      token: "/address/{addr}/tokens/{token}/token-transfers#address-tabs",
+    },
+    faucetWebList: ["https://faucet.plumenetwork.xyz/"],
+    communities: [
+      {
+        name: "X(Twitter)",
+        url: "https://twitter.com/plumenetwork",
+      },
+      {
+        name: "Discord",
+        url: "https://discord.gg/plume",
+      },
+      {
+        name: "Telegram",
+        url: "https://t.me/plumenetwork",
+      },
+    ],
   },
 };
 

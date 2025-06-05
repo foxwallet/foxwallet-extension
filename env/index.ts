@@ -327,6 +327,39 @@ export const ReserveChainConfigs = {
       JSON.parse(import.meta.env.VITE_MORPH_BLOCKBOOK_LIST) as string[],
     ),
   },
+  plume: {
+    rpcList: shuffle(
+      JSON.parse(import.meta.env.VITE_PLUME_LEGACY_RPC_LIST) as string[],
+    ),
+    blockscoutApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_PLUME_LEGACY_BLOCKSCOUT_LIST) as string[],
+    ),
+    blockbookApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_PLUME_LEGACY_BLOCKBOOK_LIST) as string[],
+    ),
+  },
+  "plume-nitro": {
+    rpcList: shuffle(
+      JSON.parse(import.meta.env.VITE_PLUME_NITRO_RPC_LIST) as string[],
+    ),
+    blockscoutApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_PLUME_NITRO_BLOCKSCOUT_LIST) as string[],
+    ),
+    blockbookApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_PLUME_NITRO_BLOCKBOOK_LIST) as string[],
+    ),
+  },
+  "plume-test": {
+    rpcList: shuffle(
+      JSON.parse(import.meta.env.VITE_PLUME_TEST_RPC_LIST) as string[],
+    ),
+    blockscoutApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_PLUME_TEST_BLOCKSCOUT_LIST) as string[],
+    ),
+    blockbookApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_PLUME_TEST_BLOCKBOOK_LIST) as string[],
+    ),
+  },
   polygon: {
     rpcList: shuffle(
       JSON.parse(import.meta.env.VITE_POLYGON_RPC_LIST) as string[],
