@@ -192,6 +192,10 @@ export class QtumInfoApi {
     return this.fetchJson<QtumInfoTxResponse[]>(`/txs/${txids.join(",")}`);
   }
 
+  async getRawTransaction(txid: string): Promise<string> {
+    return this.fetchJson<string>(`/raw-tx/${txid}`);
+  }
+
   async getTransactionHistory(
     address: string,
     page = 0,

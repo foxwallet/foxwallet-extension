@@ -1,7 +1,6 @@
 import { type TransactionStatus } from "core/types/TransactionStatus";
 import { type GasFee } from "core/types/GasFee";
 import { type CoinType } from "core/types/CoinType";
-import { type ethers } from "ethers";
 import { type TxHistoryPaginationParam } from "core/types/Pagination";
 import { type TransactionResponse } from "@ethersproject/abstract-provider";
 
@@ -12,6 +11,18 @@ export type FilSpecificTxParam = {
   oldTxId?: string;
 };
 
+export type QtumQrc20Transfer = {
+  address?: string;
+  addressHex?: string;
+  contractAddress?: string;
+  name: string;
+  symbol: string;
+  decimals: number;
+  from: string;
+  to: string;
+  value: string;
+};
+
 export type ChainSpecificReturn<T extends CoinType> = T extends CoinType.ETH
   ? {
       wait?: TransactionResponse["wait"];
@@ -20,11 +31,11 @@ export type ChainSpecificReturn<T extends CoinType> = T extends CoinType.ETH
   ? {
       // aleoTxParams?: AleoTxParams;
     }
-  : // : T extends CoinType.QTUM
-    // ? {
-    //     qrc20TokenTransfers?: QRC20Transfer[];
-    //   }
-    undefined;
+  : T extends CoinType.QTUM
+  ? {
+      qrc20TokenTransfers?: QtumQrc20Transfer[];
+    }
+  : undefined;
 
 export enum TxLabel {
   // SEND = "send",

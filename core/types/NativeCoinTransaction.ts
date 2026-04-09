@@ -6,6 +6,7 @@ import {
   type FilSpecificTxParam,
   type TxLabel,
   type ChainSpecificReturn,
+  type QtumQrc20Transfer,
 } from "core/types/TransactionHistory";
 import { type TransactionStatus } from "core/types/TransactionStatus";
 import { type AleoTxStatus } from "core/coins/ALEO/types/Transaction";
@@ -116,7 +117,7 @@ export type NativeCoinTxDetailRes<T extends CoinType> = {
   rawTx?: string;
   filSpecific?: FilSpecificTxParam;
   memo?: string;
-  // qrc20TokenTransfers?: QRC20Transfer[];
+  qrc20TokenTransfers?: QtumQrc20Transfer[];
   inMessageId?: string;
 };
 
@@ -166,7 +167,7 @@ export type CoinTxDetailRes<T extends CoinType> = {
   rawTx?: string;
   filSpecific?: FilSpecificTxParam;
   memo?: string;
-  // qrc20TokenTransfers?: QRC20Transfer[];
+  qrc20TokenTransfers?: QtumQrc20Transfer[];
   inMessageId?: string;
 };
 

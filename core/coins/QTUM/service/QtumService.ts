@@ -735,6 +735,9 @@ export class QtumService extends CoinServiceBasic {
           : TransactionStatus.PENDING,
       height: tx.blockHeight,
       label: this.getNativeTxLabel(tx),
+      chainSpecificReturn: {
+        qrc20TokenTransfers: tx.qrc20TokenTransfers,
+      },
     };
   }
 
@@ -792,7 +795,7 @@ export class QtumService extends CoinServiceBasic {
     const { txId, filter } = params;
     const [tx, rawTx] = await Promise.all([
       this.getQtumTransaction(txId),
-      this.fetchRawTransaction(txId),
+      this.withQtumInfo(async (api) => api.getRawTransaction(txId)),
     ]);
     const historyItem = this.buildNativeHistoryItem(tx, filter.address);
     const fees = historyItem.fees ?? 0n;
@@ -818,6 +821,8 @@ export class QtumService extends CoinServiceBasic {
         type: GasFeeType.QTUM_DAPP,
       } as GasFee<CoinType>,
       data: rawTx,
+      rawTx,
+      qrc20TokenTransfers: tx.qrc20TokenTransfers,
     };
   }
 
@@ -985,8 +990,8 @@ export class QtumService extends CoinServiceBasic {
         gasFee: {
           estimateGas: fees,
           fee: fees,
-          feeRate: await this.getFeeRate(),
-          type: GasFeeType.UTXO,
+          feeRate: 400,
+          type: GasFeeType.QTUM_DAPP,
         } as GasFee<CoinType>,
       };
     } catch (e) {
