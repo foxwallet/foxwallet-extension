@@ -89,7 +89,7 @@ Lt = new WeakMap(), Pe = new WeakMap(), bt = new WeakMap();
 function ga(r) {
   return Array.from(r).map((e) => e.toString(16).padStart(2, "0")).join("");
 }
-var Rt = /* @__PURE__ */ ((r) => (r.ETH = "ETH", r.ALEO = "ALEO", r))(Rt || {});
+var Rt = /* @__PURE__ */ ((r) => (r.ETH = "ETH", r.ALEO = "ALEO", r.QTUM = "QTUM", r))(Rt || {});
 Object.values(Rt);
 var ze, He;
 class Ma extends Gn {

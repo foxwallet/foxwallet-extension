@@ -28,6 +28,7 @@ import {
   ImportPrivateKeyProps,
 } from "../../../../servers/IWalletServer";
 import initAleoWasm from "aleo_wasm_mainnet";
+import { ALL_ACCOUNT_OPTIONS } from "core/helper/AccountOption";
 import { ERROR_CODE } from "@/common/types/error";
 import { coinBasicFactory } from "core/coins/CoinBasicFactory";
 import { vaultVersion } from "@/scripts/background/store/vault/types/version";
@@ -133,12 +134,13 @@ export class KeyringManager {
       throw new Error("createNewWallet failed");
     }
     const accounts: ComposedAccount[] = [];
-    for (let coinType of Object.values(CoinType)) {
+    for (const { coinType, option } of ALL_ACCOUNT_OPTIONS) {
       const newAccount = (await newKeyring.derive(
         nanoid(),
         0,
         coinType,
         token,
+        option,
       )) as EncryptedKeyPairWithViewKey;
       const accountName = "Account 1";
       accounts.push({
@@ -279,12 +281,13 @@ export class KeyringManager {
       throw new Error("createNewWallet failed");
     }
     const accounts: AccountWithViewKey[] = [];
-    for (let coinType of Object.values(CoinType)) {
+    for (const { coinType, option } of ALL_ACCOUNT_OPTIONS) {
       const newAccount = (await newKeyring.derive(
         nanoid(),
         0,
         coinType,
         token,
+        option,
       )) as EncryptedKeyPairWithViewKey;
       const accountName = "Account 1";
       accounts.push({
@@ -332,12 +335,13 @@ export class KeyringManager {
       mnemonic: hdWallet.mnemonic,
     });
     const newAccounts: AccountWithViewKey[] = [];
-    for (let coinType of Object.values(CoinType)) {
+    for (const { coinType, option } of ALL_ACCOUNT_OPTIONS) {
       const newAccount = (await keyring.derive(
         nanoid(),
         index,
         coinType,
         token,
+        option,
       )) as EncryptedKeyPairWithViewKey;
       const accountName = `Account ${index + 1}`;
       newAccounts.push({
@@ -380,8 +384,15 @@ export class KeyringManager {
         async (groupAccount) => {
           const { accounts, ...restGroup } = groupAccount;
           const newAccounts: AccountWithViewKey[] = [];
-          for (let coinType of Object.values(CoinType)) {
-            if (accounts.some((account) => account.coinType === coinType)) {
+          for (const { coinType, option } of ALL_ACCOUNT_OPTIONS) {
+            // Skip if account with same coinType AND option already exists
+            if (
+              accounts.some(
+                (account) =>
+                  account.coinType === coinType &&
+                  JSON.stringify(account.option) === JSON.stringify(option),
+              )
+            ) {
               continue;
             }
             const newAccount = (await keyring.derive(
@@ -389,6 +400,7 @@ export class KeyringManager {
               groupAccount.index,
               coinType,
               token,
+              option,
             )) as EncryptedKeyPairWithViewKey;
             const accountName = `Account ${groupAccount.index + 1}`;
             newAccounts.push({

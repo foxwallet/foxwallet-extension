@@ -469,4 +469,23 @@ export const ReserveChainConfigs = {
       JSON.parse(import.meta.env.VITE_SEPOLIA_RPC_LIST) as string[],
     ),
   },
+  qtum: {
+    rpcList: shuffle(
+      JSON.parse(import.meta.env.VITE_QTUM_RPC_LIST || '["https://mainnet.qnode.qtum.info", "https://qtum-janus.foxnb.net"]') as string[],
+    ),
+    qtumInfoApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_QTUM_INFO_API_LIST || '["https://qtum.info/api", "https://qtumscan.io/api"]') as string[],
+    ),
+    blockbookApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_QTUM_BLOCKBOOK_LIST || '["https://blockv3.qtum.info/"]') as string[],
+    ),
+  },
+  "qtum-testnet": {
+    rpcList: shuffle(
+      JSON.parse(import.meta.env.VITE_QTUM_TESTNET_RPC_LIST || '["https://testnet.qnode.qtum.info"]') as string[],
+    ),
+    qtumInfoApiList: shuffle(
+      JSON.parse(import.meta.env.VITE_QTUM_TESTNET_INFO_API_LIST || '["https://testnet.qtum.info/api"]') as string[],
+    ),
+  },
 };

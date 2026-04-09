@@ -7,9 +7,11 @@ import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
 import { getChainConfig } from "@/services/coin/CoinService";
 import { type ETHConfig } from "core/coins/ETH/types/ETHConfig";
 import { EthService } from "core/coins/ETH/service/EthService";
+import { type QtumConfig } from "core/coins/QTUM/types/QtumConfig";
+import { QtumService } from "core/coins/QTUM/service/QtumService";
 import { type CoinServiceBasic } from "core/coins/CoinServiceBasic";
 
-export type CoinService = AleoService | EthService;
+export type CoinService = AleoService | EthService | QtumService;
 
 export type ChainConfigMap = {
   [uniqueId in ChainUniqueId]: ChainBaseConfig;
@@ -35,6 +37,11 @@ export class CoinServiceEntry {
         case CoinType.ETH: {
           const ethConfig = config as ETHConfig;
           instance = this.initEthService(ethConfig);
+          break;
+        }
+        case CoinType.QTUM: {
+          const qtumConfig = config as QtumConfig;
+          instance = this.initQtumService(qtumConfig);
           break;
         }
         default: {
@@ -64,6 +71,10 @@ export class CoinServiceEntry {
 
   protected initEthService(ethConfig: ETHConfig) {
     return new EthService(ethConfig);
+  }
+
+  protected initQtumService(qtumConfig: QtumConfig) {
+    return new QtumService(qtumConfig);
   }
 }
 

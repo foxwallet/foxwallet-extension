@@ -494,12 +494,16 @@ export type IContentServer<T extends CoinType> = T extends CoinType.ALEO
   ? IALEOContentServer
   : T extends CoinType.ETH
   ? IETHContentServer
+  : T extends CoinType.QTUM
+  ? Record<string, never>
   : never;
 
 export type ContentServerMethod<T extends CoinType> = T extends CoinType.ALEO
   ? keyof IALEOContentServer
   : T extends CoinType.ETH
   ? keyof IETHContentServer
+  : T extends CoinType.QTUM
+  ? never
   : never;
 
 export async function executeServerMethod<T>(

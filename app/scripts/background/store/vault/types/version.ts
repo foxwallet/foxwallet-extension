@@ -1,1 +1,1 @@
-export const vaultVersion = 4;
+export const vaultVersion = 5;

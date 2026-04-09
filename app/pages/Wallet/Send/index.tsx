@@ -17,6 +17,7 @@ import {
 } from "@/pages/Wallet/Send/GasSettingStep";
 import { useSafeParams } from "@/hooks/useSafeParams";
 import { useSafeTokenInfo } from "@/hooks/useSafeTokenInfo";
+import { chainUniqueIdToCoinType } from "core/helper/CoinType";
 
 export enum AmountType {
   FIAT,
@@ -40,7 +41,8 @@ const SendScreen = () => {
   const { coinService } = useCoinService(uniqueId);
 
   const { nonce } = useNonce(uniqueId, fromAddress);
-  const { privateKey } = usePrivateKey(uniqueId, CoinType.ETH);
+  const coinType = useMemo(() => chainUniqueIdToCoinType(uniqueId), [uniqueId]);
+  const { privateKey } = usePrivateKey(uniqueId, coinType);
   const [isSending, setIsSending] = useState(false);
 
   const onSend = useCallback(

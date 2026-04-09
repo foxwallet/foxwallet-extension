@@ -3,7 +3,6 @@ import {
   IconEmptyTxPlaceholder,
   IconReceiveBlack,
   IconSendBlack,
-  IconTokenPlaceHolder,
 } from "@/components/Custom/Icon";
 import { TokenNum } from "@/components/Wallet/TokenNum";
 import { useCoinService } from "@/hooks/useCoinService";
@@ -13,7 +12,6 @@ import {
   Button,
   Divider,
   Flex,
-  Image,
   Spinner,
   Text,
   useClipboard,
@@ -44,7 +42,7 @@ import {
 } from "core/coins/ALEO/constants";
 import { serializeData, serializeToken } from "@/common/utils/string";
 import { useBalance } from "@/hooks/useBalance";
-import { AssetType, type TokenV2 } from "core/types/Token";
+import { type TokenV2 } from "core/types/Token";
 import { useSafeParams } from "@/hooks/useSafeParams";
 import { useSafeTokenInfo } from "@/hooks/useSafeTokenInfo";
 import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
@@ -377,7 +375,6 @@ const TokenDetailScreen = () => {
     history: evmHistory,
     getMore: evmGetMore,
     loading: evmLoading,
-    error: evmError,
   } = useTxHistory({
     uniqueId,
     address,
@@ -497,7 +494,7 @@ const TokenDetailScreen = () => {
               <Text fontSize={13} fontWeight={"bold"}>
                 {tokenInfo.symbol}
               </Text>
-              {!isAleo && tokenInfo.type === AssetType.TOKEN && (
+              {!isAleo && !!tokenInfo.contractAddress && (
                 <Flex
                   bg={"#f9f9f9"}
                   align={"center"}

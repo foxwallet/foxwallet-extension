@@ -5,6 +5,7 @@ export enum CoinTypeV1 {
 export enum CoinType {
   ETH = "ETH",
   ALEO = "ALEO",
+  QTUM = "QTUM",
 }
 
 export const Coins = Object.values(CoinType);

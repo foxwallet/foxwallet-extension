@@ -8,6 +8,7 @@ export const DEFAULT_CHAIN_UNIQUE_ID: {
 } = {
   [CoinType.ALEO]: InnerChainUniqueId.ALEO_MAINNET,
   [CoinType.ETH]: InnerChainUniqueId.ETHEREUM,
+  [CoinType.QTUM]: InnerChainUniqueId.QTUM,
 };
 
 export const DEFAULT_USER_SELECTED_CHAINS = Object.values(INNER_CHAIN_CONFIG)
@@ -23,6 +24,8 @@ export const getDefaultChainUniqueId = (
       return InnerChainUniqueId.ALEO_MAINNET;
     case CoinType.ETH:
       return InnerChainUniqueId.ETHEREUM;
+    case CoinType.QTUM:
+      return InnerChainUniqueId.QTUM;
     default:
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       throw new Error(`getDefaultChainUniqueId for ${coinType}`);

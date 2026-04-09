@@ -1,5 +1,6 @@
 import { ALEO_DERIVATION } from "../coins/ALEO/config/derivation";
 import { ETH_DERIVATION } from "../coins/ETH/config/derivation";
+import { QTUM_DERIVATION } from "../coins/QTUM/config/derivation";
 import { type CoinDerivation } from "../types/CoinDerivation";
 import { CoinType } from "core/types";
 
@@ -10,6 +11,9 @@ export const getCoinDerivation = (coinType: CoinType): CoinDerivation => {
     }
     case CoinType.ALEO: {
       return ALEO_DERIVATION;
+    }
+    case CoinType.QTUM: {
+      return QTUM_DERIVATION;
     }
   }
 };

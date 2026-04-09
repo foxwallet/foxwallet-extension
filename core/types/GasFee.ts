@@ -46,6 +46,8 @@ export type GasFee<
   ? GasFeeEIP1559<S> | GasFeeLegacy<S>
   : T extends CoinType.ALEO
   ? GasFeeUTXO<S>
+  : T extends CoinType.QTUM
+  ? GasFeeUTXO<S>
   : never;
 
 export type SerializeGasFee<T extends CoinType> = GasFee<T, true>;
