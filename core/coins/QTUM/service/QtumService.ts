@@ -1,11 +1,7 @@
 import { CoinServiceBasic } from "core/coins/CoinServiceBasic";
 import type { QtumConfig } from "../types/QtumConfig";
 import type { UTXO } from "../types";
-import type {
-  QtumInfoApi,
-  QtumInfoBasicTxResponse,
-  QtumInfoTxResponse,
-} from "./api/qtuminfoapi";
+import type { QtumInfoApi, QtumInfoTxResponse } from "./api/qtuminfoapi";
 import { type BlockbookApi } from "./api/blockbook";
 import { createQtumInfoServices } from "./instances/qtuminfo";
 import { createBlockbookServices } from "./instances/blockbook";
@@ -46,6 +42,8 @@ import type {
   TokenSendTxParams,
   TokenSendTxRes,
   InteractiveTokenParams,
+  TokenTxDetailReq,
+  TokenTxDetailRes,
 } from "core/types/TokenTransaction";
 import { AssetType, type TokenMetaV2, type TokenV2 } from "core/types/Token";
 import * as bitcoin from "bitcoinjs-lib";
@@ -603,87 +601,140 @@ export class QtumService extends CoinServiceBasic {
     return items.reduce((sum, item) => sum + BigInt(getValue(item) || "0"), 0n);
   }
 
+  private normalizeContractAddress(contractAddress: string): string {
+    return contractAddress.replace(/^0x/i, "").toLowerCase();
+  }
+
+  private matchQrc20Transfer(
+    tx: QtumInfoTxResponse,
+    contractAddress: string,
+    ownerAddress?: string,
+  ) {
+    const normalizedContract = this.normalizeContractAddress(contractAddress);
+    const normalizedOwner = ownerAddress?.toLowerCase();
+
+    return (tx.qrc20TokenTransfers ?? []).find((transfer) => {
+      const transferContract = this.normalizeContractAddress(
+        transfer.addressHex ??
+          transfer.address ??
+          transfer.contractAddress ??
+          "",
+      );
+      if (transferContract !== normalizedContract) {
+        return false;
+      }
+      if (!normalizedOwner) {
+        return true;
+      }
+      return (
+        transfer.from?.toLowerCase() === normalizedOwner ||
+        transfer.to?.toLowerCase() === normalizedOwner
+      );
+    });
+  }
+
+  private parseNativeTransaction(
+    tx: QtumInfoTxResponse,
+    ownerAddress?: string,
+  ): { addressIn: string; addressOut: string; txValue: bigint } {
+    const { inputs, outputs } = tx;
+    const ownInInputs = ownerAddress
+      ? inputs.some((input) => input.address === ownerAddress)
+      : false;
+    const ownInOutputs = ownerAddress
+      ? outputs.some((output) => output.address === ownerAddress)
+      : false;
+
+    let addressIn = "";
+    if (!ownInOutputs && ownInInputs && ownerAddress) {
+      addressIn = ownerAddress;
+    } else {
+      const maxInput = inputs.reduce<
+        { address: string; value: bigint } | undefined
+      >((max, input) => {
+        const currentValue = BigInt(input.value || "0");
+        if (!max || currentValue > max.value) {
+          return { address: input.address, value: currentValue };
+        }
+        return max;
+      }, undefined);
+      addressIn = maxInput?.address ?? "";
+    }
+
+    const pureOutputs = outputs.filter(
+      (output) => output.address !== addressIn,
+    );
+    if (pureOutputs.length === 0) {
+      return {
+        addressIn,
+        addressOut: addressIn,
+        txValue: this.sumValues(outputs, (output) => output.value),
+      };
+    }
+
+    const ownOutputs = ownerAddress
+      ? pureOutputs.filter((output) => output.address === ownerAddress)
+      : [];
+    if (ownOutputs.length > 0 && ownerAddress) {
+      return {
+        addressIn,
+        addressOut: ownerAddress,
+        txValue: this.sumValues(ownOutputs, (output) => output.value),
+      };
+    }
+
+    const maxOutput = pureOutputs.reduce<
+      { address: string; value: bigint } | undefined
+    >((max, output) => {
+      const currentValue = BigInt(output.value || "0");
+      if (!max || currentValue > max.value) {
+        return { address: output.address, value: currentValue };
+      }
+      return max;
+    }, undefined);
+
+    return {
+      addressIn,
+      addressOut: maxOutput?.address ?? "",
+      txValue: maxOutput?.value ?? 0n,
+    };
+  }
+
+  private getNativeTxLabel(tx: QtumInfoTxResponse): TxLabel | undefined {
+    const isRefund = tx.outputs.some((output) => output.isRefund);
+    const isContractCall = tx.outputs.some(
+      (output) => !!output.receipt?.contractAddress,
+    );
+    if (isRefund) {
+      return TxLabel.GAS_REFUND;
+    }
+    if (isContractCall) {
+      return TxLabel.CONTRACT_CALL;
+    }
+    return undefined;
+  }
+
   private buildNativeHistoryItem(
     tx: QtumInfoTxResponse,
     ownerAddress?: string,
-    basicType?: QtumInfoBasicTxResponse["transactions"][number]["type"],
   ): TransactionHistoryItem {
-    const owner = ownerAddress ?? "";
-    const inputAddresses = tx.inputs
-      .map((input) => input.address)
-      .filter(Boolean);
-    const outputAddresses = tx.outputs
-      .map((output) => output.address)
-      .filter(Boolean);
-
-    const ownerInputs = owner
-      ? tx.inputs.filter((input) => input.address === owner)
-      : [];
-    const ownerOutputs = owner
-      ? tx.outputs.filter((output) => output.address === owner)
-      : [];
-    const externalOutputs = owner
-      ? tx.outputs.filter(
-          (output) => !!output.address && output.address !== owner,
-        )
-      : tx.outputs.filter((output) => !!output.address);
-    const externalInputs = owner
-      ? tx.inputs.filter((input) => !!input.address && input.address !== owner)
-      : tx.inputs.filter((input) => !!input.address);
-
-    const ownerInputTotal = this.sumValues(ownerInputs, (input) => input.value);
-    const ownerOutputTotal = this.sumValues(
-      ownerOutputs,
-      (output) => output.value,
+    const { addressIn, addressOut, txValue } = this.parseNativeTransaction(
+      tx,
+      ownerAddress,
     );
-    const externalOutputTotal = this.sumValues(
-      externalOutputs,
-      (output) => output.value,
-    );
-    const totalOutputValue = this.sumValues(
-      tx.outputs,
-      (output) => output.value,
-    );
-    const fees = BigInt(tx.fees || "0");
-
-    let from = inputAddresses[0] || "";
-    let to = outputAddresses[0] || "";
-    let value = totalOutputValue;
-    let label: TxLabel | undefined;
-
-    if (owner) {
-      if (ownerInputTotal > 0n && externalOutputTotal > 0n) {
-        from = ownerInputs[0]?.address || owner;
-        to = externalOutputs[0]?.address || "";
-        value = externalOutputTotal;
-      } else if (ownerInputTotal === 0n && ownerOutputTotal > 0n) {
-        from = externalInputs[0]?.address || inputAddresses[0] || "";
-        to = owner;
-        value = ownerOutputTotal;
-      } else if (ownerInputTotal > 0n) {
-        from = owner;
-        to = owner;
-        const netSpend = ownerInputTotal - ownerOutputTotal - fees;
-        value = netSpend > 0n ? netSpend : 0n;
-        if (basicType === "contract") {
-          label = TxLabel.CONTRACT_CALL;
-        }
-      }
-    }
-
     return {
       id: tx.id || tx.hash,
-      from,
-      to,
-      value,
-      fees,
+      from: addressIn,
+      to: addressOut,
+      value: txValue,
+      fees: BigInt(tx.fees || "0"),
       timestamp: tx.timestamp * 1000,
       status:
         tx.confirmations > 0
           ? TransactionStatus.SUCCESS
           : TransactionStatus.PENDING,
       height: tx.blockHeight,
-      label,
+      label: this.getNativeTxLabel(tx),
     };
   }
 
@@ -707,15 +758,18 @@ export class QtumService extends CoinServiceBasic {
     const pageSize = pagination?.pageSize ?? 20;
 
     const result = await this.withQtumInfo(async (api) =>
-      api.getTransactionHistory(address, page, pageSize),
+      api.getTransactionIds(address, page, pageSize),
     );
-
-    const txs = await Promise.all(
-      result.transactions.map(async (tx) => {
-        const fullTx = await this.getQtumTransaction(tx.id);
-        return this.buildNativeHistoryItem(fullTx, address, tx.type);
-      }),
-    );
+    const txs =
+      result.transactions.length === 0
+        ? []
+        : await this.withQtumInfo(async (api) => {
+            const fullTxs = await api.getTransactions(result.transactions);
+            return fullTxs.map((tx) => {
+              this.txDetailCache.set(tx.id || tx.hash, tx);
+              return this.buildNativeHistoryItem(tx, address);
+            });
+          });
 
     return {
       txs,
@@ -736,26 +790,34 @@ export class QtumService extends CoinServiceBasic {
     params: NativeCoinTxDetailParams,
   ): Promise<NativeCoinTxDetailRes<CoinType> | undefined> {
     const { txId, filter } = params;
-    const tx = await this.getQtumTransaction(txId);
+    const [tx, rawTx] = await Promise.all([
+      this.getQtumTransaction(txId),
+      this.fetchRawTransaction(txId),
+    ]);
     const historyItem = this.buildNativeHistoryItem(tx, filter.address);
+    const fees = historyItem.fees ?? 0n;
 
     return {
       id: historyItem.id,
       from: historyItem.from,
       to: historyItem.to,
       value: historyItem.value,
-      fees: historyItem.fees ?? 0n,
+      fees,
       timestamp: historyItem.timestamp,
       status: historyItem.status,
       height: historyItem.height,
       label: historyItem.label,
       confirmations: tx.confirmations,
       gasFee: {
-        estimateGas: historyItem.fees ?? 0n,
-        fee: historyItem.fees ?? 0n,
-        feeRate: await this.getFeeRate(),
-        type: GasFeeType.UTXO,
+        estimateGas: fees,
+        fee: fees,
+        feeRate:
+          tx.weight && tx.weight > 0
+            ? Math.ceil(Number(fees) / tx.weight)
+            : await this.getFeeRate(),
+        type: GasFeeType.QTUM_DAPP,
       } as GasFee<CoinType>,
+      data: rawTx,
     };
   }
 
@@ -848,15 +910,17 @@ export class QtumService extends CoinServiceBasic {
       );
 
       const txs = result.transactions.map((tx) => ({
-        txId: tx.transactionId,
+        id: tx.transactionId,
         from: tx.from,
         to: tx.to,
-        value: tx.value,
-        fee: "0",
+        value: BigInt(tx.value),
+        fees: 0n,
         timestamp: tx.timestamp * 1000,
         status:
-          tx.confirmations > 0 ? ("confirmed" as const) : ("pending" as const),
-        blockHeight: tx.blockHeight,
+          tx.confirmations > 0
+            ? TransactionStatus.SUCCESS
+            : TransactionStatus.PENDING,
+        height: tx.blockHeight,
         confirmations: tx.confirmations,
       }));
 
@@ -871,6 +935,62 @@ export class QtumService extends CoinServiceBasic {
       };
     } catch (e) {
       console.error("getTokenTxHistory error:", e);
+      return undefined;
+    }
+  }
+
+  supportTokenTxDetail(): boolean {
+    return true;
+  }
+
+  async getTokenTxDetail(
+    params: TokenTxDetailReq,
+  ): Promise<TokenTxDetailRes<CoinType> | undefined> {
+    const {
+      txId,
+      token,
+      filter: { address },
+    } = params;
+    if (!token?.contractAddress) {
+      return undefined;
+    }
+
+    try {
+      const tx = await this.getQtumTransaction(txId);
+      const transfer = this.matchQrc20Transfer(
+        tx,
+        token.contractAddress,
+        address,
+      );
+      if (!transfer) {
+        return undefined;
+      }
+
+      const fees = BigInt(tx.fees || "0");
+
+      return {
+        id: tx.id || tx.hash,
+        from: transfer.from,
+        to: transfer.to,
+        value: BigInt(transfer.value),
+        height: tx.blockHeight,
+        timestamp: tx.timestamp * 1000,
+        fees,
+        status:
+          tx.confirmations > 0
+            ? TransactionStatus.SUCCESS
+            : TransactionStatus.PENDING,
+        token,
+        confirmations: tx.confirmations,
+        gasFee: {
+          estimateGas: fees,
+          fee: fees,
+          feeRate: await this.getFeeRate(),
+          type: GasFeeType.UTXO,
+        } as GasFee<CoinType>,
+      };
+    } catch (e) {
+      console.error("getTokenTxDetail error:", e);
       return undefined;
     }
   }

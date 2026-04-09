@@ -1,10 +1,12 @@
-import type { UTXO, QtumBalance, QtumTransaction } from "../../types";
+import type { UTXO, QtumBalance } from "../../types";
 import { MATURE_CONFIRMATIONS } from "../../constants";
 
 export interface QtumInfoTxResponse {
   id: string;
   hash: string;
   version: number;
+  lockTime?: number;
+  blockHash?: string;
   inputs: Array<{
     prevTxId: string;
     outputIndex: number;
@@ -14,6 +16,12 @@ export interface QtumInfoTxResponse {
   outputs: Array<{
     value: string;
     address: string;
+    isRefund?: boolean;
+    receipt?: {
+      sender?: string;
+      gasUsed?: number;
+      contractAddress?: string;
+    };
     scriptPubKey: {
       type: string;
       hex: string;
@@ -22,12 +30,18 @@ export interface QtumInfoTxResponse {
   blockHeight: number;
   confirmations: number;
   timestamp: number;
+  inputValue?: string;
+  outputValue?: string;
+  refundValue?: string;
   fees: string;
+  weight?: number;
   qrc20TokenTransfers?: Array<{
+    address?: string;
+    addressHex?: string;
     name: string;
     symbol: string;
     decimals: number;
-    contractAddress: string;
+    contractAddress?: string;
     from: string;
     to: string;
     value: string;
@@ -49,6 +63,11 @@ export interface QtumInfoBasicTxResponse {
     fees: string;
     type: string;
   }>;
+}
+
+export interface QtumInfoTxIdsResponse {
+  totalCount: number;
+  transactions: string[];
 }
 
 export interface QtumInfoAddressResponse {
@@ -166,6 +185,13 @@ export class QtumInfoApi {
     return this.fetchJson<QtumInfoTxResponse>(`/tx/${txid}`);
   }
 
+  async getTransactions(txids: string[]): Promise<QtumInfoTxResponse[]> {
+    if (txids.length === 0) {
+      return [];
+    }
+    return this.fetchJson<QtumInfoTxResponse[]>(`/txs/${txids.join(",")}`);
+  }
+
   async getTransactionHistory(
     address: string,
     page = 0,
@@ -173,6 +199,16 @@ export class QtumInfoApi {
   ): Promise<QtumInfoBasicTxResponse> {
     return this.fetchJson<QtumInfoBasicTxResponse>(
       `/address/${address}/basic-txs?page=${page}&pageSize=${pageSize}`,
+    );
+  }
+
+  async getTransactionIds(
+    address: string,
+    page = 0,
+    pageSize = 20,
+  ): Promise<QtumInfoTxIdsResponse> {
+    return this.fetchJson<QtumInfoTxIdsResponse>(
+      `/address/${address}/txs?limit=${pageSize}&offset=${page * pageSize}`,
     );
   }
 
@@ -216,7 +252,9 @@ export class QtumInfoApi {
     }>;
   }> {
     return this.fetchJson(
-      `/qrc20/${contractAddress}/txs?page=${page}&pageSize=${pageSize}`,
+      `/address/${address}/qrc20-txs/${contractAddress}?limit=${pageSize}&offset=${
+        page * pageSize
+      }`,
     );
   }
 }
