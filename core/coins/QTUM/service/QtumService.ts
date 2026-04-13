@@ -612,19 +612,7 @@ export class QtumService extends CoinServiceBasic {
         api.getRawTransaction(txid),
       );
     } catch (blockbookError) {
-      try {
-        return await this.withQtumInfo(async (api) =>
-          api.getRawTransaction(txid),
-        );
-      } catch (qtumInfoError) {
-        return this.withRpc(async (provider) => {
-          const result = await provider.send("getrawtransaction", [
-            txid,
-            false,
-          ]);
-          return result as string;
-        });
-      }
+      return this.withQtumInfo(async (api) => api.getRawTransaction(txid));
     }
   }
 
@@ -790,6 +778,15 @@ export class QtumService extends CoinServiceBasic {
       (output) => output.address !== addressIn,
     );
     if (pureOutputs.length === 0) {
+      if (ownInInputs && ownInOutputs && outputs.length > 1) {
+        const firstOutput = outputs[0];
+        return {
+          addressIn,
+          addressOut: firstOutput.address,
+          txValue: BigInt(firstOutput.value || "0"),
+        };
+      }
+
       return {
         addressIn,
         addressOut: addressIn,

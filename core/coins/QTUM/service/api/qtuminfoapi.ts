@@ -161,6 +161,19 @@ export class QtumInfoApi {
     return response.json() as Promise<T>;
   }
 
+  private async fetchText(path: string): Promise<string> {
+    const response = await fetch(`${this.baseUrl}${path}`, {
+      method: "GET",
+      headers: this.getHeaders(),
+    });
+    if (!response.ok) {
+      throw new Error(
+        `QtumInfo API error: ${response.status} ${response.statusText}`,
+      );
+    }
+    return response.text();
+  }
+
   private async postJson<T>(path: string, body: unknown): Promise<T> {
     const response = await fetch(`${this.baseUrl}${path}`, {
       method: "POST",
@@ -220,7 +233,7 @@ export class QtumInfoApi {
   }
 
   async getRawTransaction(txid: string): Promise<string> {
-    return this.fetchJson<string>(`/raw-tx/${txid}`);
+    return this.fetchText(`/raw-tx/${txid}`);
   }
 
   async getTransactionHistory(
