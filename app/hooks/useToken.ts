@@ -21,11 +21,34 @@ import {
 import { TokenSecurity, type TokenV2 } from "core/types/Token";
 import { CacheType, withCache } from "@/common/utils/cache";
 import { type AleoService } from "core/coins/ALEO/service/AleoService";
+import { isSameAddress } from "core/utils/address";
 
 export type AssetIdentifier = {
   uniqueId: ChainUniqueId;
   address: string;
   needUpdate?: boolean;
+};
+
+const mergeStandardTokenMeta = (
+  activeTokens: TokenV2[],
+  standardTokens: TokenV2[],
+): TokenV2[] => {
+  if (standardTokens.length === 0) {
+    return activeTokens;
+  }
+
+  return activeTokens.map((activeToken) => {
+    const matched = standardTokens.find((item) =>
+      isSameAddress(item.contractAddress, activeToken.contractAddress),
+    );
+    return matched
+      ? {
+          ...activeToken,
+          ...matched,
+          type: activeToken.type,
+        }
+      : activeToken;
+  });
 };
 
 export const useTokens = (uniqueId: ChainUniqueId, keyword?: string) => {
@@ -69,7 +92,11 @@ export const useInteractiveTokens = (
 
   const key = `/interactive_token/${uniqueId}`;
   const fetchTokens = useCallback(async () => {
-    const tokens = await coinService.getUserInteractiveTokens({ address });
+    let tokens = await coinService.getUserInteractiveTokens({ address });
+    if (!coinService.config.testnet) {
+      const allTokens = await getAllTokensWithCache(uniqueId);
+      tokens = mergeStandardTokenMeta(tokens, allTokens);
+    }
     return { address, uniqueId, tokens };
   }, [coinService, address, uniqueId]);
 
@@ -163,11 +190,12 @@ export const useGroupInteractiveTokens = (
       const whiteTokens = allTokens.filter(
         (it) => it?.security === TokenSecurity.WHITE,
       );
-      const { matchedTokens: tokens } = matchedAndUnMatchedTokens(
+      const { matchedTokens } = matchedAndUnMatchedTokens(
         uniqueId,
         userInteractiveTokens,
         whiteTokens,
       );
+      const tokens = mergeStandardTokenMeta(matchedTokens, whiteTokens);
       // console.log("      selectedTokens", selectedTokens);
       return { address, uniqueId, tokens };
     });
