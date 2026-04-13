@@ -7,10 +7,7 @@ import { ReserveChainConfigs } from "../../../../env";
 import QtumLogo from "core/assets/images/chains/qtum.webp";
 import QtumTestLogo from "core/assets/images/chains/qtum_test.webp";
 
-const QTUM_CHAIN_CONFIGS: Record<
-  string,
-  Omit<QtumConfig, "rpcList" | "qtumInfoApiList" | "blockbookApiList">
-> = {
+const QTUM_CHAIN_CONFIGS: Record<string, QtumConfig> = {
   [InnerChainUniqueId.QTUM]: {
     coinType: CoinType.QTUM,
     uniqueId: InnerChainUniqueId.QTUM,
@@ -35,6 +32,16 @@ const QTUM_CHAIN_CONFIGS: Record<
       zh: "Qtum 主网",
     },
     network: qtumNetwork,
+    qtumInfoApiList: ["https://qtum.info/api", "https://qtumscan.io/api"],
+    blockbookApiList: [
+      "https://blockv3.qtum.info/",
+      "https://qtumblockexplorer.com/",
+    ],
+    rpcList: [
+      "https://mainnet.qnode.qtum.info/v1/S0ML1u0egLDKsfgzlj8JyAy25p0VJO2D2vJjN",
+      "https://qtum-janus.foxnb.net",
+      "https://janus.qiswap.com/api/",
+    ],
     autoAdd: true,
     testnet: false,
   },
@@ -62,6 +69,10 @@ const QTUM_CHAIN_CONFIGS: Record<
       zh: "Qtum 测试网",
     },
     network: qtumTestnetNetwork,
+    qtumInfoApiList: ["https://testnet.qtum.info/api"],
+    rpcList: [
+      "https://testnet.qnode.qtum.info/v1/S0ML1u0egLDKsfgzlj8JyAy25p0VJO2D2vJjN",
+    ],
     autoAdd: false,
     testnet: true,
     faucetApi: "https://testnet-faucet.qtum.info/app/",
@@ -76,8 +87,9 @@ export const INNER_QTUM_CONFIG: QtumConfig[] = Object.values(
 
   return {
     ...config,
-    rpcList: reserveConfig?.rpcList || [],
-    qtumInfoApiList: reserveConfig?.qtumInfoApiList || [],
-    blockbookApiList: reserveConfig?.blockbookApiList,
+    rpcList: reserveConfig?.rpcList ?? config.rpcList,
+    qtumInfoApiList: reserveConfig?.qtumInfoApiList ?? config.qtumInfoApiList,
+    blockbookApiList:
+      reserveConfig?.blockbookApiList ?? config.blockbookApiList,
   };
 });

@@ -1,5 +1,9 @@
 import { shuffle } from "@/common/utils/array";
 
+const parseOptionalList = (value: string | undefined): string[] | undefined => {
+  return value ? shuffle(JSON.parse(value) as string[]) : undefined;
+};
+
 export const ReserveChainConfigs = {
   // ALEO_TESTNET: {
   //   rpcList: shuffle(
@@ -470,22 +474,16 @@ export const ReserveChainConfigs = {
     ),
   },
   qtum: {
-    rpcList: shuffle(
-      JSON.parse(import.meta.env.VITE_QTUM_RPC_LIST || '["https://mainnet.qnode.qtum.info", "https://qtum-janus.foxnb.net"]') as string[],
-    ),
-    qtumInfoApiList: shuffle(
-      JSON.parse(import.meta.env.VITE_QTUM_INFO_API_LIST || '["https://qtum.info/api", "https://qtumscan.io/api"]') as string[],
-    ),
-    blockbookApiList: shuffle(
-      JSON.parse(import.meta.env.VITE_QTUM_BLOCKBOOK_LIST || '["https://blockv3.qtum.info/"]') as string[],
+    rpcList: parseOptionalList(import.meta.env.VITE_QTUM_RPC_LIST),
+    qtumInfoApiList: parseOptionalList(import.meta.env.VITE_QTUM_INFO_API_LIST),
+    blockbookApiList: parseOptionalList(
+      import.meta.env.VITE_QTUM_BLOCKBOOK_LIST,
     ),
   },
   "qtum-testnet": {
-    rpcList: shuffle(
-      JSON.parse(import.meta.env.VITE_QTUM_TESTNET_RPC_LIST || '["https://testnet.qnode.qtum.info"]') as string[],
-    ),
-    qtumInfoApiList: shuffle(
-      JSON.parse(import.meta.env.VITE_QTUM_TESTNET_INFO_API_LIST || '["https://testnet.qtum.info/api"]') as string[],
+    rpcList: parseOptionalList(import.meta.env.VITE_QTUM_TESTNET_RPC_LIST),
+    qtumInfoApiList: parseOptionalList(
+      import.meta.env.VITE_QTUM_TESTNET_INFO_API_LIST,
     ),
   },
 };

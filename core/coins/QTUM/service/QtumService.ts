@@ -28,7 +28,7 @@ import type {
   NativeCoinTxDetailRes,
 } from "core/types/NativeCoinTransaction";
 import type { CoinType } from "core/types";
-import type { GasFee } from "core/types/GasFee";
+import type { GasFee, GasFeeQtumDapp } from "core/types/GasFee";
 import { GasFeeType } from "core/types/GasFee";
 import {
   TxLabel,
@@ -50,7 +50,7 @@ import * as bitcoin from "bitcoinjs-lib";
 import { ECPairFactory } from "ecpair";
 import { ecc } from "../utils/nobleSecp256k1Adapter";
 import type { Network } from "bitcoinjs-lib";
-import type { providers } from "ethers";
+import { BigNumber, utils as ethUtils, type providers } from "ethers";
 import { TransactionStatus } from "core/types/TransactionStatus";
 
 const ECPair = ECPairFactory(ecc);
@@ -65,7 +65,9 @@ export class QtumService extends CoinServiceBasic {
 
   // Fee rate cache
   private feeRateCache: { rate: number; timestamp: number } | null = null;
+  private gasPriceCache: { price: number; timestamp: number } | null = null;
   private static FEE_RATE_CACHE_TTL = 15_000; // 15 seconds
+  private static GAS_PRICE_CACHE_TTL = 60_000; // 60 seconds
 
   constructor(config: QtumConfig) {
     super(config);
@@ -669,6 +671,65 @@ export class QtumService extends CoinServiceBasic {
     return contractAddress.replace(/^0x/i, "").toLowerCase();
   }
 
+  private addHexPrefix(value: string): string {
+    return value.startsWith("0x") ? value : `0x${value}`;
+  }
+
+  private getChainId(): number {
+    const chainId = Number(this.config.chainId);
+    if (!Number.isFinite(chainId)) {
+      throw new Error(`Invalid QTUM chainId ${this.config.chainId}`);
+    }
+    return chainId;
+  }
+
+  private async getDefaultGasPrice(): Promise<number> {
+    const now = Date.now();
+    if (
+      this.gasPriceCache &&
+      now - this.gasPriceCache.timestamp < QtumService.GAS_PRICE_CACHE_TTL
+    ) {
+      return this.gasPriceCache.price;
+    }
+
+    const netGasPrice = await this.withRpc(async (provider) =>
+      provider.getGasPrice(),
+    );
+    const price = BigNumber.from(netGasPrice).div(10_000_000_000).toNumber();
+    this.gasPriceCache = { price, timestamp: now };
+    return price;
+  }
+
+  private encodeSendData(address: string, amount: bigint): string {
+    const evmAddress = getEvmAddress(address);
+    return (
+      "a9059cbb" +
+      ethUtils.defaultAbiCoder
+        .encode(["address", "uint256"], [evmAddress, amount.toString()])
+        .substring(2)
+    );
+  }
+
+  private async getTokenGasLimit(
+    from: string,
+    contractAddress: string,
+    to: string,
+    amount: bigint,
+    gasPrice: number,
+  ): Promise<number> {
+    const estimateGas = await this.withRpc(async (provider) =>
+      provider.estimateGas({
+        from: getEvmAddress(from),
+        to: this.addHexPrefix(contractAddress),
+        value: BigNumber.from(0),
+        data: this.addHexPrefix(this.encodeSendData(to, amount)),
+        gasPrice: BigNumber.from(gasPrice).mul(10_000_000_000),
+        chainId: this.getChainId(),
+      }),
+    );
+    return estimateGas.mul(110).div(100).toNumber();
+  }
+
   private matchQrc20Transfer(
     tx: QtumInfoTxResponse,
     contractAddress: string,
@@ -1067,66 +1128,62 @@ export class QtumService extends CoinServiceBasic {
   async getTokenEstimateGasFee(
     params: TokenEstimateGasParams<CoinType>,
   ): Promise<GasFee<CoinType> | undefined> {
-    const { from, to, value, token } = params;
+    const {
+      tx: { from, to, value, token },
+      option,
+    } = params;
     if (!from || !to || !token) return undefined;
 
-    // For QRC20 token transfers, we need both UTXO fee and EVM gas
-    const feeRate = await this.getFeeRate();
+    const gasOption = option as GasFeeQtumDapp | undefined;
+    const feeRate = option?.feeRate ?? DEFAULT_FEE_RATE;
 
-    // Token transfer tx has an additional OP_CALL output
-    // Estimate with contract call script output (~100 bytes extra)
-    const vBytes = this.getEstimateVBytes(from, 2, [from]) + 100;
+    const gasPrice = gasOption?.gasPrice ?? (await this.getDefaultGasPrice());
+    const gasLimit =
+      gasOption?.gasLimit ??
+      (await this.getTokenGasLimit(
+        from,
+        token.contractAddress,
+        to,
+        value,
+        gasPrice,
+      ));
 
-    // EVM gas estimation
-    let gasLimit = 250000; // Default gas limit for QRC20 transfer
-    let gasPrice = 40; // Default gas price in satoshi
+    const evmFee = BigInt(gasLimit) * BigInt(Math.ceil(gasPrice));
+    const utxos = await this.getUTXOs(from);
 
-    try {
-      const evmFrom = getEvmAddress(from);
-      const evmTo = getEvmAddress(to);
-      const contractAddr = token.contractAddress?.startsWith("0x")
-        ? token.contractAddress
-        : "0x" + token.contractAddress;
+    utxos.sort((a, b) => Number(BigInt(b.value) - BigInt(a.value)));
+    const selectedUtxos: UTXO[] = [];
+    let selectedTotal = 0n;
+    for (let i = 0; i < utxos.length; i++) {
+      const utxo = utxos[i];
+      selectedUtxos.push(utxo);
+      selectedTotal += BigInt(utxo.value);
 
-      // Encode transfer(to, amount)
-      const transferData =
-        "0xa9059cbb" +
-        evmTo.slice(2).padStart(64, "0") +
-        BigInt(value || "0")
-          .toString(16)
-          .padStart(64, "0");
-
-      // Estimate gas via RPC
-      const estimatedGas = await this.withRpc(async (provider) => {
-        return provider.send("eth_estimateGas", [
-          {
-            from: evmFrom,
-            to: contractAddr,
-            data: transferData,
-          },
-        ]);
-      });
-      gasLimit = Math.ceil(Number(BigInt(estimatedGas)) * 1.1);
-
-      // Get gas price
-      const rpcGasPrice = await this.withRpc(async (provider) => {
-        return provider.send("eth_gasPrice", []);
-      });
-      gasPrice = Number(BigInt(rpcGasPrice)) / 1e10; // Convert to satoshi
-    } catch (e) {
-      // Use defaults
+      const vBytes = this.getEstimateVBytes(from, i + 1, [to, from]);
+      const estimatedUtxoFee = BigInt(Math.ceil(vBytes * feeRate));
+      if (selectedTotal >= evmFee + estimatedUtxoFee) {
+        break;
+      }
     }
 
-    const utxoFee = BigInt(Math.ceil(vBytes * feeRate));
-    const evmFee = BigInt(gasLimit) * BigInt(Math.ceil(gasPrice));
-    const totalFee = utxoFee + evmFee;
+    const txSize = 148 * selectedUtxos.length + 107 + 34 + 10;
+    let utxoFee = BigInt(Math.ceil(txSize * feeRate));
+    let totalFee = utxoFee + evmFee;
+    const changeValue = selectedTotal - totalFee;
+
+    if (changeValue > 0n && changeValue <= BigInt(DUST_LIMIT)) {
+      totalFee += changeValue;
+      utxoFee += changeValue;
+    }
 
     return {
       estimateGas: totalFee,
       feeRate,
-      fee: totalFee,
-      type: GasFeeType.UTXO,
-    } as GasFee<CoinType>;
+      fee: utxoFee,
+      gasLimit,
+      gasPrice: Math.ceil(gasPrice),
+      type: GasFeeType.QTUM_DAPP,
+    };
   }
 
   async sendToken(
@@ -1142,29 +1199,16 @@ export class QtumService extends CoinServiceBasic {
     const keyPair = this.getKeyPair(privateKey, this.network);
     const sequence = option?.sendNoRBF ? 0xffffffff : 0xfffffffd;
 
-    // Get gas parameters
-    const gasLimit = 250000;
-    let gasPrice = 40;
-
-    try {
-      const rpcGasPrice = await this.withRpc(async (provider) => {
-        return provider.send("eth_gasPrice", []);
-      });
-      gasPrice = Math.ceil(Number(BigInt(rpcGasPrice)) / 1e10);
-    } catch (e) {
-      // Use default
-    }
+    const gasLimit =
+      gasFee.type === GasFeeType.QTUM_DAPP ? gasFee.gasLimit : 250000;
+    const gasPrice =
+      gasFee.type === GasFeeType.QTUM_DAPP ? gasFee.gasPrice : 40;
 
     // Encode transfer(to, amount) data
-    const evmTo = getEvmAddress(to);
     const contractAddr = token.contractAddress.startsWith("0x")
       ? token.contractAddress.slice(2)
       : token.contractAddress;
-
-    const transferData =
-      "a9059cbb" +
-      evmTo.slice(2).padStart(64, "0") +
-      BigInt(value).toString(16).padStart(64, "0");
+    const transferData = this.encodeSendData(to, value);
 
     // Build OP_CALL script
     const opCallScript = this.buildOpCallScript(
@@ -1180,17 +1224,23 @@ export class QtumService extends CoinServiceBasic {
     if (gasFee && "feeRate" in gasFee) {
       feeRate = gasFee.feeRate;
     }
-    const rate = feeRate ?? (await this.getFeeRate());
+    const rate = Math.max(
+      Math.ceil(feeRate ?? (await this.getFeeRate())),
+      DEFAULT_FEE_RATE,
+    );
 
     const utxos = await this.getUTXOs(from);
     utxos.sort((a, b) => Number(BigInt(b.value) - BigInt(a.value)));
 
     // Calculate UTXO fee (extra output for OP_CALL)
-    const evmCost = BigInt(gasLimit) * BigInt(gasPrice);
+    const evmCost = BigInt(gasLimit) * BigInt(Math.ceil(gasPrice));
     const utxoVBytes =
       this.getEstimateVBytes(from, Math.min(utxos.length, 3), [from]) + 100;
     const utxoFee = BigInt(Math.ceil(utxoVBytes * rate));
-    const totalRequired = evmCost + utxoFee;
+    const totalRequired =
+      gasFee.type === GasFeeType.QTUM_DAPP && gasFee.estimateGas > 0n
+        ? gasFee.estimateGas
+        : evmCost + utxoFee;
 
     // Select enough UTXOs
     const selectedUtxos: UTXO[] = [];
@@ -1221,7 +1271,7 @@ export class QtumService extends CoinServiceBasic {
     });
 
     // Add change output
-    const changeValue = selectedTotal - utxoFee - evmCost;
+    const changeValue = selectedTotal - totalRequired;
     if (changeValue > BigInt(DUST_LIMIT)) {
       psbt.addOutput({
         address: from,
@@ -1235,7 +1285,7 @@ export class QtumService extends CoinServiceBasic {
     }
 
     psbt.finalizeAllInputs();
-    const rawTx = psbt.extractTransaction().toHex();
+    const rawTx = psbt.extractTransaction(true).toHex();
 
     // Broadcast
     const txid = await this.pushTx(rawTx);
@@ -1278,9 +1328,23 @@ export class QtumService extends CoinServiceBasic {
   }
 
   private numberToBuffer(n: number): Buffer {
-    const hex = n.toString(16);
-    const paddedHex = hex.length % 2 === 0 ? hex : "0" + hex;
-    return Buffer.from(paddedHex, "hex");
+    const buffer: number[] = [];
+    const negative = n < 0;
+    let value = Math.abs(n);
+
+    while (value) {
+      buffer.push(value & 0xff);
+      value >>= 8;
+    }
+
+    const top = buffer[buffer.length - 1] ?? 0;
+    if (top & 0x80) {
+      buffer.push(negative ? 0x80 : 0x00);
+    } else if (negative) {
+      buffer[buffer.length - 1] = top | 0x80;
+    }
+
+    return Buffer.from(buffer);
   }
 
   // ===== Interactive Tokens =====

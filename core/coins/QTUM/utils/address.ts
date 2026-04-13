@@ -56,11 +56,11 @@ export function getEvmAddress(address: string): string {
   // Convert UTXO address to EVM address
   try {
     const decoded = bitcoin.address.fromBase58Check(address);
-    return "0x" + decoded.hash.toString("hex");
+    return "0x" + Buffer.from(decoded.hash).toString("hex");
   } catch (e) {
     try {
       const decoded = bitcoin.address.fromBech32(address);
-      return "0x" + decoded.data.toString("hex");
+      return "0x" + Buffer.from(decoded.data).toString("hex");
     } catch (e2) {
       throw new Error("Invalid QTUM address");
     }
@@ -78,11 +78,11 @@ export function decodeEvmAddress(
 export function getHash160Address(address: string): string {
   try {
     const decoded = bitcoin.address.fromBase58Check(address);
-    return decoded.hash.toString("hex");
+    return Buffer.from(decoded.hash).toString("hex");
   } catch (e) {
     try {
       const decoded = bitcoin.address.fromBech32(address);
-      return decoded.data.toString("hex");
+      return Buffer.from(decoded.data).toString("hex");
     } catch (e2) {
       throw new Error("Invalid QTUM address");
     }

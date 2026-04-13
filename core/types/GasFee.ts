@@ -24,6 +24,15 @@ export type GasFeeUTXO<S extends boolean = false> = {
   type: GasFeeType.UTXO;
 };
 
+export type GasFeeQtumDapp<S extends boolean = false> = Omit<
+  GasFeeUTXO<S>,
+  "type"
+> & {
+  gasLimit: number;
+  gasPrice: number;
+  type: GasFeeType.QTUM_DAPP;
+};
+
 export interface AleoGasFee {
   baseFee: bigint;
   priorityFee: bigint;
@@ -47,7 +56,7 @@ export type GasFee<
   : T extends CoinType.ALEO
   ? GasFeeUTXO<S>
   : T extends CoinType.QTUM
-  ? GasFeeUTXO<S>
+  ? GasFeeUTXO<S> | GasFeeQtumDapp<S>
   : never;
 
 export type SerializeGasFee<T extends CoinType> = GasFee<T, true>;

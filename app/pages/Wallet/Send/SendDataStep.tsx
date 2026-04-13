@@ -193,6 +193,8 @@ export const SendDataStep = (props: SendDataStepProps) => {
         return gasFee.gasPrice * BigInt(gasFee.gasLimit);
       case GasFeeType.UTXO:
         return gasFee.estimateGas;
+      case GasFeeType.QTUM_DAPP:
+        return gasFee.estimateGas;
       default:
         return 0n;
     }
@@ -267,6 +269,9 @@ export const SendDataStep = (props: SendDataStepProps) => {
         displayStr = utils.formatUnits(data.gasPrice, "gwei");
         break;
       case GasFeeType.UTXO:
+        displayStr = data.feeRate ? `${data.feeRate}` : "--";
+        break;
+      case GasFeeType.QTUM_DAPP:
         displayStr = data.feeRate ? `${data.feeRate}` : "--";
         break;
       default:
