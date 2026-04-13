@@ -24,7 +24,7 @@ const QTUM_CHAIN_CONFIGS: Record<string, QtumConfig> = {
       [ExplorerLanguages.EN]: "https://qtum.info/",
     },
     explorerPaths: {
-      tx: "/tx/{txHash}",
+      tx: "/tx/{txid}",
       address: "/address/{address}",
     },
     chainRemark: {
@@ -61,7 +61,7 @@ const QTUM_CHAIN_CONFIGS: Record<string, QtumConfig> = {
       [ExplorerLanguages.EN]: "https://testnet.qtum.info/",
     },
     explorerPaths: {
-      tx: "/tx/{txHash}",
+      tx: "/tx/{txid}",
       address: "/address/{address}",
     },
     chainRemark: {
