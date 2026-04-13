@@ -859,6 +859,7 @@ export class QtumService extends CoinServiceBasic {
           ? TransactionStatus.SUCCESS
           : TransactionStatus.PENDING,
       height: tx.blockHeight,
+      confirmations: tx.confirmations,
       label: this.getNativeTxLabel(tx),
       chainSpecificReturn: {
         qrc20TokenTransfers: tx.qrc20TokenTransfers,

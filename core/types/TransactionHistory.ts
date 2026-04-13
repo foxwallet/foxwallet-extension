@@ -73,6 +73,7 @@ export type TransactionHistoryItem = {
   timestamp: number;
   status: TransactionStatus;
   height: number; // use SpecificHeightValue for unconfirmed and others
+  confirmations?: number;
 
   label?: TxLabel;
   nonce?: number;
@@ -106,6 +107,7 @@ export type TxHistoryItem = {
   timestamp: number;
   status: TransactionStatus;
   height: number; // use SpecificHeightValue for unconfirmed and others
+  confirmations?: number;
 
   label?: TxLabel;
   nonce?: number;
