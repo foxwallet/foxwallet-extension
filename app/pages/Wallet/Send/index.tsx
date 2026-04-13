@@ -5,7 +5,7 @@ import { useCallback, useMemo, useState } from "react";
 import { InputAddressStep } from "@/pages/Wallet/Send/InputAddressStep";
 import { SendDataStep, type Step2Data } from "@/pages/Wallet/Send/SendDataStep";
 import type { GasFee } from "core/types/GasFee";
-import { CoinType } from "core/types";
+import type { CoinType } from "core/types";
 import { useCoinService } from "@/hooks/useCoinService";
 import { useNonce } from "@/hooks/useNonce";
 import { usePrivateKey } from "@/hooks/usePrivateKey";
@@ -18,6 +18,7 @@ import {
 import { useSafeParams } from "@/hooks/useSafeParams";
 import { useSafeTokenInfo } from "@/hooks/useSafeTokenInfo";
 import { chainUniqueIdToCoinType } from "core/helper/CoinType";
+import { showErrorToast } from "@/components/Custom/ErrorToast";
 
 export enum AmountType {
   FIAT,
@@ -52,57 +53,50 @@ const SendScreen = () => {
       }
 
       setIsSending(true);
+      try {
+        const sendPromise =
+          tokenInfo.type === AssetType.TOKEN
+            ? coinService.sendToken({
+                tx: {
+                  from: fromAddress,
+                  to: toAddress,
+                  value,
+                  token: tokenInfo,
+                  gasFee,
+                  nonce,
+                },
+                signer: { privateKey },
+              })
+            : coinService.sendNativeCoin({
+                tx: {
+                  from: fromAddress,
+                  to: toAddress,
+                  value,
+                  gasFee,
+                  nonce,
+                },
+                signer: { privateKey },
+              });
 
-      const sendCoin = async () => {
-        try {
-          const res = await coinService.sendNativeCoin({
-            tx: {
-              from: fromAddress,
-              to: toAddress,
-              value,
-              gasFee,
-              nonce,
-            },
-            signer: { privateKey },
-          });
-          console.log("====> send NativeCoin");
-          console.log(res);
-        } catch (e) {
-          console.log(e);
-        }
-      };
+        const [res] = await Promise.all([
+          sendPromise,
+          new Promise((resolve) => setTimeout(resolve, 2000)),
+        ]);
 
-      const sendToken = async () => {
-        try {
-          const res = await coinService.sendToken({
-            tx: {
-              from: fromAddress,
-              to: toAddress,
-              value,
-              token: tokenInfo,
-              gasFee,
-              nonce,
-            },
-            signer: { privateKey },
-          });
-          console.log("====> send token");
-          console.log(res);
-        } catch (e) {
-          console.log(e);
-        }
-      };
-
-      Promise.all([
-        tokenInfo.type === AssetType.TOKEN ? sendToken() : sendCoin(),
-        new Promise((resolve) => setTimeout(resolve, 2000)),
-      ])
-        .catch((error) => {
-          console.error(error);
-        })
-        .finally(() => {
-          setIsSending(false);
-          navigate("/");
+        console.log("====> send result");
+        console.log(res);
+        navigate("/");
+      } catch (error) {
+        console.error(error);
+        void showErrorToast({
+          message:
+            error instanceof Error && error.message
+              ? error.message
+              : String(error),
         });
+      } finally {
+        setIsSending(false);
+      }
     },
     [
       coinService,

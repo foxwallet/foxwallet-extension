@@ -116,6 +116,10 @@ export interface QtumInfoChainInfo {
   };
 }
 
+export interface QtumInfoFeeRate {
+  feeRate: number | string;
+}
+
 export class QtumInfoApi {
   private baseUrl: string;
 
@@ -243,9 +247,19 @@ export class QtumInfoApi {
     return this.fetchJson<QtumInfoChainInfo>(`/info`);
   }
 
+  async getFeeRates(): Promise<QtumInfoFeeRate[]> {
+    return this.fetchJson<QtumInfoFeeRate[]>(`/feerates`);
+  }
+
   async getFeeRate(): Promise<number> {
-    const info = await this.getChainInfo();
-    return info.feeRate;
+    const feeRates = await this.getFeeRates();
+    const feeRate = Number(feeRates[0]?.feeRate);
+    if (!Number.isFinite(feeRate) || feeRate <= 0) {
+      throw new Error("Invalid QTUM fee rate");
+    }
+
+    // QtumInfo returns QTUM/kB. Convert it to sat/vB.
+    return Math.ceil(feeRate * 1e5);
   }
 
   async sendRawTransaction(rawtx: string): Promise<{ id: string }> {

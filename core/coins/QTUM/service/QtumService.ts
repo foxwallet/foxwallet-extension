@@ -28,7 +28,7 @@ import type {
   NativeCoinTxDetailRes,
 } from "core/types/NativeCoinTransaction";
 import type { CoinType } from "core/types";
-import type { GasFee, GasFeeUTXO } from "core/types/GasFee";
+import type { GasFee } from "core/types/GasFee";
 import { GasFeeType } from "core/types/GasFee";
 import {
   TxLabel,
@@ -332,6 +332,7 @@ export class QtumService extends CoinServiceBasic {
     sendValue: bigint,
     toAddress: string,
     options?: {
+      fee?: bigint;
       feeRate?: number;
       sendMax?: boolean;
     },
@@ -346,7 +347,11 @@ export class QtumService extends CoinServiceBasic {
       throw new Error("No available UTXOs");
     }
 
-    const rate = options?.feeRate ?? (await this.getFeeRate());
+    const rate = Math.max(
+      Math.ceil(options?.feeRate ?? (await this.getFeeRate())),
+      DEFAULT_FEE_RATE,
+    );
+    const fixedFee = options?.fee;
     const sendMax = options?.sendMax ?? false;
 
     // Sort UTXOs descending by value
@@ -363,7 +368,9 @@ export class QtumService extends CoinServiceBasic {
       const vBytes = this.getEstimateVBytes(address, allUTXOs.length, [
         toAddress,
       ]);
-      const fee = BigInt(Math.ceil(vBytes * rate));
+      const fee = fixedFee
+        ? BigInt(Math.max(Number(fixedFee), Math.ceil(vBytes * rate)))
+        : BigInt(Math.ceil(vBytes * rate));
 
       if (totalValue <= fee) {
         throw new Error("Insufficient balance to cover transaction fee");
@@ -393,7 +400,9 @@ export class QtumService extends CoinServiceBasic {
         selectedUtxos.length,
         [toAddress, address], // to + change
       );
-      const fee = BigInt(Math.ceil(vBytes * rate));
+      const fee = fixedFee
+        ? BigInt(Math.max(Number(fixedFee), Math.ceil(vBytes * rate)))
+        : BigInt(Math.ceil(vBytes * rate));
 
       if (selectedTotal >= sendValue + fee) {
         const changeValue = selectedTotal - sendValue - fee;
@@ -423,7 +432,11 @@ export class QtumService extends CoinServiceBasic {
   // ===== Transaction Building =====
 
   private getKeyPair(privateKey: string, network: Network) {
-    return ECPair.fromPrivateKey(Buffer.from(privateKey, "hex"), {
+    const rawPrivateKey = privateKey.startsWith("0x")
+      ? privateKey.slice(2)
+      : privateKey;
+
+    return ECPair.fromPrivateKey(Buffer.from(rawPrivateKey, "hex"), {
       network,
     });
   }
@@ -438,6 +451,7 @@ export class QtumService extends CoinServiceBasic {
     utxo: UTXO,
     fromAddress: string,
     keyPair: ReturnType<typeof ECPair.fromPrivateKey>,
+    sequence?: number,
   ): Promise<void> {
     const addrType = getAddressType(fromAddress);
 
@@ -450,9 +464,10 @@ export class QtumService extends CoinServiceBasic {
       psbt.addInput({
         hash: utxo.txid,
         index: utxo.vout,
+        sequence,
         witnessUtxo: {
           script: scriptPubKey,
-          value: Number(utxo.value),
+          value: BigInt(utxo.value),
         },
       });
     } else if (addrType === "p2sh") {
@@ -466,14 +481,18 @@ export class QtumService extends CoinServiceBasic {
         redeem: p2wpkh,
         network: this.network,
       });
+      if (!p2sh.output || !p2wpkh.output) {
+        throw new Error("Failed to build QTUM p2sh-p2wpkh input");
+      }
       psbt.addInput({
         hash: utxo.txid,
         index: utxo.vout,
+        sequence,
         witnessUtxo: {
-          script: p2sh.output!,
-          value: Number(utxo.value),
+          script: p2sh.output,
+          value: BigInt(utxo.value),
         },
-        redeemScript: p2wpkh.output!,
+        redeemScript: p2wpkh.output,
       });
     } else if (addrType === "p2tr") {
       // Taproot: use witnessUtxo with tapInternalKey
@@ -484,9 +503,10 @@ export class QtumService extends CoinServiceBasic {
       psbt.addInput({
         hash: utxo.txid,
         index: utxo.vout,
+        sequence,
         witnessUtxo: {
           script: scriptPubKey,
-          value: Number(utxo.value),
+          value: BigInt(utxo.value),
         },
         tapInternalKey: keyPair.publicKey.subarray(1, 33),
       });
@@ -496,6 +516,7 @@ export class QtumService extends CoinServiceBasic {
       psbt.addInput({
         hash: utxo.txid,
         index: utxo.vout,
+        sequence,
         nonWitnessUtxo: Buffer.from(rawTx, "hex"),
       });
     }
@@ -504,8 +525,13 @@ export class QtumService extends CoinServiceBasic {
   async sendNativeCoin(
     params: NativeCoinSendTxParams<CoinType>,
   ): Promise<NativeCoinSendTxRes<CoinType> | undefined> {
-    const { from, to, value, privateKey, gasFee } = params;
-    const sendMax = params.option?.sendMax ?? false;
+    const {
+      tx: { from, to, value, gasFee },
+      signer: { privateKey },
+      option,
+    } = params;
+    const sendMax = option?.sendMax ?? false;
+    const sequence = option?.sendNoRBF ? 0xffffffff : 0xfffffffd;
 
     let sendValue = BigInt(value);
 
@@ -515,14 +541,15 @@ export class QtumService extends CoinServiceBasic {
 
     let feeRate: number | undefined;
     if (gasFee && "feeRate" in gasFee) {
-      feeRate = (gasFee as GasFeeUTXO).feeRate;
+      feeRate = gasFee.feeRate;
     }
+    const fixedFee = gasFee.fee ?? gasFee.estimateGas;
 
-    const { utxos, fee, changeValue, actualSendValue } = await this.selectUTXOs(
+    const { utxos, changeValue, actualSendValue } = await this.selectUTXOs(
       from,
       sendValue,
       to,
-      { feeRate, sendMax },
+      { fee: fixedFee, feeRate, sendMax },
     );
 
     // For sendMax, use the calculated actual send value
@@ -536,14 +563,14 @@ export class QtumService extends CoinServiceBasic {
 
     // Add inputs with proper witness/non-witness handling
     for (const utxo of utxos) {
-      await this.addPsbtInput(psbt, utxo, from, keyPair);
+      await this.addPsbtInput(psbt, utxo, from, keyPair, sequence);
     }
 
     // Add output to recipient
     if (sendValue > 0n) {
       psbt.addOutput({
         address: to,
-        value: Number(sendValue),
+        value: sendValue,
       });
     }
 
@@ -551,7 +578,7 @@ export class QtumService extends CoinServiceBasic {
     if (changeValue > 0n) {
       psbt.addOutput({
         address: from,
-        value: Number(changeValue),
+        value: changeValue,
       });
     }
 
@@ -565,25 +592,62 @@ export class QtumService extends CoinServiceBasic {
     const rawTx = psbt.extractTransaction().toHex();
 
     // Broadcast
-    const result = await this.withQtumInfo(async (api) =>
-      api.sendRawTransaction(rawTx),
-    );
+    const txid = await this.pushTx(rawTx);
 
     return {
-      id: result.id,
+      id: txid,
       from,
       to,
-      value: sendValue.toString(),
-      gasFee: gasFee as GasFee<CoinType>,
+      value: sendValue,
+      gasFee,
       timestamp: Date.now(),
-    } as NativeCoinSendTxRes<CoinType>;
+    };
   }
 
   private async fetchRawTransaction(txid: string): Promise<string> {
-    return this.withRpc(async (provider) => {
-      const result = await provider.send("getrawtransaction", [txid, false]);
-      return result as string;
-    });
+    try {
+      return await this.withBlockbook(async (api) =>
+        api.getRawTransaction(txid),
+      );
+    } catch (blockbookError) {
+      try {
+        return await this.withQtumInfo(async (api) =>
+          api.getRawTransaction(txid),
+        );
+      } catch (qtumInfoError) {
+        return this.withRpc(async (provider) => {
+          const result = await provider.send("getrawtransaction", [
+            txid,
+            false,
+          ]);
+          return result as string;
+        });
+      }
+    }
+  }
+
+  private async pushTx(signedTx: string): Promise<string> {
+    try {
+      const result = await this.withQtumInfo(async (api) =>
+        api.sendRawTransaction(signedTx),
+      );
+      if (!result.id) {
+        throw new Error("sendRawTransaction returned empty txid");
+      }
+      return result.id;
+    } catch (qtumInfoError) {
+      if (this.blockbookServices.length === 0) {
+        throw qtumInfoError;
+      }
+
+      const result = await this.withBlockbook(async (api) =>
+        api.sendRawTransaction(signedTx),
+      );
+      if (!result.result) {
+        throw new Error("Blockbook sendtx returned empty txid");
+      }
+      return result.result;
+    }
   }
 
   private async getQtumTransaction(txid: string): Promise<QtumInfoTxResponse> {
@@ -1068,10 +1132,15 @@ export class QtumService extends CoinServiceBasic {
   async sendToken(
     params: TokenSendTxParams<CoinType>,
   ): Promise<TokenSendTxRes<CoinType> | undefined> {
-    const { from, to, value, token, privateKey, gasFee } = params;
+    const {
+      tx: { from, to, value, token, gasFee },
+      signer: { privateKey },
+      option,
+    } = params;
     if (!token?.contractAddress) return undefined;
 
     const keyPair = this.getKeyPair(privateKey, this.network);
+    const sequence = option?.sendNoRBF ? 0xffffffff : 0xfffffffd;
 
     // Get gas parameters
     const gasLimit = 250000;
@@ -1109,7 +1178,7 @@ export class QtumService extends CoinServiceBasic {
     // Select UTXOs for gas
     let feeRate: number | undefined;
     if (gasFee && "feeRate" in gasFee) {
-      feeRate = (gasFee as GasFeeUTXO).feeRate;
+      feeRate = gasFee.feeRate;
     }
     const rate = feeRate ?? (await this.getFeeRate());
 
@@ -1142,13 +1211,13 @@ export class QtumService extends CoinServiceBasic {
 
     // Add inputs with proper witness/non-witness handling
     for (const utxo of selectedUtxos) {
-      await this.addPsbtInput(psbt, utxo, from, keyPair);
+      await this.addPsbtInput(psbt, utxo, from, keyPair, sequence);
     }
 
     // Add OP_CALL output
     psbt.addOutput({
       script: opCallScript,
-      value: 0,
+      value: 0n,
     });
 
     // Add change output
@@ -1156,7 +1225,7 @@ export class QtumService extends CoinServiceBasic {
     if (changeValue > BigInt(DUST_LIMIT)) {
       psbt.addOutput({
         address: from,
-        value: Number(changeValue),
+        value: changeValue,
       });
     }
 
@@ -1169,19 +1238,17 @@ export class QtumService extends CoinServiceBasic {
     const rawTx = psbt.extractTransaction().toHex();
 
     // Broadcast
-    const result = await this.withQtumInfo(async (api) =>
-      api.sendRawTransaction(rawTx),
-    );
+    const txid = await this.pushTx(rawTx);
 
     return {
-      id: result.id,
+      id: txid,
       from,
       to,
-      value: value.toString(),
-      gasFee: gasFee as GasFee<CoinType>,
+      value,
+      gasFee,
       token,
       timestamp: Date.now(),
-    } as TokenSendTxRes<CoinType>;
+    };
   }
 
   private buildOpCallScript(

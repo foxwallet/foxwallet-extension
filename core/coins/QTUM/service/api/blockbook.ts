@@ -46,6 +46,7 @@ export interface BlockbookTxResponse {
   fees: string;
   value: string;
   valueIn: string;
+  hex?: string;
 }
 
 export class BlockbookApi {
@@ -61,8 +62,11 @@ export class BlockbookApi {
       headers: { "Content-Type": "application/json" },
     });
     if (!response.ok) {
+      const errorText = await response.text().catch(() => "");
       throw new Error(
-        `Blockbook API error: ${response.status} ${response.statusText}`,
+        `Blockbook API error: ${response.status} ${response.statusText}${
+          errorText ? `: ${errorText}` : ""
+        }`,
       );
     }
     return response.json() as Promise<T>;
@@ -99,6 +103,14 @@ export class BlockbookApi {
 
   async getTransaction(txid: string): Promise<BlockbookTxResponse> {
     return this.fetchJson<BlockbookTxResponse>(`/api/v2/tx/${txid}`);
+  }
+
+  async getRawTransaction(txid: string): Promise<string> {
+    const tx = await this.getTransaction(txid);
+    if (!tx.hex) {
+      throw new Error("Blockbook transaction hex is unavailable");
+    }
+    return tx.hex;
   }
 
   async getFeeRate(): Promise<number> {
