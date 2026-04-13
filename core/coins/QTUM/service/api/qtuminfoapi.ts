@@ -1,6 +1,8 @@
 import type { UTXO, QtumBalance } from "../../types";
 import { MATURE_CONFIRMATIONS } from "../../constants";
 
+const QTUM_INFO_APPLICATION_ID = "gate-55ed6e22-aa20-4bd8-95db-1fa32324d1db";
+
 export interface QtumInfoTxResponse {
   id: string;
   hash: string;
@@ -121,10 +123,31 @@ export class QtumInfoApi {
     this.baseUrl = baseUrl.replace(/\/$/, "");
   }
 
+  private shouldSendApplicationId(): boolean {
+    try {
+      const { hostname } = new URL(this.baseUrl);
+      return hostname === "qtum.info" || hostname.endsWith(".qtum.info");
+    } catch {
+      return false;
+    }
+  }
+
+  private getHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+
+    if (this.shouldSendApplicationId()) {
+      headers["Application-Id"] = QTUM_INFO_APPLICATION_ID;
+    }
+
+    return headers;
+  }
+
   private async fetchJson<T>(path: string): Promise<T> {
     const response = await fetch(`${this.baseUrl}${path}`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: this.getHeaders(),
     });
     if (!response.ok) {
       throw new Error(
@@ -137,7 +160,7 @@ export class QtumInfoApi {
   private async postJson<T>(path: string, body: unknown): Promise<T> {
     const response = await fetch(`${this.baseUrl}${path}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: this.getHeaders(),
       body: JSON.stringify(body),
     });
     if (!response.ok) {
