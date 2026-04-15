@@ -13,7 +13,10 @@ import { type AccountOption } from "core/types/CoinBasic";
 import { DEFAULT_ETH_ACCOUNT_OPTION } from "core/coins/ETH/config/derivation";
 import { INNER_ETH_CONFIG } from "core/coins/ETH/config/chains";
 import { INNER_QTUM_CONFIG } from "core/coins/QTUM/config/chains";
-import { DEFAULT_QTUM_ACCOUNT_OPTION, QTUM_TESTNET_ACCOUNT_OPTION } from "core/coins/QTUM/types/QTUMAccount";
+import {
+  DEFAULT_QTUM_ACCOUNT_OPTION,
+  QTUM_TESTNET_ACCOUNT_OPTION,
+} from "core/coins/QTUM/types/QTUMAccount";
 
 export const chainUniqueIdToCoinType = (uniqueId: ChainUniqueId): CoinType => {
   switch (uniqueId) {
@@ -60,6 +63,6 @@ export const chainUniqueIdToAccountOptions = (
 
 export const INNER_CHAIN_CONFIG: ChainBaseConfig[] = [
   ...INNER_ALEO_CONFIG,
-  ...INNER_ETH_CONFIG,
   ...INNER_QTUM_CONFIG,
+  ...INNER_ETH_CONFIG,
 ];

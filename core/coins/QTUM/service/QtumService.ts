@@ -870,6 +870,11 @@ export class QtumService extends CoinServiceBasic {
     return isAddress(address);
   }
 
+  validateContractAddress(address: string): boolean {
+    // QRC20 contract addresses are 40-char hex (EVM format)
+    return ethUtils.isAddress(address);
+  }
+
   // ===== Transaction History =====
 
   supportNativeCoinTxHistory(): boolean {

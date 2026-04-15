@@ -27,10 +27,6 @@ const QTUM_CHAIN_CONFIGS: Record<string, QtumConfig> = {
       tx: "/tx/{txid}",
       address: "/address/{address}",
     },
-    chainRemark: {
-      en: "Qtum Mainnet",
-      zh: "Qtum 主网",
-    },
     network: qtumNetwork,
     qtumInfoApiList: ["https://qtum.info/api", "https://qtumscan.io/api"],
     blockbookApiList: [
@@ -63,10 +59,6 @@ const QTUM_CHAIN_CONFIGS: Record<string, QtumConfig> = {
     explorerPaths: {
       tx: "/tx/{txid}",
       address: "/address/{address}",
-    },
-    chainRemark: {
-      en: "Qtum Testnet",
-      zh: "Qtum 测试网",
     },
     network: qtumTestnetNetwork,
     qtumInfoApiList: ["https://testnet.qtum.info/api"],
