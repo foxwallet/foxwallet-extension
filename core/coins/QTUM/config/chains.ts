@@ -75,7 +75,9 @@ export const INNER_QTUM_CONFIG: QtumConfig[] = Object.values(
   QTUM_CHAIN_CONFIGS,
 ).map((config) => {
   const uniqueId = config.uniqueId as InnerChainUniqueId;
-  const reserveConfig = ReserveChainConfigs[uniqueId];
+  const reserveConfig = ReserveChainConfigs[uniqueId] as
+    | Partial<Pick<QtumConfig, "rpcList" | "qtumInfoApiList" | "blockbookApiList">>
+    | undefined;
 
   return {
     ...config,
