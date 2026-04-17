@@ -419,6 +419,20 @@ export class VaultStorage {
           index: number;
         } | undefined = undefined;
         switch (currentVersion) {
+          case 4: {
+            // v4 -> v5: Add QTUM accounts to existing wallets
+            await keyringManager.completeAccountsForHdWallet();
+            const oldSelectedAccount4 =
+              await accountSettingStorage.getSelectedGroupAccount();
+            if (oldSelectedAccount4) {
+              oldSelectedAccountInfo = {
+                walletId: oldSelectedAccount4.wallet.walletId,
+                groupId: oldSelectedAccount4.group.groupId,
+                index: oldSelectedAccount4.group.index,
+              };
+            }
+            break;
+          }
           case 3:
           case 2: {
             await keyringManager.completeAccountsForHdWallet();

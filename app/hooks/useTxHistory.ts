@@ -190,11 +190,9 @@ export const useTxHistory = ({
     }
   }, [endReach, newPagination]);
 
-  const sortedHistory = txHistory
-    .sort((a, b) => b.timestamp - a.timestamp)
-    .filter((item, index, array) => {
-      return index === 0 || item.timestamp !== array[index - 1].timestamp;
-    });
+  const sortedHistory = txHistory.sort(
+    (a, b) => b.timestamp - a.timestamp,
+  );
 
   const ret = useMemo(() => {
     return {

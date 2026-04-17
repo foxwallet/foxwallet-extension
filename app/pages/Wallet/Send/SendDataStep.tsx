@@ -15,7 +15,7 @@ import { useBalance } from "@/hooks/useBalance";
 import { useGasFee } from "@/hooks/useGasFee";
 import { BigNumber, ethers, utils } from "ethers";
 import { type GasFee, GasFeeType } from "core/types/GasFee";
-import { type CoinType } from "core/types";
+import { CoinType } from "core/types";
 import { type TokenV2 } from "core/types/Token";
 import { useCoinService } from "@/hooks/useCoinService";
 import { useChainConfig } from "@/hooks/useGroupAccount";
@@ -48,12 +48,12 @@ export const SendDataStep = (props: SendDataStepProps) => {
   const { nativeCurrency, chainConfig, coinService } = useCoinService(uniqueId);
   const { supportCustomGasFee: supportCustomGasFeeInChainConfig } =
     useChainConfig(uniqueId);
-  // todo
   const supportCustomGasFee = useMemo(
     () =>
       supportCustomGasFeeInChainConfig &&
-      uniqueId === InnerChainUniqueId.ETHEREUM,
-    [supportCustomGasFeeInChainConfig, uniqueId],
+      (uniqueId === InnerChainUniqueId.ETHEREUM ||
+        chainConfig.coinType === CoinType.QTUM),
+    [supportCustomGasFeeInChainConfig, uniqueId, chainConfig.coinType],
   );
 
   console.log("      initData ", initData);
@@ -193,6 +193,8 @@ export const SendDataStep = (props: SendDataStepProps) => {
         return gasFee.gasPrice * BigInt(gasFee.gasLimit);
       case GasFeeType.UTXO:
         return gasFee.estimateGas;
+      case GasFeeType.QTUM_DAPP:
+        return gasFee.estimateGas;
       default:
         return 0n;
     }
@@ -266,9 +268,12 @@ export const SendDataStep = (props: SendDataStepProps) => {
       case GasFeeType.LEGACY:
         displayStr = utils.formatUnits(data.gasPrice, "gwei");
         break;
-      // case GasFeeType.UTXO:
-      //   networkFee = data.feeRate ? `${data.feeRate}` : "--";
-      //   break;
+      case GasFeeType.UTXO:
+        displayStr = data.feeRate ? `${data.feeRate}` : "--";
+        break;
+      case GasFeeType.QTUM_DAPP:
+        displayStr = data.feeRate ? `${data.feeRate}` : "--";
+        break;
       default:
         break;
     }

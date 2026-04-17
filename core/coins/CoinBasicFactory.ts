@@ -1,6 +1,7 @@
 import { CoinType } from "../types/CoinType";
 import { aleoBasic } from "./ALEO/account";
 import { ethBasic } from "./ETH/account";
+import { qtumBasic } from "./QTUM/account";
 import { type CoinBasic } from "./CoinBasic";
 
 export function coinBasicFactory<T extends CoinType>(
@@ -11,6 +12,8 @@ export function coinBasicFactory<T extends CoinType>(
       return ethBasic as CoinBasic<T>;
     case CoinType.ALEO:
       return aleoBasic as CoinBasic<T>;
+    case CoinType.QTUM:
+      return qtumBasic as CoinBasic<T>;
     default:
       throw new Error("Invalid coin type");
   }

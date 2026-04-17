@@ -4,12 +4,11 @@ import { Divider, Flex, Text } from "@chakra-ui/react";
 import { useSafeParams } from "@/hooks/useSafeParams";
 import { useSafeTokenInfo } from "@/hooks/useSafeTokenInfo";
 import { useLocationParams } from "@/hooks/useLocationParams";
-import React, { useCallback, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import {
   type AleoHistoryItem,
   AleoHistoryType,
-  AleoTxAddressType,
 } from "core/coins/ALEO/types/History";
 import type { TransactionHistoryItem } from "core/types/TransactionHistory";
 import { TransactionStatus } from "core/types/TransactionStatus";
@@ -148,173 +147,250 @@ const TransactionDetailScreen = () => {
     return uniqueId === InnerChainUniqueId.ALEO_MAINNET;
   }, [uniqueId]);
 
-  const {
-    tx,
-    from,
-    to,
-    txId,
-    time,
-    amountStr,
-    isSend,
-    nonce,
-    txStatusStr,
-    txStatus,
-    txType,
-  } = useMemo(() => {
-    if (!txItem) {
-      return { isSuccess: false };
-    }
-    try {
-      let tx;
-      let txId, from, to, nonce;
-      let amount;
-      let isSend = false;
-      let txStatusStr = "";
-      let txStatus;
-      let txType;
+  const { historyDetail, historyTxType, historyTxStatusStr, historyTxStatus } =
+    useMemo(() => {
+      if (!txItem) {
+        return { isSuccess: false };
+      }
+      try {
+        let tx;
+        let txId, from, to, nonce;
+        let amount;
+        let txStatusStr = "";
+        let txStatus;
+        let txType;
+        let txFees;
+        let txConfirmations;
+        let timestamp = 0;
+        let status;
+        let label;
+        let height = 0;
 
-      if (isAleo) {
-        tx = JSON.parse(txItem) as AleoHistoryItem;
-        // console.log("      tx", tx);
+        if (isAleo) {
+          tx = JSON.parse(txItem) as AleoHistoryItem;
+          // console.log("      tx", tx);
 
-        txId = tx.txId;
-        amount = tx.amount ? BigInt(tx.amount) : undefined;
-        isSend = tx.addressType === AleoTxAddressType.SEND;
-        txType = `${tx.functionName.split("_").join(" ")}`;
+          txId = tx.txId;
+          amount = tx.amount ? BigInt(tx.amount) : undefined;
+          txType = `${tx.functionName.split("_").join(" ")}`;
+          timestamp = tx.timestamp;
 
-        if (tx.type === AleoHistoryType.LOCAL) {
-          switch (tx.functionName) {
-            case AleoTransferMethod.PUBLIC_TO_PRIVATE: {
-              from = address;
-              to = tx.inputs[0];
-              break;
+          if (tx.type === AleoHistoryType.LOCAL) {
+            switch (tx.functionName) {
+              case AleoTransferMethod.PUBLIC_TO_PRIVATE: {
+                from = address;
+                to = tx.inputs[0];
+                break;
+              }
+              case AleoTransferMethod.PRIVATE_TO_PUBLIC: {
+                from = address;
+                to = tx.inputs[1];
+                break;
+              }
+              case AleoTransferMethod.PUBLIC: {
+                from = address;
+                to = tx.inputs[0];
+                break;
+              }
+              case AleoTransferMethod.PRIVATE: {
+                from = address;
+                to = tx.inputs[1];
+                break;
+              }
+              case AleoRecordMethod.SPLIT:
+              case AleoRecordMethod.JOIN: {
+                from = address;
+                to = address;
+                amount = 0n;
+                break;
+              }
             }
-            case AleoTransferMethod.PRIVATE_TO_PUBLIC: {
-              from = address;
-              to = tx.inputs[1];
-              break;
-            }
-            case AleoTransferMethod.PUBLIC: {
-              from = address;
-              to = tx.inputs[0];
-              break;
-            }
-            case AleoTransferMethod.PRIVATE: {
-              from = address;
-              to = tx.inputs[1];
-              break;
-            }
-            case AleoRecordMethod.SPLIT:
-            case AleoRecordMethod.JOIN: {
-              from = address;
-              to = address;
-              amount = 0n;
-              break;
-            }
+          } else {
+            from = tx.from;
+            to = tx.to;
           }
+
+          const { txStatus: simplifiedStatus } = simplifyAleoTxStatus(
+            tx.status,
+          );
+          txStatusStr = tx.status;
+          txStatus = simplifiedStatus;
         } else {
+          tx = JSON.parse(txItem) as TransactionHistoryItem;
+          // console.log("      tx", tx);
+
+          txId = tx.id;
           from = tx.from;
           to = tx.to;
+          amount = BigInt(tx.value ?? "0");
+          txFees = tx.fees;
+          txConfirmations = tx.confirmations;
+          nonce = String(tx.nonce ?? "");
+          timestamp = tx.timestamp;
+          status = tx.status;
+          label = tx.label;
+          height = tx.height;
+          txType = label
+            ? t(`TokenDetail:${tx.label}`)
+            : from === address
+            ? t(`TokenDetail:send`)
+            : t(`TokenDetail:receive`);
+
+          switch (status) {
+            case TransactionStatus.SUCCESS: {
+              txStatus = TxIconStatus.Success;
+              txStatusStr = t("Common:success");
+              break;
+            }
+            case TransactionStatus.PENDING: {
+              txStatus = TxIconStatus.Pending;
+              txStatusStr = t("Common:pending");
+              break;
+            }
+            case TransactionStatus.FAILED: {
+              txStatus = TxIconStatus.Failed;
+              txStatusStr = t("Common:failed");
+              break;
+            }
+            default: {
+              break;
+            }
+          }
         }
 
-        const { txStatus: simplifiedStatus } = simplifyAleoTxStatus(tx.status);
-        txStatusStr = tx.status;
-        txStatus = simplifiedStatus;
-      } else {
-        tx = JSON.parse(txItem) as TransactionHistoryItem;
-        // console.log("      tx", tx);
-
-        txId = tx.id;
-        from = tx.from;
-        to = tx.to;
-        amount = BigInt(tx.value ?? "0");
-        isSend = tx.from === address;
-        nonce = String(tx.nonce ?? "");
-        txType = tx.label
-          ? t(`TokenDetail:${tx.label}`)
-          : isSend
-          ? t(`TokenDetail:send`)
-          : t(`TokenDetail:receive`);
-
-        switch (tx.status) {
-          case TransactionStatus.SUCCESS: {
-            txStatus = TxIconStatus.Success;
-            txStatusStr = t("Common:success");
-            break;
-          }
-          case TransactionStatus.PENDING: {
-            txStatus = TxIconStatus.Pending;
-            txStatusStr = t("Common:pending");
-            break;
-          }
-          case TransactionStatus.FAILED: {
-            txStatus = TxIconStatus.Failed;
-            txStatusStr = t("Common:failed");
-            break;
-          }
-          default: {
-            break;
-          }
-        }
+        return {
+          historyDetail: {
+            id: txId,
+            from,
+            to,
+            value: amount,
+            fees: txFees,
+            confirmations: txConfirmations,
+            timestamp,
+            nonce,
+            status,
+            label,
+            height,
+          },
+          historyTxType: txType,
+          historyTxStatusStr: txStatusStr,
+          historyTxStatus: txStatus,
+        };
+      } catch (e) {
+        console.error(e);
+        return { isSuccess: false };
       }
+    }, [address, isAleo, t, txItem]);
 
-      const timeOfItem = dayjs(tx.timestamp);
-      const isCurrentYear = dayjs().year() === timeOfItem.year();
-      const time = timeOfItem.format(
-        isCurrentYear ? "MM-DD LT" : "YYYY-MM-DD LT",
-      );
+  const txId = historyDetail?.id;
 
-      const valueStr =
-        amount !== undefined
-          ? ethers.utils.formatUnits(BigNumber.from(amount), tokenInfo.decimals)
-          : "";
-      const addOrMinus =
-        amount === undefined ? "" : amount === 0n ? "" : isSend ? `- ` : `+ `;
-
-      const amountStr =
-        amount !== undefined
-          ? `${addOrMinus}${valueStr} ${tokenInfo.symbol}`
-          : "";
-
-      return {
-        tx,
-        from,
-        to,
-        txId,
-        time,
-        amountStr,
-        isSend,
-        nonce,
-        txStatusStr,
-        txStatus,
-        txType,
-      };
-    } catch (e) {
-      console.error(e);
-      return { isSuccess: false };
-    }
-  }, [address, isAleo, t, tokenInfo, txItem]);
-
-  const { data: txDetail } = useTransactionDetail({
+  const { data: networkTxDetail } = useTransactionDetail({
     uniqueId,
     address,
     txId,
     token: tokenInfo,
   });
-  console.log("      txDetail", txDetail);
+  console.log("      txDetail", networkTxDetail);
+
+  const txDetail = useMemo(() => {
+    return {
+      ...historyDetail,
+      ...networkTxDetail,
+    };
+  }, [historyDetail, networkTxDetail]);
+
+  const from = txDetail.from;
+  const to = txDetail.to;
+  const nonce = txDetail.nonce !== undefined ? String(txDetail.nonce) : "";
+
+  const isSend = from === address;
+
+  const txType = useMemo(() => {
+    if (isAleo) {
+      return historyTxType;
+    }
+    if (txDetail.label) {
+      return t(`TokenDetail:${txDetail.label}`);
+    }
+    return isSend ? t(`TokenDetail:send`) : t(`TokenDetail:receive`);
+  }, [historyTxType, isAleo, isSend, t, txDetail.label]);
+
+  const txStatusStr = useMemo(() => {
+    if (isAleo) {
+      return historyTxStatusStr;
+    }
+    switch (txDetail.status) {
+      case TransactionStatus.SUCCESS:
+        return t("Common:success");
+      case TransactionStatus.PENDING:
+        return t("Common:pending");
+      case TransactionStatus.FAILED:
+        return t("Common:failed");
+      default:
+        return "";
+    }
+  }, [historyTxStatusStr, isAleo, t, txDetail.status]);
+
+  const txStatus = useMemo(() => {
+    if (isAleo) {
+      return historyTxStatus;
+    }
+    switch (txDetail.status) {
+      case TransactionStatus.SUCCESS:
+        return TxIconStatus.Success;
+      case TransactionStatus.PENDING:
+        return TxIconStatus.Pending;
+      case TransactionStatus.FAILED:
+        return TxIconStatus.Failed;
+      default:
+        return undefined;
+    }
+  }, [historyTxStatus, isAleo, txDetail.status]);
+
+  const time = useMemo(() => {
+    if (!txDetail.timestamp) {
+      return undefined;
+    }
+    const timeOfItem = dayjs(txDetail.timestamp);
+    const isCurrentYear = dayjs().year() === timeOfItem.year();
+    return timeOfItem.format(isCurrentYear ? "MM-DD LT" : "YYYY-MM-DD LT");
+  }, [txDetail.timestamp]);
+
+  const amountStr = useMemo(() => {
+    if (txDetail.value === undefined) {
+      return "";
+    }
+    const amount = BigInt(txDetail.value);
+    const valueStr = ethers.utils.formatUnits(
+      BigNumber.from(amount),
+      tokenInfo.decimals,
+    );
+    const addOrMinus = amount === 0n ? "" : isSend ? `- ` : `+ `;
+    return `${addOrMinus}${valueStr} ${tokenInfo.symbol}`;
+  }, [isSend, tokenInfo.decimals, tokenInfo.symbol, txDetail.value]);
 
   const feeStr = useMemo(() => {
-    const fee = txDetail?.fees
-      ? ethers.utils.formatUnits(
-          BigNumber.from(txDetail?.fees),
-          nativeCurrency.decimals,
-        )
-      : undefined;
+    const feeValue = txDetail.fees;
+    const fee =
+      feeValue !== undefined
+        ? ethers.utils.formatUnits(
+            BigNumber.from(feeValue),
+            nativeCurrency.decimals,
+          )
+        : undefined;
     if (fee) {
       return `${fee} ${nativeCurrency.symbol}`;
     }
     return undefined;
-  }, [nativeCurrency, txDetail?.fees]);
+  }, [nativeCurrency, txDetail.fees]);
+
+  const confirmationsStr = useMemo(() => {
+    const confirmations = txDetail.confirmations;
+    if (!confirmations) {
+      return undefined;
+    }
+    return String(confirmations);
+  }, [txDetail.confirmations]);
 
   const onHash = useCallback(() => {
     if (txId) {
@@ -364,10 +440,10 @@ const TransactionDetailScreen = () => {
           title={t("TransactionDetail:gasFee")}
           info={feeStr ?? "----"}
         />
-        {txDetail?.confirmations && (
+        {confirmationsStr && (
           <DetailInfoB
             title={t("TransactionDetail:confirmations")}
-            info={String(txDetail?.confirmations ?? "----")}
+            info={confirmationsStr}
           />
         )}
         {nonce && (
@@ -379,15 +455,7 @@ const TransactionDetailScreen = () => {
         />
       </Flex>
     );
-  }, [
-    chainConfig.chainName,
-    feeStr,
-    nonce,
-    t,
-    time,
-    txDetail?.confirmations,
-    txType,
-  ]);
+  }, [chainConfig.chainName, feeStr, nonce, t, time, confirmationsStr, txType]);
 
   return (
     <PageWithHeader title="Transaction Detail">

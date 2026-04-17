@@ -48,8 +48,11 @@ export class ContentWalletServer {
         return this.aleoServer
       case CoinType.ETH:
         return this.ethServer;
+      case CoinType.QTUM:
+        // QTUM DApp support not yet implemented
+        throw new Error("QTUM DApp interaction is not supported yet");
       default:
-        throw new Error();
+        throw new Error(`Unsupported coin type: ${coinType}`);
     }
   }
 

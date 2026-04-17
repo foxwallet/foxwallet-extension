@@ -1,5 +1,9 @@
 import { shuffle } from "@/common/utils/array";
 
+const parseOptionalList = (value: string | undefined): string[] | undefined => {
+  return value ? shuffle(JSON.parse(value) as string[]) : undefined;
+};
+
 export const ReserveChainConfigs = {
   // ALEO_TESTNET: {
   //   rpcList: shuffle(
@@ -467,6 +471,19 @@ export const ReserveChainConfigs = {
   sepolia: {
     rpcList: shuffle(
       JSON.parse(import.meta.env.VITE_SEPOLIA_RPC_LIST) as string[],
+    ),
+  },
+  qtum: {
+    rpcList: parseOptionalList(import.meta.env.VITE_QTUM_RPC_LIST),
+    qtumInfoApiList: parseOptionalList(import.meta.env.VITE_QTUM_INFO_API_LIST),
+    blockbookApiList: parseOptionalList(
+      import.meta.env.VITE_QTUM_BLOCKBOOK_LIST,
+    ),
+  },
+  "qtum-testnet": {
+    rpcList: parseOptionalList(import.meta.env.VITE_QTUM_TESTNET_RPC_LIST),
+    qtumInfoApiList: parseOptionalList(
+      import.meta.env.VITE_QTUM_TESTNET_INFO_API_LIST,
     ),
   },
 };

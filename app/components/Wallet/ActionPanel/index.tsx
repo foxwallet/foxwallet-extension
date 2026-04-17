@@ -190,7 +190,7 @@ const SingleChainActionPanel = ({ uniqueId }: { uniqueId: ChainUniqueId }) => {
       });
     }
     // todo
-    if (chainConfig.testnet) {
+    if (chainConfig.testnet && uniqueId !== InnerChainUniqueId.QTUM_TESTNET) {
       return initOptions.concat(option);
     }
     return initOptions;

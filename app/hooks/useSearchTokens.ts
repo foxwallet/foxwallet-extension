@@ -48,7 +48,7 @@ export const useSearchTokensByRpc = (
 
   const searchByRpc = useCallback(async () => {
     if (
-      !coinService.validateAddress(contractAddress) ||
+      !coinService.validateContractAddress(contractAddress) ||
       !coinService.supportToken()
     ) {
       return undefined;

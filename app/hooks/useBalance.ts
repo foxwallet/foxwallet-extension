@@ -20,6 +20,12 @@ export const useBalance = (params: BalanceReq) => {
   const { uniqueId, address, token, refreshInterval = 4000 } = params;
   const { coinService } = useCoinService(uniqueId);
   const dispatch = usePopupDispatch();
+  const hasContractAddress = !!token?.contractAddress;
+  const isAleoToken =
+    uniqueId === InnerChainUniqueId.ALEO_MAINNET &&
+    token?.type === AssetType.TOKEN &&
+    !!token?.programId &&
+    !!token?.tokenId;
 
   const isAddressValid = useMemo(() => {
     return coinService.validateAddress(address);
@@ -44,23 +50,17 @@ export const useBalance = (params: BalanceReq) => {
       return undefined;
     }
     let balance: BalanceResp | undefined;
-    if (token?.type === AssetType.TOKEN) {
-      if (token?.contractAddress) {
+    if (hasContractAddress || isAleoToken) {
+      if (hasContractAddress) {
         balance = await coinService.getTokenBalance({
           address,
           token: { contractAddress: token.contractAddress },
         });
-      } else {
-        if (
-          uniqueId === InnerChainUniqueId.ALEO_MAINNET &&
-          token?.programId &&
-          token?.tokenId
-        ) {
-          balance = await coinService.getTokenBalance({
-            address,
-            token: { contractAddress: `${token.programId}-${token.tokenId}` },
-          });
-        }
+      } else if (token?.programId && token?.tokenId) {
+        balance = await coinService.getTokenBalance({
+          address,
+          token: { contractAddress: `${token.programId}-${token.tokenId}` },
+        });
       }
     } else {
       balance = await coinService.getBalance(address);
@@ -80,7 +80,9 @@ export const useBalance = (params: BalanceReq) => {
     address,
     coinService,
     dispatch.coinBalanceV2,
+    hasContractAddress,
     isAddressValid,
+    isAleoToken,
     token,
     uniqueId,
   ]);

@@ -7,7 +7,10 @@ import { BaseInput } from "@/components/Custom/Input";
 import type React from "react";
 import { useEffect, useMemo, useCallback, useState } from "react";
 import { useDebounce } from "use-debounce";
-import { type ChainUniqueId } from "core/types/ChainUniqueId";
+import {
+  type ChainUniqueId,
+  InnerChainUniqueId,
+} from "core/types/ChainUniqueId";
 import { IconChevronRight } from "@/components/Custom/Icon";
 import { showSelectContactNetworkDrawer } from "@/components/Me/SelectContactNetworkDrawer";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
@@ -106,10 +109,25 @@ const AddOrEditContactScreen = () => {
   );
 
   useEffect(() => {
-    if (supportChains.length === 1 && isAdd) {
+    if (!isAdd) return;
+    if (supportChains.length === 1) {
       setAddressUniqueIds([supportChains[0].uniqueId]);
+    } else if (
+      supportChains.length === 2 &&
+      supportChains.every((c) => c.coinType === CoinType.QTUM)
+    ) {
+      const isMainnet = /^[QM]/.test(debounceAddress);
+      const target = supportChains.find((c) =>
+        isMainnet
+          ? c.uniqueId === InnerChainUniqueId.QTUM
+          : c.uniqueId === InnerChainUniqueId.QTUM_TESTNET,
+      );
+      if (target) {
+        setAddressUniqueIds([target.uniqueId]);
+        setUserSelectedChains([target]);
+      }
     }
-  }, [isAdd, supportChains]);
+  }, [isAdd, supportChains, debounceAddress]);
 
   const [userSelectedChains, setUserSelectedChains] =
     useState<ChainBaseConfig[]>(initChainConfigs);

@@ -1,6 +1,6 @@
 import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import { useMemo } from "react";
-import type { TokenV2 } from "core/types/Token";
+import { AssetType, type TokenV2 } from "core/types/Token";
 import { useLocationParams } from "@/hooks/useLocationParams";
 import { useAssetList } from "@/hooks/useAssetList";
 
@@ -12,11 +12,19 @@ export const useSafeTokenInfo = (uniqueId: ChainUniqueId, address: string) => {
       if (!token) {
         return nativeToken;
       }
-      return JSON.parse(token) as TokenV2;
+      const parsedToken = JSON.parse(token) as TokenV2;
+      return {
+        ...parsedToken,
+        ownerAddress: parsedToken.ownerAddress || address,
+        type:
+          parsedToken.contractAddress && parsedToken.type !== AssetType.TOKEN
+            ? AssetType.TOKEN
+            : parsedToken.type,
+      } as TokenV2;
     } catch (err) {
       return nativeToken;
     }
-  }, [nativeToken, token]);
+  }, [address, nativeToken, token]);
 
   return { tokenInfo };
 };

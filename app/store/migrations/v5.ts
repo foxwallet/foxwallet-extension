@@ -1,58 +1,45 @@
-import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { type RootState } from "../store";
-import { AssetType, type TokenV2 } from "core/types/Token";
+import { DEFAULT_USER_SELECTED_CHAINS } from "core/constants/chain";
 
+/**
+ * v5 migration: Add QTUM chains to existing wallets' userSelectedChains.
+ * Existing wallets created before QTUM support won't have QTUM in their
+ * selected chains. This migration merges missing default chains in.
+ */
 export const migrationV5 = (state: RootState): RootState => {
   try {
     console.log("migrationV5 start....");
-    const tokens = state.tokens ?? {};
-    const { userTokens, hasInitTokensByInteractiveTokens } = tokens;
+    const multiChain = state.multiChain;
+    if (!multiChain?.walletChainMap) {
+      return state;
+    }
 
-    const newUserTokens = Object.entries(userTokens).map(
-      ([uniqueId, tokenMap]) => {
-        if (tokenMap) {
-          const newTokenMap = Object.entries(tokenMap).map(
-            ([address, tokens]) => {
-              if (tokens) {
-                const newTokens: TokenV2[] = tokens.map((item) => {
-                  const {
-                    tokenId,
-                    name,
-                    symbol,
-                    decimals,
-                    logo,
-                    official,
-                    programId,
-                  } = item;
-                  return {
-                    symbol,
-                    decimals,
-                    name,
-                    type: AssetType.TOKEN,
-                    uniqueId: InnerChainUniqueId.ALEO_MAINNET,
-                    icon: logo,
-                    official,
-                    programId,
-                    tokenId,
-                    ownerAddress: address,
-                    contractAddress: "",
-                  };
-                });
-                return { [address]: newTokens };
-              }
-              return {};
-            },
-          );
-          return { [uniqueId]: newTokenMap };
-        }
-        return {};
-      },
-    );
+    const newWalletChainMap = { ...multiChain.walletChainMap };
+
+    for (const walletId of Object.keys(newWalletChainMap)) {
+      const chainItem = newWalletChainMap[walletId];
+      if (!chainItem) continue;
+
+      const existing = chainItem.userSelectedChains || [];
+      // Add any default chains that are missing
+      const missing = DEFAULT_USER_SELECTED_CHAINS.filter(
+        (id) => !existing.includes(id),
+      );
+
+      if (missing.length > 0) {
+        newWalletChainMap[walletId] = {
+          ...chainItem,
+          userSelectedChains: [...existing, ...missing],
+        };
+      }
+    }
 
     return {
       ...state,
-      userTokens: newUserTokens,
-      hasInitTokensByInteractiveTokens,
+      multiChain: {
+        ...multiChain,
+        walletChainMap: newWalletChainMap,
+      },
     };
   } catch (err) {
     console.log(err);

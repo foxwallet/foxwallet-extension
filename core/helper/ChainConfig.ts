@@ -4,6 +4,7 @@ import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import { chainUniqueIdToCoinType, INNER_CHAIN_CONFIG } from "./CoinType";
 import { INNER_ALEO_CONFIG } from "core/coins/ALEO/config/chains";
 import { INNER_ETH_CONFIG } from "core/coins/ETH/config/chains";
+import { INNER_QTUM_CONFIG } from "core/coins/QTUM/config/chains";
 
 export const getInnerChainConfig = ({
   coinType,
@@ -21,6 +22,8 @@ export const getInnerChainConfig = ({
       return INNER_ETH_CONFIG.find((item) => item.uniqueId === uniqueId);
     case CoinType.ALEO:
       return INNER_ALEO_CONFIG.find((item) => item.uniqueId === uniqueId);
+    case CoinType.QTUM:
+      return INNER_QTUM_CONFIG.find((item) => item.uniqueId === uniqueId);
     default:
       throw new Error(`Unsupported coin type ${coinType}`);
   }

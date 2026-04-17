@@ -21,10 +21,16 @@ export const useUserAssets = () => {
   const { getMatchAccountsWithUniqueId } = useGroupAccount();
   const { availableChains } = useChainMode();
 
-  const assetIdentifiers = availableChains.map((item) => {
-    const selectAccount = getMatchAccountsWithUniqueId(item.uniqueId)[0];
-    return { uniqueId: item.uniqueId, address: selectAccount.account.address };
-  });
+  const assetIdentifiers = availableChains
+    .map((item) => {
+      const selectAccount = getMatchAccountsWithUniqueId(item.uniqueId)[0];
+      if (!selectAccount) return null;
+      return {
+        uniqueId: item.uniqueId,
+        address: selectAccount.account.address,
+      };
+    })
+    .filter((item): item is NonNullable<typeof item> => item !== null);
   // 获取用户的代币数据
   const userTokensMap = usePopupSelector((state) => {
     const res = assetIdentifiers.map((item) => {
@@ -59,7 +65,12 @@ export const useUserAssets = () => {
         uniqueId === InnerChainUniqueId.ALEO_MAINNET
           ? { ...ALEO_NATIVE_TOKEN, ...coin }
           : coin;
-      return [nativeToken, ...tokens];
+      // Ensure all tokens have ownerAddress set
+      const tokensWithOwner = tokens.map((t) => ({
+        ...t,
+        ownerAddress: t.ownerAddress || address,
+      }));
+      return [nativeToken, ...tokensWithOwner];
     });
     return res.flat();
   }, [userTokensMap]);
@@ -133,25 +144,25 @@ export const useUserAssetsWithPriceBalanceAndValue = () => {
         type,
       } = item;
       const coinService = coinServiceEntry.getInstance(uniqueId);
+      const hasContractAddress = !!contractAddress;
+      const isAleoToken =
+        uniqueId === InnerChainUniqueId.ALEO_MAINNET &&
+        type === AssetType.TOKEN &&
+        !!programId &&
+        !!tokenId;
 
       let balance: BalanceResp | undefined;
-      if (type === AssetType.TOKEN) {
-        if (contractAddress) {
+      if (hasContractAddress || isAleoToken) {
+        if (hasContractAddress) {
           balance = await coinService.getTokenBalance({
             address,
             token: { contractAddress },
           });
-        } else {
-          if (
-            uniqueId === InnerChainUniqueId.ALEO_MAINNET &&
-            programId &&
-            tokenId
-          ) {
-            balance = await coinService.getTokenBalance({
-              address,
-              token: { contractAddress: `${programId}-${tokenId}` },
-            });
-          }
+        } else if (programId && tokenId) {
+          balance = await coinService.getTokenBalance({
+            address,
+            token: { contractAddress: `${programId}-${tokenId}` },
+          });
         }
       } else {
         balance = await coinService.getBalance(address);
@@ -232,10 +243,16 @@ export const useGroupAccountAssets = () => {
   const { availableChains } = useChainMode();
   const dispatch = usePopupDispatch();
 
-  const assetIdentifiers = availableChains.map((item) => {
-    const selectAccount = getMatchAccountsWithUniqueId(item.uniqueId)[0];
-    return { uniqueId: item.uniqueId, address: selectAccount.account.address };
-  });
+  const assetIdentifiers = availableChains
+    .map((item) => {
+      const selectAccount = getMatchAccountsWithUniqueId(item.uniqueId)[0];
+      if (!selectAccount) return null;
+      return {
+        uniqueId: item.uniqueId,
+        address: selectAccount.account.address,
+      };
+    })
+    .filter((item): item is NonNullable<typeof item> => item !== null);
 
   // 获取需要更新的账户
   const needUpdateMap = usePopupSelector((state) => {

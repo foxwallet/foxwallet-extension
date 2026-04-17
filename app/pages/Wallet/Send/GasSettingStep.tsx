@@ -200,6 +200,7 @@ type CustomGasViewProps = {
     showMaxFeeSetting: boolean;
     showGasPriceSetting: boolean;
     showGasLimitSetting: boolean;
+    showFeeRateSetting: boolean;
   };
   currentData: {
     gasPrice: bigint;
@@ -225,8 +226,12 @@ const CustomGasView = (props: CustomGasViewProps) => {
     feeType,
     onConfirm,
   } = props;
-  const { showMaxFeeSetting, showGasPriceSetting, showGasLimitSetting } =
-    showData;
+  const {
+    showMaxFeeSetting,
+    showGasPriceSetting,
+    showGasLimitSetting,
+    showFeeRateSetting,
+  } = showData;
   const { t } = useTranslation();
 
   // maxPriorityFeePerGas
@@ -282,21 +287,35 @@ const CustomGasView = (props: CustomGasViewProps) => {
     [],
   );
 
+  // feeRate (UTXO)
+  const [feeRate, setFeeRate] = useState(currentData.feeRate?.toString() ?? "");
+  const onFeeRateChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setFeeRate(event.target.value);
+    },
+    [],
+  );
+
   const {
     maxPriorityFeePerGasValid,
     maxFeePerGasValid,
     gasPriceValid,
     gasLimitValid,
+    feeRateValid,
   } = useMemo(() => {
     return {
       maxPriorityFeePerGasValid: isNumeric(maxPriorityFeePerGas),
       maxFeePerGasValid: isNumeric(maxFeePerGas),
       gasPriceValid: isNumeric(gasPrice),
       gasLimitValid: isNumeric(gasLimit),
+      feeRateValid: isNumeric(feeRate) && Number(feeRate) > 0,
     };
-  }, [gasLimit, gasPrice, maxFeePerGas, maxPriorityFeePerGas]);
+  }, [gasLimit, gasPrice, maxFeePerGas, maxPriorityFeePerGas, feeRate]);
 
   const canConfirm = useMemo(() => {
+    if (showFeeRateSetting) {
+      return feeRateValid;
+    }
     if (!gasLimitValid) {
       return false;
     }
@@ -311,31 +330,50 @@ const CustomGasView = (props: CustomGasViewProps) => {
     gasPriceValid,
     maxFeePerGasValid,
     maxPriorityFeePerGasValid,
+    showFeeRateSetting,
+    feeRateValid,
   ]);
 
   const onCustom = useCallback(() => {
-    const newGasFee =
-      feeType === GasFeeType.EIP1559
-        ? {
-            estimateGas:
-              utils.parseUnits(maxFeePerGas, "gwei").toBigInt() *
-              BigInt(gasLimit),
-            gasLimit: Number(gasLimit),
-            type: feeType,
-            maxFeePerGas: utils.parseUnits(maxFeePerGas, "gwei").toBigInt(),
-            maxPriorityFeePerGas: utils
-              .parseUnits(maxPriorityFeePerGas, "gwei")
-              .toBigInt(),
-          }
-        : feeType === GasFeeType.LEGACY
-        ? {
-            estimateGas:
-              utils.parseUnits(gasPrice, "gwei").toBigInt() * BigInt(gasLimit),
-            gasLimit: Number(gasLimit),
-            type: feeType,
-            gasPrice: utils.parseUnits(gasPrice, "gwei").toBigInt(),
-          }
-        : undefined;
+    let newGasFee: GasFee<CoinType> | undefined;
+    if (feeType === GasFeeType.EIP1559) {
+      newGasFee = {
+        estimateGas:
+          utils.parseUnits(maxFeePerGas, "gwei").toBigInt() * BigInt(gasLimit),
+        gasLimit: Number(gasLimit),
+        type: feeType,
+        maxFeePerGas: utils.parseUnits(maxFeePerGas, "gwei").toBigInt(),
+        maxPriorityFeePerGas: utils
+          .parseUnits(maxPriorityFeePerGas, "gwei")
+          .toBigInt(),
+      } as GasFee<CoinType>;
+    } else if (feeType === GasFeeType.LEGACY) {
+      newGasFee = {
+        estimateGas:
+          utils.parseUnits(gasPrice, "gwei").toBigInt() * BigInt(gasLimit),
+        gasLimit: Number(gasLimit),
+        type: feeType,
+        gasPrice: utils.parseUnits(gasPrice, "gwei").toBigInt(),
+      } as GasFee<CoinType>;
+    } else if (feeType === GasFeeType.UTXO) {
+      const newFeeRate = Math.ceil(Number(feeRate));
+      newGasFee = {
+        estimateGas: 0n, // Will be recalculated during tx building
+        feeRate: newFeeRate,
+        fee: 0n,
+        type: feeType,
+      } as GasFee<CoinType>;
+    } else if (feeType === GasFeeType.QTUM_DAPP) {
+      const newFeeRate = Math.ceil(Number(feeRate));
+      newGasFee = {
+        estimateGas: 0n, // Will be recalculated during tx building
+        feeRate: newFeeRate,
+        fee: 0n,
+        gasLimit: currentData.gasLimit,
+        gasPrice: Number(currentData.gasPrice),
+        type: feeType,
+      } as GasFee<CoinType>;
+    }
     onConfirm({
       isCustom: true,
       selectedGrade: undefined,
@@ -343,11 +381,14 @@ const CustomGasView = (props: CustomGasViewProps) => {
     });
   }, [
     feeType,
+    feeRate,
     gasLimit,
     gasPrice,
     maxFeePerGas,
     maxPriorityFeePerGas,
     onConfirm,
+    currentData.gasLimit,
+    currentData.gasPrice,
   ]);
 
   return (
@@ -444,6 +485,28 @@ const CustomGasView = (props: CustomGasViewProps) => {
               isInvalid={!gasLimitValid}
             />
           )}
+          {showFeeRateSetting && (
+            <BaseInputGroup
+              container={{ mt: 2 }}
+              title={"Fee Rate"}
+              inputProps={{
+                defaultValue: feeRate,
+                onChange: onFeeRateChange,
+                isInvalid: !feeRateValid,
+              }}
+              rightElement={
+                <InputRightElement
+                  display={"flex"}
+                  justifyContent={"center"}
+                  alignItems={"center"}
+                  height="100%"
+                  pr={4}
+                >
+                  <Text color={"#777e90"}>{gasUnit}</Text>
+                </InputRightElement>
+              }
+            />
+          )}
           <Button mt={5} w={"full"} onClick={onCustom} isDisabled={!canConfirm}>
             {t("Common:confirm")}
           </Button>
@@ -488,21 +551,31 @@ export const GasSettingStep = (props: GasSettingStepProps) => {
         return ["maxPriorityFeePerGas", "maxFeePerGas", "gasLimit"];
       case GasFeeType.LEGACY:
         return ["gasPrice", "gasLimit"];
+      case GasFeeType.UTXO:
+      case GasFeeType.QTUM_DAPP:
+        return ["feeRate"];
       default:
         return [];
     }
   }, [gasFee]);
 
-  const { showMaxFeeSetting, showGasPriceSetting, showGasLimitSetting } =
-    useMemo(() => {
-      return {
-        showMaxFeeSetting: gasFee?.type === GasFeeType.EIP1559,
-        showGasPriceSetting: gasFee?.type === GasFeeType.LEGACY,
-        showGasLimitSetting:
-          gasFee?.type === GasFeeType.LEGACY ||
-          gasFee?.type === GasFeeType.EIP1559,
-      };
-    }, [gasFee]);
+  const {
+    showMaxFeeSetting,
+    showGasPriceSetting,
+    showGasLimitSetting,
+    showFeeRateSetting,
+  } = useMemo(() => {
+    return {
+      showMaxFeeSetting: gasFee?.type === GasFeeType.EIP1559,
+      showGasPriceSetting: gasFee?.type === GasFeeType.LEGACY,
+      showGasLimitSetting:
+        gasFee?.type === GasFeeType.LEGACY ||
+        gasFee?.type === GasFeeType.EIP1559,
+      showFeeRateSetting:
+        gasFee?.type === GasFeeType.UTXO ||
+        gasFee?.type === GasFeeType.QTUM_DAPP,
+    };
+  }, [gasFee]);
 
   // const {
   //   recommendGasPrice = null,
@@ -530,13 +603,20 @@ export const GasSettingStep = (props: GasSettingStepProps) => {
   // }, [gasFee, networkFeeData]);
   //
   const [currentData, setCurrentData] = useState(() => {
+    const qtumDappGasFee =
+      gasFee?.type === GasFeeType.QTUM_DAPP ? gasFee : undefined;
+
     return {
-      gasPrice: (gasFee as GasFeeLegacy).gasPrice ?? null,
+      gasPrice: qtumDappGasFee
+        ? BigInt(qtumDappGasFee.gasPrice)
+        : (gasFee as GasFeeLegacy).gasPrice ?? null,
       maxFeePerGas: (gasFee as GasFeeEIP1559).maxFeePerGas ?? null,
       maxPriorityFeePerGas:
         (gasFee as GasFeeEIP1559).maxPriorityFeePerGas ?? null,
       gasLimit:
-        (gasFee as GasFeeLegacy).gasLimit ?? constants.DEFAULT_GAS_LIMIT,
+        qtumDappGasFee?.gasLimit ??
+        (gasFee as GasFeeLegacy).gasLimit ??
+        constants.DEFAULT_GAS_LIMIT,
       feeRate: (gasFee as GasFeeUTXO).feeRate ?? null,
     };
   });
@@ -681,6 +761,22 @@ export const GasSettingStep = (props: GasSettingStepProps) => {
                 gasLimit,
                 type: gasFee?.type,
                 gasPrice: gradeData.gasPrice,
+              }
+            : gasFee?.type === GasFeeType.UTXO
+            ? {
+                estimateGas: 0n,
+                feeRate: gradeData.feeRate,
+                fee: 0n,
+                type: gasFee?.type,
+              }
+            : gasFee?.type === GasFeeType.QTUM_DAPP
+            ? {
+                estimateGas: 0n,
+                feeRate: gradeData.feeRate,
+                fee: 0n,
+                gasLimit: gasFee.gasLimit,
+                gasPrice: gasFee.gasPrice,
+                type: gasFee?.type,
               }
             : undefined;
         onConfirm({

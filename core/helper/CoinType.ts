@@ -12,11 +12,19 @@ import {
 import { type AccountOption } from "core/types/CoinBasic";
 import { DEFAULT_ETH_ACCOUNT_OPTION } from "core/coins/ETH/config/derivation";
 import { INNER_ETH_CONFIG } from "core/coins/ETH/config/chains";
+import { INNER_QTUM_CONFIG } from "core/coins/QTUM/config/chains";
+import {
+  DEFAULT_QTUM_ACCOUNT_OPTION,
+  QTUM_TESTNET_ACCOUNT_OPTION,
+} from "core/coins/QTUM/types/QTUMAccount";
 
 export const chainUniqueIdToCoinType = (uniqueId: ChainUniqueId): CoinType => {
   switch (uniqueId) {
     case InnerChainUniqueId.ALEO_MAINNET:
       return CoinType.ALEO;
+    case InnerChainUniqueId.QTUM:
+    case InnerChainUniqueId.QTUM_TESTNET:
+      return CoinType.QTUM;
     default: {
       if (InnerChainUniqueIdValues.includes(uniqueId as InnerChainUniqueId)) {
         return CoinType.ETH;
@@ -36,6 +44,10 @@ export const chainUniqueIdToAccountOptions = (
   switch (uniqueId) {
     case InnerChainUniqueId.ALEO_MAINNET:
       return [DEFAULT_ALEO_ACCOUNT_OPTION];
+    case InnerChainUniqueId.QTUM:
+      return [DEFAULT_QTUM_ACCOUNT_OPTION];
+    case InnerChainUniqueId.QTUM_TESTNET:
+      return [QTUM_TESTNET_ACCOUNT_OPTION];
     default: {
       if (InnerChainUniqueIdValues.includes(uniqueId as InnerChainUniqueId)) {
         return [DEFAULT_ETH_ACCOUNT_OPTION];
@@ -51,5 +63,6 @@ export const chainUniqueIdToAccountOptions = (
 
 export const INNER_CHAIN_CONFIG: ChainBaseConfig[] = [
   ...INNER_ALEO_CONFIG,
+  ...INNER_QTUM_CONFIG,
   ...INNER_ETH_CONFIG,
 ];

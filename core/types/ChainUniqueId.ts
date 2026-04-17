@@ -43,6 +43,9 @@ export enum InnerChainUniqueId {
   ZKSYNC_ERA = "zksync-era",
 
   SEPOLIA = "sepolia",
+
+  QTUM = "qtum",
+  QTUM_TESTNET = "qtum-testnet",
   // TODO other evm
 
   /**
