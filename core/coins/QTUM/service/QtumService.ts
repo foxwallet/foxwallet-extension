@@ -463,9 +463,18 @@ export class QtumService extends CoinServiceBasic {
   // ===== Transaction Building =====
 
   private getKeyPair(privateKey: string, network: Network) {
+    try {
+      return ECPair.fromWIF(privateKey, network);
+    } catch {
+      // HD accounts in this extension store raw secp256k1 private keys as hex.
+    }
+
     const rawPrivateKey = privateKey.startsWith("0x")
       ? privateKey.slice(2)
       : privateKey;
+    if (!/^[0-9a-fA-F]{64}$/.test(rawPrivateKey)) {
+      throw new Error("Invalid QTUM private key format");
+    }
 
     return ECPair.fromPrivateKey(Buffer.from(rawPrivateKey, "hex"), {
       network,
