@@ -1,5 +1,7 @@
 import type { UTXO, QtumBalance } from "../../types";
 import { MATURE_CONFIRMATIONS } from "../../constants";
+import { createRequestInstance } from "@/common/utils/request";
+import { type AxiosInstance } from "axios";
 
 const QTUM_INFO_APPLICATION_ID = "gate-55ed6e22-aa20-4bd8-95db-1fa32324d1db";
 
@@ -121,90 +123,40 @@ export interface QtumInfoFeeRate {
 }
 
 export class QtumInfoApi {
-  private baseUrl: string;
+  private requestInstance: AxiosInstance;
 
   constructor(baseUrl: string) {
-    this.baseUrl = baseUrl.replace(/\/$/, "");
+    const normalizedBaseUrl = baseUrl.replace(/\/$/, "");
+    this.requestInstance = createRequestInstance(
+      normalizedBaseUrl,
+      5000,
+      this.getHeaders(normalizedBaseUrl),
+    );
   }
 
-  private shouldSendApplicationId(): boolean {
+  private shouldSendApplicationId(baseUrl: string): boolean {
     try {
-      const { hostname } = new URL(this.baseUrl);
+      const { hostname } = new URL(baseUrl);
       return hostname === "qtum.info" || hostname.endsWith(".qtum.info");
     } catch {
       return false;
     }
   }
 
-  private getHeaders(): Record<string, string> {
+  private getHeaders(baseUrl: string): Record<string, string> {
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
     };
 
-    if (this.shouldSendApplicationId()) {
+    if (this.shouldSendApplicationId(baseUrl)) {
       headers["Application-Id"] = QTUM_INFO_APPLICATION_ID;
     }
 
     return headers;
   }
 
-  private async fetchJson<T>(path: string): Promise<T> {
-    let response: Response;
-    try {
-      response = await fetch(`${this.baseUrl}${path}`, {
-        method: "GET",
-        headers: this.getHeaders(),
-      });
-    } catch (error) {
-      throw new Error(`Network error: ${(error as Error).message}`);
-    }
-    if (!response.ok) {
-      throw new Error(
-        `QtumInfo API status code ${response.status}: ${response.statusText}`,
-      );
-    }
-    return response.json() as Promise<T>;
-  }
-
-  private async fetchText(path: string): Promise<string> {
-    let response: Response;
-    try {
-      response = await fetch(`${this.baseUrl}${path}`, {
-        method: "GET",
-        headers: this.getHeaders(),
-      });
-    } catch (error) {
-      throw new Error(`Network error: ${(error as Error).message}`);
-    }
-    if (!response.ok) {
-      throw new Error(
-        `QtumInfo API status code ${response.status}: ${response.statusText}`,
-      );
-    }
-    return response.text();
-  }
-
-  private async postJson<T>(path: string, body: unknown): Promise<T> {
-    let response: Response;
-    try {
-      response = await fetch(`${this.baseUrl}${path}`, {
-        method: "POST",
-        headers: this.getHeaders(),
-        body: JSON.stringify(body),
-      });
-    } catch (error) {
-      throw new Error(`Network error: ${(error as Error).message}`);
-    }
-    if (!response.ok) {
-      throw new Error(
-        `QtumInfo API status code ${response.status}: ${response.statusText}`,
-      );
-    }
-    return response.json() as Promise<T>;
-  }
-
   async getAddressInfo(address: string): Promise<QtumInfoAddressResponse> {
-    return this.fetchJson<QtumInfoAddressResponse>(`/address/${address}`);
+    return this.requestInstance.get(`/address/${address}`);
   }
 
   async getBalance(address: string): Promise<QtumBalance> {
@@ -217,7 +169,7 @@ export class QtumInfoApi {
   }
 
   async getUTXOs(address: string): Promise<UTXO[]> {
-    const utxos = await this.fetchJson<QtumInfoUTXOItem[]>(
+    const utxos: QtumInfoUTXOItem[] = await this.requestInstance.get(
       `/address/${address}/utxo`,
     );
     return utxos
@@ -237,18 +189,18 @@ export class QtumInfoApi {
   }
 
   async getTransaction(txid: string): Promise<QtumInfoTxResponse> {
-    return this.fetchJson<QtumInfoTxResponse>(`/tx/${txid}`);
+    return this.requestInstance.get(`/tx/${txid}`);
   }
 
   async getTransactions(txids: string[]): Promise<QtumInfoTxResponse[]> {
     if (txids.length === 0) {
       return [];
     }
-    return this.fetchJson<QtumInfoTxResponse[]>(`/txs/${txids.join(",")}`);
+    return this.requestInstance.get(`/txs/${txids.join(",")}`);
   }
 
   async getRawTransaction(txid: string): Promise<string> {
-    return this.fetchText(`/raw-tx/${txid}`);
+    return this.requestInstance.get(`/raw-tx/${txid}`);
   }
 
   async getTransactionHistory(
@@ -256,9 +208,12 @@ export class QtumInfoApi {
     page = 0,
     pageSize = 20,
   ): Promise<QtumInfoBasicTxResponse> {
-    return this.fetchJson<QtumInfoBasicTxResponse>(
-      `/address/${address}/basic-txs?page=${page}&pageSize=${pageSize}`,
-    );
+    return this.requestInstance.get(`/address/${address}/basic-txs`, {
+      params: {
+        page,
+        pageSize,
+      },
+    });
   }
 
   async getTransactionIds(
@@ -266,17 +221,20 @@ export class QtumInfoApi {
     page = 0,
     pageSize = 20,
   ): Promise<QtumInfoTxIdsResponse> {
-    return this.fetchJson<QtumInfoTxIdsResponse>(
-      `/address/${address}/txs?limit=${pageSize}&offset=${page * pageSize}`,
-    );
+    return this.requestInstance.get(`/address/${address}/txs`, {
+      params: {
+        limit: pageSize,
+        offset: page * pageSize,
+      },
+    });
   }
 
   async getChainInfo(): Promise<QtumInfoChainInfo> {
-    return this.fetchJson<QtumInfoChainInfo>(`/info`);
+    return this.requestInstance.get(`/info`);
   }
 
   async getFeeRates(): Promise<QtumInfoFeeRate[]> {
-    return this.fetchJson<QtumInfoFeeRate[]>(`/feerates`);
+    return this.requestInstance.get(`/feerates`);
   }
 
   async getFeeRate(): Promise<number> {
@@ -291,7 +249,12 @@ export class QtumInfoApi {
   }
 
   async sendRawTransaction(rawtx: string): Promise<{ id: string }> {
-    return this.postJson<{ id: string }>(`/tx/send`, { rawtx });
+    const response: { id: string; status?: number; message?: string } =
+      await this.requestInstance.post(`/tx/send`, { rawtx });
+    if (response.status !== undefined && response.status !== 0) {
+      throw new Error(response.message);
+    }
+    return response;
   }
 
   async getQRC20TokenInfo(contractAddress: string): Promise<{
@@ -300,7 +263,7 @@ export class QtumInfoApi {
     decimals: number;
     totalSupply: string;
   }> {
-    return this.fetchJson(`/qrc20/${contractAddress}`);
+    return this.requestInstance.get(`/qrc20/${contractAddress}`);
   }
 
   async getQRC20Transfers(
@@ -320,10 +283,14 @@ export class QtumInfoApi {
       value: string;
     }>;
   }> {
-    return this.fetchJson(
-      `/address/${address}/qrc20-txs/${contractAddress}?limit=${pageSize}&offset=${
-        page * pageSize
-      }`,
+    return this.requestInstance.get(
+      `/address/${address}/qrc20-txs/${contractAddress}`,
+      {
+        params: {
+          limit: pageSize,
+          offset: page * pageSize,
+        },
+      },
     );
   }
 }
