@@ -1,4 +1,6 @@
 import type { UTXO, QtumBalance } from "../../types";
+import { createRequestInstance } from "@/common/utils/request";
+import { type AxiosInstance } from "axios";
 
 export interface BlockbookAddressResponse {
   page: number;
@@ -50,37 +52,14 @@ export interface BlockbookTxResponse {
 }
 
 export class BlockbookApi {
-  private baseUrl: string;
+  private reqInstance: AxiosInstance;
 
   constructor(baseUrl: string) {
-    this.baseUrl = baseUrl.replace(/\/$/, "");
-  }
-
-  private async fetchJson<T>(path: string): Promise<T> {
-    let response: Response;
-    try {
-      response = await fetch(`${this.baseUrl}${path}`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      });
-    } catch (error) {
-      throw new Error(`Network error: ${(error as Error).message}`);
-    }
-    if (!response.ok) {
-      const errorText = await response.text().catch(() => "");
-      throw new Error(
-        `Blockbook API status code ${response.status}: ${response.statusText}${
-          errorText ? `: ${errorText}` : ""
-        }`,
-      );
-    }
-    return response.json() as Promise<T>;
+    this.reqInstance = createRequestInstance(baseUrl.replace(/\/$/, ""));
   }
 
   async getAddressInfo(address: string): Promise<BlockbookAddressResponse> {
-    return this.fetchJson<BlockbookAddressResponse>(
-      `/api/v2/address/${address}`,
-    );
+    return this.reqInstance.get(`/api/v2/address/${address}`);
   }
 
   async getBalance(address: string): Promise<QtumBalance> {
@@ -93,7 +72,7 @@ export class BlockbookApi {
   }
 
   async getUTXOs(address: string): Promise<UTXO[]> {
-    const utxos = await this.fetchJson<BlockbookUTXOItem[]>(
+    const utxos: BlockbookUTXOItem[] = await this.reqInstance.get(
       `/api/v2/utxo/${address}`,
     );
     return utxos.map((utxo) => ({
@@ -107,7 +86,7 @@ export class BlockbookApi {
   }
 
   async getTransaction(txid: string): Promise<BlockbookTxResponse> {
-    return this.fetchJson<BlockbookTxResponse>(`/api/v2/tx/${txid}`);
+    return this.reqInstance.get(`/api/v2/tx/${txid}`);
   }
 
   async getRawTransaction(txid: string): Promise<string> {
@@ -119,7 +98,7 @@ export class BlockbookApi {
   }
 
   async getFeeRate(): Promise<number> {
-    const info = await this.fetchJson<{ result: string }>(
+    const info: { result: string } = await this.reqInstance.get(
       `/api/v2/estimatefee/2`,
     );
     // Convert BTC/kB to sat/byte
@@ -128,6 +107,6 @@ export class BlockbookApi {
   }
 
   async sendRawTransaction(hex: string): Promise<{ result: string }> {
-    return this.fetchJson<{ result: string }>(`/api/v2/sendtx/${hex}`);
+    return this.reqInstance.get(`/api/v2/sendtx/${hex}`);
   }
 }
