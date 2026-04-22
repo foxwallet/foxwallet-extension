@@ -1414,14 +1414,14 @@ export class QtumService extends CoinServiceBasic {
       option,
     } = params;
     if (!token?.contractAddress) return undefined;
+    if (gasFee.type !== GasFeeType.QTUM_DAPP) {
+      throw new Error("QTUM token transfer requires QTUM_DAPP gas fee");
+    }
 
     const keyPair = this.getKeyPair(privateKey, this.network);
     const sequence = option?.sendNoRBF ? 0xffffffff : 0xfffffffd;
 
-    const gasLimit =
-      gasFee.type === GasFeeType.QTUM_DAPP ? gasFee.gasLimit : 250000;
-    const gasPrice =
-      gasFee.type === GasFeeType.QTUM_DAPP ? gasFee.gasPrice : 40;
+    const { gasLimit, gasPrice, estimateGas } = gasFee;
 
     // Encode transfer(to, amount) data
     const contractAddr = token.contractAddress.startsWith("0x")
@@ -1437,42 +1437,14 @@ export class QtumService extends CoinServiceBasic {
       contractAddr,
     );
 
-    // Select UTXOs for gas
-    let feeRate: number | undefined;
-    if (gasFee && "feeRate" in gasFee) {
-      feeRate = gasFee.feeRate;
-    }
-    const rate = Math.max(
-      Math.ceil(feeRate ?? (await this.getFeeRate())),
-      DEFAULT_FEE_RATE,
+    const inputs = await this.getUTXOs(from);
+    const selectedUtxos = await this.getSelectedUtxos(inputs, 0n, from, to, {
+      fee: estimateGas,
+    });
+    const selectedTotal = selectedUtxos.reduce(
+      (sum, utxo) => sum + BigInt(utxo.value),
+      0n,
     );
-
-    const utxos = await this.getUTXOs(from);
-    utxos.sort((a, b) => Number(BigInt(b.value) - BigInt(a.value)));
-
-    // Calculate UTXO fee (extra output for OP_CALL)
-    const evmCost = BigInt(gasLimit) * BigInt(Math.ceil(gasPrice));
-    const utxoVBytes =
-      this.getEstimateVBytes(from, Math.min(utxos.length, 3), [from]) + 100;
-    const utxoFee = BigInt(Math.ceil(utxoVBytes * rate));
-    const totalRequired =
-      gasFee.type === GasFeeType.QTUM_DAPP && gasFee.estimateGas > 0n
-        ? gasFee.estimateGas
-        : evmCost + utxoFee;
-
-    // Select enough UTXOs
-    const selectedUtxos: UTXO[] = [];
-    let selectedTotal = 0n;
-
-    for (const utxo of utxos) {
-      selectedUtxos.push(utxo);
-      selectedTotal += BigInt(utxo.value);
-      if (selectedTotal >= totalRequired) break;
-    }
-
-    if (selectedTotal < totalRequired) {
-      throw new Error("Insufficient QTUM balance for gas fees");
-    }
 
     // Build PSBT
     const psbt = new bitcoin.Psbt({ network: this.network });
@@ -1489,7 +1461,7 @@ export class QtumService extends CoinServiceBasic {
     });
 
     // Add change output
-    const changeValue = selectedTotal - totalRequired;
+    const changeValue = selectedTotal - estimateGas;
     if (changeValue > BigInt(DUST_LIMIT)) {
       psbt.addOutput({
         address: from,
