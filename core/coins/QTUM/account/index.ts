@@ -6,6 +6,7 @@ import { ecc } from "../utils/nobleSecp256k1Adapter";
 import {
   QTUMExportPKType,
   QTUMImportPKType,
+  DEFAULT_QTUM_ACCOUNT_OPTION,
   type QTUMAccountOption,
 } from "../types/QTUMAccount";
 import { qtumNetwork, qtumTestnetNetwork } from "../constants";
@@ -26,17 +27,38 @@ class QTUMBasic extends CoinBasic<CoinType.QTUM> {
   public exportPrivateKey(
     privateKey: string,
     exportType: QTUMExportPKType,
+    option: QTUMAccountOption = DEFAULT_QTUM_ACCOUNT_OPTION,
   ): string {
     switch (exportType) {
       case QTUMExportPKType.QTUM_WIF: {
-        const network = qtumNetwork;
+        const network =
+          option?.network === "testnet" ? qtumTestnetNetwork : qtumNetwork;
         const rawKey = privateKey.startsWith("0x")
           ? privateKey.slice(2)
           : privateKey;
-        const keyPair = ECPair.fromPrivateKey(Buffer.from(rawKey, "hex"), {
-          network,
-        });
-        return keyPair.toWIF();
+
+        if (/^[0-9a-fA-F]{64}$/.test(rawKey)) {
+          const keyPair = ECPair.fromPrivateKey(Buffer.from(rawKey, "hex"), {
+            network,
+          });
+          return keyPair.toWIF();
+        }
+
+        try {
+          return ECPair.fromWIF(privateKey, network).toWIF();
+        } catch {
+          // Imported QTUM accounts can already be stored as WIF.
+        }
+
+        for (const fallbackNetwork of [qtumNetwork, qtumTestnetNetwork]) {
+          try {
+            return ECPair.fromWIF(privateKey, fallbackNetwork).toWIF();
+          } catch {
+            // Try the next QTUM network before failing.
+          }
+        }
+
+        throw new Error("Invalid QTUM private key format");
       }
     }
   }

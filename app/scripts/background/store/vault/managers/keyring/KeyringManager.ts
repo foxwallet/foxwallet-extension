@@ -32,6 +32,28 @@ import { ALL_ACCOUNT_OPTIONS } from "core/helper/AccountOption";
 import { ERROR_CODE } from "@/common/types/error";
 import { coinBasicFactory } from "core/coins/CoinBasicFactory";
 import { vaultVersion } from "@/scripts/background/store/vault/types/version";
+import {
+  DEFAULT_ACCOUNT_OPTION_V2,
+  type ExportPrivateKeyTypeMap,
+} from "core/types/CoinBasic";
+import { ETHExportPKType } from "core/coins/ETH/types/ETHAccount";
+import { AleoExportPKType } from "core/coins/ALEO/types/AleoAccount";
+import { QTUMExportPKType } from "core/coins/QTUM/types/QTUMAccount";
+
+function getDefaultExportPrivateKeyType<T extends CoinType>(
+  coinType: T,
+): ExportPrivateKeyTypeMap[T] {
+  switch (coinType) {
+    case CoinType.ETH:
+      return ETHExportPKType.ETH_HEX as ExportPrivateKeyTypeMap[T];
+    case CoinType.ALEO:
+      return AleoExportPKType.ALEO_PK as ExportPrivateKeyTypeMap[T];
+    case CoinType.QTUM:
+      return QTUMExportPKType.QTUM_WIF as ExportPrivateKeyTypeMap[T];
+    default:
+      throw new Error("Invalid coin type");
+  }
+}
 
 export class KeyringManager {
   #storage: VaultStorage;
@@ -511,8 +533,12 @@ export class KeyringManager {
       for (let account of groupAccount.accounts) {
         if (account.accountId === accountId && account.coinType === coinType) {
           const encryptedPrivateKey = account.privateKey;
-          const privateKey = decryptStr(token, encryptedPrivateKey);
-          return privateKey;
+          const privateKey = await decryptStr(token, encryptedPrivateKey);
+          return coinBasicFactory(coinType).exportPrivateKey(
+            privateKey,
+            getDefaultExportPrivateKeyType(coinType),
+            account.option ?? DEFAULT_ACCOUNT_OPTION_V2[coinType],
+          );
         }
       }
     }
