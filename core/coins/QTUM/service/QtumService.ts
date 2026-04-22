@@ -366,6 +366,22 @@ export class QtumService extends CoinServiceBasic {
     };
   }
 
+  supportEstimateGasFee(): boolean {
+    return true;
+  }
+
+  supportCustomGasFee(): boolean {
+    return true;
+  }
+
+  zeroGasFee(): GasFee<CoinType.QTUM> {
+    return {
+      estimateGas: 0n,
+      feeRate: 0,
+      type: GasFeeType.UTXO,
+    };
+  }
+
   private async estimateFee(
     txSize: number,
     preFixedFeeRate?: number,
