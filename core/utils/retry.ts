@@ -36,6 +36,7 @@ export const isNetworkError = (err: any) => {
       msg.includes("rate limit") || // blockscout
       msg.includes("plan limit") || // solana
       msg.includes("request limit") || // solana
+      msg.includes("request error") || // qtum.info
       msg.includes("frequency limit") || // tron grid
       msg.includes("credits limit") || // solana
       msg.includes("free tier limit") || // solana
@@ -43,6 +44,7 @@ export const isNetworkError = (err: any) => {
       msg.includes("method unavailable") || // solana
       msg.includes("method not found") || // solana
       msg.includes("status code 403") || // blockscout
+      msg.includes("unauthorized") ||
       msg.includes("unable to perform request") || // solana
       msg.includes("underlying network changed") || // filecoin evm
       msg.includes("tipset height in future") || // filecoin evm
@@ -299,7 +301,7 @@ function executeFunction<T>(
         },
         rootResolve,
         (error: any, retryTimes: number) => {
-          console.log(
+          console.warn(
             `AutoSwitchProxy ${method.toString()} failed with ${retryTimes} times retry: ${
               (error as Error).message
             }`,

@@ -371,7 +371,7 @@ export class QtumService extends CoinServiceBasic {
   }
 
   supportCustomGasFee(): boolean {
-    return true;
+    return false;
   }
 
   zeroGasFee(): GasFee<CoinType.QTUM> {
