@@ -169,7 +169,11 @@ export class QtumService extends CoinServiceBasic {
 
   // ===== UTXO Management =====
 
-  async getUTXOs(address: string): Promise<UTXO[]> {
+  async getUTXOs(
+    address: string,
+    _isOrd: boolean = false,
+    _confirmed?: boolean,
+  ): Promise<UTXO[]> {
     try {
       return await this.withQtumInfo(async (api) => api.getUTXOs(address));
     } catch (e) {
@@ -262,94 +266,200 @@ export class QtumService extends CoinServiceBasic {
   async estimateGasFee(
     params: EstimateGasParam<CoinType.QTUM>,
   ): Promise<GasFee<CoinType.QTUM> | undefined> {
-    const { from, to, value, data } = params.tx;
-    const { sendMax } = params.option ?? {};
-    if (!from || !to) return undefined;
+    const {
+      tx: { from, to, value: sendValue, data },
+      option,
+    } = params;
+    if (!from) return undefined;
 
-    const feeRate = await this.getFeeRate();
-    const utxos = await this.getUTXOs(from);
+    const preFixedFeeRate = option?.feeRate;
+    let evmGas = 0n;
+    let isEvm = false;
+    let gasPrice = 0;
+    let gasLimit = 0;
 
-    // Handle SendMax: use all UTXOs, no change output
-    if (sendMax) {
-      // For sendMax, we use all UTXOs and only one output (to recipient)
-      const vBytes = this.getEstimateVBytes(from, utxos.length, [to]);
-      const fee = BigInt(Math.ceil(vBytes * feeRate));
+    if (data) {
+      const gasOption = option as GasFeeQtumDapp | undefined;
+      gasPrice =
+        gasOption?.gasPrice ??
+        (await this.getDefaultGasPrice().catch(() => 40));
+
+      const dataHex =
+        typeof data === "string"
+          ? this.addHexPrefix(data)
+          : ethUtils.hexlify(data);
+      const estimateGasLimit =
+        gasOption?.gasLimit ??
+        (await this.getGasLimit(
+          from,
+          to ? getEvmAddress(to) : "0x0",
+          dataHex,
+          sendValue,
+          gasPrice,
+        ));
+      const minGasLimit = this.getMinGasLimit(dataHex.slice(0, 10), to);
+      gasLimit = Math.max(estimateGasLimit, minGasLimit);
+      evmGas = BigInt(gasPrice) * BigInt(gasLimit);
+      isEvm = true;
+    }
+
+    const rbf = option?.RBF ?? false;
+    const inputs = await this.getUTXOs(from, false, rbf);
+    if (params.option?.sendMax) {
+      const vBytes = this.getEstimateVBytes(from, inputs.length, [from]);
+      const { fee, feeRate } = await this.estimateFee(vBytes, preFixedFeeRate);
 
       return {
         estimateGas: fee,
         feeRate,
-        fee,
         type: GasFeeType.UTXO,
       };
     }
 
-    // Check if this is an EVM contract call (has data parameter)
-    let evmGas = 0n;
-    let gasLimit = 0;
-    let gasPrice = 0;
-    const isEvm = !!data;
+    const validRes: Array<{ inscriptionId: string; inputId: string }> = [];
+    const ordinalLength = validRes.length;
 
-    if (isEvm) {
-      // Get gas price from RPC
-      try {
-        const rpcGasPrice = await this.withRpc(async (provider) => {
-          return provider.send("eth_gasPrice", []);
-        });
-        gasPrice = Math.ceil(Number(BigInt(rpcGasPrice)) / 1e10); // Convert to satoshi
-      } catch (e) {
-        gasPrice = 40; // Default gas price
-      }
-
-      // Estimate gas limit
-      try {
-        const evmTo = to ? getEvmAddress(to) : "0x0";
-        const evmFrom = getEvmAddress(from);
-        const estimatedGas = await this.withRpc(async (provider) => {
-          return provider.send("eth_estimateGas", [
-            {
-              from: evmFrom,
-              to: evmTo,
-              data,
-              value: value ? "0x" + BigInt(value).toString(16) : "0x0",
-            },
-          ]);
-        });
-        gasLimit = Math.ceil(Number(BigInt(estimatedGas)) * 1.1); // Add 10% buffer
-      } catch (e) {
-        gasLimit = 250000; // Default gas limit
-      }
-
-      evmGas = BigInt(gasLimit) * BigInt(gasPrice);
-    }
-
-    // Estimate UTXO fee
-    const estimateInputCount = Math.max(utxos.length, 1);
+    const selectedUTXOs = await this.getSelectedUtxos(
+      inputs,
+      sendValue,
+      from,
+      to ?? from,
+      {
+        feeRate: preFixedFeeRate,
+        ordinalLength,
+        RBFTxids: validRes.map((item) => item.inputId),
+      },
+    );
+    const inputLength = selectedUTXOs.length + ordinalLength;
     const vBytes = this.getEstimateVBytes(
       from,
-      Math.min(estimateInputCount, 3),
-      [to, from],
+      inputLength,
+      Array(ordinalLength + (ordinalLength ? 0 : 1))
+        .fill(to || from)
+        .concat(from),
     );
-    const utxoFee = BigInt(Math.ceil(vBytes * feeRate));
+    let { fee, feeRate } = await this.estimateFee(vBytes, preFixedFeeRate);
+    const totalValue = selectedUTXOs.reduce(
+      (sum, utxo) => sum + BigInt(utxo.value),
+      0n,
+    );
+    const change = totalValue - sendValue - fee - evmGas;
+    if (change <= BigInt(DUST_LIMIT) && change > 0n) {
+      fee += change;
+    }
 
     if (isEvm) {
-      // Return QTUM_DAPP type for contract calls
       return {
-        estimateGas: evmGas + utxoFee,
+        estimateGas: evmGas + fee,
         feeRate,
-        fee: utxoFee,
+        fee,
         type: GasFeeType.QTUM_DAPP,
         gasLimit,
         gasPrice,
       };
     }
 
-    // Return UTXO type for native transfers
     return {
-      estimateGas: utxoFee,
+      estimateGas: fee,
       feeRate,
-      fee: utxoFee,
       type: GasFeeType.UTXO,
     };
+  }
+
+  private async estimateFee(
+    txSize: number,
+    preFixedFeeRate?: number,
+  ): Promise<{ fee: bigint; feeRate: number }> {
+    const feeRate = preFixedFeeRate ?? (await this.getFeeRate());
+    return {
+      fee: BigInt(Math.ceil(feeRate * txSize)),
+      feeRate,
+    };
+  }
+
+  private async getSelectedUtxos(
+    allUTXOs: UTXO[],
+    sendValue: bigint,
+    from: string,
+    to: string,
+    options?: {
+      fee?: bigint;
+      feeRate?: number;
+      ordinalLength?: number;
+      RBFTxids?: string[];
+    },
+  ): Promise<UTXO[]> {
+    let feeEstimated = options?.fee;
+    const rbfTxIds = options?.RBFTxids ?? [];
+    allUTXOs.sort((a, b) => Number(BigInt(b.value) - BigInt(a.value)));
+
+    const rbfUtxos: UTXO[] = [];
+    const nonRbfUtxos: UTXO[] = [];
+    allUTXOs.forEach((utxo) => {
+      if (rbfTxIds.some((id) => id === utxo.txid)) {
+        rbfUtxos.push(utxo);
+      } else {
+        nonRbfUtxos.push(utxo);
+      }
+    });
+
+    const selectedUtxos: UTXO[] = [];
+    let selectedTotalValue = 0n;
+    rbfUtxos.forEach((utxo) => {
+      selectedUtxos.push(utxo);
+      selectedTotalValue += BigInt(utxo.value);
+    });
+
+    if (!options?.fee) {
+      const inputLength = rbfUtxos.length + (options?.ordinalLength ?? 0);
+      const vBytes = this.getEstimateVBytes(
+        from,
+        inputLength,
+        Array((options?.ordinalLength ?? 0) + (options?.ordinalLength ? 0 : 1))
+          .fill(to)
+          .concat(from),
+      );
+      const { fee: estimatedFee } = await this.estimateFee(
+        vBytes,
+        options?.feeRate,
+      );
+      feeEstimated = estimatedFee;
+    }
+
+    if (feeEstimated && selectedTotalValue >= sendValue + feeEstimated) {
+      return selectedUtxos;
+    }
+
+    for (let i = 0; i < nonRbfUtxos.length; i++) {
+      const utxo = nonRbfUtxos[i];
+      selectedUtxos.push(utxo);
+      selectedTotalValue += BigInt(utxo.value);
+
+      if (!options?.fee) {
+        const inputLength =
+          i + 1 + rbfUtxos.length + (options?.ordinalLength ?? 0);
+        const vBytes = this.getEstimateVBytes(
+          from,
+          inputLength,
+          Array(
+            (options?.ordinalLength ?? 0) + (options?.ordinalLength ? 0 : 1),
+          )
+            .fill(to)
+            .concat(from),
+        );
+        const { fee: estimatedFee } = await this.estimateFee(
+          vBytes,
+          options?.feeRate,
+        );
+        feeEstimated = estimatedFee;
+      }
+
+      if (feeEstimated && selectedTotalValue >= sendValue + feeEstimated) {
+        break;
+      }
+    }
+
+    return selectedUtxos;
   }
 
   gasUnit(): string {
@@ -570,13 +680,16 @@ export class QtumService extends CoinServiceBasic {
       signer: { privateKey },
       option,
     } = params;
-    const sendMax = option?.sendMax ?? false;
     const sequence = option?.sendNoRBF ? 0xffffffff : 0xfffffffd;
     const isEvm = !!data;
 
-    let sendValue = BigInt(value);
+    const sendValue = BigInt(value);
 
-    if (!sendMax && sendValue < BigInt(DUST_LIMIT) && sendValue !== 0n) {
+    if (
+      !this.config.testnet &&
+      sendValue < BigInt(DUST_LIMIT) &&
+      sendValue !== 0n
+    ) {
       throw new Error(`Amount below dust limit (${DUST_LIMIT} satoshi)`);
     }
 
@@ -588,70 +701,71 @@ export class QtumService extends CoinServiceBasic {
     if (gasFee && "feeRate" in gasFee) {
       feeRate = gasFee.feeRate;
     }
-    const fixedFee =
-      isEvm && gasFee.type === GasFeeType.QTUM_DAPP
-        ? gasFee.estimateGas
-        : gasFee.fee ?? gasFee.estimateGas;
+    const fee = gasFee.estimateGas;
 
-    const { utxos, changeValue, actualSendValue } = await this.selectUTXOs(
-      from,
-      sendValue,
-      to,
-      { fee: fixedFee, feeRate, sendMax },
-    );
-
-    // For sendMax, use the calculated actual send value
-    if (sendMax) {
-      sendValue = actualSendValue;
+    const inputs = await this.getUTXOs(from);
+    inputs.sort((a, b) => Number(BigInt(b.value) - BigInt(a.value)));
+    const utxos: UTXO[] = [];
+    let selectedTotal = 0n;
+    for (const input of inputs) {
+      utxos.push(input);
+      selectedTotal += BigInt(input.value);
+      if (selectedTotal >= sendValue + fee) {
+        break;
+      }
+    }
+    if (selectedTotal < sendValue + fee) {
+      throw new Error("not enough value");
     }
 
-    // Build PSBT
     const psbt = new bitcoin.Psbt({ network: this.network });
     const keyPair = this.getKeyPair(privateKey, this.network);
 
-    // Add inputs with proper witness/non-witness handling
-    for (const utxo of utxos) {
-      await this.addPsbtInput(psbt, utxo, from, keyPair, sequence);
+    for (const input of utxos) {
+      const rawTx = await this.withQtumInfo(async (api) =>
+        api.getRawTransaction(input.txid),
+      );
+      psbt.addInput({
+        hash: input.txid,
+        index: input.vout,
+        sequence,
+        nonWitnessUtxo: Buffer.from(rawTx, "hex"),
+      });
     }
 
     if (isEvm && gasFee.type === GasFeeType.QTUM_DAPP) {
-      const contractAddress = getEvmAddress(to).slice(2);
-      const opCallScript = this.buildOpCallScript(
+      const contractAddress = to ? getEvmAddress(to).slice(2) : undefined;
+      const contractScript = this.buildQtumDappScript(
         gasFee.gasLimit,
         gasFee.gasPrice,
         data,
         contractAddress,
       );
       psbt.addOutput({
-        script: opCallScript,
+        script: contractScript,
         value: sendValue,
       });
     } else if (sendValue > 0n) {
-      // Add output to recipient
       psbt.addOutput({
         address: to,
         value: sendValue,
       });
     }
 
-    // Add change output (not present in sendMax)
-    if (changeValue > 0n) {
+    let changeValue = selectedTotal - sendValue - fee;
+    if (changeValue <= BigInt(DUST_LIMIT)) {
+      changeValue = 0n;
+    }
+    if (changeValue !== 0n) {
       psbt.addOutput({
         address: from,
         value: changeValue,
       });
     }
 
-    // Sign all inputs
-    for (let i = 0; i < utxos.length; i++) {
-      psbt.signInput(i, keyPair);
-    }
-
-    // Finalize and extract
+    psbt.signAllInputs(keyPair);
     psbt.finalizeAllInputs();
     const rawTx = psbt.extractTransaction(isEvm).toHex();
-
-    // Broadcast
     const txid = await this.pushTx(rawTx);
 
     return {
@@ -659,7 +773,11 @@ export class QtumService extends CoinServiceBasic {
       from,
       to,
       value: sendValue,
-      gasFee: this.serializeGasFee(gasFee),
+      gasFee: {
+        estimateGas: fee.toString(),
+        type: GasFeeType.UTXO,
+        feeRate,
+      },
       data,
       timestamp: Date.now(),
     };
@@ -741,6 +859,58 @@ export class QtumService extends CoinServiceBasic {
     const price = BigNumber.from(netGasPrice).div(10_000_000_000).toNumber();
     this.gasPriceCache = { price, timestamp: now };
     return price;
+  }
+
+  private async getGasLimit(
+    from: string,
+    toEvm: string,
+    data: string,
+    amount: bigint,
+    gasPrice: number,
+  ): Promise<number> {
+    try {
+      const estimateGas = await this.withRpc(async (provider) =>
+        provider.estimateGas({
+          from: getEvmAddress(from),
+          to: toEvm,
+          value: BigNumber.from(amount.toString()),
+          data,
+          gasPrice: BigNumber.from(gasPrice).mul(10_000_000_000),
+          chainId: this.getChainId(),
+        }),
+      );
+      return estimateGas.mul(110).div(100).toNumber();
+    } catch (e) {
+      return 250000;
+    }
+  }
+
+  private getMinGasLimit(functionHash: string, to: string | undefined): number {
+    if (!this.config.minGasLimits) {
+      return 0;
+    }
+
+    const normalizedTo =
+      to && ethUtils.isAddress(to) ? this.normalizeContractAddress(to) : "";
+
+    let minLimit = this.config.minGasLimits.find((item) => {
+      return (
+        normalizedTo &&
+        functionHash &&
+        this.normalizeContractAddress(item.contract) === normalizedTo &&
+        item.functionHash === functionHash
+      );
+    })?.gasLimit;
+
+    if (!minLimit) {
+      minLimit = this.config.minGasLimits.find((item) => {
+        return (
+          !item.contract && functionHash && item.functionHash === functionHash
+        );
+      })?.gasLimit;
+    }
+
+    return minLimit ?? 0;
   }
 
   private encodeSendData(address: string, amount: bigint): string {
@@ -1260,7 +1430,7 @@ export class QtumService extends CoinServiceBasic {
     const transferData = this.encodeSendData(to, value);
 
     // Build OP_CALL script
-    const opCallScript = this.buildOpCallScript(
+    const opCallScript = this.buildQtumDappScript(
       gasLimit,
       gasPrice,
       transferData,
@@ -1349,19 +1519,30 @@ export class QtumService extends CoinServiceBasic {
     };
   }
 
-  private buildOpCallScript(
+  private buildQtumDappScript(
     gasLimit: number,
     gasPrice: number,
     data: string,
-    contractAddress: string,
+    contractAddress?: string,
   ): Uint8Array {
-    // OP_4 <gasLimit> <gasPrice> <data> <contractAddress> OP_CALL
     const OP_4 = 0x54;
+    const OP_CREATE = 0xc1;
     const OP_CALL = 0xc2;
 
     const gasLimitBuf = this.numberToBuffer(gasLimit);
     const gasPriceBuf = this.numberToBuffer(gasPrice);
     const dataBuf = Buffer.from(data.replace(/^0x/i, ""), "hex");
+
+    if (!contractAddress) {
+      return bitcoin.script.compile([
+        OP_4,
+        gasLimitBuf,
+        gasPriceBuf,
+        dataBuf,
+        OP_CREATE,
+      ]);
+    }
+
     const contractBuf = Buffer.from(contractAddress.replace(/^0x/i, ""), "hex");
 
     return bitcoin.script.compile([
