@@ -149,40 +149,55 @@ export class QtumInfoApi {
   }
 
   private async fetchJson<T>(path: string): Promise<T> {
-    const response = await fetch(`${this.baseUrl}${path}`, {
-      method: "GET",
-      headers: this.getHeaders(),
-    });
+    let response: Response;
+    try {
+      response = await fetch(`${this.baseUrl}${path}`, {
+        method: "GET",
+        headers: this.getHeaders(),
+      });
+    } catch (error) {
+      throw new Error(`Network error: ${(error as Error).message}`);
+    }
     if (!response.ok) {
       throw new Error(
-        `QtumInfo API error: ${response.status} ${response.statusText}`,
+        `QtumInfo API status code ${response.status}: ${response.statusText}`,
       );
     }
     return response.json() as Promise<T>;
   }
 
   private async fetchText(path: string): Promise<string> {
-    const response = await fetch(`${this.baseUrl}${path}`, {
-      method: "GET",
-      headers: this.getHeaders(),
-    });
+    let response: Response;
+    try {
+      response = await fetch(`${this.baseUrl}${path}`, {
+        method: "GET",
+        headers: this.getHeaders(),
+      });
+    } catch (error) {
+      throw new Error(`Network error: ${(error as Error).message}`);
+    }
     if (!response.ok) {
       throw new Error(
-        `QtumInfo API error: ${response.status} ${response.statusText}`,
+        `QtumInfo API status code ${response.status}: ${response.statusText}`,
       );
     }
     return response.text();
   }
 
   private async postJson<T>(path: string, body: unknown): Promise<T> {
-    const response = await fetch(`${this.baseUrl}${path}`, {
-      method: "POST",
-      headers: this.getHeaders(),
-      body: JSON.stringify(body),
-    });
+    let response: Response;
+    try {
+      response = await fetch(`${this.baseUrl}${path}`, {
+        method: "POST",
+        headers: this.getHeaders(),
+        body: JSON.stringify(body),
+      });
+    } catch (error) {
+      throw new Error(`Network error: ${(error as Error).message}`);
+    }
     if (!response.ok) {
       throw new Error(
-        `QtumInfo API error: ${response.status} ${response.statusText}`,
+        `QtumInfo API status code ${response.status}: ${response.statusText}`,
       );
     }
     return response.json() as Promise<T>;

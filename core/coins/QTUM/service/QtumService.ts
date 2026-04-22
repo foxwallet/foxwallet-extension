@@ -3,9 +3,18 @@ import type { QtumConfig } from "../types/QtumConfig";
 import type { UTXO } from "../types";
 import type { QtumInfoApi, QtumInfoTxResponse } from "./api/qtuminfoapi";
 import { type BlockbookApi } from "./api/blockbook";
-import { createQtumInfoServices } from "./instances/qtuminfo";
-import { createBlockbookServices } from "./instances/blockbook";
-import { createQtumRpcProviders } from "./instances/rpc";
+import {
+  createQtumInfoService,
+  type QtumInfoService,
+} from "./instances/qtuminfo";
+import {
+  createBlockbookService,
+  type BlockbookService,
+} from "./instances/blockbook";
+import {
+  createEthRpcService,
+  type EthRpcService,
+} from "core/coins/ETH/service/instances/rpc";
 import {
   InputSizeMap,
   OutputSizeMap,
@@ -28,7 +37,11 @@ import type {
   NativeCoinTxDetailRes,
 } from "core/types/NativeCoinTransaction";
 import type { CoinType } from "core/types";
-import type { GasFee, GasFeeQtumDapp } from "core/types/GasFee";
+import type {
+  GasFee,
+  GasFeeQtumDapp,
+  SerializeGasFee,
+} from "core/types/GasFee";
 import { GasFeeType } from "core/types/GasFee";
 import {
   TxLabel,
@@ -50,17 +63,19 @@ import * as bitcoin from "bitcoinjs-lib";
 import { ECPairFactory } from "ecpair";
 import { ecc } from "../utils/nobleSecp256k1Adapter";
 import type { Network } from "bitcoinjs-lib";
-import { BigNumber, utils as ethUtils, type providers } from "ethers";
+import { BigNumber, Contract, utils as ethUtils } from "ethers";
 import { TransactionStatus } from "core/types/TransactionStatus";
+import erc20abi from "core/assets/abi/erc20abi.json";
 
 const ECPair = ECPairFactory(ecc);
 
 export class QtumService extends CoinServiceBasic {
-  private qtumInfoServices: QtumInfoApi[];
-  private blockbookServices: BlockbookApi[];
-  private rpcProviders: providers.JsonRpcProvider[];
+  private qtumInfoService: QtumInfoService;
+  private blockbookService?: BlockbookService;
+  private rpcService: EthRpcService;
   private network: Network;
   private config: QtumConfig;
+  private chainId: number;
   private txDetailCache = new Map<string, QtumInfoTxResponse>();
 
   // Fee rate cache
@@ -72,10 +87,15 @@ export class QtumService extends CoinServiceBasic {
   constructor(config: QtumConfig) {
     super(config);
     this.config = config;
+    const chainId = Number(config.chainId);
+    if (!Number.isFinite(chainId)) {
+      throw new Error(`Invalid QTUM chainId ${config.chainId}`);
+    }
+    this.chainId = chainId;
     this.network = config.network;
-    this.qtumInfoServices = createQtumInfoServices(config);
-    this.blockbookServices = createBlockbookServices(config);
-    this.rpcProviders = createQtumRpcProviders(config);
+    this.qtumInfoService = createQtumInfoService(config);
+    this.blockbookService = createBlockbookService(config);
+    this.rpcService = createEthRpcService(config);
   }
 
   // ===== Helper: API with failover =====
@@ -83,44 +103,45 @@ export class QtumService extends CoinServiceBasic {
   private async withQtumInfo<T>(
     fn: (api: QtumInfoApi) => Promise<T>,
   ): Promise<T> {
-    let lastError: Error | undefined;
-    for (const api of this.qtumInfoServices) {
-      try {
-        return await fn(api);
-      } catch (e) {
-        lastError = e as Error;
-      }
-    }
-    // Fallback to blockbook if available
-    throw lastError ?? new Error("No QtumInfo API available");
+    return await fn(this.qtumInfoService);
   }
 
   private async withBlockbook<T>(
     fn: (api: BlockbookApi) => Promise<T>,
   ): Promise<T> {
-    let lastError: Error | undefined;
-    for (const api of this.blockbookServices) {
-      try {
-        return await fn(api);
-      } catch (e) {
-        lastError = e as Error;
-      }
+    if (!this.blockbookService) {
+      throw new Error("No Blockbook API available");
     }
-    throw lastError ?? new Error("No Blockbook API available");
+    return await fn(this.blockbookService);
   }
 
   private async withRpc<T>(
-    fn: (provider: providers.JsonRpcProvider) => Promise<T>,
+    fn: (provider: EthRpcService) => Promise<T>,
   ): Promise<T> {
-    let lastError: Error | undefined;
-    for (const provider of this.rpcProviders) {
-      try {
-        return await fn(provider);
-      } catch (e) {
-        lastError = e as Error;
-      }
+    return await fn(this.rpcService);
+  }
+
+  private serializeGasFee(
+    gasFee: GasFee<CoinType.QTUM>,
+  ): SerializeGasFee<CoinType.QTUM> {
+    if (gasFee.type === GasFeeType.QTUM_DAPP) {
+      return {
+        estimateGas: gasFee.estimateGas.toString(),
+        fee: gasFee.fee?.toString(),
+        feeRate: gasFee.feeRate,
+        priorityFee: gasFee.priorityFee?.toString(),
+        utxosHash: gasFee.utxosHash,
+        gasLimit: gasFee.gasLimit,
+        gasPrice: gasFee.gasPrice,
+        type: GasFeeType.QTUM_DAPP,
+      };
     }
-    throw lastError ?? new Error("No RPC provider available");
+    return {
+      ...gasFee,
+      estimateGas: gasFee.estimateGas.toString(),
+      fee: gasFee.fee?.toString(),
+      priorityFee: gasFee.priorityFee?.toString(),
+    };
   }
 
   // ===== Balance =====
@@ -146,7 +167,7 @@ export class QtumService extends CoinServiceBasic {
     try {
       return await this.withQtumInfo(async (api) => api.getUTXOs(address));
     } catch (e) {
-      if (this.blockbookServices.length > 0) {
+      if (this.blockbookService) {
         return this.withBlockbook(async (api) => api.getUTXOs(address));
       }
       throw e;
@@ -217,7 +238,7 @@ export class QtumService extends CoinServiceBasic {
       return adjustedRate;
     } catch (e) {
       try {
-        if (this.blockbookServices.length > 0) {
+        if (this.blockbookService) {
           const rate = await this.withBlockbook(async (api) =>
             api.getFeeRate(),
           );
@@ -233,8 +254,8 @@ export class QtumService extends CoinServiceBasic {
   }
 
   async estimateGasFee(
-    params: EstimateGasParam<CoinType>,
-  ): Promise<GasFee<CoinType> | undefined> {
+    params: EstimateGasParam<CoinType.QTUM>,
+  ): Promise<GasFee<CoinType.QTUM> | undefined> {
     const { from, to, value, data } = params.tx;
     const { sendMax } = params.option ?? {};
     if (!from || !to) return undefined;
@@ -253,7 +274,7 @@ export class QtumService extends CoinServiceBasic {
         feeRate,
         fee,
         type: GasFeeType.UTXO,
-      } as GasFee<CoinType>;
+      };
     }
 
     // Check if this is an EVM contract call (has data parameter)
@@ -311,7 +332,9 @@ export class QtumService extends CoinServiceBasic {
         feeRate,
         fee: utxoFee,
         type: GasFeeType.QTUM_DAPP,
-      } as GasFee<CoinType>;
+        gasLimit,
+        gasPrice,
+      };
     }
 
     // Return UTXO type for native transfers
@@ -320,7 +343,7 @@ export class QtumService extends CoinServiceBasic {
       feeRate,
       fee: utxoFee,
       type: GasFeeType.UTXO,
-    } as GasFee<CoinType>;
+    };
   }
 
   gasUnit(): string {
@@ -525,15 +548,16 @@ export class QtumService extends CoinServiceBasic {
   }
 
   async sendNativeCoin(
-    params: NativeCoinSendTxParams<CoinType>,
-  ): Promise<NativeCoinSendTxRes<CoinType> | undefined> {
+    params: NativeCoinSendTxParams<CoinType.QTUM>,
+  ): Promise<NativeCoinSendTxRes<CoinType.QTUM> | undefined> {
     const {
-      tx: { from, to, value, gasFee },
+      tx: { from, to, value, gasFee, data },
       signer: { privateKey },
       option,
     } = params;
     const sendMax = option?.sendMax ?? false;
     const sequence = option?.sendNoRBF ? 0xffffffff : 0xfffffffd;
+    const isEvm = !!data;
 
     let sendValue = BigInt(value);
 
@@ -541,11 +565,18 @@ export class QtumService extends CoinServiceBasic {
       throw new Error(`Amount below dust limit (${DUST_LIMIT} satoshi)`);
     }
 
+    if (isEvm && gasFee.type !== GasFeeType.QTUM_DAPP) {
+      throw new Error("QTUM contract call requires QTUM_DAPP gas fee");
+    }
+
     let feeRate: number | undefined;
     if (gasFee && "feeRate" in gasFee) {
       feeRate = gasFee.feeRate;
     }
-    const fixedFee = gasFee.fee ?? gasFee.estimateGas;
+    const fixedFee =
+      isEvm && gasFee.type === GasFeeType.QTUM_DAPP
+        ? gasFee.estimateGas
+        : gasFee.fee ?? gasFee.estimateGas;
 
     const { utxos, changeValue, actualSendValue } = await this.selectUTXOs(
       from,
@@ -568,8 +599,20 @@ export class QtumService extends CoinServiceBasic {
       await this.addPsbtInput(psbt, utxo, from, keyPair, sequence);
     }
 
-    // Add output to recipient
-    if (sendValue > 0n) {
+    if (isEvm && gasFee.type === GasFeeType.QTUM_DAPP) {
+      const contractAddress = getEvmAddress(to).slice(2);
+      const opCallScript = this.buildOpCallScript(
+        gasFee.gasLimit,
+        gasFee.gasPrice,
+        data,
+        contractAddress,
+      );
+      psbt.addOutput({
+        script: opCallScript,
+        value: sendValue,
+      });
+    } else if (sendValue > 0n) {
+      // Add output to recipient
       psbt.addOutput({
         address: to,
         value: sendValue,
@@ -591,7 +634,7 @@ export class QtumService extends CoinServiceBasic {
 
     // Finalize and extract
     psbt.finalizeAllInputs();
-    const rawTx = psbt.extractTransaction().toHex();
+    const rawTx = psbt.extractTransaction(isEvm).toHex();
 
     // Broadcast
     const txid = await this.pushTx(rawTx);
@@ -601,7 +644,8 @@ export class QtumService extends CoinServiceBasic {
       from,
       to,
       value: sendValue,
-      gasFee,
+      gasFee: this.serializeGasFee(gasFee),
+      data,
       timestamp: Date.now(),
     };
   }
@@ -626,7 +670,7 @@ export class QtumService extends CoinServiceBasic {
       }
       return result.id;
     } catch (qtumInfoError) {
-      if (this.blockbookServices.length === 0) {
+      if (!this.blockbookService) {
         throw qtumInfoError;
       }
 
@@ -664,11 +708,7 @@ export class QtumService extends CoinServiceBasic {
   }
 
   private getChainId(): number {
-    const chainId = Number(this.config.chainId);
-    if (!Number.isFinite(chainId)) {
-      throw new Error(`Invalid QTUM chainId ${this.config.chainId}`);
-    }
-    return chainId;
+    return this.chainId;
   }
 
   private async getDefaultGasPrice(): Promise<number> {
@@ -919,7 +959,7 @@ export class QtumService extends CoinServiceBasic {
 
   async getNativeCoinTxDetail(
     params: NativeCoinTxDetailParams,
-  ): Promise<NativeCoinTxDetailRes<CoinType> | undefined> {
+  ): Promise<NativeCoinTxDetailRes<CoinType.QTUM> | undefined> {
     const { txId, filter } = params;
     const [tx, rawTx] = await Promise.all([
       this.getQtumTransaction(txId),
@@ -947,7 +987,9 @@ export class QtumService extends CoinServiceBasic {
             ? Math.ceil(Number(fees) / tx.weight)
             : await this.getFeeRate(),
         type: GasFeeType.QTUM_DAPP,
-      } as GasFee<CoinType>,
+        gasLimit: 0,
+        gasPrice: 0,
+      },
       data: rawTx,
       rawTx,
       qrc20TokenTransfers: tx.qrc20TokenTransfers,
@@ -967,32 +1009,19 @@ export class QtumService extends CoinServiceBasic {
 
     if (!token?.contractAddress) return undefined;
 
-    const contractHex = token.contractAddress.startsWith("0x")
-      ? token.contractAddress.slice(2).toLowerCase()
-      : token.contractAddress.toLowerCase();
-
-    // Primary: use qtuminfo API which returns qrc20Balances directly
     try {
-      const addressInfo = await this.withQtumInfo(async (api) =>
-        api.getAddressInfo(address),
+      const erc20 = new Contract(
+        this.addHexPrefix(token.contractAddress),
+        erc20abi,
+        this.rpcService,
       );
-      const tokenInfo = addressInfo.qrc20Balances?.find(
-        (t) =>
-          t.address.toLowerCase() === contractHex ||
-          t.addressHex.toLowerCase() === contractHex,
-      );
-      if (tokenInfo) {
-        const balance = BigInt(tokenInfo.balance);
-        return {
-          total: balance,
-          publicBalance: balance,
-          privateBalance: 0n,
-        };
-      }
-      // Token not found in address balances means balance is 0
+      const balance = (await erc20.balanceOf(
+        getEvmAddress(address),
+      )) as BigNumber;
+      const total = balance.toBigInt();
       return {
-        total: 0n,
-        publicBalance: 0n,
+        total,
+        publicBalance: total,
         privateBalance: 0n,
       };
     } catch (e) {
@@ -1078,7 +1107,7 @@ export class QtumService extends CoinServiceBasic {
 
   async getTokenTxDetail(
     params: TokenTxDetailReq,
-  ): Promise<TokenTxDetailRes<CoinType> | undefined> {
+  ): Promise<TokenTxDetailRes<CoinType.QTUM> | undefined> {
     const {
       txId,
       token,
@@ -1120,7 +1149,9 @@ export class QtumService extends CoinServiceBasic {
           fee: fees,
           feeRate: 400,
           type: GasFeeType.QTUM_DAPP,
-        } as GasFee<CoinType>,
+          gasLimit: 0,
+          gasPrice: 0,
+        },
       };
     } catch (e) {
       console.error("getTokenTxDetail error:", e);
@@ -1129,8 +1160,8 @@ export class QtumService extends CoinServiceBasic {
   }
 
   async getTokenEstimateGasFee(
-    params: TokenEstimateGasParams<CoinType>,
-  ): Promise<GasFee<CoinType> | undefined> {
+    params: TokenEstimateGasParams<CoinType.QTUM>,
+  ): Promise<GasFee<CoinType.QTUM> | undefined> {
     const {
       tx: { from, to, value, token },
       option,
@@ -1190,8 +1221,8 @@ export class QtumService extends CoinServiceBasic {
   }
 
   async sendToken(
-    params: TokenSendTxParams<CoinType>,
-  ): Promise<TokenSendTxRes<CoinType> | undefined> {
+    params: TokenSendTxParams<CoinType.QTUM>,
+  ): Promise<TokenSendTxRes<CoinType.QTUM> | undefined> {
     const {
       tx: { from, to, value, token, gasFee },
       signer: { privateKey },
@@ -1219,7 +1250,6 @@ export class QtumService extends CoinServiceBasic {
       gasPrice,
       transferData,
       contractAddr,
-      0, // No QTUM value for token transfer
     );
 
     // Select UTXOs for gas
@@ -1298,7 +1328,7 @@ export class QtumService extends CoinServiceBasic {
       from,
       to,
       value,
-      gasFee,
+      gasFee: this.serializeGasFee(gasFee),
       token,
       timestamp: Date.now(),
     };
@@ -1309,16 +1339,15 @@ export class QtumService extends CoinServiceBasic {
     gasPrice: number,
     data: string,
     contractAddress: string,
-    sendValue: number,
-  ): Buffer {
+  ): Uint8Array {
     // OP_4 <gasLimit> <gasPrice> <data> <contractAddress> OP_CALL
     const OP_4 = 0x54;
     const OP_CALL = 0xc2;
 
     const gasLimitBuf = this.numberToBuffer(gasLimit);
     const gasPriceBuf = this.numberToBuffer(gasPrice);
-    const dataBuf = Buffer.from(data, "hex");
-    const contractBuf = Buffer.from(contractAddress, "hex");
+    const dataBuf = Buffer.from(data.replace(/^0x/i, ""), "hex");
+    const contractBuf = Buffer.from(contractAddress.replace(/^0x/i, ""), "hex");
 
     return bitcoin.script.compile([
       OP_4,

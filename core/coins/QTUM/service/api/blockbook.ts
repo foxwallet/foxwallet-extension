@@ -57,14 +57,19 @@ export class BlockbookApi {
   }
 
   private async fetchJson<T>(path: string): Promise<T> {
-    const response = await fetch(`${this.baseUrl}${path}`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    });
+    let response: Response;
+    try {
+      response = await fetch(`${this.baseUrl}${path}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+    } catch (error) {
+      throw new Error(`Network error: ${(error as Error).message}`);
+    }
     if (!response.ok) {
       const errorText = await response.text().catch(() => "");
       throw new Error(
-        `Blockbook API error: ${response.status} ${response.statusText}${
+        `Blockbook API status code ${response.status}: ${response.statusText}${
           errorText ? `: ${errorText}` : ""
         }`,
       );
