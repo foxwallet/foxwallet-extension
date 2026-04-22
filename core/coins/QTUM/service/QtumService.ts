@@ -147,11 +147,17 @@ export class QtumService extends CoinServiceBasic {
   // ===== Balance =====
 
   async getBalance(address: string): Promise<NativeBalanceRes> {
-    const balance = await this.withQtumInfo(async (api) =>
-      api.getBalance(address),
-    );
+    const [balance, utxos] = await Promise.all([
+      this.blockbookService
+        ? this.withBlockbook(async (api) => api.getBalance(address))
+        : this.withQtumInfo(async (api) => api.getBalance(address)),
+      this.getUTXOs(address),
+    ]);
     const totalBigInt = BigInt(balance.balance);
-    const availableBigInt = BigInt(balance.availableBalance);
+    const availableBigInt = utxos.reduce(
+      (sum, utxo) => sum + BigInt(utxo.value),
+      0n,
+    );
 
     return {
       total: totalBigInt,
