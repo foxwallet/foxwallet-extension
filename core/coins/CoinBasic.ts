@@ -11,7 +11,7 @@ export abstract class CoinBasic<T extends CoinType> {
   public abstract exportPrivateKey(
     privateKey: string,
     exportType: ExportPrivateKeyTypeMap[T],
-    address?: string,
+    option?: AccountOption[T],
   ): string;
 
   public abstract isValidPrivateKey(

@@ -1,4 +1,5 @@
 import { useClient } from "@/hooks/useClient";
+import { showErrorToast } from "@/components/Custom/ErrorToast";
 import { Content } from "@/layouts/Content";
 import { PageWithHeader } from "@/layouts/Page";
 import { Box, Button, Flex, Text } from "@chakra-ui/react";
@@ -14,16 +15,28 @@ const ExportPrivateKeyScreen = () => {
   const { walletId, accountId, coinType = CoinType.ALEO } = useParams();
   const { t } = useTranslation();
   const [privateKey, setPrivateKey] = useState("");
+  const [error, setError] = useState("");
 
   const fetchPrivateKey = useCallback(async () => {
     if (!walletId || !accountId) return;
-    const res = await popupServerClient.getPrivateKey({
-      walletId: walletId || "",
-      accountId,
-      coinType: coinType as CoinType,
-    });
-    setPrivateKey(res);
-  }, [popupServerClient.getPrivateKey, walletId, accountId]);
+    try {
+      setError("");
+      const res = await popupServerClient.getPrivateKey({
+        walletId: walletId || "",
+        accountId,
+        coinType: coinType as CoinType,
+      });
+      setPrivateKey(res);
+    } catch (err) {
+      const message =
+        err instanceof Error && err.message
+          ? err.message
+          : "Failed to get private key";
+      setPrivateKey("");
+      setError(message);
+      void showErrorToast({ message });
+    }
+  }, [popupServerClient, walletId, accountId, coinType]);
 
   useEffect(() => {
     void fetchPrivateKey();
@@ -37,7 +50,9 @@ const ExportPrivateKeyScreen = () => {
     <PageWithHeader title="Backup private key">
       <Content>
         <Box p={2} mb={5} borderRadius={"lg"} bg={"gray.50"}>
-          <Text>{privateKey}</Text>
+          <Text wordBreak={"break-all"} color={error ? "red.500" : undefined}>
+            {error || privateKey}
+          </Text>
         </Box>
         <Flex
           flexDirection={"column"}

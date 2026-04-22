@@ -29,6 +29,8 @@ import {
 } from "@/components/Wallet/AccountOptionDrawer";
 import { useCurrWallet } from "@/hooks/useWallets";
 import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
+import { matchAccountsWithUniqueId } from "@/store/accountV2";
+import { showErrorToast } from "@/components/Custom/ErrorToast";
 
 const AccountMoreScreen = () => {
   const { t } = useTranslation();
@@ -80,11 +82,18 @@ const AccountMoreScreen = () => {
       if (confirmed) {
         const { coinType } = config;
         if (account) {
-          const foundAccount = account.group.accounts.find(
-            (it) => it.coinType === coinType,
-          );
+          const foundAccount = matchAccountsWithUniqueId(
+            account,
+            config.uniqueId,
+          )[0];
+          if (!foundAccount) {
+            void showErrorToast({
+              message: "Account not found",
+            });
+            return;
+          }
           navigate(
-            `/export_private_key/${account?.wallet.walletId}/${foundAccount?.accountId}/${coinType}`,
+            `/export_private_key/${account.wallet.walletId}/${foundAccount.accountId}/${coinType}`,
           );
         }
       }
