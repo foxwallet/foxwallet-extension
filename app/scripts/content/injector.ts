@@ -1,14 +1,17 @@
 import { AleoProvider } from "./AleoProvider";
 import { FoxWeb3Provider } from "@/scripts/content/EthProvider";
 import Constants from "@/scripts/content/Constants";
+import { QtumProvider } from "@/scripts/content/QtumProvider";
 
 const aleoProvider = new AleoProvider();
 const ethereumProvider = new FoxWeb3Provider();
+const qtumProvider = new QtumProvider();
 
 // @ts-expect-error window
 window.foxwallet = {
   aleo: aleoProvider,
   ethereum: ethereumProvider,
+  qtum: qtumProvider,
 };
 
 // @ts-expect-error window
@@ -16,6 +19,9 @@ window.aleo = aleoProvider;
 
 // @ts-expect-error window
 window.ethereum = ethereumProvider;
+
+// @ts-expect-error window
+window.qtum = qtumProvider
 
 // @ts-expect-error window
 Object.freeze(window.foxwallet);

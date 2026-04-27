@@ -25,6 +25,7 @@ export class DappStorage {
           .equals([address, coinType, chainId])
           .toArray();
       }
+      case CoinType.QTUM:
       case CoinType.ETH: {
         if (!chainId) {
           return instance.dapp_history
@@ -47,6 +48,7 @@ export class DappStorage {
   ) => {
     const instance = await this.getStorageInstance();
     switch (coinType) {
+      case CoinType.QTUM:
       case CoinType.ETH:
         const count = await instance.dapp_history
           .where({
@@ -122,12 +124,16 @@ export class DappStorage {
     const instance = await this.getStorageInstance();
     switch (coinType) {
       case CoinType.ETH:
+      case CoinType.QTUM:
       case CoinType.ALEO: {
         await instance.dapp_history
           .where({
             address,
             coinType,
-            network: coinType === CoinType.ETH ? "" : chainId,
+            network:
+              coinType === CoinType.ETH || coinType === CoinType.QTUM
+                ? ""
+                : chainId,
             "site.origin": origin,
           })
           .modify((item) => {

@@ -13,7 +13,7 @@ import { useCoinService } from "@/hooks/useCoinService";
 import { useDappRequest } from "@/hooks/useDappRequest";
 import { useChainConfig, useGroupAccount } from "@/hooks/useGroupAccount";
 import { Content } from "@/layouts/Content";
-import { Button, Flex, Image, Text, useClipboard } from "@chakra-ui/react";
+import { Button, Flex, Text, useClipboard } from "@chakra-ui/react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
@@ -21,7 +21,7 @@ import { TokenNum } from "@/components/Wallet/TokenNum";
 import { type DappRequest } from "@/database/types/dapp";
 import { useGasFee } from "@/hooks/useGasFee";
 import { H6 } from "@/common/theme/components/text";
-import { LoadingOverlay, LoadingView } from "@/components/Custom/Loading";
+import { LoadingView } from "@/components/Custom/Loading";
 import { formatGasStr } from "core/utils/num";
 import { BigNumber, utils } from "ethers";
 import { GasFeeType } from "core/types/GasFee";
@@ -30,9 +30,15 @@ import { PageWithHeader } from "@/layouts/Page";
 import { JSONStringifyWithBigInt } from "@/common/utils/json";
 import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
 import { useBalance } from "@/hooks/useBalance";
-import disable = chrome.action.disable;
 import { isNotEmpty } from "core/utils/is";
 import { WarningArea } from "@/components/Custom/WarningArea";
+import { CoinType } from "core/types";
+import {
+  decodeEvmAddress,
+  getQtumChainId,
+} from "core/coins/QTUM/utils/address";
+import type { AccountOption } from "core/types/CoinBasic";
+import { colors } from "@/common/theme/color";
 
 function RequestParsedPart({
   dappRequest,
@@ -71,9 +77,29 @@ function RequestParsedPart({
     refreshInterval: 1 * 60 * 1000,
   });
 
+  useEffect(() => {
+    console.log("loadingGasFeeError", loadingGasFeeError);
+  }, [loadingGasFeeError]);
+
+  const [toReal, fromReal] = useMemo(() => {
+    if (coinType !== CoinType.QTUM) {
+      return [];
+    }
+    const network = (
+      selectedAccount.account.option as AccountOption[CoinType.QTUM]
+    ).network;
+    if (!network) {
+      return [];
+    }
+    return [
+      decodeEvmAddress(to, getQtumChainId(network)),
+      decodeEvmAddress(from, getQtumChainId(network)),
+    ];
+  }, [coinType, from, selectedAccount.account.option, to]);
+
   const { balance, loadingBalance } = useBalance({
     uniqueId,
-    address: from,
+    address: fromReal ?? from,
     refreshInterval: 10000,
   });
 
@@ -97,6 +123,7 @@ function RequestParsedPart({
   }, [gasFee]);
 
   const gasValue = useMemo(() => {
+    console.log("gasFee", gasFee);
     if (!gasFee) {
       return 0n;
     }
@@ -106,6 +133,8 @@ function RequestParsedPart({
       case GasFeeType.LEGACY:
         return gasFee.gasPrice * BigInt(gasFee.gasLimit);
       case GasFeeType.UTXO:
+        return gasFee.estimateGas;
+      case GasFeeType.QTUM_DAPP:
         return gasFee.estimateGas;
       default:
         return 0n;
@@ -169,14 +198,14 @@ function RequestParsedPart({
       try {
         await popupServerClient.onRequestFinish({
           requestId,
-          data: JSONStringifyWithBigInt(gasFee),
+          data: JSONStringifyWithBigInt({ gasFee, from: fromReal ?? from }),
         });
       } finally {
         console.log("sendingTx", sendingTx);
         setSendingTx(false);
       }
     }
-  }, [sendingTx, requestId, gasFee, popupServerClient]);
+  }, [sendingTx, requestId, gasFee, popupServerClient, fromReal, from]);
 
   const { onCopy } = useClipboard(data);
   const { showToast } = useCopyToast();
@@ -255,7 +284,7 @@ function RequestParsedPart({
             <Flex justify={"space-between"}>
               <Text>{t("Send:to")}</Text>
               <Text maxW={"70%"} wordBreak={"break-all"}>
-                {to}
+                {toReal ?? to}
               </Text>
             </Flex>
           )}
@@ -317,14 +346,20 @@ function RequestParsedPart({
                 justifyContent={loadingGasFee ? "center" : "space-between"}
                 onClick={onGasSetting}
               >
-                <Text>{gasAmountStr}</Text>
-                {gasFee && (
-                  <Flex justifyContent={"center"} alignItems={"center"}>
-                    <Text>{gasFeeStr}</Text>
-                    {supportCustomGasFee && (
-                      <IconChevronRight w={4} h={4} ml={"1px"} />
+                {loadingGasFeeError ? (
+                  <Text color={"#EE3F69"}>loadingGasFeeError</Text>
+                ) : (
+                  <>
+                    <Text>{gasAmountStr}</Text>
+                    {gasFee && (
+                      <Flex justifyContent={"center"} alignItems={"center"}>
+                        <Text>{gasFeeStr}</Text>
+                        {supportCustomGasFee && (
+                          <IconChevronRight w={4} h={4} ml={"1px"} />
+                        )}
+                      </Flex>
                     )}
-                  </Flex>
+                  </>
                 )}
               </Flex>
             )}

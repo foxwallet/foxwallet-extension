@@ -2,6 +2,7 @@ import type { UTXO, QtumBalance } from "../../types";
 import { MATURE_CONFIRMATIONS } from "../../constants";
 import { createRequestInstance } from "@/common/utils/request";
 import { type AxiosInstance } from "axios";
+import { wrapLoggerArgs } from "@/common/utils/wrapConsole";
 
 const QTUM_INFO_APPLICATION_ID = "gate-55ed6e22-aa20-4bd8-95db-1fa32324d1db";
 
@@ -169,10 +170,11 @@ export class QtumInfoApi {
   }
 
   async getUTXOs(address: string): Promise<UTXO[]> {
+    console.log(...wrapLoggerArgs("getUTXOs"));
     const utxos: QtumInfoUTXOItem[] = await this.requestInstance.get(
       `/address/${address}/utxo`,
     );
-    return utxos
+    let result = utxos
       .filter((utxo) => {
         // Filter immature staking UTXOs
         return !(utxo.isStake && utxo.confirmations < MATURE_CONFIRMATIONS);
@@ -186,6 +188,7 @@ export class QtumInfoApi {
         isStake: utxo.isStake,
         height: utxo.blockHeight,
       }));
+    return result;
   }
 
   async getTransaction(txid: string): Promise<QtumInfoTxResponse> {

@@ -11,10 +11,12 @@ import type {
   ContentServerMethod, IContentServer,
   SiteMetadata,
 } from "@/scripts/background/servers/IWalletServer";
+import { QTUMContentWalletServer } from "@/scripts/background/servers/QTUMContentSever";
 
 export class ContentWalletServer {
   aleoServer: ALEOContentWalletServer;
   ethServer: ETHContentWalletServer;
+  qtumServer: QTUMContentWalletServer;
 
   constructor(
     authManager: AuthManager,
@@ -40,6 +42,14 @@ export class ContentWalletServer {
       popupServer,
       coinService,
     )
+    this.qtumServer = new QTUMContentWalletServer(
+      authManager,
+      keyringManager,
+      dappStorage,
+      accountSettingStorage,
+      popupServer,
+      coinService,
+    )
   }
 
   getChainServer(coinType: CoinType): IContentServer<CoinType> {
@@ -49,8 +59,7 @@ export class ContentWalletServer {
       case CoinType.ETH:
         return this.ethServer;
       case CoinType.QTUM:
-        // QTUM DApp support not yet implemented
-        throw new Error("QTUM DApp interaction is not supported yet");
+        return this.qtumServer;
       default:
         throw new Error(`Unsupported coin type: ${coinType}`);
     }

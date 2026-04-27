@@ -387,7 +387,6 @@ export const useAleoTxHistory = ({
           tx.from === address
             ? AleoTxAddressType.SEND
             : AleoTxAddressType.RECEIVE;
-        // debugger;
         const item: AleoOnChainHistoryItem = {
           addressType: type,
           functionName: tx.functionName ?? "",

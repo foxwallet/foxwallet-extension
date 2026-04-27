@@ -1,5 +1,6 @@
 import * as bitcoin from "bitcoinjs-lib";
 import { qtumNetwork, qtumTestnetNetwork } from "../constants";
+import { QTUMNetwork } from "../types/QTUMAccount";
 
 export type AddressType = "p2pkh" | "p2sh" | "p2wpkh" | "p2tr";
 
@@ -67,13 +68,29 @@ export function getEvmAddress(address: string): string {
   }
 }
 
-export function decodeEvmAddress(
+export const decodeEvmAddress = (
   evmAddress: string,
-  network: bitcoin.Network,
-): string {
+  chainId: string,
+): string => {
+  if (!evmAddress || !evmAddress.startsWith("0x")) {
+    return evmAddress;
+  }
+  let version;
+  switch (Number(chainId)) {
+    case 8888:
+    case 81:
+      version = 58;
+      break;
+    case 8889:
+      version = 120;
+      break;
+    default:
+      version = 120;
+      break;
+  }
   const hash = Buffer.from(evmAddress.slice(2), "hex");
-  return bitcoin.address.toBase58Check(hash, network.pubKeyHash);
-}
+  return bitcoin.address.toBase58Check(hash, version);
+};
 
 export function getHash160Address(address: string): string {
   try {
@@ -88,3 +105,12 @@ export function getHash160Address(address: string): string {
     }
   }
 }
+
+export const getQtumChainId = (network: QTUMNetwork): string => {
+  switch (network) {
+    case QTUMNetwork.qtum:
+      return "0x51";
+    case QTUMNetwork.qtumTestnet:
+      return "0x22B9";
+  }
+};
