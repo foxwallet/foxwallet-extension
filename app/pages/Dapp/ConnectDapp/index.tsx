@@ -84,9 +84,10 @@ function ConnectDappScreen() {
     }
     const { coinType } = dappRequest;
 
-    if (coinType !== CoinType.ETH) {
+    if (coinType !== CoinType.ETH && coinType !== CoinType.QTUM) {
       return null;
     }
+    const networkInfo = coinType === CoinType.ETH ? "EVM" : chainUniqueId;
     return (
       <Flex
         direction={"column"}
@@ -103,7 +104,7 @@ function ConnectDappScreen() {
       >
         <Flex justify={"space-between"}>
           <Text>{t("Dapp:network")}</Text>
-          <Text fontWeight={"bold"}>EVM</Text>
+          <Text fontWeight={"bold"}>{networkInfo}</Text>
         </Flex>
       </Flex>
     );

@@ -75,6 +75,7 @@ import { QtumProvider, QtumWallet } from "qtum-ethers-wrapper";
 import { isNotEmpty } from "core/utils/is";
 import { type RawTxWrap } from "core/coins/ETH/service/EthService";
 import { wrapLoggerArgs } from "@/common/utils/wrapConsole";
+import { addHexPrefix } from "ethereumjs-util";
 
 const ECPair = ECPairFactory(ecc);
 
@@ -935,7 +936,7 @@ export class QtumService extends CoinServiceBasic {
     psbt.finalizeAllInputs();
     const transaction = psbt.extractTransaction(isEvm);
     const rawTx = transaction.toHex();
-    const id = transaction.getId();
+    const id = addHexPrefix(transaction.getId());
     return {
       rawTx,
       id,
