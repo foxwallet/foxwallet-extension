@@ -7,11 +7,6 @@ import {
 import { CoinType } from "core/types";
 
 export class DappDatabase extends Dexie {
-  /**
-   * @deprecated
-   */
-  aleo_history: Dexie.Table<AleoConnectHistory, string>;
-
   dapp_history: Dexie.Table<ConnectHistory, string>;
   request: Dexie.Table<DappRequest, string>;
 
@@ -31,20 +26,39 @@ export class DappDatabase extends Dexie {
       .stores({
         dapp_history: "++id, [address+coinType+network], site.origin",
       })
-      .upgrade(async (tx) =>
-        // TODO check this
-        this.aleo_history.each(
-          async (aleoHistory) =>
-            this.dapp_history?.add({
-              ...aleoHistory,
-              coinType: CoinType.ALEO,
-            }),
-        ),
-      );
+      .upgrade(async (tx) => {
+        const aleoHistories = (await tx
+          .table("aleo_history")
+          .toArray()) as AleoConnectHistory[];
+        if (!aleoHistories.length) {
+          return;
+        }
+
+        await tx.table("dapp_history").bulkAdd(
+          aleoHistories.map((aleoHistory) => ({
+            ...aleoHistory,
+            coinType: CoinType.ALEO,
+          })),
+        );
+      });
 
     this.version(4).stores({
       aleo_history: null,
       aleo_connect_history: null,
+    });
+
+    this.version(5).upgrade(async (tx) => {
+      await tx
+        .table("dapp_history")
+        .filter((history: Partial<ConnectHistory>) => !history.coinType)
+        .modify((history: Partial<ConnectHistory>) => {
+          history.coinType = history.address?.startsWith("aleo1")
+            ? CoinType.ALEO
+            : CoinType.ETH;
+          if (history.coinType === CoinType.ETH && !history.network) {
+            history.network = "";
+          }
+        });
     });
 
     this.dapp_history = this.table("dapp_history");

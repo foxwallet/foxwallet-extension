@@ -170,7 +170,6 @@ export class QtumInfoApi {
   }
 
   async getUTXOs(address: string): Promise<UTXO[]> {
-    console.log(...wrapLoggerArgs("getUTXOs"));
     const utxos: QtumInfoUTXOItem[] = await this.requestInstance.get(
       `/address/${address}/utxo`,
     );
