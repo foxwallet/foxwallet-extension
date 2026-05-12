@@ -14,20 +14,25 @@ window.foxwallet = {
   qtum: qtumProvider,
 };
 
-// @ts-expect-error window
-window.aleo = aleoProvider;
+try {
+  // @ts-expect-error window
+  window.aleo = aleoProvider;
 
-// @ts-expect-error window
-window.ethereum = ethereumProvider;
+  // @ts-expect-error window
+  window.ethereum = ethereumProvider;
 
-// @ts-expect-error window
-window.qtum = qtumProvider
+  // @ts-expect-error window
+  window.qtum = qtumProvider
 
-// @ts-expect-error window
-Object.freeze(window.foxwallet);
+  // @ts-expect-error window
+  Object.freeze(window.foxwallet);
 
-// @ts-expect-error window
-Object.seal(window.aleo);
+  // @ts-expect-error window
+  Object.seal(window.aleo);
+} catch (e) {
+  console.log(e);
+}
+
 
 const info = {
   uuid: Constants.EIP6963_UUID,

@@ -30369,11 +30369,11 @@ window.foxwallet = {
   ethereum: Cn,
   qtum: da
 };
-window.aleo = ma;
-window.ethereum = Cn;
-window.qtum = da;
-Object.freeze(window.foxwallet);
-Object.seal(window.aleo);
+try {
+  window.aleo = ma, window.ethereum = Cn, window.qtum = da, Object.freeze(window.foxwallet), Object.seal(window.aleo);
+} catch (s) {
+  console.log(s);
+}
 const Ci = {
   uuid: Kn.EIP6963_UUID,
   name: "FoxWallet",
