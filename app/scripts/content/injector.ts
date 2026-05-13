@@ -35,9 +35,12 @@ const getPropertyDescriptor = (
   return undefined;
 };
 
-const setLegacyEthereumProvider = () => {
+const setLegacyProvider = <K extends "ethereum" | "qtum">(
+  property: K,
+  provider: NonNullable<InjectedWindow[K]>,
+) => {
   try {
-    const descriptor = getPropertyDescriptor(injectedWindow, "ethereum");
+    const descriptor = getPropertyDescriptor(injectedWindow, property);
     if (descriptor && "value" in descriptor && descriptor.value) {
       return;
     }
@@ -48,12 +51,11 @@ const setLegacyEthereumProvider = () => {
       return;
     }
     if (!descriptor || descriptor.writable) {
-      injectedWindow.ethereum = ethereumProvider;
+      injectedWindow[property] = provider;
       return;
     }
-    descriptor.set?.call(injectedWindow, ethereumProvider);
+    descriptor.set?.call(injectedWindow, provider);
   } catch {
-    // Keep EIP-6963 registration active when another wallet owns window.ethereum.
   }
 };
 
@@ -67,11 +69,9 @@ try {
   injectedWindow.aleo = aleoProvider;
 } catch (e){}
 
-setLegacyEthereumProvider();
+setLegacyProvider("ethereum", ethereumProvider);
 
-try {
-  injectedWindow.qtum = qtumProvider
-} catch (e){}
+setLegacyProvider("qtum", qtumProvider);
 
 try {
   Object.freeze(injectedWindow.foxwallet);
