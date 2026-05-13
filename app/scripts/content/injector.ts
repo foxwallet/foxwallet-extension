@@ -7,32 +7,76 @@ const aleoProvider = new AleoProvider();
 const ethereumProvider = new FoxWeb3Provider();
 const qtumProvider = new QtumProvider();
 
-// @ts-expect-error window
-window.foxwallet = {
+type InjectedWindow = Window & {
+  aleo?: AleoProvider;
+  ethereum?: FoxWeb3Provider;
+  qtum?: QtumProvider;
+  foxwallet?: {
+    aleo: AleoProvider;
+    ethereum: FoxWeb3Provider;
+    qtum: QtumProvider;
+  };
+};
+
+const injectedWindow = window as InjectedWindow;
+
+const getPropertyDescriptor = (
+  object: object,
+  property: PropertyKey,
+): PropertyDescriptor | undefined => {
+  let target: object | null = object;
+  while (target) {
+    const descriptor = Object.getOwnPropertyDescriptor(target, property);
+    if (descriptor) {
+      return descriptor;
+    }
+    target = Object.getPrototypeOf(target);
+  }
+  return undefined;
+};
+
+const setLegacyEthereumProvider = () => {
+  try {
+    const descriptor = getPropertyDescriptor(injectedWindow, "ethereum");
+    if (descriptor && "value" in descriptor && descriptor.value) {
+      return;
+    }
+    if (descriptor?.get && descriptor.get.call(injectedWindow)) {
+      return;
+    }
+    if (descriptor && !descriptor.writable && !descriptor.set) {
+      return;
+    }
+    if (!descriptor || descriptor.writable) {
+      injectedWindow.ethereum = ethereumProvider;
+      return;
+    }
+    descriptor.set?.call(injectedWindow, ethereumProvider);
+  } catch {
+    // Keep EIP-6963 registration active when another wallet owns window.ethereum.
+  }
+};
+
+injectedWindow.foxwallet = {
   aleo: aleoProvider,
   ethereum: ethereumProvider,
   qtum: qtumProvider,
 };
 
 try {
-  // @ts-expect-error window
-  window.aleo = aleoProvider;
+  injectedWindow.aleo = aleoProvider;
+} catch (e){}
 
-  // @ts-expect-error window
-  window.ethereum = ethereumProvider;
+setLegacyEthereumProvider();
 
-  // @ts-expect-error window
-  window.qtum = qtumProvider
+try {
+  injectedWindow.qtum = qtumProvider
+} catch (e){}
 
-  // @ts-expect-error window
-  Object.freeze(window.foxwallet);
-
-  // @ts-expect-error window
-  Object.seal(window.aleo);
-} catch (e) {
-  console.log(e);
-}
-
+try {
+  Object.freeze(injectedWindow.foxwallet);
+  Object.seal(injectedWindow.aleo);
+} catch (e){}
 
 const info = {
   uuid: Constants.EIP6963_UUID,

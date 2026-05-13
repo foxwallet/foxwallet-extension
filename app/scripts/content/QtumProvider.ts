@@ -1,12 +1,9 @@
 import { ContentServerMethod } from "../background/servers/IWalletServer";
 import { BaseProvider } from "./BaseProvider";
-import { Utils } from "@/scripts/content/utils";
 import { CoinType } from "core/types";
 import { EmitData } from "@/scripts/content/type";
-import { setStorageData, getStorageData } from "@/common/utils/storage";
 import { parseEthChainId } from "core/coins/ETH/utils";
-import {ProviderError} from "@/scripts/content/ErrorCode";
-import { getEvmAddress } from "core/coins/QTUM/utils/address";
+import { ProviderError } from "@/scripts/content/ErrorCode";
 import type { QtumDappAddress } from "../background/servers/QTUMContentSever";
 
 const chainHexToDec = (hex: string): string => {
@@ -19,6 +16,23 @@ const chainHexToDec = (hex: string): string => {
 
 const chainDecToHex = (dec: string): string => {
   return "0x" + (dec || 1).toString(16);
+};
+
+const getInjectedFoxProvider = (): QtumProvider | undefined => {
+  const injectedWindow = window as Window & {
+    qtum?: unknown;
+    foxwallet?: {
+      qtum?: unknown;
+    };
+  };
+  const provider = injectedWindow.foxwallet?.qtum;
+  if (provider instanceof QtumProvider) {
+    return provider;
+  }
+  if (injectedWindow.qtum instanceof QtumProvider) {
+    return injectedWindow.qtum;
+  }
+  return undefined;
 };
 
 export class QtumProvider extends BaseProvider {
@@ -84,12 +98,10 @@ export class QtumProvider extends BaseProvider {
   }
 
   emitChainChanged(chainId: string) {
-    console.log("emit chainChanged", chainId);
     this.emit("chainChanged", chainId);
   }
 
   emitNetworkChanged(networkVersion: string) {
-    console.log("emit networkVersion", networkVersion);
     this.emit("networkChanged", networkVersion);
   }
 
@@ -100,10 +112,12 @@ export class QtumProvider extends BaseProvider {
   request(payload: any) {
     console.log("====>qtumProvider request", payload);
     // this points to window in methods like web3.eth.getAccounts()
-    var that = this;
+    let that: QtumProvider | undefined = this;
     if (!(this instanceof QtumProvider)) {
-      // @ts-ignore
-      that = window.qtum;
+      that = getInjectedFoxProvider();
+    }
+    if (!that) {
+      throw new ProviderError(4900, "FoxWallet provider is not available.");
     }
     return that._request(payload);
   }
@@ -208,24 +222,27 @@ export class QtumProvider extends BaseProvider {
       "sendAsync(data, callback) is deprecated, please use window.ethereum.request(data) instead.",
     );
     // this points to window in methods like web3.eth.getAccounts()
-    var that = this;
+    let that: QtumProvider | undefined = this;
     if (!(this instanceof QtumProvider)) {
-      // @ts-ignore
-      that = window.qtum;
+      that = getInjectedFoxProvider();
+    }
+    if (!that) {
+      callback(new ProviderError(4900, "FoxWallet provider is not available."));
+      return;
     }
     if (Array.isArray(payload)) {
       Promise.all(
         payload.map((_payload) =>
-          that
+          that!
             ._request(_payload)
-            .then((data) => callback(null, this._wrapResult(_payload, data)))
+            .then((data) => callback(null, that!._wrapResult(_payload, data)))
             .catch((error) => callback(error, null)),
         ),
       );
     } else {
-      that
+      that!
         ._request(payload)
-        .then((data) => callback(null, this._wrapResult(payload, data)))
+        .then((data) => callback(null, that!._wrapResult(payload, data)))
         .catch((error) => callback(error, null));
     }
   }
