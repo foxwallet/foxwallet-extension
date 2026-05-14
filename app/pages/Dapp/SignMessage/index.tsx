@@ -34,6 +34,7 @@ function SignMessageScreen() {
         case "0x51":
           chainUniqueId = InnerChainUniqueId.QTUM;
           break;
+        case "0x22b9":
         case "0x22B9":
           chainUniqueId = InnerChainUniqueId.QTUM_TESTNET;
           break;
