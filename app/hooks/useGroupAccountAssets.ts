@@ -187,7 +187,7 @@ export const useUserAssetsWithPriceBalanceAndValue = () => {
     const sortedAssets = [...assets].sort(
       (a, b) =>
         a.uniqueId.localeCompare(b.uniqueId) ||
-        a.contractAddress.localeCompare(b.contractAddress),
+        a.contractAddress?.localeCompare(b.contractAddress),
     );
     const temp = sortedAssets
       .map(

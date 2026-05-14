@@ -36,10 +36,7 @@ const ENABLE_MEASURE = true;
 
 const CHAIN_ID = ALEO_CHAIN_CONFIGS.MAINNET.chainId;
 
-const WORKER_NUMBER = Math.min(
-  Math.max((navigator.hardwareConcurrency ?? 4) - 1, 4),
-  4,
-);
+const WORKER_NUMBER = 2;
 
 const mutex = new Mutex();
 

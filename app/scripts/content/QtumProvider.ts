@@ -1,44 +1,43 @@
 import { ContentServerMethod } from "../background/servers/IWalletServer";
 import { BaseProvider } from "./BaseProvider";
-import { Utils } from "@/scripts/content/utils";
 import { CoinType } from "core/types";
 import { EmitData } from "@/scripts/content/type";
-import { setStorageData, getStorageData } from "@/common/utils/storage";
 import { parseEthChainId } from "core/coins/ETH/utils";
 import { ProviderError } from "@/scripts/content/ErrorCode";
+import type { QtumDappAddress } from "../background/servers/QTUMContentSever";
 
 const chainHexToDec = (hex: string): string => {
   if (!hex) {
-    return "1";
+    return "81";
   }
   const { chainId, valid } = parseEthChainId(hex);
-  return valid ? `${chainId}` : "1";
+  return valid ? `${chainId}` : "81";
 };
 
 const chainDecToHex = (dec: string): string => {
-  return "0x" + (dec || 1).toString(16);
+  return "0x" + (parseInt(dec, 10) || 1).toString(16);
 };
 
-const getInjectedFoxProvider = (): FoxWeb3Provider | undefined => {
+const getInjectedFoxProvider = (): QtumProvider | undefined => {
   const injectedWindow = window as Window & {
-    ethereum?: unknown;
+    qtum?: unknown;
     foxwallet?: {
-      ethereum?: unknown;
+      qtum?: unknown;
     };
   };
-  const provider = injectedWindow.foxwallet?.ethereum;
-  if (provider instanceof FoxWeb3Provider) {
+  const provider = injectedWindow.foxwallet?.qtum;
+  if (provider instanceof QtumProvider) {
     return provider;
   }
-  if (injectedWindow.ethereum instanceof FoxWeb3Provider) {
-    return injectedWindow.ethereum;
+  if (injectedWindow.qtum instanceof QtumProvider) {
+    return injectedWindow.qtum;
   }
   return undefined;
 };
 
-export class FoxWeb3Provider extends BaseProvider {
-  chain = CoinType.ETH;
-  address: string | null = null;
+export class QtumProvider extends BaseProvider {
+  chain = CoinType.QTUM;
+  address: QtumDappAddress | null = null;
   ready: boolean;
   _chainId: string;
   isDebug: boolean;
@@ -50,15 +49,15 @@ export class FoxWeb3Provider extends BaseProvider {
   _setInitialChainId() {
     this._getGlobalChainId()
       .then((evmNetwork) => {
-        const network = chainHexToDec(evmNetwork ?? "0x1");
-        this.emitChainChanged(evmNetwork ?? "0x1");
+        const network = chainHexToDec(evmNetwork ?? "0x51");
+        this.emitChainChanged(evmNetwork ?? "0x51");
         this.emitNetworkChanged(network);
         console.log("_setInitialChainId", network);
       })
       .catch((err) => {
         console.log("_setInitialChainId", err);
-        this.emitChainChanged("0x1");
-        this.emitNetworkChanged("1");
+        this.emitChainChanged("0x51");
+        this.emitNetworkChanged("81");
       });
   }
 
@@ -74,7 +73,7 @@ export class FoxWeb3Provider extends BaseProvider {
   async _getGlobalChainId(): Promise<string> {
     const result: string | undefined = await this.send("_getGlobalChainId", {});
     console.log("_getGlobalChainId", result);
-    return result ?? "0x1";
+    return result ?? '0x51';
   }
 
   get isMetaMask() {
@@ -85,10 +84,12 @@ export class FoxWeb3Provider extends BaseProvider {
   }
 
   get chainId(): string {
-    return this._chainId ?? "0x1";
+    let s = this._chainId ?? "0x" + (81).toString(16);
+    console.log("get chainId", s);
+    return s;
   }
   get networkVersion(): string {
-    const s = chainHexToDec(this._chainId ?? "0x1");
+    const s = chainHexToDec(this._chainId ?? "0x51");
     console.log("get networkVersion", s);
     return s;
   }
@@ -105,14 +106,14 @@ export class FoxWeb3Provider extends BaseProvider {
   }
 
   get selectedAddress() {
-    return this.address;
+    return this.address?.evmAddress;
   }
 
   request(payload: any) {
-    console.log("====>EthProvider request", payload);
+    console.log("====>qtumProvider request", payload);
     // this points to window in methods like web3.eth.getAccounts()
-    let that: FoxWeb3Provider | undefined = this;
-    if (!(this instanceof FoxWeb3Provider)) {
+    let that: QtumProvider | undefined = this;
+    if (!(this instanceof QtumProvider)) {
       that = getInjectedFoxProvider();
     }
     if (!that) {
@@ -189,7 +190,7 @@ export class FoxWeb3Provider extends BaseProvider {
           4200,
           `Fox does not support calling ${payload.method}. Please use your own solution`,
         );
-      default:
+      default: {
         // call upstream rpc
         // this.callbacks.delete(payload.id);
         // this.wrapResults.delete(payload.id);
@@ -206,6 +207,7 @@ export class FoxWeb3Provider extends BaseProvider {
         const proxyResult = await this.proxyRPCCall(payload);
         console.log(`<== rpc response ${JSON.stringify(proxyResult)}`);
         return (proxyResult as any)?.result;
+      }
     }
   }
 
@@ -218,11 +220,11 @@ export class FoxWeb3Provider extends BaseProvider {
    */
   sendAsync(payload: any, callback: (err: null | any, data?: any) => void) {
     console.log(
-      "sendAsync(data, callback) is deprecated, please use window.ethereum.request(data) instead.",
+      "sendAsync(data, callback) is deprecated, please use window.qtum.request(data) instead.",
     );
     // this points to window in methods like web3.eth.getAccounts()
-    let that: FoxWeb3Provider | undefined = this;
-    if (!(this instanceof FoxWeb3Provider)) {
+    let that: QtumProvider | undefined = this;
+    if (!(this instanceof QtumProvider)) {
       that = getInjectedFoxProvider();
     }
     if (!that) {
@@ -248,28 +250,31 @@ export class FoxWeb3Provider extends BaseProvider {
 
   async eth_accounts(payload: any) {
     console.log("eth_accounts", payload);
-    const accountsInfo: String[] | undefined = await this.send(
+    const accountsInfo: QtumDappAddress[] | undefined = await this.send(
       "eth_accounts",
       payload,
     );
-    console.log("accountsInfo", accountsInfo);
     this.emitChainChanged(await this.eth_chainId({}));
     this.emitNetworkChanged(await this.net_version({}));
-    if ((accountsInfo as string[])[0]) {
-      this.address = (accountsInfo as string[])[0];
+    if (accountsInfo?.length && accountsInfo.length > 0) {
+      this.address = accountsInfo[0];
+      let evmAddress: string = accountsInfo[0].evmAddress;
+      return [evmAddress];
     }
-    return accountsInfo ?? [];
+    return [];
   }
   async eth_requestAccounts(payload: any) {
-    const newAccounts = await this.send("eth_requestAccounts", payload);
+    const newAccounts: QtumDappAddress[] | undefined  = await this.send("eth_requestAccounts", payload);
     // handle newAccounts
     console.log("newAccounts", newAccounts);
     this.emitConnect(await this.eth_chainId({}));
     this.emitChainChanged(await this.eth_chainId({}));
-    if ((newAccounts as string[])[0]) {
-      this.address = (newAccounts as string[])[0];
+    if (newAccounts?.length && newAccounts.length > 0) {
+      this.address = newAccounts[0];
+      let evmAddress: string = newAccounts[0].evmAddress;
+      return [evmAddress];
     }
-    return newAccounts;
+    return [];
   }
 
   async eth_coinbase(payload: any): Promise<string | null> {
@@ -278,11 +283,15 @@ export class FoxWeb3Provider extends BaseProvider {
   }
 
   async net_version(payload: any): Promise<string> {
-    return this.networkVersion;
+    let networkVersion = this.networkVersion;
+    console.log("net_version", networkVersion);
+    return networkVersion;
   }
 
   async eth_chainId(payload: any): Promise<string> {
-    return this.chainId;
+    let chainId = this.chainId;
+    console.log("eth_chainId", chainId);
+    return chainId;
   }
 
   async wallet_requestPermissions(payload: any) {
@@ -376,7 +385,7 @@ export class FoxWeb3Provider extends BaseProvider {
 
   emit(event: string, params: any) {
     super.emit(event, params);
-    console.log("eth emit", event, params);
+    console.log("qtum emit", event, params);
     switch (event) {
       case "chainChanged":
         if (typeof params === "string" && !!params) {
@@ -385,12 +394,15 @@ export class FoxWeb3Provider extends BaseProvider {
             console.log("_setGlobalChainId", err);
           });
         }
+        this.emit("disconnect", undefined);
         break;
       case "networkChanged":
+        this.emit("disconnect", undefined);
         break;
       case "accountsChanged":
         if (typeof params?.[0] === "string" && !!params?.[0]) {
-          this.address = params[0];
+          // TODO address type
+          // this.address = params[0];
         }
         break;
       case "connect":
@@ -399,6 +411,7 @@ export class FoxWeb3Provider extends BaseProvider {
         }
         break;
       case "disconnect":
+        this.address = null;
         break;
     }
   }
@@ -406,7 +419,7 @@ export class FoxWeb3Provider extends BaseProvider {
   onDappEmit(event: { detail: EmitData }) {
     const { detail } = event;
     const { type, coinType, event: emitEvent, data } = detail;
-    if (coinType !== CoinType.ETH) {
+    if (coinType !== CoinType.QTUM) {
       return;
     }
     this.emit(emitEvent, data);

@@ -18,6 +18,7 @@ import { SiteInfo } from "@/scripts/content/host";
 import { AccountOption, ImportPrivateKeyTypeMap } from "core/types/CoinBasic";
 import { DecryptPermission } from "@/database/types/dapp";
 import {ProviderError, SerializableError} from "@/scripts/content/ErrorCode";
+import { QtumDappAddress } from "@/scripts/background/servers/QTUMContentSever";
 
 export type PopupServerMethod = keyof IPopupServer;
 
@@ -490,12 +491,92 @@ export interface IETHContentServer {
   ) => Promise<any>;
 }
 
+export interface IQTUMContentServer {
+  eth_accounts: (
+    payload: ETHRequestParams<{}>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<QtumDappAddress[]>;
+  eth_requestAccounts: (
+    payload: ETHRequestParams<{}>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<QtumDappAddress[]>;
+  // net_version: (
+  //   payload: ETHRequestParams<{}>,
+  //   serverMethodContext: ServerMethodContext,
+  // ) => Promise<string>;
+  // eth_chainId: (
+  //   payload: ETHRequestParams<{}>,
+  //   serverMethodContext: ServerMethodContext,
+  // ) => Promise<string>;
+  wallet_getPermissions: (
+    payload: ETHRequestParams<{}>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  wallet_requestPermissions: (
+    payload: ETHRequestParams<[{ eth_accounts: {} }]>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  wallet_revokePermissions: (
+    payload: ETHRequestParams<[{ eth_accounts: {} }]>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  personal_sign: (
+    payload: ETHRequestParams<[string, string]>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  personal_ecRecover: (
+    payload: ETHRequestParams<[string, string]>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  eth_signTypedData_v3: (
+    payload: ETHRequestParams<[any, string]>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  eth_signTypedData_v4: (
+    payload: ETHRequestParams<[any, string]>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  eth_signTypedData: (
+    payload: ETHRequestParams<[any, string]>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  eth_sendTransaction: (
+    payload: ETHRequestParams<[any]>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  wallet_watchAsset: (
+    payload: ETHRequestParams<any>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  wallet_addEthereumChain: (
+    payload: ETHRequestParams<any>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  wallet_switchEthereumChain: (
+    payload: ETHRequestParams<[{ chainId: string }]>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  _setGlobalChainId: (
+    payload: string,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  _getGlobalChainId: (
+    payload: any,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+  proxyRPCCall: (
+    payload: any,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<any>;
+}
+
+
 export type IContentServer<T extends CoinType> = T extends CoinType.ALEO
   ? IALEOContentServer
   : T extends CoinType.ETH
   ? IETHContentServer
   : T extends CoinType.QTUM
-  ? Record<string, never>
+  ? IQTUMContentServer
   : never;
 
 export type ContentServerMethod<T extends CoinType> = T extends CoinType.ALEO
@@ -503,7 +584,7 @@ export type ContentServerMethod<T extends CoinType> = T extends CoinType.ALEO
   : T extends CoinType.ETH
   ? keyof IETHContentServer
   : T extends CoinType.QTUM
-  ? never
+  ? keyof IQTUMContentServer
   : never;
 
 export async function executeServerMethod<T>(

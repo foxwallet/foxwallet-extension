@@ -108,10 +108,21 @@ import { GasPriceOracle } from "gas-price-oracle";
 import { type GasPrice } from "gas-price-oracle/lib/services";
 import { TransactionStatus } from "core/types/TransactionStatus";
 import { isNotEmpty } from "core/utils/is";
+import { wrapLoggerArgs } from "@/common/utils/wrapConsole";
+
+type TxKnownInfo = {
+  from: string;
+  to: string;
+  sendValue: bigint;
+  fee: bigint;
+  feeRate: number | undefined;
+  data: string | undefined;
+};
 
 export type RawTxWrap = {
   id: string;
   rawTx: string;
+  txInfo?: TxKnownInfo;
 };
 
 export class EthService extends CoinServiceBasic {
@@ -661,7 +672,7 @@ export class EthService extends CoinServiceBasic {
     const { rawTx: signedTx } = tx;
     const txResp: TransactionResponse =
       await this.rpcService.sendTransaction(signedTx);
-    console.log("txResp: ", txResp);
+    console.log(...wrapLoggerArgs("txResp: ", txResp));
 
     await Promise.allSettled(
       this.rpcService.proxyAllInstances().map(async (rpc) => {

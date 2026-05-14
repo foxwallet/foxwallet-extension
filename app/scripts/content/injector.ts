@@ -1,16 +1,20 @@
 import { AleoProvider } from "./AleoProvider";
 import { FoxWeb3Provider } from "@/scripts/content/EthProvider";
 import Constants from "@/scripts/content/Constants";
+import { QtumProvider } from "@/scripts/content/QtumProvider";
 
 const aleoProvider = new AleoProvider();
 const ethereumProvider = new FoxWeb3Provider();
+const qtumProvider = new QtumProvider();
 
 type InjectedWindow = Window & {
   aleo?: AleoProvider;
   ethereum?: FoxWeb3Provider;
+  qtum?: QtumProvider;
   foxwallet?: {
     aleo: AleoProvider;
     ethereum: FoxWeb3Provider;
+    qtum: QtumProvider;
   };
 };
 
@@ -31,9 +35,12 @@ const getPropertyDescriptor = (
   return undefined;
 };
 
-const setLegacyEthereumProvider = () => {
+const setLegacyProvider = <K extends "ethereum" | "qtum">(
+  property: K,
+  provider: NonNullable<InjectedWindow[K]>,
+) => {
   try {
-    const descriptor = getPropertyDescriptor(injectedWindow, "ethereum");
+    const descriptor = getPropertyDescriptor(injectedWindow, property);
     if (descriptor && "value" in descriptor && descriptor.value) {
       return;
     }
@@ -44,27 +51,32 @@ const setLegacyEthereumProvider = () => {
       return;
     }
     if (!descriptor || descriptor.writable) {
-      injectedWindow.ethereum = ethereumProvider;
+      injectedWindow[property] = provider;
       return;
     }
-    descriptor.set?.call(injectedWindow, ethereumProvider);
+    descriptor.set?.call(injectedWindow, provider);
   } catch {
-    // Keep EIP-6963 registration active when another wallet owns window.ethereum.
   }
 };
 
 injectedWindow.foxwallet = {
   aleo: aleoProvider,
   ethereum: ethereumProvider,
+  qtum: qtumProvider,
 };
 
-injectedWindow.aleo = aleoProvider;
+try {
+  injectedWindow.aleo = aleoProvider;
+} catch (e){}
 
-setLegacyEthereumProvider();
+setLegacyProvider("ethereum", ethereumProvider);
 
-Object.freeze(injectedWindow.foxwallet);
+setLegacyProvider("qtum", qtumProvider);
 
-Object.seal(injectedWindow.aleo);
+try {
+  Object.freeze(injectedWindow.foxwallet);
+  Object.seal(injectedWindow.aleo);
+} catch (e){}
 
 const info = {
   uuid: Constants.EIP6963_UUID,

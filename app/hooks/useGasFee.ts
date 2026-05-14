@@ -52,12 +52,14 @@ export const useGasFee = <T extends CoinType>(params: GasFeeReq<T>) => {
     if (value === undefined) {
       return false;
     }
+    if (chainConfig.coinType === CoinType.QTUM) {
+      return value >= 0n;
+    }
     return (
       value >= 0n &&
       coinService.validateAddress(from) &&
       coinService.validateAddress(to) &&
-      (chainConfig.coinType === CoinType.ETH ||
-        chainConfig.coinType === CoinType.QTUM)
+      chainConfig.coinType === CoinType.ETH
     );
   }, [chainConfig.coinType, coinService, from, to, value]);
   // console.log("isValidData", isValidData);

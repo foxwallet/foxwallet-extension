@@ -25,12 +25,27 @@ function SignMessageScreen() {
     () => dappRequest?.coinType ?? CoinType.ETH,
     [dappRequest],
   );
+  const network = useMemo(() => dappRequest?.payload?.network, [dappRequest]);
+
+  const chainUniqueId = useMemo(() => {
+    let chainUniqueId = getDefaultChainUniqueId(coinType, {});
+    if (network) {
+      switch (network) {
+        case "0x51":
+          chainUniqueId = InnerChainUniqueId.QTUM;
+          break;
+        case "0x22b9":
+        case "0x22B9":
+          chainUniqueId = InnerChainUniqueId.QTUM_TESTNET;
+          break;
+      }
+    }
+    return chainUniqueId;
+  }, [coinType, network]);
 
   const selectedAccount = useMemo(() => {
-    return getMatchAccountsWithUniqueId(
-      getDefaultChainUniqueId(coinType, {}),
-    )[0];
-  }, [coinType, getMatchAccountsWithUniqueId]);
+    return getMatchAccountsWithUniqueId(chainUniqueId)[0];
+  }, [chainUniqueId, getMatchAccountsWithUniqueId]);
 
   const { t } = useTranslation();
 

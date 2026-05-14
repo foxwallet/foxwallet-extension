@@ -4,8 +4,13 @@ import axios, {
   type AxiosRequestConfig,
   type AxiosResponse,
   type InternalAxiosRequestConfig,
+  type AxiosAdapter,
 } from "axios";
+// @ts-expect-error not documented
 import buildFullPath from "axios/lib/core/buildFullPath";
+// @ts-expect-error not documented
+import settle from "axios/lib/core/settle";
+import { AxiosError as AxiosErrorClass } from "axios";
 
 export async function get(url: URL | string) {
   try {
@@ -26,17 +31,79 @@ export async function post(url: URL | string, options: RequestInit) {
   }
 }
 
+// Custom fetch adapter for axios to work in service worker environment
+const fetchAdapter: AxiosAdapter = async (config) => {
+  const url = buildFullPath(config.baseURL, config.url);
+  const headers = new Headers(config.headers as any);
+
+  const fetchOptions: RequestInit = {
+    method: config.method?.toUpperCase(),
+    headers,
+    body: config.data,
+  };
+
+  // Handle timeout
+  const controller = new AbortController();
+  const timeoutId = config.timeout
+    ? setTimeout(() => controller.abort(), config.timeout)
+    : undefined;
+  fetchOptions.signal = controller.signal;
+
+  try {
+    const response = await fetch(url, fetchOptions);
+
+    if (timeoutId) clearTimeout(timeoutId);
+
+    const responseData = await response.text();
+    let data = responseData;
+    try {
+      data = JSON.parse(responseData);
+    } catch {
+      // Keep as text if not JSON
+    }
+
+    const axiosResponse: AxiosResponse = {
+      data,
+      status: response.status,
+      statusText: response.statusText,
+      headers: Object.fromEntries(response.headers.entries()),
+      config,
+      request: {},
+    };
+
+    return new Promise((resolve, reject) => {
+      settle(resolve, reject, axiosResponse);
+    });
+  } catch (error: any) {
+    if (timeoutId) clearTimeout(timeoutId);
+
+    if (error.name === "AbortError") {
+      throw new AxiosErrorClass(
+        "timeout of " + config.timeout + "ms exceeded",
+        "ECONNABORTED",
+        config,
+      );
+    }
+    throw new AxiosErrorClass(error.message, "ERR_NETWORK", config);
+  }
+};
+
 export const createRequestInstance = (
   baseURL: string,
   timeout = 5000,
   headers = {},
 ) => {
+  // Only use fetchAdapter in service worker environment
+  const isServiceWorker =
+    typeof self !== "undefined" && "ServiceWorkerGlobalScope" in self;
+
   const instance = axios.create({
     baseURL,
     timeout,
     headers: {
       ...headers,
     },
+    ...(isServiceWorker ? { adapter: fetchAdapter } : {}),
   });
   instance.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {

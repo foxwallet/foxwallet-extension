@@ -3,39 +3,33 @@ import { KeyringManager } from "../store/vault/managers/keyring/KeyringManager";
 import {
   DisplayKeyring,
   DisplayWallet,
-  GroupAccount,
   OneMatchGroupAccount,
   WalletType,
 } from "../store/vault/types/keyring";
 import {
-  CreateWalletProps,
-  RegenerateWalletProps,
-  type IPopupServer,
-  ImportHDWalletProps,
   AddAccountProps,
-  AleoSendTxProps,
-  SetSelectedAccountProps,
-  GetSelectedAccountProps,
-  RequestFinfishProps,
   ALEOConnectProps,
-  RequestTxProps,
-  AleoRequestTxProps,
-  SignMessageProps,
   AleoRequestDeploymentProps,
-  GetSelectedUniqueIdProps,
-  SetSelectedUniqueIdProps,
-  ResyncAleoProps,
-  ImportPrivateKeyProps,
-  GetPrivateKeyProps,
-  ChangeAccountStateProps,
-  PopupSignMessageProps,
+  AleoRequestTxProps,
+  AleoSendTxProps,
   ConnectProps,
+  CreateWalletProps,
+  GetPrivateKeyProps,
+  GetSelectedAccountProps,
+  ImportHDWalletProps,
+  ImportPrivateKeyProps,
+  type IPopupServer,
+  PopupSignMessageProps,
+  RegenerateWalletProps,
+  RequestFinfishProps,
+  SetSelectedAccountProps,
+  SignMessageProps,
   SiteMetadata,
 } from "./IWalletServer";
 import {
   isSendingAleoTransaction,
-  sendDeployment,
   sendAleoTransaction,
+  sendDeployment,
   stopSending,
   stopSync,
   syncBlocks,
@@ -54,7 +48,7 @@ import {
   AleoTxStatus,
 } from "core/coins/ALEO/types/Transaction";
 import { CoinServiceEntry } from "core/coins/CoinServiceEntry";
-import { ChainUniqueId, InnerChainUniqueId } from "core/types/ChainUniqueId";
+import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { TaskPriority } from "core/coins/ALEO/types/SyncTask";
 import { ConnectHistory, DappRequest } from "@/database/types/dapp";
 import { AleoTxType } from "core/coins/ALEO/types/History";
@@ -65,13 +59,17 @@ import {
 import { matchAccountFromGroupAccount } from "../utils/account";
 import { getDefaultChainUniqueId } from "core/constants/chain";
 import { AleoService } from "core/coins/ALEO/service/AleoService";
-import { GasFee, GasFeeEIP1559, GasFeeLegacy } from "core/types/GasFee";
+import { GasFee } from "core/types/GasFee";
 import { isSameAddress } from "core/utils/address";
-import {
-  JSONParseWithBigInt,
-  JSONStringifyOmitBigInt,
-} from "@/common/utils/json";
+import { JSONParseWithBigInt } from "@/common/utils/json";
 import { EthService } from "core/coins/ETH/service/EthService";
+import {
+  decodeEvmAddress,
+  getEvmAddress,
+  getQtumChainId,
+} from "core/coins/QTUM/utils/address";
+import { wrapLoggerArgs } from "@/common/utils/wrapConsole";
+import { QTUMNetwork } from "core/coins/QTUM/types/QTUMAccount";
 
 export type OnRequestFinishCallback = (
   error: null | Error,
@@ -234,10 +232,22 @@ export class PopupWalletServer implements IPopupServer {
     if (!groupAccount) {
       throw new Error("No selected account");
     }
-    const { coinType } = params;
+    const { coinType, network } = params;
+    // qtum address is chain dependent, eth is not
+    let chainUniqueId = getDefaultChainUniqueId(coinType, {});
+    if (network) {
+      switch (network) {
+        case "0x51":
+          chainUniqueId = InnerChainUniqueId.QTUM;
+          break;
+        case "0x22B9":
+          chainUniqueId = InnerChainUniqueId.QTUM_TESTNET;
+          break;
+      }
+    }
     const selectedAccount = matchAccountFromGroupAccount(
       groupAccount,
-      getDefaultChainUniqueId(coinType, {}),
+      chainUniqueId,
     );
     if (!selectedAccount) {
       throw new Error("No selected account");
@@ -330,7 +340,16 @@ export class PopupWalletServer implements IPopupServer {
     if (!selectedAccount) {
       throw new Error("No selected account");
     }
-    if (!isSameAddress(selectedAccount.account.address, from)) {
+    if (
+      coinType === CoinType.QTUM &&
+      !isSameAddress(getEvmAddress(selectedAccount.account.address), from)
+    ) {
+      throw new Error("Selected account is not match");
+    }
+    if (
+      coinType !== CoinType.QTUM &&
+      !isSameAddress(selectedAccount.account.address, from)
+    ) {
       throw new Error("Selected account is not match");
     }
     const request: DappRequest = {
@@ -357,21 +376,24 @@ export class PopupWalletServer implements IPopupServer {
               reject(error);
               return;
             }
+            const { gasFee, from } = JSONParseWithBigInt(data);
 
             const pk = await this.keyringManager.getPrivateKeyByAddress({
               coinType,
-              address: params.from,
+              address: from,
             });
             if (!pk) {
               reject(new Error("Get private key failed"));
               return;
             }
-            const gasFee = JSONParseWithBigInt(data);
             // const gasFees = JSON.parse(JSONStringifyOmitBigInt(gasFee));
             // resolve(gasFee);
             const instance = this.coinService.getInstance(
               params.uniqueId,
             ) as EthService;
+            console.log(
+              ...wrapLoggerArgs("createRequestTxPopup" + params.uniqueId),
+            );
 
             const rawTxWrap = await instance.getNativeCoinRawTx({
               tx: {
@@ -682,17 +704,30 @@ export class PopupWalletServer implements IPopupServer {
     params: SignMessageProps,
     address: string,
     coinType: CoinType,
-    siteInfo: SiteInfo,
+    siteMetadata: SiteMetadata,
   ) {
     const { message } = params;
+    const { siteInfo, network } = siteMetadata;
     const requestId = nanoid();
     const groupAccount = await this.getSelectedGroupAccount();
     if (!groupAccount) {
       throw new Error("No selected account");
     }
+    // qtum address is chain dependent, eth is not
+    let chainUniqueId = getDefaultChainUniqueId(coinType, {});
+    if (network) {
+      switch (network) {
+        case "0x51":
+          chainUniqueId = InnerChainUniqueId.QTUM;
+          break;
+        case "0x22B9":
+          chainUniqueId = InnerChainUniqueId.QTUM_TESTNET;
+          break;
+      }
+    }
     const selectedAccount = matchAccountFromGroupAccount(
       groupAccount,
-      getDefaultChainUniqueId(coinType, {}),
+      chainUniqueId,
     );
     if (!selectedAccount) {
       throw new Error("No selected account");
@@ -703,7 +738,7 @@ export class PopupWalletServer implements IPopupServer {
       coinType: coinType,
       siteInfo,
       address: address,
-      payload: params,
+      payload: { ...params, network },
     };
     await this.dappStorage.setDappRequest(request);
     return new Promise<boolean | null>(async (resolve, reject) => {
@@ -725,9 +760,27 @@ export class PopupWalletServer implements IPopupServer {
                 reject(error);
                 return;
               }
+              let realAddress: string = address;
+              if(coinType === CoinType.QTUM) {
+                let qNetwork = QTUMNetwork.qtum;
+                if (network) {
+                  switch (network) {
+                    case "0x51":
+                      qNetwork = QTUMNetwork.qtum;
+                      break;
+                    case "0x22B9":
+                      qNetwork = QTUMNetwork.qtumTestnet;
+                      break;
+                  }
+                }
+                realAddress = decodeEvmAddress(
+                  address,
+                  getQtumChainId(qNetwork),
+                );
+              }
               const pk = await this.keyringManager.getPrivateKeyByAddress({
                 coinType: coinType,
-                address,
+                address: realAddress,
               });
               if (!pk) {
                 reject(new Error("Get private key failed"));

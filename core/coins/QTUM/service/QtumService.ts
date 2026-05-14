@@ -22,7 +22,12 @@ import {
   DUST_LIMIT,
   DEFAULT_FEE_RATE,
 } from "../constants";
-import { getAddressType, getEvmAddress, isAddress } from "../utils/address";
+import {
+  decodeEvmAddress,
+  getAddressType,
+  getEvmAddress,
+  isAddress,
+} from "../utils/address";
 import type {
   NativeBalanceRes,
   TokenBalanceParams,
@@ -66,17 +71,22 @@ import type { Network } from "bitcoinjs-lib";
 import { BigNumber, Contract, utils as ethUtils } from "ethers";
 import { TransactionStatus } from "core/types/TransactionStatus";
 import erc20abi from "core/assets/abi/erc20abi.json";
+import { QtumProvider, QtumWallet } from "qtum-ethers-wrapper";
+import { isNotEmpty } from "core/utils/is";
+import { type RawTxWrap } from "core/coins/ETH/service/EthService";
+import { wrapLoggerArgs } from "@/common/utils/wrapConsole";
+import { addHexPrefix } from "ethereumjs-util";
 
 const ECPair = ECPairFactory(ecc);
 
 export class QtumService extends CoinServiceBasic {
-  private qtumInfoService: QtumInfoService;
-  private blockbookService?: BlockbookService;
-  private rpcService: EthRpcService;
-  private network: Network;
-  private config: QtumConfig;
-  private chainId: number;
-  private txDetailCache = new Map<string, QtumInfoTxResponse>();
+  qtumInfoService: QtumInfoService;
+  blockbookService?: BlockbookService;
+  rpcService: EthRpcService;
+  network: Network;
+  config: QtumConfig;
+  chainId: number;
+  txDetailCache = new Map<string, QtumInfoTxResponse>();
 
   // Fee rate cache
   private feeRateCache: { rate: number; timestamp: number } | null = null;
@@ -174,11 +184,18 @@ export class QtumService extends CoinServiceBasic {
     _isOrd: boolean = false,
     _confirmed?: boolean,
   ): Promise<UTXO[]> {
+    console.log(...wrapLoggerArgs("getUTXOs"));
     try {
-      return await this.withQtumInfo(async (api) => api.getUTXOs(address));
+      const utxos = await this.withQtumInfo(async (api) =>
+        api.getUTXOs(address),
+      );
+      return utxos;
     } catch (e) {
       if (this.blockbookService) {
-        return this.withBlockbook(async (api) => api.getUTXOs(address));
+        const utxos1 = await this.withBlockbook(async (api) =>
+          api.getUTXOs(address),
+        );
+        return utxos1;
       }
       throw e;
     }
@@ -263,6 +280,15 @@ export class QtumService extends CoinServiceBasic {
     }
   }
 
+  getSignWallet(privateKey: string, address: string): QtumWallet {
+    const keyPair = this.getKeyPair(privateKey, this.network);
+    if (!keyPair.privateKey) {
+      throw new Error("no valid key");
+    }
+    const rpcUrl = this.rpcService.proxyCurrConfig().rpcUrl;
+    return new QtumWallet(keyPair.privateKey, new QtumProvider(rpcUrl));
+  }
+
   async estimateGasFee(
     params: EstimateGasParam<CoinType.QTUM>,
   ): Promise<GasFee<CoinType.QTUM> | undefined> {
@@ -304,7 +330,11 @@ export class QtumService extends CoinServiceBasic {
     }
 
     const rbf = option?.RBF ?? false;
-    const inputs = await this.getUTXOs(from, false, rbf);
+    const inputs = await this.getUTXOs(
+      decodeEvmAddress(from, `${this.chainId}`),
+      false,
+      rbf,
+    );
     if (params.option?.sendMax) {
       const vBytes = this.getEstimateVBytes(from, inputs.length, [from]);
       const { fee, feeRate } = await this.estimateFee(vBytes, preFixedFeeRate);
@@ -799,6 +829,151 @@ export class QtumService extends CoinServiceBasic {
     };
   }
 
+  // runs in work no net call?
+  async getNativeCoinRawTx(
+    params: NativeCoinSendTxParams<CoinType.QTUM>,
+  ): Promise<{
+    rawTx: string;
+    id: string;
+    txInfo: {
+      from: string;
+      to: string;
+      sendValue: bigint;
+      fee: bigint;
+      feeRate: number | undefined;
+      data: string | undefined;
+    };
+  }> {
+    const {
+      tx: { from, to, value, gasFee, data },
+      signer: { privateKey },
+      option,
+    } = params;
+    const sequence = option?.sendNoRBF ? 0xffffffff : 0xfffffffd;
+    const isEvm = !!data;
+
+    const sendValue = BigInt(value);
+
+    if (
+      !this.config.testnet &&
+      sendValue < BigInt(DUST_LIMIT) &&
+      sendValue !== 0n
+    ) {
+      throw new Error(`Amount below dust limit (${DUST_LIMIT} satoshi)`);
+    }
+
+    if (isEvm && gasFee.type !== GasFeeType.QTUM_DAPP) {
+      throw new Error("QTUM contract call requires QTUM_DAPP gas fee");
+    }
+
+    let feeRate: number | undefined;
+    if (gasFee && "feeRate" in gasFee) {
+      feeRate = gasFee.feeRate;
+    }
+    const fee = gasFee.estimateGas;
+
+    const inputs = await this.getUTXOs(from);
+    inputs.sort((a, b) => Number(BigInt(b.value) - BigInt(a.value)));
+    const utxos: UTXO[] = [];
+    let selectedTotal = 0n;
+    for (const input of inputs) {
+      utxos.push(input);
+      selectedTotal += BigInt(input.value);
+      if (selectedTotal >= sendValue + fee) {
+        break;
+      }
+    }
+    if (selectedTotal < sendValue + fee) {
+      throw new Error("not enough value");
+    }
+
+    const psbt = new bitcoin.Psbt({ network: this.network });
+    const keyPair = this.getKeyPair(privateKey, this.network);
+
+    for (const input of utxos) {
+      const rawTx = await this.withQtumInfo(async (api) =>
+        api.getRawTransaction(input.txid),
+      );
+      psbt.addInput({
+        hash: input.txid,
+        index: input.vout,
+        sequence,
+        nonWitnessUtxo: Buffer.from(rawTx, "hex"),
+      });
+    }
+
+    if (isEvm && gasFee.type === GasFeeType.QTUM_DAPP) {
+      const contractAddress = to ? getEvmAddress(to).slice(2) : undefined;
+      const contractScript = this.buildQtumDappScript(
+        gasFee.gasLimit,
+        gasFee.gasPrice,
+        data,
+        contractAddress,
+      );
+      psbt.addOutput({
+        script: contractScript,
+        value: sendValue,
+      });
+    } else if (sendValue > 0n) {
+      psbt.addOutput({
+        address: to,
+        value: sendValue,
+      });
+    }
+
+    let changeValue = selectedTotal - sendValue - fee;
+    if (changeValue <= BigInt(DUST_LIMIT)) {
+      changeValue = 0n;
+    }
+    if (changeValue !== 0n) {
+      psbt.addOutput({
+        address: from,
+        value: changeValue,
+      });
+    }
+
+    psbt.signAllInputs(keyPair);
+    psbt.finalizeAllInputs();
+    const transaction = psbt.extractTransaction(isEvm);
+    const rawTx = transaction.toHex();
+    const id = addHexPrefix(transaction.getId());
+    return {
+      rawTx,
+      id,
+      txInfo: {
+        from,
+        to,
+        sendValue,
+        fee,
+        feeRate,
+        data,
+      },
+    };
+  }
+
+  async sendSignedTxRaw(
+    tx: RawTxWrap,
+  ): Promise<NativeCoinSendTxRes<CoinType.QTUM>> {
+    const txid = await this.pushTx(tx.rawTx);
+    if (!tx.txInfo) {
+      throw new Error("qtum rawtx should contain TX info");
+    }
+    const { feeRate, fee, to, sendValue, from, data } = tx.txInfo;
+    return {
+      id: txid,
+      from,
+      to,
+      value: sendValue,
+      gasFee: {
+        estimateGas: fee.toString(),
+        type: GasFeeType.UTXO,
+        feeRate,
+      },
+      data,
+      timestamp: Date.now(),
+    };
+  }
+
   private async fetchRawTransaction(txid: string): Promise<string> {
     try {
       return await this.withBlockbook(async (api) =>
@@ -880,7 +1055,7 @@ export class QtumService extends CoinServiceBasic {
   private async getGasLimit(
     from: string,
     toEvm: string,
-    data: string,
+    data: string | undefined,
     amount: bigint,
     gasPrice: number,
   ): Promise<number> {

@@ -18,25 +18,22 @@ import { matchAccountsWithUniqueId } from "@/store/accountV2";
 import { DAPP_CONNECTION_EXPIRE_TIME } from "@/common/constants";
 import { getDefaultChainUniqueId } from "core/constants/chain";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
-import { EthService } from "core/coins/ETH/service/EthService";
 import RPCServer from "@/scripts/background/servers/RPCServer";
 import { nanoid } from "nanoid";
 import { Utils } from "@/scripts/content/utils";
 import {
-  recoverPersonalSignature,
-  signTypedData,
   SignTypedDataVersion,
   TypedDataUtils,
+  typedSignatureHash,
 } from "@metamask/eth-sig-util";
 import * as ethUtils from "ethereumjs-util";
-import { hexToBuffer } from "@/common/utils/hex";
+import { addHexPrefix, toBuffer } from "ethereumjs-util";
 import { parseEthChainId, stripHexPrefix } from "core/coins/ETH/utils";
 import { errorCodes, ProviderError } from "@/scripts/content/ErrorCode";
 import { BigNumber } from "ethers";
 import { GasFeeEIP1559, GasFeeLegacy, GasFeeType } from "core/types/GasFee";
 import { contentServerHandler } from "@/scripts/background";
 import { v4 as uuidv4 } from "uuid";
-import { ETHConfig } from "core/coins/ETH/types/ETHConfig";
 import { FullModel } from "@/store/store";
 import { getStorageData, setStorageData } from "@/common/utils/storage";
 import { ChainBaseConfig } from "core/types/ChainBaseConfig";
@@ -44,6 +41,15 @@ import { getChainConfigsByFilter } from "@/hooks/useGroupAccount";
 import { RematchRootState } from "@rematch/core";
 import { RootModel } from "@/store";
 import { appStorageInstance } from "@/common/utils/indexeddb";
+import { QtumService } from "core/coins/QTUM/service/QtumService";
+import { QtumConfig } from "core/coins/QTUM/types/QtumConfig";
+import {
+  decodeEvmAddress,
+  getEvmAddress,
+  getQtumChainId,
+} from "core/coins/QTUM/utils/address";
+import { QTUMNetwork } from "core/coins/QTUM/types/QTUMAccount";
+import { hashMessage, recoverAddress } from "qtum-ethers-wrapper";
 
 export type SIGN_LEGACY_TX_PAYLOAD = {
   type: string;
@@ -75,7 +81,18 @@ export type SIGN_EIP11559_TX_PAYLOAD = {
   maxPriorityFeePerGas: string;
 };
 
-export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
+export type QtumDappAddress = {
+  evmAddress: string;
+  qtumAddress: string;
+}
+
+export type TypedMessageV1 = Array<{
+  type: string;
+  name: string;
+  value: string;
+}>;
+
+export class QTUMContentWalletServer implements IContentServer<CoinType.QTUM> {
   authManager: AuthManager;
   keyringManager: KeyringManager;
   dappStorage: DappStorage;
@@ -103,7 +120,7 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
     contentServerHandler.emitToDapps({
       type: "EmitData",
       data,
-      coinType: CoinType.ETH,
+      coinType: CoinType.QTUM,
       event,
     });
   };
@@ -122,10 +139,28 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
     return { siteInfo, address };
   };
 
+  getChainInfo(network: string | null | undefined) {
+    let chainUniqueId = getDefaultChainUniqueId(CoinType.QTUM, {});
+    let qNetwork = QTUMNetwork.qtum;
+    if (network) {
+      switch (network) {
+        case "0x51":
+          qNetwork = QTUMNetwork.qtum;
+          chainUniqueId = InnerChainUniqueId.QTUM;
+          break;
+        case "0x22B9":
+          qNetwork = QTUMNetwork.qtumTestnet;
+          chainUniqueId = InnerChainUniqueId.QTUM_TESTNET;
+          break;
+      }
+    }
+    return { chainUniqueId, qNetwork };
+  }
+
   eth_accounts = async (
     payload: {},
     { siteMetadata }: ServerMethodContext,
-  ): Promise<string[]> => {
+  ): Promise<QtumDappAddress[]> => {
     logger.log("ethAccounts", payload);
     const hasWallet = await this.keyringManager.hasWallet();
     if (!hasWallet) {
@@ -136,17 +171,17 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
       throw new ProviderError(errorCodes.rpc.internal, "get origin failed");
     }
     try {
-      const { siteInfo } = siteMetadata;
+      const { siteInfo, network } = siteMetadata;
       const groupAccount =
         await this.accountSettingStorage.getSelectedGroupAccount();
       if (groupAccount) {
         const selectedAccount = matchAccountsWithUniqueId(
           groupAccount,
-          getDefaultChainUniqueId(CoinType.ETH, {}),
+          this.getChainInfo(network).chainUniqueId,
         )[0];
         if (selectedAccount) {
           const connectHistorys = await this.dappStorage.getConnectHistory(
-            CoinType.ETH,
+            CoinType.QTUM,
             selectedAccount.address,
             "", //no chainId at connect
           );
@@ -158,10 +193,15 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
               Date.now() - connectHistory.lastConnectTime <=
               DAPP_CONNECTION_EXPIRE_TIME
             ) {
-              return [selectedAccount.address.toLowerCase()];
+              return [
+                {
+                  qtumAddress: selectedAccount.address,
+                  evmAddress: getEvmAddress(selectedAccount.address),
+                } satisfies QtumDappAddress,
+              ];
             } else {
               void this.dappStorage.disconnect(
-                CoinType.ETH,
+                CoinType.QTUM,
                 selectedAccount.address,
                 "",
                 siteInfo.origin,
@@ -194,21 +234,24 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
   eth_requestAccounts = async (
     payload: {},
     context: ServerMethodContext,
-  ): Promise<string[]> => {
+  ): Promise<QtumDappAddress[]> => {
     logger.log("requestAccounts", payload);
     const connectedAddress = await this.eth_accounts(payload, context);
     if (connectedAddress.length > 0) {
       return connectedAddress;
     }
-    const { siteInfo } = context.siteMetadata!;
+    const { siteInfo, network } = context.siteMetadata!;
     try {
       const address = await this.popupServer.createConnectPopup(
         {
-          coinType: CoinType.ETH,
+          ...(network ? { network } : {}),
+          coinType: CoinType.QTUM,
         },
         siteInfo,
       );
-      return address ? [address.toLowerCase()] : [];
+      return address
+        ? [{ qtumAddress: address, evmAddress: getEvmAddress(address) }]
+        : [];
     } catch (e) {
       logger.error("eth_requestAccounts", e);
       const message = typeof e === "string" ? e : (e as Error).message;
@@ -252,7 +295,7 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
         caveats: [
           {
             type: "restrictReturnedAccounts",
-            value: [connectedAddress[0].toLowerCase()],
+            value: [connectedAddress[0].evmAddress],
           },
         ],
         date: +Date.now(),
@@ -268,10 +311,11 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
       if (!context.siteMetadata || !context.siteMetadata.siteInfo) {
         throw new ProviderError(errorCodes.rpc.internal, "get origin failed");
       }
-      const { siteInfo } = context.siteMetadata!;
+      const { siteInfo, network } = context.siteMetadata!;
       const address = await this.popupServer.createConnectPopup(
         {
-          coinType: CoinType.ETH,
+          ...(network ? { network } : {}),
+          coinType: CoinType.QTUM,
         },
         siteInfo,
       );
@@ -291,7 +335,7 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
             caveats: [
               {
                 type: "restrictReturnedAccounts",
-                value: [address.toLowerCase()],
+                value: [getEvmAddress(address)],
               },
             ],
             date: +Date.now(),
@@ -342,8 +386,8 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
         return null;
       }
       await this.dappStorage.disconnect(
-        CoinType.ETH,
-        connectedAddress[0],
+        CoinType.QTUM,
+        connectedAddress[0].qtumAddress,
         "",
         siteInfo.origin,
       );
@@ -394,6 +438,8 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
       throw new ProviderError(errorCodes.rpc.internal, "get origin failed");
     }
     try {
+      let network = context.siteMetadata.network;
+      const { qNetwork, chainUniqueId } = this.getChainInfo(network);
       const [p1, p2] = payload.params;
       let message = p1;
       let address = p2;
@@ -407,7 +453,7 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
           message,
         },
         address,
-        CoinType.ETH,
+        CoinType.QTUM,
         context.siteMetadata!,
       );
       if (!agreed) {
@@ -417,18 +463,22 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
         );
       }
       const instance = this.coinService.getInstance(
-        InnerChainUniqueId.ETHEREUM,
-      ) as EthService;
-      const pk = await this.keyringManager.getPrivateKeyByAddress({
-        coinType: CoinType.ETH,
+        chainUniqueId,
+      ) as QtumService;
+      let realAddress: string = decodeEvmAddress(
         address,
+        getQtumChainId(qNetwork),
+      );
+      const pk = await this.keyringManager.getPrivateKeyByAddress({
+        coinType: CoinType.QTUM,
+        address: realAddress,
       });
       const signWallet = instance.getSignWallet(pk, address);
       const msg = message.startsWith("0x")
         ? Buffer.from(stripHexPrefix(message), "hex")
         : message;
       const result = await signWallet.signMessage(msg);
-      return result;
+      return `${addHexPrefix(Buffer.from(result).toString("hex"))}`;
     } catch (e) {
       if (e instanceof ProviderError) {
         throw e;
@@ -458,12 +508,9 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
     try {
       const [message, signature] = payload.params;
       if (message && signature) {
-        // const msg = hexify(message);
-        const addr = recoverPersonalSignature({
-          data: message,
-          signature,
-        });
-        return addr;
+        const msg = hashMessage(message);
+        const addr = recoverAddress(msg, signature);
+        return addr.toLowerCase();
       }
     } catch (e) {
       const message = typeof e === "string" ? e : (e as Error).message;
@@ -529,6 +576,7 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
           );
         }
       }
+      const { qNetwork, chainUniqueId } = this.getChainInfo(currentNetwork);
       let version = SignTypedDataVersion.V1;
       switch (payload.method) {
         case "eth_signTypedData_v3":
@@ -559,7 +607,7 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
           method: payload.method,
         },
         address,
-        CoinType.ETH,
+        CoinType.QTUM,
         serverMethodContext.siteMetadata!,
       );
       if (!agreed) {
@@ -569,17 +617,43 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
         );
       }
       console.log("_ethSignTypedData", toSign);
-      const pk = await this.keyringManager.getPrivateKeyByAddress({
-        coinType: CoinType.ETH,
+      let realAddress: string = decodeEvmAddress(
         address,
+        getQtumChainId(qNetwork),
+      );
+      const pk = await this.keyringManager.getPrivateKeyByAddress({
+        coinType: CoinType.QTUM,
+        address: realAddress,
       });
-      const pkBuffer = hexToBuffer(pk);
-      const result = signTypedData({
-        privateKey: pkBuffer,
-        version,
-        data: message as any,
-      });
-      return result;
+      const instance = this.coinService.getInstance(
+        chainUniqueId,
+      ) as QtumService;
+
+      const signWallet = instance.getSignWallet(pk, address);
+
+      switch (version) {
+        case SignTypedDataVersion.V1: {
+          const hash = toBuffer(
+            typedSignatureHash(JSON.parse(toSign.raw) as TypedMessageV1),
+          );
+          const result = (await signWallet.signHash(hash)) as unknown as Buffer;
+          return `${addHexPrefix(Buffer.from(result).toString("hex"))}`;
+        }
+        case SignTypedDataVersion.V3:
+        case SignTypedDataVersion.V4: {
+          console.log("EthereumMethod.SIGN_TYPED_MESSAGE_V4", message);
+          const typedData = JSON.parse(toSign.raw);
+          const types = Object.assign({}, typedData.types);
+          delete types.EIP712Domain;
+          // sign v3 typed message
+          const result = (await signWallet._signTypedData(
+            typedData.domain,
+            types,
+            typedData.message,
+          )) as unknown as Buffer;
+          return `${addHexPrefix(Buffer.from(result).toString("hex"))}`;
+        }
+      }
     } catch (e) {
       if (e instanceof ProviderError) {
         throw e;
@@ -657,7 +731,7 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
       const txid = await this.popupServer.createRequestTxPopup(
         {
           uniqueId: currUniqueId,
-          coinType: CoinType.ETH,
+          coinType: CoinType.QTUM,
           from,
           to,
           value,
@@ -708,6 +782,11 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
           "no connected address",
         );
       }
+      const { siteMetadata } = serverMethodContext;
+      if (!siteMetadata) {
+        throw new ProviderError(errorCodes.rpc.internal, "no site info");
+      }
+      const network = siteMetadata.network;
       const groupAccount =
         await this.accountSettingStorage.getSelectedGroupAccount();
       if (!groupAccount) {
@@ -715,15 +794,14 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
       }
       const selectedAccount = matchAccountsWithUniqueId(
         groupAccount,
-        getDefaultChainUniqueId(CoinType.ETH, {}),
+        this.getChainInfo(network).chainUniqueId,
       )[0];
-      if (selectedAccount.address.toLowerCase() !== connectedAddress[0]) {
+      if (selectedAccount.address !== connectedAddress[0].qtumAddress) {
         throw new ProviderError(
           errorCodes.rpc.internal,
           "no connected address",
         );
       }
-      const { siteMetadata } = serverMethodContext;
       let options = payload.params.options;
 
       const token = {
@@ -734,15 +812,10 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
         image: options.image || "",
       };
 
-      if (!siteMetadata) {
-        throw new ProviderError(errorCodes.rpc.internal, "no site info");
-      }
-
       console.log("payload", payload);
       console.log("siteMetadata", siteMetadata);
 
-      const network = siteMetadata.network;
-      const chainIdRequest = parseEthChainId(network || "0x1");
+      const chainIdRequest = parseEthChainId(network || "0x51");
 
       const state = (await appStorageInstance.getItem(
         "persist:root",
@@ -751,8 +824,8 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
       const existChainConfigs = getChainConfigsByFilter({
         state,
         filter: (item: ChainBaseConfig) =>
-          item.coinType === CoinType.ETH &&
-          (item as ETHConfig).chainId === chainIdRequest.chainId.toString(),
+          item.coinType === CoinType.QTUM &&
+          (item as QtumConfig).chainId === chainIdRequest.chainId.toString(),
       });
 
       if (existChainConfigs.length === 0) {
@@ -763,7 +836,7 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
       }
 
       const { uniqueId } = existChainConfigs[0];
-      const instance = this.coinService.getInstance(uniqueId) as EthService;
+      const instance = this.coinService.getInstance(uniqueId) as QtumService;
 
       if (
         !instance.validateAddress(token.contract) ||
@@ -844,8 +917,8 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
       const existChainConfigs = getChainConfigsByFilter({
         state,
         filter: (item: ChainBaseConfig) =>
-          item.coinType === CoinType.ETH &&
-          (item as ETHConfig).chainId === chainIdRequest.chainId.toString(),
+          item.coinType === CoinType.QTUM &&
+          (item as QtumConfig).chainId === chainIdRequest.chainId.toString(),
       });
 
       if (existChainConfigs.length > 0) {
@@ -853,15 +926,16 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
         this.emitEvent("networkChanged", `${chainIdRequest.chainId}`);
         return null;
       }
-
-      const confirm = await this.popupServer.createRequestETHAddChainPopup(
-        payload,
-        siteMetadata,
-      );
-
-      this.emitEvent("chainChanged", switchToChainId);
-      this.emitEvent("networkChanged", `${chainIdRequest.chainId}`);
       return null;
+      //
+      // const confirm = await this.popupServer.createRequestETHAddChainPopup(
+      //   payload,
+      //   siteMetadata,
+      // );
+      //
+      // this.emitEvent("chainChanged", switchToChainId);
+      // this.emitEvent("networkChanged", `${chainIdRequest.chainId}`);
+      // return null;
     } catch (e) {
       if (e instanceof ProviderError) {
         throw e;
@@ -907,8 +981,8 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
       const existChainConfigs = getChainConfigsByFilter({
         state,
         filter: (item: ChainBaseConfig) =>
-          item.coinType === CoinType.ETH &&
-          (item as ETHConfig).chainId === chainId.toString(),
+          item.coinType === CoinType.QTUM &&
+          (item as QtumConfig).chainId === chainId.toString(),
       });
 
       if (existChainConfigs.length === 0) {
@@ -946,7 +1020,7 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
   ) => {
     const chainId = payload;
     console.log("_setGlobalChainId server", chainId);
-    await setStorageData("evm_network", chainId);
+    await setStorageData("qtum", chainId);
     return chainId;
   };
 
@@ -954,8 +1028,8 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
     payload: ETHRequestParams<any>,
     serverMethodContext: ServerMethodContext,
   ) => {
-    const chainId = await getStorageData<string>("evm_network");
-    return chainId ?? "0x1";
+    const chainId = await getStorageData<string>("qtum");
+    return chainId ?? "0x51";
   };
 
   proxyRPCCall = async (
@@ -964,7 +1038,7 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
   ) => {
     const currUniqueId = await this.getUniqueIdForSite(siteMetadata);
 
-    const instance = this.coinService.getInstance(currUniqueId) as EthService;
+    const instance = this.coinService.getInstance(currUniqueId) as QtumService;
     const rpcServer = new RPCServer(instance.config.rpcList);
     let newPayload = payload;
     if (!payload.id) {
@@ -979,7 +1053,7 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
   ) => {
     let currentChainId = siteMetadata?.network;
     if (!requireNetwork && !currentChainId) {
-      currentChainId = "0x1";
+      currentChainId = "0x51";
     } else if (!currentChainId) {
       throw new ProviderError(errorCodes.rpc.invalidParams, "Invalid network");
     }
@@ -993,8 +1067,8 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
     const existChainConfigs = getChainConfigsByFilter({
       state,
       filter: (item: ChainBaseConfig) =>
-        item.coinType === CoinType.ETH &&
-        (item as ETHConfig).chainId === chainId.toString(),
+        item.coinType === CoinType.QTUM &&
+        (item as QtumConfig).chainId === chainId.toString(),
     });
     if (existChainConfigs.length === 0) {
       throw new ProviderError(errorCodes.rpc.invalidParams, "Invalid network");
