@@ -394,8 +394,10 @@ export class QtumProvider extends BaseProvider {
             console.log("_setGlobalChainId", err);
           });
         }
+        this.emit("disconnect", undefined);
         break;
       case "networkChanged":
+        this.emit("disconnect", undefined);
         break;
       case "accountsChanged":
         if (typeof params?.[0] === "string" && !!params?.[0]) {
@@ -409,6 +411,7 @@ export class QtumProvider extends BaseProvider {
         }
         break;
       case "disconnect":
+        this.address = null;
         break;
     }
   }

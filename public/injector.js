@@ -30259,10 +30259,11 @@ class Ct extends In {
           4200,
           `Fox does not support calling ${t.method}. Please use your own solution`
         );
-      default:
+      default: {
         console.log("unhandled", t), t.jsonrpc = "2.0";
         const n = await this.proxyRPCCall(t);
         return console.log(`<== rpc response ${JSON.stringify(n)}`), n == null ? void 0 : n.result;
+      }
     }
   }
   async proxyRPCCall(t) {
@@ -30273,7 +30274,7 @@ class Ct extends In {
    */
   sendAsync(t, n) {
     console.log(
-      "sendAsync(data, callback) is deprecated, please use window.ethereum.request(data) instead."
+      "sendAsync(data, callback) is deprecated, please use window.qtum.request(data) instead."
     );
     let d = this;
     if (this instanceof Ct || (d = Jn()), !d) {
@@ -30372,15 +30373,19 @@ class Ct extends In {
       case "chainChanged":
         typeof n == "string" && n && (this._chainId = n, this._setGlobalChainId(n).catch((d) => {
           console.log("_setGlobalChainId", d);
-        }));
+        })), this.emit("disconnect", void 0);
         break;
       case "networkChanged":
+        this.emit("disconnect", void 0);
         break;
       case "accountsChanged":
         typeof (n == null ? void 0 : n[0]) == "string" && (n != null && n[0]);
         break;
       case "connect":
         typeof (n == null ? void 0 : n.chainId) == "string" && (n != null && n.chainId) && (this._chainId = n.chainId);
+        break;
+      case "disconnect":
+        this.address = null;
         break;
     }
   }
