@@ -15,7 +15,7 @@ const chainHexToDec = (hex: string): string => {
 };
 
 const chainDecToHex = (dec: string): string => {
-  return "0x" + (dec || 1).toString(16);
+  return "0x" + (parseInt(dec, 10) || 1).toString(16);
 };
 
 const getInjectedFoxProvider = (): QtumProvider | undefined => {
@@ -190,7 +190,7 @@ export class QtumProvider extends BaseProvider {
           4200,
           `Fox does not support calling ${payload.method}. Please use your own solution`,
         );
-      default:
+      default: {
         // call upstream rpc
         // this.callbacks.delete(payload.id);
         // this.wrapResults.delete(payload.id);
@@ -207,6 +207,7 @@ export class QtumProvider extends BaseProvider {
         const proxyResult = await this.proxyRPCCall(payload);
         console.log(`<== rpc response ${JSON.stringify(proxyResult)}`);
         return (proxyResult as any)?.result;
+      }
     }
   }
 
@@ -219,7 +220,7 @@ export class QtumProvider extends BaseProvider {
    */
   sendAsync(payload: any, callback: (err: null | any, data?: any) => void) {
     console.log(
-      "sendAsync(data, callback) is deprecated, please use window.ethereum.request(data) instead.",
+      "sendAsync(data, callback) is deprecated, please use window.qtum.request(data) instead.",
     );
     // this points to window in methods like web3.eth.getAccounts()
     let that: QtumProvider | undefined = this;

@@ -584,7 +584,7 @@ export type ContentServerMethod<T extends CoinType> = T extends CoinType.ALEO
   : T extends CoinType.ETH
   ? keyof IETHContentServer
   : T extends CoinType.QTUM
-  ? IQTUMContentServer
+  ? keyof IQTUMContentServer
   : never;
 
 export async function executeServerMethod<T>(
