@@ -18,6 +18,7 @@ export default defineManifest((env) => {
       "tabs",
       "offscreen",
     ],
+    host_permissions: ["https://api.provable.com/*"],
     content_scripts: [
       {
         matches: ["http://*/*", "https://*/*"],
