@@ -22,6 +22,10 @@ import {
   PopupSignMessageProps,
   RegenerateWalletProps,
   RequestFinfishProps,
+  ScannerDeactivateViewConsumerProps,
+  ScannerGetDecryptedOwnedRecordsProps,
+  ScannerRegisterProps,
+  ScannerRegisterResp,
   SetSelectedAccountProps,
   SignMessageProps,
   SiteMetadata,
@@ -70,6 +74,14 @@ import {
 } from "core/coins/QTUM/utils/address";
 import { wrapLoggerArgs } from "@/common/utils/wrapConsole";
 import { QTUMNetwork } from "core/coins/QTUM/types/QTUMAccount";
+import {
+  networkFromChainId,
+  provableScannerService,
+  recordSyncService,
+  ScannerStorage,
+  type SyncStatusResp,
+} from "core/coins/ALEO/service/scanner";
+import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 
 export type OnRequestFinishCallback = (
   error: null | Error,
@@ -761,7 +773,7 @@ export class PopupWalletServer implements IPopupServer {
                 return;
               }
               let realAddress: string = address;
-              if(coinType === CoinType.QTUM) {
+              if (coinType === CoinType.QTUM) {
                 let qNetwork = QTUMNetwork.qtum;
                 if (network) {
                   switch (network) {
@@ -1056,6 +1068,128 @@ export class PopupWalletServer implements IPopupServer {
     } finally {
       syncBlocks();
     }
+  }
+
+  private async ensureScannerRegistration(
+    { chainId, address }: ScannerRegisterProps,
+    viewKey?: string,
+  ): Promise<ScannerRegisterResp> {
+    const scannerStorage = ScannerStorage.getInstance();
+    const existingUuid = await scannerStorage.getScannerUuid(chainId, address);
+    if (existingUuid) {
+      return { uuid: existingUuid };
+    }
+
+    const resolvedViewKey =
+      viewKey ??
+      (await this.keyringManager.getViewKey({
+        coinType: CoinType.ALEO,
+        address,
+      }));
+    if (!resolvedViewKey) {
+      throw new Error("Aleo view key is required for scanner registration");
+    }
+
+    const registration = await provableScannerService.scannerRegister(
+      {
+        start: 0,
+        viewKey: resolvedViewKey,
+      },
+      networkFromChainId(chainId),
+      {
+        address,
+        chainId,
+      },
+    );
+    if (!registration?.uuid) {
+      throw new Error("Scanner registration failed");
+    }
+    return { uuid: registration.uuid };
+  }
+
+  async scannerRegister(
+    params: ScannerRegisterProps,
+  ): Promise<ScannerRegisterResp> {
+    return await this.ensureScannerRegistration(params);
+  }
+
+  async scannerGetDecryptedOwnedRecords({
+    chainId,
+    address,
+    programs,
+    unspent,
+    consumerId,
+    purpose = "default",
+    refreshMode = "auto",
+    start,
+    end,
+  }: ScannerGetDecryptedOwnedRecordsProps): Promise<RecordDetailWithSpent[]> {
+    if (purpose === "view" && !consumerId) {
+      throw new Error(
+        "scannerGetDecryptedOwnedRecords: view purpose requires consumerId",
+      );
+    }
+
+    const viewKey = await this.keyringManager.getViewKey({
+      coinType: CoinType.ALEO,
+      address,
+    });
+    if (!viewKey) {
+      throw new Error("Aleo view key is required to decrypt scanner records");
+    }
+    const { uuid } = await this.ensureScannerRegistration(
+      {
+        chainId,
+        address,
+      },
+      viewKey,
+    );
+
+    const records = await recordSyncService.getDecryptedOwnedRecords(
+      {
+        filter: {
+          ...(programs && programs.length > 0 ? { programs } : {}),
+          ...(start !== undefined ? { start } : {}),
+          ...(end !== undefined ? { end } : {}),
+        },
+        uuid,
+        ...(unspent !== undefined ? { unspent } : {}),
+      },
+      {
+        address,
+        viewKey,
+      },
+      {
+        chainId,
+        consumerId,
+        purpose,
+        refreshMode,
+      },
+    );
+
+    return records ?? [];
+  }
+
+  async scannerGetSyncStatus(
+    params: ScannerRegisterProps,
+  ): Promise<SyncStatusResp> {
+    const { chainId, address } = params;
+    const scannerStorage = ScannerStorage.getInstance();
+    const uuid = await scannerStorage.getScannerUuid(chainId, address);
+    if (!uuid) {
+      return { percentage: 0, synced: false };
+    }
+    const status = await provableScannerService.getSyncStatus(
+      uuid,
+      networkFromChainId(chainId),
+    );
+    return status ?? { percentage: 0, synced: false };
+  }
+
+  async scannerDeactivateViewConsumer({
+    consumerId,
+  }: ScannerDeactivateViewConsumerProps): Promise<void> {
+    recordSyncService.deactivateViewConsumer(consumerId);
   }
 
   async sendAleoTransaction(params: AleoSendTxProps): Promise<void> {

@@ -20,8 +20,13 @@ import { clearSwrCache, swrStorageInstance } from "@/common/utils/indexeddb";
 import { startCheckSyncing } from "./offscreen";
 import { accountSettingStorage } from "./store/account/AccountStorage";
 import { coinServiceEntry } from "core/coins/CoinServiceEntry";
-import { recordSyncService } from "core/coins/ALEO/service/scanner";
+import {
+  provableScannerService,
+  recordSyncService,
+} from "core/coins/ALEO/service/scanner";
 import { AleoStorage } from "./store/aleo/AleoStorage";
+import { encryptRegistrationViaOffscreen } from "./scannerOffscreen";
+import { CoinType } from "core/types";
 
 const keepAliveConnection = new Connection(
   keepAliveHandler,
@@ -44,6 +49,30 @@ export const popupWalletServer = new PopupWalletServer(
 );
 
 const popupServerHandler = new PopupServerHandler(popupWalletServer);
+provableScannerService.configure({
+  encryptRegistration: encryptRegistrationViaOffscreen,
+  resolveRegisterRequest: async ({ address }) => {
+    try {
+      const viewKey = await keyringManager.getViewKey({
+        coinType: CoinType.ALEO,
+        address,
+      });
+      if (!viewKey) {
+        return undefined;
+      }
+      return {
+        start: 0,
+        viewKey,
+      };
+    } catch (error) {
+      console.warn("[RSS] scanner re-registration resolver failed", {
+        address,
+        error,
+      });
+      return undefined;
+    }
+  },
+});
 recordSyncService.configure({
   aleoStorage: AleoStorage.getInstance(),
   defaultChainId: InnerChainUniqueId.ALEO_MAINNET,
@@ -108,4 +137,4 @@ checkVersion().finally(() => {
 
 startCheckSyncing();
 
-export {keyringManager}
+export { keyringManager };

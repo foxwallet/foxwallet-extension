@@ -17,6 +17,10 @@ import {
   type GetPrivateKeyProps,
   type ChangeAccountStateProps,
   type PopupSignMessageProps,
+  type ScannerDeactivateViewConsumerProps,
+  type ScannerGetDecryptedOwnedRecordsProps,
+  type ScannerRegisterProps,
+  type ScannerRegisterResp,
 } from "../../scripts/background/servers/IWalletServer";
 import {
   type DisplayWallet,
@@ -35,6 +39,8 @@ import { logger } from "./logger";
 import { type IPort, Port } from "./port";
 import { nanoid } from "nanoid";
 import { type CoinType } from "core/types";
+import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
+import { type SyncStatusResp } from "core/coins/ALEO/service/scanner";
 
 export interface IClient {
   _connect: () => void;
@@ -195,6 +201,30 @@ export class PopupServerClient implements IClient, IPopupServer {
 
   async resetChain(): Promise<boolean> {
     return await this.#send("resetChain", {});
+  }
+
+  async scannerRegister(
+    params: ScannerRegisterProps,
+  ): Promise<ScannerRegisterResp> {
+    return await this.#send("scannerRegister", params);
+  }
+
+  async scannerGetDecryptedOwnedRecords(
+    params: ScannerGetDecryptedOwnedRecordsProps,
+  ): Promise<RecordDetailWithSpent[]> {
+    return await this.#send("scannerGetDecryptedOwnedRecords", params);
+  }
+
+  async scannerGetSyncStatus(
+    params: ScannerRegisterProps,
+  ): Promise<SyncStatusResp> {
+    return await this.#send("scannerGetSyncStatus", params);
+  }
+
+  async scannerDeactivateViewConsumer(
+    params: ScannerDeactivateViewConsumerProps,
+  ): Promise<void> {
+    await this.#send("scannerDeactivateViewConsumer", params);
   }
 
   async sendAleoTransaction(params: AleoSendTxProps): Promise<void> {
