@@ -97,6 +97,7 @@ export interface RecordSyncRequestOptions {
   purpose?: "default" | "view";
   consumerId?: string;
   refreshMode?: ViewRefreshMode;
+  chainId?: string;
 }
 
 // Cipher half of an RSS owned-record response. Fields mirror the
