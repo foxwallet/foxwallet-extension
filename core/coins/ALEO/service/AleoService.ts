@@ -63,6 +63,7 @@ import { type Token, type TokenWithBalance } from "../types/Token";
 import { type InnerProgramId } from "../types/ProgramId";
 import { BETA_STAKING_ALEO_TOKEN } from "../config/chains";
 import { isNotEmpty } from "core/utils/is";
+import { recordSyncService } from "./scanner";
 import { AleoStorage } from "@/scripts/background/store/aleo/AleoStorage";
 import { CoinServiceBasic } from "core/coins/CoinServiceBasic";
 import { AssetType, type TokenV2 } from "core/types/Token";
@@ -1331,10 +1332,12 @@ export class AleoService extends CoinServiceBasic {
 
   async clearAddressLocalData(adderss: string) {
     await this.aleoStorage.clearAddressLocalData(this.chainId, adderss);
+    recordSyncService.resetAddress(this.chainId, adderss);
   }
 
   async resetChainData() {
     await this.aleoStorage.reset(this.chainId);
+    recordSyncService.resetChain(this.chainId);
   }
 
   async setAleoSyncAccount(account: AleoSyncAccount) {

@@ -1,10 +1,18 @@
 import { type AleoSyncAccount } from "./AleoSyncAccount";
 import { type AleoOnChainHistoryItem } from "./History";
 import {
+  type ScannerDecryptedRecord,
+  type ScannerDecryptedRecordMap,
+} from "./ScannerDecryptedRecord";
+import {
   type AleoAddressInfo,
   type SyncRecordResultWithDuration,
 } from "./SyncTask";
 import { type AleoLocalTxInfo } from "./Transaction";
+
+export interface ClearAddressLocalDataOptions {
+  scannerCacheCleanup?: "best-effort" | "strict";
+}
 
 export interface IAleoStorage {
   getAccountsAddress(): Promise<string[]>;
@@ -66,7 +74,11 @@ export interface IAleoStorage {
     localId: string,
   ): Promise<void>;
 
-  clearAddressLocalData(chainId: string, address: string): Promise<void>;
+  clearAddressLocalData(
+    chainId: string,
+    address: string,
+    options?: ClearAddressLocalDataOptions,
+  ): Promise<void>;
 
   reset(chainId: string): Promise<void>;
 
@@ -84,4 +96,18 @@ export interface IAleoStorage {
     programId: string,
     program: string,
   ): Promise<void>;
+
+  getScannerDecryptedRecords(
+    chainId: string,
+    address: string,
+    tags: string[],
+  ): Promise<ScannerDecryptedRecordMap>;
+
+  setScannerDecryptedRecords(
+    chainId: string,
+    address: string,
+    records: ScannerDecryptedRecord[],
+  ): Promise<void>;
+
+  clearScannerDecryptedRecords(chainId: string, address: string): Promise<void>;
 }

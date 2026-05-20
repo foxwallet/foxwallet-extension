@@ -21,6 +21,7 @@ import { startCheckSyncing } from "./offscreen";
 import { accountSettingStorage } from "./store/account/AccountStorage";
 import { coinServiceEntry } from "core/coins/CoinServiceEntry";
 import { recordSyncService } from "core/coins/ALEO/service/scanner";
+import { AleoStorage } from "./store/aleo/AleoStorage";
 
 const keepAliveConnection = new Connection(
   keepAliveHandler,
@@ -44,6 +45,7 @@ export const popupWalletServer = new PopupWalletServer(
 
 const popupServerHandler = new PopupServerHandler(popupWalletServer);
 recordSyncService.configure({
+  aleoStorage: AleoStorage.getInstance(),
   defaultChainId: InnerChainUniqueId.ALEO_MAINNET,
   shouldSkip: () =>
     !popupServerHandler.hasActivePort() || !authManager.hasAuth(),

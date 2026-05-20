@@ -1,5 +1,8 @@
 import { aleoAccountStorageInstance } from "@/common/utils/indexeddb";
-import { IAleoStorage } from "core/coins/ALEO/types/IAleoStorage";
+import {
+  type ClearAddressLocalDataOptions,
+  type IAleoStorage,
+} from "core/coins/ALEO/types/IAleoStorage";
 import { AleoSyncAccount } from "core/coins/ALEO/types/AleoSyncAccount";
 import {
   AleoAddressInfo,
@@ -10,6 +13,11 @@ import { AleoLocalTxInfo } from "core/coins/ALEO/types/Transaction";
 import { ALEO_CHAIN_IDS } from "core/coins/ALEO/config/chains";
 import { getBlockDatabaseByChainId } from "@/database/AleoBlockDatabase";
 import { AleoOnChainHistoryItem } from "core/coins/ALEO/types/History";
+import { scannerDB } from "@/database/ScannerDatabase";
+import {
+  type ScannerDecryptedRecord,
+  type ScannerDecryptedRecordMap,
+} from "core/coins/ALEO/types/ScannerDecryptedRecord";
 
 export class AleoStorage implements IAleoStorage {
   static instance: AleoStorage;
@@ -35,6 +43,13 @@ export class AleoStorage implements IAleoStorage {
     return instance;
   }
 
+  async getScannerDBInstance() {
+    if (!scannerDB.isOpen()) {
+      await scannerDB.open();
+    }
+    return scannerDB;
+  }
+
   async getAccountsAddress(): Promise<string[]> {
     const instance = this.#aleoAccountStorage;
     return await instance.keys();
@@ -56,10 +71,12 @@ export class AleoStorage implements IAleoStorage {
 
   async removeAccount(address: string) {
     const instance = this.#aleoAccountStorage;
-    await instance.removeItem(address);
     for (let chainId of ALEO_CHAIN_IDS) {
-      await this.clearAddressLocalData(chainId, address);
+      await this.clearAddressLocalData(chainId, address, {
+        scannerCacheCleanup: "strict",
+      });
     }
+    await instance.removeItem(address);
     return true;
   }
 
@@ -213,14 +230,40 @@ export class AleoStorage implements IAleoStorage {
     return data;
   }
 
-  async clearAddressLocalData(chainId: string, address: string): Promise<void> {
+  async clearAddressLocalData(
+    chainId: string,
+    address: string,
+    options: ClearAddressLocalDataOptions = {},
+  ): Promise<void> {
     const instance = await this.getBlockDBInstance(chainId);
     await instance.deleteAddressData(address);
+
+    if (options.scannerCacheCleanup === "strict") {
+      await this.clearScannerDecryptedRecords(chainId, address);
+      return;
+    }
+    try {
+      await this.clearScannerDecryptedRecords(chainId, address);
+    } catch (error) {
+      console.error(
+        "[AleoStorage] failed to clear scanner decrypted cache",
+        { chainId, address, error },
+      );
+    }
   }
 
   async reset(chainId: string): Promise<void> {
     const instance = await this.getBlockDBInstance(chainId);
     await instance.resetData();
+    try {
+      const scannerInstance = await this.getScannerDBInstance();
+      await scannerInstance.deleteChainData(chainId);
+    } catch (error) {
+      console.error(
+        "[AleoStorage] failed to clear scanner decrypted cache on chain reset",
+        { chainId, error },
+      );
+    }
   }
 
   async getProgramContent(
@@ -255,6 +298,32 @@ export class AleoStorage implements IAleoStorage {
         keypairs: {},
       });
     }
+  }
+
+  async getScannerDecryptedRecords(
+    chainId: string,
+    address: string,
+    tags: string[],
+  ): Promise<ScannerDecryptedRecordMap> {
+    const instance = await this.getScannerDBInstance();
+    return await instance.getDecryptedRecords(chainId, address, tags);
+  }
+
+  async setScannerDecryptedRecords(
+    chainId: string,
+    address: string,
+    records: ScannerDecryptedRecord[],
+  ): Promise<void> {
+    const instance = await this.getScannerDBInstance();
+    await instance.putDecryptedRecords(chainId, address, records);
+  }
+
+  async clearScannerDecryptedRecords(
+    chainId: string,
+    address: string,
+  ): Promise<void> {
+    const instance = await this.getScannerDBInstance();
+    await instance.deleteAddressData(chainId, address);
   }
 
   private async calculateSHA1(data: Uint8Array): Promise<string> {

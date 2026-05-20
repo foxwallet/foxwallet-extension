@@ -1,5 +1,7 @@
 import { ViewKey } from "aleo_wasm_mainnet";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
+import type { IAleoStorage } from "core/coins/ALEO/types/IAleoStorage";
+import type { ScannerDecryptedRecordMap } from "core/coins/ALEO/types/ScannerDecryptedRecord";
 import type { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 import {
   type CypherOwnedRecord,
@@ -35,10 +37,16 @@ export interface RecordSyncAccount {
 
 export type RecordSyncShouldSkip = () => boolean;
 
+type RecordSyncDecryptedRecordStorage = Pick<
+  IAleoStorage,
+  "getScannerDecryptedRecords" | "setScannerDecryptedRecords"
+>;
+
 export interface RecordSyncServiceOptions {
   scannerService?: ProvableScannerService;
   defaultChainId?: string;
   shouldSkip?: RecordSyncShouldSkip;
+  aleoStorage?: RecordSyncDecryptedRecordStorage;
 }
 
 type ViewScope = {
@@ -56,6 +64,7 @@ type ViewScope = {
   refreshInFlightMode?: RefreshMode;
   pendingHardRefresh: boolean;
   initialized: boolean;
+  disposed: boolean;
   lastHardRefreshAt: number;
   lastRssCallNetworkBlockHeight: number;
 };
@@ -277,22 +286,28 @@ export class RecordSyncService {
 
   private defaultChainId: string;
   private shouldSkipCallback: RecordSyncShouldSkip;
+  private aleoStorage?: RecordSyncDecryptedRecordStorage;
 
   constructor(options: RecordSyncServiceOptions = {}) {
     this.scannerService = options.scannerService ?? provableScannerService;
     this.defaultChainId = options.defaultChainId ?? DEFAULT_CHAIN_ID;
     this.shouldSkipCallback = options.shouldSkip ?? (() => false);
+    this.aleoStorage = options.aleoStorage;
   }
 
   configure(options: {
     defaultChainId?: string;
     shouldSkip?: RecordSyncShouldSkip;
+    aleoStorage?: RecordSyncDecryptedRecordStorage;
   }): void {
     if (options.defaultChainId) {
       this.defaultChainId = options.defaultChainId;
     }
     if (options.shouldSkip) {
       this.shouldSkipCallback = options.shouldSkip;
+    }
+    if (options.aleoStorage) {
+      this.aleoStorage = options.aleoStorage;
     }
   }
 
@@ -314,6 +329,102 @@ export class RecordSyncService {
     if (scope.consumerPrograms.size === 0) {
       this.disposeScope(currentScopeKey, scope);
     }
+  }
+
+  // Flush ALL in-memory state for a chain. Pair this with
+  // AleoStorage.reset(chainId) — otherwise the IndexedDB scanner table is
+  // wiped but the in-memory plaintextCache / viewScopes / response caches
+  // would still serve stale post-reset reads until natural eviction.
+  resetChain(chainId: string): void {
+    this.evictPlaintextCache((key) => key.startsWith(`${chainId}:`));
+    this.disposeScopesMatching((scope) => scope.chainId === chainId);
+    this.evictResponseCachesMatching({ chainId });
+  }
+
+  // Flush in-memory state for a single (chainId, address) pair. Pair with
+  // AleoStorage.clearAddressLocalData(chainId, address). Same rationale as
+  // resetChain.
+  resetAddress(chainId: string, address: string): void {
+    const prefix = `${chainId}:${address}:`;
+    this.evictPlaintextCache((key) => key.startsWith(prefix));
+    this.disposeScopesMatching(
+      (scope) => scope.chainId === chainId && scope.address === address,
+    );
+    this.evictResponseCachesMatching({ chainId, address });
+  }
+
+  private evictPlaintextCache(predicate: (key: string) => boolean): void {
+    for (const key of [...this.plaintextCache.keys()]) {
+      if (predicate(key)) {
+        this.plaintextCache.delete(key);
+      }
+    }
+  }
+
+  private disposeScopesMatching(
+    predicate: (scope: ViewScope) => boolean,
+  ): void {
+    for (const [scopeKey, scope] of [...this.viewScopes.entries()]) {
+      if (!predicate(scope)) continue;
+      // disposeScope clears the scope's timers and drops it from viewScopes;
+      // its consumers' reverse-index entries must also be cleared so a
+      // subsequent deactivate / re-register call doesn't reference a stale
+      // scopeKey.
+      for (const consumerId of scope.consumerPrograms.keys()) {
+        this.consumerToScope.delete(consumerId);
+      }
+      this.disposeScope(scopeKey, scope);
+    }
+  }
+
+  // Evict response-cache entries whose chainId (and optionally address)
+  // matches `target`. Two key formats coexist:
+  //   - JSON-encoded (buildExactCacheKey / buildAccountExactCacheKey): both
+  //     chainId and address can be recovered.
+  //   - Scoped non-JSON `${chainId}:${uuid}:${programs}:${state}`
+  //     (buildScopedCacheKey, ownedCache only): no address embedded.
+  //
+  // For address-level reset, scoped ownedCache entries cannot be filtered
+  // by address; we over-evict them by chainId match alone. Over-eviction is
+  // safe — the response caches are perf hints, not authoritative state.
+  private evictResponseCachesMatching(target: {
+    chainId: string;
+    address?: string;
+  }): void {
+    const evict = (cache: Map<string, unknown>): void => {
+      for (const key of [...cache.keys()]) {
+        let entryChainId: string | undefined;
+        let entryAddress: string | undefined;
+        if (key.startsWith("{")) {
+          try {
+            const parsed = JSON.parse(key) as {
+              chainId?: string;
+              address?: string;
+            };
+            entryChainId = parsed.chainId;
+            entryAddress = parsed.address;
+          } catch {
+            continue;
+          }
+        } else {
+          const colonIdx = key.indexOf(":");
+          if (colonIdx <= 0) continue;
+          entryChainId = key.slice(0, colonIdx);
+        }
+        if (entryChainId !== target.chainId) continue;
+        // No address constraint, or entry doesn't carry address (scoped key)
+        // and we're over-evicting, or address matches.
+        if (
+          target.address === undefined ||
+          entryAddress === undefined ||
+          entryAddress === target.address
+        ) {
+          cache.delete(key);
+        }
+      }
+    };
+    evict(this.ownedCache as Map<string, unknown>);
+    evict(this.decryptedCache as Map<string, unknown>);
   }
 
   async getOwnedRecords(
@@ -386,7 +497,7 @@ export class RecordSyncService {
         account,
         options,
       );
-      return this.decryptAndAdaptRecords(
+      return await this.decryptAndAdaptRecords(
         encryptedRecords ?? [],
         account,
         chainId,
@@ -411,7 +522,11 @@ export class RecordSyncService {
       if (!encryptedRecords) {
         return undefined;
       }
-      result = this.decryptAndAdaptRecords(encryptedRecords, account, chainId);
+      result = await this.decryptAndAdaptRecords(
+        encryptedRecords,
+        account,
+        chainId,
+      );
       return result;
     })();
 
@@ -486,7 +601,11 @@ export class RecordSyncService {
   }
 
   private disposeScope(scopeKey: string, scope: ViewScope): void {
+    scope.disposed = true;
     this.clearScopeTimers(scope);
+    scope.consumerPrograms.clear();
+    scope.consumerCallbacks.clear();
+    scope.recordsByKey.clear();
     this.viewScopes.delete(scopeKey);
   }
 
@@ -596,6 +715,10 @@ export class RecordSyncService {
   }
 
   private async updateSpentFromTags(scope: ViewScope): Promise<boolean> {
+    if (scope.disposed) {
+      return false;
+    }
+
     const tags = this.getScopeRecords(scope)
       .map((record) => (record.spent ? undefined : record.tag))
       .filter((tag): tag is string => Boolean(tag));
@@ -612,7 +735,7 @@ export class RecordSyncService {
         refreshMode: "light",
       },
     );
-    if (!tagsResp) {
+    if (!tagsResp || scope.disposed) {
       return false;
     }
 
@@ -649,6 +772,10 @@ export class RecordSyncService {
   }
 
   private notifyScopeConsumers(scope: ViewScope): void {
+    if (scope.disposed) {
+      return;
+    }
+
     for (const callback of scope.consumerCallbacks.values()) {
       try {
         callback();
@@ -665,6 +792,10 @@ export class RecordSyncService {
     scope: ViewScope,
     mode: RefreshMode,
   ): Promise<boolean> {
+    if (scope.disposed) {
+      return false;
+    }
+
     if (scope.refreshInFlight) {
       const inFlightPromise = scope.refreshInFlight;
       const inFlightMode = scope.refreshInFlightMode;
@@ -673,6 +804,9 @@ export class RecordSyncService {
       }
 
       const changedWhileWaiting = await inFlightPromise;
+      if (scope.disposed) {
+        return false;
+      }
       if (mode !== "hard" || inFlightMode === "hard") {
         return changedWhileWaiting;
       }
@@ -697,6 +831,10 @@ export class RecordSyncService {
     }
 
     const refreshPromise = (async () => {
+      if (scope.disposed) {
+        return false;
+      }
+
       const programs = this.getScopePrograms(scope);
       if (programs.length === 0) {
         return false;
@@ -728,6 +866,10 @@ export class RecordSyncService {
         scope.network,
         mode,
       );
+
+      if (scope.disposed) {
+        return false;
+      }
 
       if (!records) {
         if (changed) {
@@ -822,6 +964,7 @@ export class RecordSyncService {
         consumerCallbacks: new Map(),
         consumerPrograms: new Map(),
         initialized: false,
+        disposed: false,
         key: scopeKey,
         lastHardRefreshAt: 0,
         lastRssCallNetworkBlockHeight: 0,
@@ -932,19 +1075,16 @@ export class RecordSyncService {
     return this.filterViewRecords(this.getScopeRecords(scope), req);
   }
 
-  private decryptAndAdaptRecords(
+  private async decryptAndAdaptRecords(
     records: CypherOwnedRecord[],
     account: RecordSyncAccount,
     chainId: string,
-  ): RecordDetailWithSpent[] {
-    const ownedRecords = this.getRecordsWithPlaintext(
-      records,
-      account,
-      chainId,
-    );
+  ): Promise<RecordDetailWithSpent[]> {
+    const { recordsWithPlaintext, newlyDecrypted } =
+      await this.getRecordsWithPlaintext(records, account, chainId);
     const adaptedRecords: RecordDetailWithSpent[] = [];
 
-    for (const record of ownedRecords) {
+    for (const record of recordsWithPlaintext) {
       try {
         adaptedRecords.push(ownedToRecordDetail(record));
       } catch (error) {
@@ -956,29 +1096,63 @@ export class RecordSyncService {
       }
     }
 
+    // Only persist tags whose plaintext we just produced via WASM decryption.
+    // Re-writing rows that already came back from the persistent cache would
+    // multiply IndexedDB writes by the size of the user's record set on every
+    // hard refresh. Mirrors the reference project's `decryptedRecordsToUpdate`
+    // discipline.
+    if (newlyDecrypted.size > 0) {
+      await this.persistDecryptedRecords(
+        chainId,
+        account.address,
+        newlyDecrypted,
+      );
+    }
+
     return adaptedRecords;
   }
 
-  private getRecordsWithPlaintext(
+  private async getRecordsWithPlaintext(
     records: CypherOwnedRecord[],
     account: RecordSyncAccount,
     chainId: string,
-  ): OwnedRecord[] {
+  ): Promise<{
+    recordsWithPlaintext: OwnedRecord[];
+    // tag → plaintext for records this call had to decrypt via WASM (i.e.
+    // were not satisfied by either the in-memory `plaintextCache` or the
+    // persisted ScannerDatabase cache). Only these need to be flushed to disk.
+    newlyDecrypted: Map<string, string>;
+  }> {
     let viewKey: ViewKey | undefined;
     const getViewKey = () => {
       viewKey ??= ViewKey.from_string(account.viewKey);
       return viewKey;
     };
+    const cachedRecords = await this.getCachedScannerDecryptedRecords(
+      chainId,
+      account.address,
+      records,
+    );
 
     const recordsWithPlaintext: OwnedRecord[] = [];
+    const newlyDecrypted = new Map<string, string>();
     for (const record of records) {
       const cacheKey = this.plaintextCacheKey(chainId, account.address, record);
       let plaintext = cacheKey ? this.plaintextCache.get(cacheKey) : undefined;
+      if (!plaintext && record.tag) {
+        plaintext = cachedRecords[record.tag]?.plaintext;
+        if (plaintext && cacheKey) {
+          this.plaintextCache.set(cacheKey, plaintext);
+        }
+      }
 
       if (!plaintext && record.recordCiphertext) {
         plaintext = getViewKey().decrypt(record.recordCiphertext);
         if (cacheKey) {
           this.plaintextCache.set(cacheKey, plaintext);
+        }
+        if (record.tag) {
+          newlyDecrypted.set(record.tag, plaintext);
         }
       }
 
@@ -996,7 +1170,68 @@ export class RecordSyncService {
         recordPlaintext: plaintext,
       });
     }
-    return recordsWithPlaintext;
+    return { recordsWithPlaintext, newlyDecrypted };
+  }
+
+  private async getCachedScannerDecryptedRecords(
+    chainId: string,
+    address: string,
+    records: CypherOwnedRecord[],
+  ): Promise<ScannerDecryptedRecordMap> {
+    if (!this.aleoStorage) {
+      return {};
+    }
+
+    const tags = records
+      .map((record) => record.tag)
+      .filter((tag): tag is string => Boolean(tag));
+    if (tags.length === 0) {
+      return {};
+    }
+
+    try {
+      return await this.aleoStorage.getScannerDecryptedRecords(
+        chainId,
+        address,
+        tags,
+      );
+    } catch (error) {
+      console.error("[RecordSyncService] failed to read decrypted cache", {
+        address,
+        chainId,
+        error,
+      });
+      return {};
+    }
+  }
+
+  private async persistDecryptedRecords(
+    chainId: string,
+    address: string,
+    newlyDecrypted: Map<string, string>,
+  ): Promise<void> {
+    if (!this.aleoStorage || newlyDecrypted.size === 0) {
+      return;
+    }
+
+    const records = [...newlyDecrypted.entries()].map(([tag, plaintext]) => ({
+      tag,
+      plaintext,
+    }));
+
+    try {
+      await this.aleoStorage.setScannerDecryptedRecords(
+        chainId,
+        address,
+        records,
+      );
+    } catch (error) {
+      console.error("[RecordSyncService] failed to write decrypted cache", {
+        address,
+        chainId,
+        error,
+      });
+    }
   }
 
   private plaintextCacheKey(
