@@ -44,6 +44,11 @@ export function ownedToRecordDetail(
     transactionId: record.transactionId ?? "",
     transitionId: record.transitionId ?? "",
     height: record.blockHeight ? Number(record.blockHeight) : 0,
+    // RSS /records/owned does not return block_timestamp; CypherOwnedRecord
+    // intentionally has no `blockTimestamp` field. UIs that need a real
+    // wall-clock must look it up from the block height via a separate block
+    // API. We emit 0 here rather than synthesizing a value, so "no timestamp"
+    // is surfaced explicitly and ordering still falls back to height.
     timestamp: 0,
     recordName: record.recordName,
     spent: record.spent ?? false,

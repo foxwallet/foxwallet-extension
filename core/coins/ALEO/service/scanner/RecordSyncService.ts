@@ -52,7 +52,6 @@ type ViewScope = {
   consumerCallbacks: Map<string, () => void>;
   hardTimer?: ReturnType<typeof setInterval>;
   lightTimer?: ReturnType<typeof setInterval>;
-  lightTimerMs: number;
   refreshInFlight?: Promise<boolean>;
   refreshInFlightMode?: RefreshMode;
   pendingHardRefresh: boolean;
@@ -245,7 +244,8 @@ const filterRecordsByRequest = (
     Number.isFinite(requestedPageSize) && requestedPageSize! > 0
       ? Math.min(Math.trunc(requestedPageSize!), OWNED_RESULTS_PER_PAGE_LIMIT)
       : OWNED_RESULTS_PER_PAGE_LIMIT;
-  return filtered.slice(Math.trunc(page) * pageSize);
+  const offset = Math.trunc(page) * pageSize;
+  return filtered.slice(offset, offset + pageSize);
 };
 
 const maybeFilterRecordsByCachePlan = (
@@ -549,6 +549,11 @@ export class RecordSyncService {
     return changed;
   }
 
+  // Hard refresh path. Unlike a naive "replace with RSS truth", we merge
+  // each incoming record with the existing one (via `mergeRecord`) so that
+  // `spent:true` survives — RSS may legitimately drop already-spent records
+  // from its `unspent`/sliding window response, and dropping our local
+  // spent flag would violate the §5.4 spent-win invariant.
   private replaceRecordsForPrograms(
     scope: ViewScope,
     programs: Set<string>,
@@ -775,11 +780,6 @@ export class RecordSyncService {
       }, HARD_REFRESH_MS);
     }
 
-    if (scope.lightTimer && scope.lightTimerMs !== LIGHT_REFRESH_MS) {
-      clearInterval(scope.lightTimer);
-      scope.lightTimer = undefined;
-    }
-
     if (!scope.lightTimer) {
       scope.lightTimer = setInterval(() => {
         const now = Date.now();
@@ -793,7 +793,6 @@ export class RecordSyncService {
         }
         void this.refreshScope(scope, "light");
       }, LIGHT_REFRESH_MS);
-      scope.lightTimerMs = LIGHT_REFRESH_MS;
     }
   }
 
@@ -826,7 +825,6 @@ export class RecordSyncService {
         key: scopeKey,
         lastHardRefreshAt: 0,
         lastRssCallNetworkBlockHeight: 0,
-        lightTimerMs: LIGHT_REFRESH_MS,
         network,
         pendingHardRefresh: false,
         recordsByKey: new Map(),
