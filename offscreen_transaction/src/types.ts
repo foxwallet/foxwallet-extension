@@ -318,8 +318,10 @@ export type ConfirmedTransaction = {
 export enum MessageOrigin {
   OFFSCREEN_TO_BACKGROUND = "offscreen_to_background",
   OFFSCREEN_TX_TO_BACKGROUND = "offscreen_tx_to_background",
+  OFFSCREEN_SCANNER_TO_BACKGROUND = "offscreen_scanner_to_background",
   BACKGROUND_TO_OFFSCREEN = "background_to_offscreen",
   BACKGROUND_TO_OFFSCREEN_TX = "background_to_offscreen_tx",
+  BACKGROUND_TO_OFFSCREEN_SCANNER = "background_to_offscreen_scanner",
 }
 
 export interface OffscreenMessagePayload<T = any> {
@@ -343,6 +345,17 @@ export enum OffscreenMethod {
   SEND_TX = "send_tx",
   DEPLOY = "deploy",
   IS_SENDING_TX = "is_sending_tx",
+  SCANNER_ENCRYPT_REGISTRATION = "scanner_encrypt_registration",
+}
+
+export interface ScannerEncryptRegistrationPayload {
+  publicKey: string;
+  viewKey: string;
+  start: number;
+}
+
+export interface ScannerEncryptRegistrationResult {
+  ciphertext: string;
 }
 
 export interface BackgroundMessage<T = any> {

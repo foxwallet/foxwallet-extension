@@ -14,6 +14,7 @@ import { ReserveChainConfigs } from "../env";
 browser.runtime.onMessage.addListener(handleMessages);
 
 let mainLoop: MainLoop;
+let loopStarted = false;
 
 const getMainLoop = () => {
   if (!mainLoop) {
@@ -36,8 +37,14 @@ function handleMessages(
 
   switch (message.type) {
     case OffscreenMethod.INIT_WORKER: {
-      const main = getMainLoop();
-      void main.loop();
+      if (!loopStarted) {
+        loopStarted = true;
+        const main = getMainLoop();
+        void main.loop().catch((err) => {
+          loopStarted = false;
+          logger.error("Aleo sync loop failed", err);
+        });
+      }
       sendResponse({
         type: OffscreenMessageType.RESPONSE,
         origin: MessageOrigin.OFFSCREEN_TO_BACKGROUND,
