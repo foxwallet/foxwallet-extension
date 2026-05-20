@@ -6,6 +6,9 @@ export function networkFromChainId(chainId: string): ProvableScannerNetwork {
   if (chainId === "mainnet" || chainId === InnerChainUniqueId.ALEO_MAINNET) {
     return "mainnet";
   }
+  if (chainId === "testnet" || chainId === "aleo_testnet") {
+    return "testnet";
+  }
   throw new Error(`unsupported Aleo scanner chain: ${chainId}`);
 }
 

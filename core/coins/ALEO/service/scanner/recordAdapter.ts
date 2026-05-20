@@ -23,9 +23,9 @@ export function ownedToRecordDetail(
   const nonce = recordPlaintext.nonce();
 
   // commitment is the canonical map key downstream (recordsMap is keyed
-  // by commitment). RSS returns it whenever ResponseFilter.commitment is
-  // requested (default behaviour); a missing commitment is a server bug
-  // and we'd rather crash loudly than collide records on the tag.
+  // by commitment). ProvableScannerService requests it by default; a
+  // missing commitment is a server bug and we'd rather crash loudly than
+  // collide records on the tag.
   if (!record.commitment) {
     throw new Error(
       `OwnedRecord missing commitment (tag=${record.tag}, program=${record.programName})`,
@@ -43,12 +43,8 @@ export function ownedToRecordDetail(
     tag: record.tag,
     transactionId: record.transactionId ?? "",
     transitionId: record.transitionId ?? "",
-    // RSS returns blockHeight as a string ("1234567"); RecordDetail
-    // expects number. RSS does not provide a per-record timestamp —
-    // downstream code that needs wall-clock time must derive it from
-    // tx history or the block header.
     height: record.blockHeight ? Number(record.blockHeight) : 0,
-    timestamp: 0,
+    timestamp: record.blockTimestamp ? Number(record.blockTimestamp) : 0,
     recordName: record.recordName,
     spent: record.spent ?? false,
     parsedContent: parseRecordParsedContent(record.programName, content),
