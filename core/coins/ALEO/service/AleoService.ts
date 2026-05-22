@@ -63,7 +63,7 @@ import { type Token, type TokenWithBalance } from "../types/Token";
 import { type InnerProgramId } from "../types/ProgramId";
 import { BETA_STAKING_ALEO_TOKEN } from "../config/chains";
 import { isNotEmpty } from "core/utils/is";
-import { recordSyncService } from "./scanner";
+import { recordSyncService, ScannerStorage } from "./scanner";
 import { AleoStorage } from "@/scripts/background/store/aleo/AleoStorage";
 import { CoinServiceBasic } from "core/coins/CoinServiceBasic";
 import { AssetType, type TokenV2 } from "core/types/Token";
@@ -94,6 +94,20 @@ const SYNS_BLOCK_INTERVAL = 1000;
 
 const GET_SPENT_TAGS_SIZE = 500;
 
+const ALEO_PRIVATE_BALANCE_CONSUMER_ID_PREFIX = "aleo:private-balance";
+
+const ALEO_RECORDS_CONSUMER_ID_PREFIX = "aleo:records";
+
+const ALEO_TOKEN_PRIVATE_BALANCE_CONSUMER_ID_PREFIX =
+  "aleo:token-private-balance";
+
+type ScannerAccountCache = {
+  address: string;
+  chainId: string;
+  uuid: string;
+  viewKey: string;
+};
+
 // only for popup thread
 export class AleoService extends CoinServiceBasic {
   config: AleoConfig;
@@ -107,6 +121,11 @@ export class AleoService extends CoinServiceBasic {
   private tokenService: AlphaSwapTokenService;
   private cachedSyncBlock: AleoAddressInfo | null = null;
   private lastSyncBlockTime: number = 0;
+  private scannerAccountCache = new Map<string, ScannerAccountCache>();
+  private scannerAccountPromiseCache = new Map<
+    string,
+    Promise<ScannerAccountCache>
+  >();
 
   constructor(config: AleoConfig) {
     super(config);
@@ -395,29 +414,228 @@ export class AleoService extends CoinServiceBasic {
     return this.cachedSyncBlock;
   };
 
-  async getPrivateBalance(address: string): Promise<bigint> {
-    const result = await this.debounceSyncBlocks(address);
+  private scannerAccountCacheKey(address: string): string {
+    return `${this.chainId}:${address}`;
+  }
 
-    if (!result) {
-      return 0n;
+  private getPrivateBalanceConsumerId(address: string): string {
+    return `${ALEO_PRIVATE_BALANCE_CONSUMER_ID_PREFIX}:${this.chainId}:${address}`;
+  }
+
+  private getRecordsConsumerId(
+    address: string,
+    programId: string,
+    recordFilter: RecordFilter,
+  ): string {
+    return `${ALEO_RECORDS_CONSUMER_ID_PREFIX}:${this.chainId}:${address}:${programId}:${recordFilter}`;
+  }
+
+  private getTokenPrivateBalanceConsumerId(
+    address: string,
+    programId: string,
+    tokenId: string,
+  ): string {
+    return `${ALEO_TOKEN_PRIVATE_BALANCE_CONSUMER_ID_PREFIX}:${this.chainId}:${address}:${programId}:${tokenId}`;
+  }
+
+  private clearScannerAccountCache(address?: string): void {
+    if (!address) {
+      this.scannerAccountCache.clear();
+      this.scannerAccountPromiseCache.clear();
+      return;
+    }
+    const key = this.scannerAccountCacheKey(address);
+    this.scannerAccountCache.delete(key);
+    this.scannerAccountPromiseCache.delete(key);
+  }
+
+  private async loadScannerAccount(
+    address: string,
+  ): Promise<ScannerAccountCache> {
+    const scannerStorage = ScannerStorage.getInstance();
+    const [accountInfo, uuid] = await Promise.all([
+      this.aleoStorage.getAccountInfo(address),
+      scannerStorage.getScannerUuid(this.chainId, address),
+    ]);
+    const viewKey = accountInfo?.viewKey;
+    if (!viewKey) {
+      throw new Error("Aleo view key is required to read scanner records");
+    }
+    if (!uuid) {
+      throw new Error("Scanner UUID is missing; call scannerRegister first");
+    }
+    return {
+      address,
+      chainId: this.chainId,
+      uuid,
+      viewKey,
+    };
+  }
+
+  private async getScannerAccount(
+    address: string,
+    options: { forceReload?: boolean } = {},
+  ): Promise<ScannerAccountCache> {
+    const key = this.scannerAccountCacheKey(address);
+    if (!options.forceReload) {
+      const cached = this.scannerAccountCache.get(key);
+      if (cached) {
+        return cached;
+      }
+      const inFlight = this.scannerAccountPromiseCache.get(key);
+      if (inFlight) {
+        return await inFlight;
+      }
+    } else {
+      this.clearScannerAccountCache(address);
     }
 
-    const { recordsMap } = result;
+    const promise = this.loadScannerAccount(address);
+    this.scannerAccountPromiseCache.set(key, promise);
+    try {
+      const account = await promise;
+      this.scannerAccountCache.set(key, account);
+      return account;
+    } finally {
+      this.scannerAccountPromiseCache.delete(key);
+    }
+  }
 
-    const privateBalance =
-      Object.values(
-        recordsMap[this.config.nativeCurrency.address] ?? {},
-      )?.reduce((sum, record) => {
-        if (!record) {
-          return sum;
-        }
-        if (record.spent) {
-          return sum;
-        }
-        return sum + parseU64(record.content.microcredits);
-      }, 0n) ?? 0n;
+  private recordFilterToUnspent(
+    recordFilter: RecordFilter,
+  ): boolean | undefined {
+    switch (recordFilter) {
+      case RecordFilter.UNSPENT:
+        return true;
+      case RecordFilter.SPENT:
+        return false;
+      case RecordFilter.ALL:
+        return undefined;
+      default:
+        return undefined;
+    }
+  }
 
-    return privateBalance;
+  private parseScannerAmount(
+    value: unknown,
+    rawValue: string | undefined,
+    parser: (value: string) => bigint,
+  ): bigint {
+    if (typeof value === "bigint") {
+      return value;
+    }
+    if (typeof value === "number" && Number.isFinite(value)) {
+      return BigInt(value);
+    }
+    if (typeof value === "string" && value.length > 0) {
+      if (/^\d+$/.test(value)) {
+        return BigInt(value);
+      }
+      return parser(value);
+    }
+    return rawValue ? parser(rawValue) : 0n;
+  }
+
+  private getRecordMicrocredits(record: RecordDetailWithSpent): bigint {
+    return this.parseScannerAmount(
+      record.parsedContent?.microcredits,
+      typeof record.content.microcredits === "string"
+        ? record.content.microcredits
+        : undefined,
+      parseU64,
+    );
+  }
+
+  private async getScannerRecords(
+    address: string,
+    programId: string,
+    recordFilter: RecordFilter,
+    consumerId?: string,
+  ): Promise<RecordDetailWithSpent[]> {
+    const viewConsumerId =
+      consumerId ?? this.getRecordsConsumerId(address, programId, recordFilter);
+    return await this.getScannerRecordsWithAccount(
+      await this.getScannerAccount(address),
+      programId,
+      recordFilter,
+      viewConsumerId,
+      address,
+    );
+  }
+
+  private async getScannerRecordsWithAccount(
+    scannerAccount: ScannerAccountCache,
+    programId: string,
+    recordFilter: RecordFilter,
+    consumerId: string,
+    address: string,
+  ): Promise<RecordDetailWithSpent[]> {
+    const unspent = this.recordFilterToUnspent(recordFilter);
+    const records = await recordSyncService.getDecryptedOwnedRecords(
+      {
+        filter: {
+          programs: [programId],
+        },
+        uuid: scannerAccount.uuid,
+        ...(unspent !== undefined ? { unspent } : {}),
+      },
+      {
+        address: scannerAccount.address,
+        viewKey: scannerAccount.viewKey,
+      },
+      {
+        chainId: this.chainId,
+        consumerId,
+        purpose: "view",
+        refreshMode: "auto",
+      },
+    );
+    if (records) {
+      return records;
+    }
+
+    const refreshedAccount = await this.getScannerAccount(address, {
+      forceReload: true,
+    });
+    if (refreshedAccount.uuid === scannerAccount.uuid) {
+      return [];
+    }
+
+    const retryRecords = await recordSyncService.getDecryptedOwnedRecords(
+      {
+        filter: {
+          programs: [programId],
+        },
+        uuid: refreshedAccount.uuid,
+        ...(unspent !== undefined ? { unspent } : {}),
+      },
+      {
+        address: refreshedAccount.address,
+        viewKey: refreshedAccount.viewKey,
+      },
+      {
+        chainId: this.chainId,
+        consumerId,
+        purpose: "view",
+        refreshMode: "auto",
+      },
+    );
+    return retryRecords ?? [];
+  }
+
+  async getPrivateBalance(address: string): Promise<bigint> {
+    const records = await this.getScannerRecords(
+      address,
+      this.config.nativeCurrency.address,
+      RecordFilter.UNSPENT,
+      this.getPrivateBalanceConsumerId(address),
+    );
+    return records.reduce((sum, record) => {
+      if (record.spent) {
+        return sum;
+      }
+      return sum + this.getRecordMicrocredits(record);
+    }, 0n);
   }
 
   async getPublicBalance(address: string): Promise<bigint> {
@@ -630,36 +848,29 @@ export class AleoService extends CoinServiceBasic {
     programId: string,
     recordFilter: RecordFilter,
     withRecordName?: boolean,
+    consumerId?: string,
   ): Promise<RecordDetailWithSpent[]> {
-    const result = await this.debounceSyncBlocks(address);
-
-    if (!result) {
-      return [];
-    }
-    let recordsMap = result.recordsMap[programId] ?? {};
+    let records = await this.getScannerRecords(
+      address,
+      programId,
+      recordFilter,
+      consumerId,
+    );
     if (withRecordName) {
-      const { records: recordWithName, changed } =
-        await this.getRecordsWithName(
-          programId,
-          result.recordsMap[programId] ?? {},
-        );
-      recordsMap = recordWithName;
-      if (changed) {
-        const newResult: typeof result = {
-          ...result,
-          recordsMap: {
-            ...result.recordsMap,
-            [programId]: recordWithName,
-          },
-        };
-        await this.aleoStorage.setAddressInfo(this.chainId, address, newResult);
-      }
+      const recordsMap = records.reduce<{
+        [commitment in string]?: RecordDetailWithSpent;
+      }>((res, record) => {
+        res[record.commitment] = record;
+        return res;
+      }, {});
+      const { records: recordWithName } = await this.getRecordsWithName(
+        programId,
+        recordsMap,
+      );
+      records = Object.values(recordWithName).filter(isNotEmpty);
     }
 
-    const records = Object.values(recordsMap ?? {}).filter((item) => {
-      if (!item) {
-        return false;
-      }
+    records = records.filter((item) => {
       switch (recordFilter) {
         case RecordFilter.SPENT: {
           return item.spent;
@@ -673,7 +884,7 @@ export class AleoService extends CoinServiceBasic {
         default:
           return false;
       }
-    }) as RecordDetailWithSpent[];
+    });
     if (programId !== NATIVE_TOKEN_PROGRAM_ID) {
       return records;
     } else {
@@ -682,10 +893,8 @@ export class AleoService extends CoinServiceBasic {
           return {
             ...record,
             parsedContent: {
-              microcredits: BigInt(
-                record.parsedContent?.microcredits ||
-                  record.content.microcredits.slice(0, -11),
-              ),
+              ...(record.parsedContent ?? {}),
+              microcredits: this.getRecordMicrocredits(record),
             },
           };
         })
@@ -1331,11 +1540,13 @@ export class AleoService extends CoinServiceBasic {
   }
 
   async clearAddressLocalData(adderss: string) {
+    this.clearScannerAccountCache(adderss);
     await this.aleoStorage.clearAddressLocalData(this.chainId, adderss);
     recordSyncService.resetAddress(this.chainId, adderss);
   }
 
   async resetChainData() {
+    this.clearScannerAccountCache();
     await this.aleoStorage.reset(this.chainId);
     recordSyncService.resetChain(this.chainId);
   }
@@ -1549,6 +1760,12 @@ export class AleoService extends CoinServiceBasic {
           address,
           ALPHA_TOKEN_PROGRAM_ID,
           RecordFilter.UNSPENT,
+          undefined,
+          this.getTokenPrivateBalanceConsumerId(
+            address,
+            ALPHA_TOKEN_PROGRAM_ID,
+            tokenId,
+          ),
         );
         return result.reduce((sum, record) => {
           if (record.parsedContent) {
@@ -1571,6 +1788,12 @@ export class AleoService extends CoinServiceBasic {
           address,
           BETA_STAKING_PROGRAM_ID,
           RecordFilter.UNSPENT,
+          undefined,
+          this.getTokenPrivateBalanceConsumerId(
+            address,
+            BETA_STAKING_PROGRAM_ID,
+            tokenId,
+          ),
         );
 
         if (!result) {
@@ -1590,6 +1813,12 @@ export class AleoService extends CoinServiceBasic {
           address,
           ARCANE_PROGRAM_ID,
           RecordFilter.UNSPENT,
+          undefined,
+          this.getTokenPrivateBalanceConsumerId(
+            address,
+            ARCANE_PROGRAM_ID,
+            tokenId,
+          ),
         );
         return result.reduce((sum, record) => {
           if (record.parsedContent) {
