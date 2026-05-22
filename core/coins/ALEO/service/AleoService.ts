@@ -63,7 +63,11 @@ import { type Token, type TokenWithBalance } from "../types/Token";
 import { type InnerProgramId } from "../types/ProgramId";
 import { BETA_STAKING_ALEO_TOKEN } from "../config/chains";
 import { isNotEmpty } from "core/utils/is";
-import { recordSyncService, ScannerStorage } from "./scanner";
+import {
+  parseRecordParsedContent,
+  recordSyncService,
+  ScannerStorage,
+} from "./scanner";
 import { AleoStorage } from "@/scripts/background/store/aleo/AleoStorage";
 import { CoinServiceBasic } from "core/coins/CoinServiceBasic";
 import { AssetType, type TokenV2 } from "core/types/Token";
@@ -106,6 +110,28 @@ type ScannerAccountCache = {
   chainId: string;
   uuid: string;
   viewKey: string;
+};
+
+type ScannerRecordsSnapshotRequest = {
+  consumerId?: string;
+  end?: number;
+  programIds?: string[];
+  purpose?: "default" | "view";
+  recordFilter?: RecordFilter;
+  refreshMode?: "auto" | "hard" | "light" | "none";
+  requireRecords?: boolean;
+  start?: number;
+};
+
+type ScannerRecordsSnapshot = {
+  account: ScannerAccountCache;
+  records: RecordDetailWithSpent[];
+};
+
+type ScannerRecordsMap = {
+  [programId: string]: {
+    [commitment: string]: RecordDetailWithSpent | undefined;
+  };
 };
 
 // only for popup thread
@@ -292,61 +318,21 @@ export class AleoService extends CoinServiceBasic {
           allRecordsMap[programId] = newRecords;
         }
       }
-      const creditsRecords = allRecordsMap[NATIVE_TOKEN_PROGRAM_ID];
-      if (creditsRecords) {
-        for (const [commitment, record] of Object.entries(creditsRecords)) {
+      for (const [programId, records] of Object.entries(allRecordsMap)) {
+        if (!records) {
+          continue;
+        }
+        for (const [commitment, record] of Object.entries(records)) {
           if (!record || record.parsedContent) {
             continue;
           }
-          record.parsedContent = {
-            microcredits: record.content.microcredits.slice(0, -11),
-          };
-          creditsRecords[commitment] = record;
+          record.parsedContent = parseRecordParsedContent(
+            programId,
+            record.content,
+          );
+          records[commitment] = record;
         }
-        allRecordsMap[NATIVE_TOKEN_PROGRAM_ID] = creditsRecords;
-      }
-      const tokenRecords = allRecordsMap[ALPHA_TOKEN_PROGRAM_ID];
-      if (tokenRecords) {
-        for (const [commitment, record] of Object.entries(tokenRecords)) {
-          if (!record || record.parsedContent) {
-            continue;
-          }
-          record.parsedContent = {
-            token: record.content.token.slice(0, -8),
-            amount: record.content.amount.slice(0, -12),
-          };
-          tokenRecords[commitment] = record;
-        }
-        allRecordsMap[ALPHA_TOKEN_PROGRAM_ID] = tokenRecords;
-      }
-
-      const stAleoRecords = allRecordsMap[BETA_STAKING_PROGRAM_ID];
-      if (stAleoRecords) {
-        for (const [commitment, record] of Object.entries(stAleoRecords)) {
-          if (!record || record.parsedContent) {
-            continue;
-          }
-          record.parsedContent = {
-            amount: record.content.amount.slice(0, -11),
-          };
-          stAleoRecords[commitment] = record;
-        }
-        allRecordsMap[BETA_STAKING_PROGRAM_ID] = stAleoRecords;
-      }
-
-      const arcaneRecords = allRecordsMap[ARCANE_PROGRAM_ID];
-      if (arcaneRecords) {
-        for (const [commitment, record] of Object.entries(arcaneRecords)) {
-          if (!record || record.parsedContent) {
-            continue;
-          }
-          record.parsedContent = {
-            token: record.content.token_id.slice(0, -8),
-            amount: record.content.amount.slice(0, -12),
-          };
-          arcaneRecords[commitment] = record;
-        }
-        allRecordsMap[ARCANE_PROGRAM_ID] = arcaneRecords;
+        allRecordsMap[programId] = records;
       }
 
       const result = {
@@ -546,37 +532,60 @@ export class AleoService extends CoinServiceBasic {
     );
   }
 
-  private async getScannerRecords(
-    address: string,
-    programId: string,
-    recordFilter: RecordFilter,
-    consumerId?: string,
-  ): Promise<RecordDetailWithSpent[]> {
-    const viewConsumerId =
-      consumerId ?? this.getRecordsConsumerId(address, programId, recordFilter);
-    return await this.getScannerRecordsWithAccount(
-      await this.getScannerAccount(address),
-      programId,
-      recordFilter,
-      viewConsumerId,
-      address,
-    );
+  private getRecordTokenId(record: RecordDetailWithSpent): string | undefined {
+    return typeof record.parsedContent?.token === "string"
+      ? record.parsedContent.token
+      : undefined;
   }
 
-  private async getScannerRecordsWithAccount(
+  private recordMatchesToken(
+    record: RecordDetailWithSpent,
+    tokenId?: string,
+  ): boolean {
+    switch (record.programId) {
+      case ALPHA_TOKEN_PROGRAM_ID:
+      case ARCANE_PROGRAM_ID:
+        return (
+          tokenId !== undefined && this.getRecordTokenId(record) === tokenId
+        );
+      default:
+        return true;
+    }
+  }
+
+  private assertScannerRecordParsedContent(
+    record: RecordDetailWithSpent,
+  ): void {
+    if (!record.parsedContent) {
+      throw new Error(
+        "Scanner record missing parsedContent for program " + record.programId,
+      );
+    }
+  }
+
+  private async getScannerRecordsForAccount(
     scannerAccount: ScannerAccountCache,
-    programId: string,
-    recordFilter: RecordFilter,
-    consumerId: string,
-    address: string,
-  ): Promise<RecordDetailWithSpent[]> {
-    const unspent = this.recordFilterToUnspent(recordFilter);
-    const records = await recordSyncService.getDecryptedOwnedRecords(
+    request: ScannerRecordsSnapshotRequest = {},
+  ): Promise<RecordDetailWithSpent[] | undefined> {
+    const unspent = request.recordFilter
+      ? this.recordFilterToUnspent(request.recordFilter)
+      : undefined;
+    const shouldApplyFilter =
+      request.programIds !== undefined ||
+      request.start !== undefined ||
+      request.end !== undefined;
+    const filter = shouldApplyFilter
+      ? {
+          ...(request.programIds ? { programs: request.programIds } : {}),
+          ...(request.start !== undefined ? { start: request.start } : {}),
+          ...(request.end !== undefined ? { end: request.end } : {}),
+        }
+      : undefined;
+
+    return await recordSyncService.getDecryptedOwnedRecords(
       {
-        filter: {
-          programs: [programId],
-        },
         uuid: scannerAccount.uuid,
+        ...(filter ? { filter } : {}),
         ...(unspent !== undefined ? { unspent } : {}),
       },
       {
@@ -585,42 +594,81 @@ export class AleoService extends CoinServiceBasic {
       },
       {
         chainId: this.chainId,
-        consumerId,
-        purpose: "view",
-        refreshMode: "auto",
+        consumerId: request.consumerId,
+        purpose: request.purpose ?? "default",
+        refreshMode: request.refreshMode ?? "auto",
       },
     );
+  }
+
+  private async getScannerRecordsSnapshot(
+    address: string,
+    request: ScannerRecordsSnapshotRequest = {},
+  ): Promise<ScannerRecordsSnapshot> {
+    const scannerAccount = await this.getScannerAccount(address);
+    const records = await this.getScannerRecordsForAccount(
+      scannerAccount,
+      request,
+    );
     if (records) {
-      return records;
+      return { account: scannerAccount, records };
     }
 
     const refreshedAccount = await this.getScannerAccount(address, {
       forceReload: true,
     });
     if (refreshedAccount.uuid === scannerAccount.uuid) {
-      return [];
+      if (request.requireRecords) {
+        throw new Error("Get records failed");
+      }
+      return { account: refreshedAccount, records: [] };
     }
 
-    const retryRecords = await recordSyncService.getDecryptedOwnedRecords(
-      {
-        filter: {
-          programs: [programId],
-        },
-        uuid: refreshedAccount.uuid,
-        ...(unspent !== undefined ? { unspent } : {}),
-      },
-      {
-        address: refreshedAccount.address,
-        viewKey: refreshedAccount.viewKey,
-      },
-      {
-        chainId: this.chainId,
-        consumerId,
-        purpose: "view",
-        refreshMode: "auto",
-      },
+    const retryRecords = await this.getScannerRecordsForAccount(
+      refreshedAccount,
+      request,
     );
-    return retryRecords ?? [];
+    if (!retryRecords && request.requireRecords) {
+      throw new Error("Get records failed");
+    }
+    return { account: refreshedAccount, records: retryRecords ?? [] };
+  }
+
+  private buildScannerRecordsMap(
+    records: RecordDetailWithSpent[],
+  ): ScannerRecordsMap {
+    return records.reduce<ScannerRecordsMap>((res, record) => {
+      if (!res[record.programId]) {
+        res[record.programId] = {};
+      }
+      res[record.programId]![record.commitment] = record;
+      return res;
+    }, {});
+  }
+
+  private async getScannerRecordsMap(
+    address: string,
+    request: ScannerRecordsSnapshotRequest = {},
+  ): Promise<ScannerRecordsMap> {
+    const { records } = await this.getScannerRecordsSnapshot(address, request);
+    return this.buildScannerRecordsMap(records);
+  }
+
+  private async getScannerRecords(
+    address: string,
+    programId: string,
+    recordFilter: RecordFilter,
+    consumerId?: string,
+  ): Promise<RecordDetailWithSpent[]> {
+    const viewConsumerId =
+      consumerId ?? this.getRecordsConsumerId(address, programId, recordFilter);
+    const { records } = await this.getScannerRecordsSnapshot(address, {
+      consumerId: viewConsumerId,
+      programIds: [programId],
+      purpose: "view",
+      recordFilter,
+    });
+    return records;
   }
 
   async getPrivateBalance(address: string): Promise<bigint> {
@@ -1282,58 +1330,40 @@ export class AleoService extends CoinServiceBasic {
     const lastHeight = pagination.cursor
       ? parseInt(pagination.cursor)
       : undefined;
-    const startHeight = publicHistory[publicHistory.length - 1].height;
-    const syncBlocksResult = await this.debounceSyncBlocks(address);
-    const account = await this.aleoStorage.getAccountInfo(address);
+    const startHeight = publicHistory[publicHistory.length - 1]?.height;
     let privateHistory: AleoOnChainHistoryItem[] = [];
-    if (account) {
-      const viewKeyObj = this.parseViewKey(account.viewKey);
-      const recordsMap = syncBlocksResult?.recordsMap ?? {};
-      const records = [];
-      for (const recordMap of Object.values(recordsMap)) {
-        if (!recordMap) {
-          continue;
-        }
-        for (const record of Object.values(recordMap)) {
-          if (!record) {
-            continue;
-          }
-          records.push(record);
-        }
+    const { account, records } = await this.getScannerRecordsSnapshot(address, {
+      end: lastHeight,
+      recordFilter: RecordFilter.ALL,
+      start: startHeight,
+    });
+    const viewKeyObj = this.parseViewKey(account.viewKey);
+    const recordsInRange = records.filter((item) => {
+      // record occurred in public history
+      if (
+        publicHistory.some((history) => history.txId === item.transactionId)
+      ) {
+        return false;
       }
-      const recordsInRange = records.filter((item) => {
-        if (lastHeight !== undefined && item.height > lastHeight) {
-          return false;
-        }
-        if (item.height < startHeight) {
-          return false;
-        }
-        // record occurred in public history
-        if (
-          publicHistory.some((history) => history.txId === item.transactionId)
-        ) {
-          return false;
-        }
-        return true;
-      });
-      const recordTxIds = new Set<string>();
-      recordsInRange.forEach((item) => {
-        recordTxIds.add(item.transactionId);
-      });
-      const privateTxs = await Promise.all(
-        [...recordTxIds].map(async (item) => {
-          const tx = await this.getConfirmedTransactionInfo({
-            txId: item,
-            viewKey: viewKeyObj,
-            address,
-          });
-          return tx;
-        }),
-      );
-      privateHistory = privateTxs.filter(
-        (item) => !!item,
-      ) as AleoOnChainHistoryItem[];
-    }
+      return true;
+    });
+    const recordTxIds = new Set<string>();
+    recordsInRange.forEach((item) => {
+      recordTxIds.add(item.transactionId);
+    });
+    const privateTxs = await Promise.all(
+      [...recordTxIds].map(async (item) => {
+        const tx = await this.getConfirmedTransactionInfo({
+          txId: item,
+          viewKey: viewKeyObj,
+          address,
+        });
+        return tx;
+      }),
+    );
+    privateHistory = privateTxs.filter(
+      (item) => !!item,
+    ) as AleoOnChainHistoryItem[];
     const historyList = [...publicHistory, ...privateHistory];
     historyList.sort((item1, item2) => {
       if (item1.height && item2.height) {
@@ -1350,33 +1380,15 @@ export class AleoService extends CoinServiceBasic {
     program?: string,
     tokenId?: string,
   ) {
-    const result = await this.debounceSyncBlocks(address);
-    if (!result) return [];
-    const { recordsMap } = result;
     let records: RecordDetailWithSpent[] = [];
+    const recordsMap = await this.getScannerRecordsMap(address, {
+      ...(program ? { programIds: [program] } : {}),
+      recordFilter: RecordFilter.ALL,
+    });
     if (program) {
-      switch (program) {
-        case ALPHA_TOKEN_PROGRAM_ID:
-        case ARCANE_PROGRAM_ID: {
-          records = Object.values(recordsMap[program] ?? {}).filter((item) => {
-            if (!item) return false;
-            return item.parsedContent?.token === tokenId;
-          }) as RecordDetailWithSpent[];
-          break;
-        }
-        case BETA_STAKING_PROGRAM_ID: {
-          records = Object.values(recordsMap[program] ?? {}).filter(
-            (item) => !!item,
-          ) as RecordDetailWithSpent[];
-          break;
-        }
-        default: {
-          records = Object.values(recordsMap[program] ?? {}).filter(
-            (item) => !!item,
-          ) as RecordDetailWithSpent[];
-          break;
-        }
-      }
+      records = Object.values(recordsMap[program] ?? {})
+        .filter(isNotEmpty)
+        .filter((record) => this.recordMatchesToken(record, tokenId));
     } else {
       const programs = Object.keys(recordsMap);
       for (const program of programs) {
@@ -1433,61 +1445,41 @@ export class AleoService extends CoinServiceBasic {
       ? parseInt(pagination.cursor)
       : undefined;
     const startHeight = publicHistory[publicHistory.length - 1]?.height;
-    const syncBlocksResult = await this.debounceSyncBlocks(address);
-    const account = await this.aleoStorage.getAccountInfo(address);
     let privateHistory: AleoHistoryItem[] = [];
-    if (account) {
-      const viewKeyObj = this.parseViewKey(account.viewKey);
-      const recordsMap = syncBlocksResult?.recordsMap ?? {};
-      const records = [];
-      for (const recordMap of Object.values(recordsMap)) {
-        if (!recordMap) {
-          continue;
-        }
-        for (const record of Object.values(recordMap)) {
-          if (!record) {
-            continue;
-          }
-          records.push(record);
-        }
+    const { account, records } = await this.getScannerRecordsSnapshot(address, {
+      end: lastHeight,
+      recordFilter: RecordFilter.ALL,
+      start: startHeight,
+    });
+    const viewKeyObj = this.parseViewKey(account.viewKey);
+    const recordsInRange = records.filter((item) => {
+      // record occurred in public history
+      if (
+        publicHistory.some((history) => history.txId === item.transactionId)
+      ) {
+        return false;
       }
-      const recordsInRange = records.filter((item) => {
-        if (lastHeight !== undefined && item.height > lastHeight) {
-          return false;
-        }
-        if (startHeight !== undefined && item.height < startHeight) {
-          return false;
-        }
-        // record occurred in public history
-        if (
-          publicHistory.some((history) => history.txId === item.transactionId)
-        ) {
-          return false;
-        }
-        // record occured in local history
-        if (
-          localTxList.some((history) => history.txId === item.transactionId)
-        ) {
-          return false;
-        }
-        return true;
-      });
-      const recordTxIds = new Set<string>();
-      recordsInRange.forEach((item) => {
-        recordTxIds.add(item.transactionId);
-      });
-      const privateTxs = await Promise.all(
-        [...recordTxIds].map(async (item) => {
-          const tx = await this.getConfirmedTransactionInfo({
-            txId: item,
-            viewKey: viewKeyObj,
-            address,
-          });
-          return tx;
-        }),
-      );
-      privateHistory = privateTxs.filter((item) => !!item) as AleoHistoryItem[];
-    }
+      // record occured in local history
+      if (localTxList.some((history) => history.txId === item.transactionId)) {
+        return false;
+      }
+      return true;
+    });
+    const recordTxIds = new Set<string>();
+    recordsInRange.forEach((item) => {
+      recordTxIds.add(item.transactionId);
+    });
+    const privateTxs = await Promise.all(
+      [...recordTxIds].map(async (item) => {
+        const tx = await this.getConfirmedTransactionInfo({
+          txId: item,
+          viewKey: viewKeyObj,
+          address,
+        });
+        return tx;
+      }),
+    );
+    privateHistory = privateTxs.filter((item) => !!item) as AleoHistoryItem[];
 
     const otherTxList = [];
     const finishedLocalTxList = [];
@@ -1612,11 +1604,10 @@ export class AleoService extends CoinServiceBasic {
     inputs: InputItem[],
     fee: bigint,
   ) => {
-    const result = await this.debounceSyncBlocks(address);
-    if (!result) {
-      throw new Error("Get records failed");
-    }
-    const recordsMap = result.recordsMap || {};
+    const recordsMap = await this.getScannerRecordsMap(address, {
+      recordFilter: RecordFilter.ALL,
+      requireRecords: true,
+    });
 
     const usedCreditRecords: RecordDetailWithSpent[] = [];
     const newInputs = inputs.map(async (item) => {
@@ -1651,10 +1642,8 @@ export class AleoService extends CoinServiceBasic {
         return {
           ...record,
           parsedContent: {
-            microcredits: BigInt(
-              record.parsedContent?.microcredits ||
-                record.content.microcredits.slice(0, -11),
-            ),
+            ...(record.parsedContent ?? {}),
+            microcredits: this.getRecordMicrocredits(record),
           },
         };
       })
@@ -1768,19 +1757,11 @@ export class AleoService extends CoinServiceBasic {
           ),
         );
         return result.reduce((sum, record) => {
-          if (record.parsedContent) {
-            if (record.parsedContent.token !== tokenId) {
-              return sum;
-            } else {
-              return sum + BigInt(record.parsedContent.amount);
-            }
-          } else {
-            if (record.content.token.slice(0, -8) !== tokenId) {
-              return sum;
-            } else {
-              return sum + BigInt(record.content.amount.slice(0, -12));
-            }
+          this.assertScannerRecordParsedContent(record);
+          if (this.getRecordTokenId(record) !== tokenId) {
+            return sum;
           }
+          return sum + BigInt(record.parsedContent.amount);
         }, 0n);
       }
       case BETA_STAKING_PROGRAM_ID: {
@@ -1801,11 +1782,8 @@ export class AleoService extends CoinServiceBasic {
         }
 
         return result.reduce((sum, record) => {
-          if (record.parsedContent) {
-            return sum + BigInt(record.parsedContent.amount);
-          } else {
-            return sum + BigInt(record.content.amount.slice(0, -11));
-          }
+          this.assertScannerRecordParsedContent(record);
+          return sum + BigInt(record.parsedContent.amount);
         }, 0n);
       }
       case ARCANE_PROGRAM_ID: {
@@ -1821,19 +1799,11 @@ export class AleoService extends CoinServiceBasic {
           ),
         );
         return result.reduce((sum, record) => {
-          if (record.parsedContent) {
-            if (record.parsedContent.token !== tokenId) {
-              return sum;
-            } else {
-              return sum + BigInt(record.parsedContent.amount);
-            }
-          } else {
-            if (record.content.token_id.slice(0, -8) !== tokenId) {
-              return sum;
-            } else {
-              return sum + BigInt(record.content.amount.slice(0, -12));
-            }
+          this.assertScannerRecordParsedContent(record);
+          if (this.getRecordTokenId(record) !== tokenId) {
+            return sum;
           }
+          return sum + BigInt(record.parsedContent.amount);
         }, 0n);
       }
       default: {
@@ -2141,69 +2111,35 @@ export class AleoService extends CoinServiceBasic {
     if (!token?.programId) {
       return [];
     }
-    const syncBlocksResult = await this.debounceSyncBlocks(address);
-    const account = await this.aleoStorage.getAccountInfo(address);
     let privateHistory: AleoOnChainHistoryItem[] = [];
-    if (account) {
-      const viewKeyObj = this.parseViewKey(account.viewKey);
-      const recordMap = syncBlocksResult?.recordsMap[token.programId] ?? {};
-      const records: RecordDetailWithSpent[] = [];
-      for (const record of Object.values(recordMap)) {
-        if (!record) {
-          continue;
-        }
-        if (!record.parsedContent) {
-          switch (record.programId) {
-            case ALPHA_TOKEN_PROGRAM_ID: {
-              record.parsedContent = {
-                token: record.content.token.slice(0, -8),
-                amount: record.content.amount.slice(0, -12),
-              };
-              if (record.parsedContent.token !== token.tokenId) {
-                continue;
-              }
-              break;
-            }
-            case BETA_STAKING_PROGRAM_ID: {
-              record.parsedContent = {
-                amount: record.content.amount.slice(0, -11),
-              };
-              break;
-            }
-            case ARCANE_PROGRAM_ID: {
-              record.parsedContent = {
-                token: record.content.token_id.slice(0, -8),
-                amount: record.content.amount.slice(0, -12),
-              };
-              if (record.parsedContent.token !== token.tokenId) {
-                continue;
-              }
-              break;
-            }
-            default: {
-              throw new Error(
-                "Unsupported token program id " + record.programId,
-              );
-            }
-          }
-        }
-
-        records.push(record);
+    const { account, records: scannerRecords } =
+      await this.getScannerRecordsSnapshot(address, {
+        programIds: [token.programId],
+        recordFilter: RecordFilter.ALL,
+      });
+    const viewKeyObj = this.parseViewKey(account.viewKey);
+    const records: RecordDetailWithSpent[] = [];
+    for (const record of scannerRecords) {
+      this.assertScannerRecordParsedContent(record);
+      if (!this.recordMatchesToken(record, token.tokenId)) {
+        continue;
       }
-      const privateTxs = await Promise.all(
-        records.map(async (item) => {
-          const tx = await this.getConfirmedTokenTransactionInfo({
-            record: item,
-            viewKey: viewKeyObj,
-            address,
-          });
-          return tx;
-        }),
-      );
-      privateHistory = privateTxs.filter(
-        (item) => !!item,
-      ) as AleoOnChainHistoryItem[];
+
+      records.push(record);
     }
+    const privateTxs = await Promise.all(
+      records.map(async (item) => {
+        const tx = await this.getConfirmedTokenTransactionInfo({
+          record: item,
+          viewKey: viewKeyObj,
+          address,
+        });
+        return tx;
+      }),
+    );
+    privateHistory = privateTxs.filter(
+      (item) => !!item,
+    ) as AleoOnChainHistoryItem[];
     const historyList = [...privateHistory];
     historyList.sort((item1, item2) => {
       if (item1.height && item2.height) {
