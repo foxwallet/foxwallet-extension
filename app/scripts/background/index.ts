@@ -1,6 +1,5 @@
 import { PortName } from "../../common/types/port";
 import { Connection } from "../../common/utils/connection";
-import { offscreen } from "./aleo";
 import { ContentServerHandler } from "./handlers/ContentServerHandler";
 import { keepAliveHandler } from "./handlers/KeepaliveHandler";
 import { PopupServerHandler } from "./handlers/PopupServerHandler";
@@ -16,8 +15,7 @@ import {
   parseVersion,
 } from "@/common/utils/version";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
-import { clearSwrCache, swrStorageInstance } from "@/common/utils/indexeddb";
-import { startCheckSyncing } from "./offscreen";
+import { clearSwrCache } from "@/common/utils/indexeddb";
 import { accountSettingStorage } from "./store/account/AccountStorage";
 import { coinServiceEntry } from "core/coins/CoinServiceEntry";
 import {
@@ -131,10 +129,7 @@ async function checkVersion() {
 }
 
 checkVersion().finally(() => {
-  console.log("===> checkVersion done start offscreen");
-  offscreen();
+  console.log("===> checkVersion done");
 });
-
-startCheckSyncing();
 
 export { keyringManager };

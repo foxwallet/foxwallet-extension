@@ -4,10 +4,6 @@ import {
   type ScannerDecryptedRecord,
   type ScannerDecryptedRecordMap,
 } from "./ScannerDecryptedRecord";
-import {
-  type AleoAddressInfo,
-  type SyncRecordResultWithDuration,
-} from "./SyncTask";
 import { type AleoLocalTxInfo } from "./Transaction";
 
 export interface ClearAddressLocalDataOptions {
@@ -19,35 +15,6 @@ export interface IAleoStorage {
   getAccountInfo(address: string): Promise<AleoSyncAccount | undefined>;
 
   setAccountInfo(account: AleoSyncAccount): Promise<AleoSyncAccount>;
-
-  getAleoRecordRanges(chainId: string, address: string): Promise<string[]>;
-  getAleoRecords(
-    chainId: string,
-    address: string,
-  ): Promise<SyncRecordResultWithDuration[]>;
-  setAleoRecords(
-    chainId: string,
-    address: string,
-    key: string,
-    blockInfo: SyncRecordResultWithDuration,
-  ): Promise<SyncRecordResultWithDuration>;
-
-  getAleoRecordsInfo(
-    chainId: string,
-    address: string,
-    key: string,
-  ): Promise<SyncRecordResultWithDuration | null>;
-
-  getAddressInfo(
-    chainId: string,
-    address: string,
-  ): Promise<AleoAddressInfo | null>;
-
-  setAddressInfo(
-    chainId: string,
-    address: string,
-    info: AleoAddressInfo,
-  ): Promise<AleoAddressInfo>;
 
   setLocalTxNotification(chainId: string, localId: string): Promise<void>;
 

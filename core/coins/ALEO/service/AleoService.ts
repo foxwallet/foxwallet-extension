@@ -1,10 +1,6 @@
 import { type AleoConfig } from "../types/AleoConfig";
 import { type IAleoStorage } from "../types/IAleoStorage";
-import {
-  type AleoAddressInfo,
-  type FutureJSON,
-  type RecordDetailWithSpent,
-} from "../types/SyncTask";
+import { type FutureJSON, type RecordDetailWithSpent } from "../types/SyncTask";
 import { parseU128, parseU64 } from "../utils/num";
 import { logger } from "@/common/utils/logger";
 import {
@@ -36,7 +32,6 @@ import {
   AleoTxAddressType,
   AleoTxType,
 } from "../types/History";
-import { Mutex } from "async-mutex";
 import {
   Address,
   FoxFuture,
@@ -46,8 +41,6 @@ import {
   RecordCiphertext,
   ViewKey,
 } from "aleo_wasm_mainnet";
-import { type AleoApiService, createAleoApiService } from "./instances/sync";
-import { type AleoSyncAccount } from "../types/AleoSyncAccount";
 import {
   type AleoWalletService,
   createAleoWalletService,
@@ -63,11 +56,7 @@ import { type Token, type TokenWithBalance } from "../types/Token";
 import { type InnerProgramId } from "../types/ProgramId";
 import { BETA_STAKING_ALEO_TOKEN } from "../config/chains";
 import { isNotEmpty } from "core/utils/is";
-import {
-  parseRecordParsedContent,
-  recordSyncService,
-  ScannerStorage,
-} from "./scanner";
+import { recordSyncService, ScannerStorage } from "./scanner";
 import { AleoStorage } from "@/scripts/background/store/aleo/AleoStorage";
 import { CoinServiceBasic } from "core/coins/CoinServiceBasic";
 import { AssetType, type TokenV2 } from "core/types/Token";
@@ -91,12 +80,6 @@ import {
 const CREDITS_MAPPING_NAME = "account";
 
 const ALPHA_SWAP_TOKEN_MAPPING_NAME = "tokens";
-
-const mutex = new Mutex();
-
-const SYNS_BLOCK_INTERVAL = 1000;
-
-const GET_SPENT_TAGS_SIZE = 500;
 
 const ALEO_PRIVATE_BALANCE_CONSUMER_ID_PREFIX = "aleo:private-balance";
 
@@ -141,12 +124,9 @@ export class AleoService extends CoinServiceBasic {
   aleoInfoApi: AleoInfoApi;
   private aleoStorage: IAleoStorage;
   private rpcService: AleoRpcService;
-  private apiService: AleoApiService;
   private arcaneService: ArcaneService;
   private walletService: AleoWalletService;
   private tokenService: AlphaSwapTokenService;
-  private cachedSyncBlock: AleoAddressInfo | null = null;
-  private lastSyncBlockTime: number = 0;
   private scannerAccountCache = new Map<string, ScannerAccountCache>();
   private scannerAccountPromiseCache = new Map<
     string,
@@ -161,12 +141,6 @@ export class AleoService extends CoinServiceBasic {
     this.aleoInfoApi = new AleoInfoApi(config.aleoInfoApi);
     this.rpcService = createAleoRpcService(
       config.rpcList.map((item) => ({
-        url: item,
-        chainId: config.chainId,
-      })),
-    );
-    this.apiService = createAleoApiService(
-      config.syncApiList.map((item) => ({
         url: item,
         chainId: config.chainId,
       })),
@@ -205,200 +179,6 @@ export class AleoService extends CoinServiceBasic {
       return false;
     }
   }
-
-  private async getSpentTagsInRange(tags: string[]) {
-    return await this.apiService.getSpentTags(tags);
-  }
-
-  private async getSpentTags(tags: string[]) {
-    if (tags.length <= GET_SPENT_TAGS_SIZE) {
-      const spentTags = await this.getSpentTagsInRange(tags);
-      return spentTags;
-    }
-    const result: string[] = [];
-    for (let i = 0; i < tags.length; i += GET_SPENT_TAGS_SIZE) {
-      const subTags = tags.slice(i, i + GET_SPENT_TAGS_SIZE);
-      const subSpentTags = await this.getSpentTagsInRange(subTags);
-      result.push(...subSpentTags);
-    }
-    return result;
-  }
-
-  public async getSyncProgress(address: string): Promise<number> {
-    const [recordRanges, nodeStatus] = await Promise.all([
-      this.aleoStorage.getAleoRecordRanges(this.chainId, address),
-      this.apiService.getNodeStatus(),
-    ]);
-    const { referenceHeight, serverHeight } = nodeStatus;
-    const maxHeight = Math.max(referenceHeight ?? 0, serverHeight ?? 0);
-    // console.log("      recordRanges", recordRanges, nodeStatus);
-
-    const finishHeight = recordRanges
-      .map((item) => {
-        const [start, end] = item.split("-");
-        return [parseInt(start), parseInt(end)];
-      })
-      .reduce((prev, curr) => {
-        return prev + curr[1] - curr[0] + 1;
-      }, 0);
-    // console.log("      finishHeight", finishHeight);
-
-    const realProgress = Math.floor((finishHeight / maxHeight) * 100);
-    // console.log("      realProgress", realProgress);
-
-    // 99%时视为100%, 否则会持续显示99%
-    return realProgress < 99 ? realProgress : 100;
-
-    // return Math.min(
-    //   // add some buffer to avoid always 99%
-    //   // Math.floor(((finishHeight + 20) / maxHeight) * 100),
-    //   100,
-    // );
-  }
-
-  private syncRecords = async (
-    address: string,
-  ): Promise<AleoAddressInfo | null> => {
-    const release = await mutex.acquire();
-    try {
-      const addressInfo = await this.aleoStorage.getAddressInfo(
-        this.chainId,
-        address,
-      );
-
-      const records = await this.aleoStorage.getAleoRecords(
-        this.chainId,
-        address,
-      );
-
-      if (records.length === 0) {
-        return null;
-      }
-
-      const allRecordsMap: {
-        [program in string]?: {
-          [commitment in string]?: RecordDetailWithSpent;
-        };
-      } = addressInfo?.recordsMap ?? {};
-      let [existBegin, existEnd] = addressInfo?.range ?? [];
-
-      for (let i = 0; i < records.length; i += 1) {
-        const blockInfo = records[i];
-
-        const { recordsMap, range } = blockInfo;
-        const [recordBegin, recordEnd] = range;
-        if (existBegin !== undefined && existEnd !== undefined) {
-          existBegin = Math.min(existBegin, recordBegin);
-          existEnd = Math.max(existEnd, recordEnd);
-        } else {
-          existBegin = recordBegin;
-          existEnd = recordEnd;
-        }
-        for (const [programId, records] of Object.entries(recordsMap)) {
-          if (!records || Object.keys(records).length === 0) {
-            continue;
-          }
-          const newRecords = allRecordsMap[programId] ?? {};
-          for (const record of Object.values(records)) {
-            if (!record) {
-              continue;
-            }
-            if (!record.tag) {
-              logger.error("===> getBalance record.tag is null", record);
-            }
-            const { commitment } = record;
-            if (!newRecords[commitment]) {
-              logger.log("===> insert record: ", record);
-              newRecords[commitment] = {
-                ...record,
-                spent: false,
-              };
-            }
-          }
-          allRecordsMap[programId] = newRecords;
-        }
-      }
-      for (const [programId, records] of Object.entries(allRecordsMap)) {
-        if (!records) {
-          continue;
-        }
-        for (const [commitment, record] of Object.entries(records)) {
-          if (!record || record.parsedContent) {
-            continue;
-          }
-          record.parsedContent = parseRecordParsedContent(
-            programId,
-            record.content,
-          );
-          records[commitment] = record;
-        }
-        allRecordsMap[programId] = records;
-      }
-
-      const result = {
-        recordsMap: allRecordsMap,
-        range: [existBegin, existEnd],
-      };
-      console.log("===> syncRecords result: ", result);
-      await this.aleoStorage.setAddressInfo(this.chainId, address, result);
-      const unspentRecordTagsMap = Object.entries(allRecordsMap).reduce(
-        (
-          res: { [key in string]: { programId: string; commitment: string } },
-          [programId, curr],
-        ) => {
-          if (!curr) {
-            return res;
-          }
-          for (const [commitment, record] of Object.entries(curr)) {
-            if (!record) {
-              continue;
-            }
-            if (!record.spent) {
-              res[record.tag] = {
-                programId,
-                commitment,
-              };
-            }
-          }
-          return res;
-        },
-        {},
-      );
-      const unspentTags = Object.keys(unspentRecordTagsMap);
-      const spentTags = await this.getSpentTags(unspentTags);
-      if (spentTags.length > 0) {
-        for (const tag of spentTags) {
-          const { programId, commitment } = unspentRecordTagsMap[tag];
-          const record = allRecordsMap[programId]?.[commitment];
-          if (record) {
-            record.spent = true;
-            allRecordsMap[programId]![commitment] = record;
-          }
-        }
-        const result = {
-          recordsMap: allRecordsMap,
-          range: [existBegin, existEnd],
-        };
-        await this.aleoStorage.setAddressInfo(this.chainId, address, result);
-      }
-      return result;
-    } finally {
-      release();
-    }
-  };
-
-  public debounceSyncBlocks = async (
-    address: string,
-  ): Promise<AleoAddressInfo | null> => {
-    if (
-      !this.cachedSyncBlock ||
-      Date.now() - this.lastSyncBlockTime > SYNS_BLOCK_INTERVAL
-    ) {
-      this.cachedSyncBlock = await this.syncRecords(address);
-      this.lastSyncBlockTime = Date.now();
-    }
-    return this.cachedSyncBlock;
-  };
 
   private scannerAccountCacheKey(address: string): string {
     return `${this.chainId}:${address}`;
@@ -1541,10 +1321,6 @@ export class AleoService extends CoinServiceBasic {
     this.clearScannerAccountCache();
     await this.aleoStorage.reset(this.chainId);
     recordSyncService.resetChain(this.chainId);
-  }
-
-  async setAleoSyncAccount(account: AleoSyncAccount) {
-    await this.aleoStorage.setAccountInfo(account);
   }
 
   async faucetMessage(address: string): Promise<FaucetMessage> {

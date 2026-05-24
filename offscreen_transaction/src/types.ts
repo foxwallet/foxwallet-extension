@@ -1,9 +1,3 @@
-export enum TaskPriority {
-  HIGH = 0,
-  MEDIUM = 1,
-  LOW = 2,
-}
-
 export const NATIVE_TOKEN_PROGRAM_ID = "credits.aleo";
 
 export const ALPHA_TOKEN_PROGRAM_ID = "alphaswap.aleo";
@@ -23,42 +17,6 @@ export interface Token {
   official: boolean;
   programId: InnerProgramId;
 }
-
-export interface AleoSyncAccount {
-  walletId: string;
-  accountId: string;
-  address: string;
-  viewKey: string;
-  priority: TaskPriority;
-  height?: number;
-}
-export interface SyncRecordParams {
-  viewKey: string;
-  address: string;
-  begin: number;
-  end: number;
-  batchId: string;
-  priority: TaskPriority;
-}
-
-export interface RecordDetail {
-  programId: string;
-  plaintext: string;
-  content: { [key in string]: any };
-  nonce: string;
-  // check spent or not
-  // serialNumber: string;
-  // spentTransitionId?: string;
-  tag: string;
-  commitment: string;
-  recordName?: string;
-}
-
-export type RecordDetailWithSpent = RecordDetail &
-  TxMetadata & {
-    spent: boolean;
-    parsedContent?: { [key in string]: any };
-  };
 
 export interface FeeInfo {
   feeType: "fee_public" | "fee_private";
@@ -97,71 +55,6 @@ export interface FutureJSON {
   function_name: string;
   arguments: string[];
 }
-
-export type BlockSpentTags = Omit<TxMetadata, "txId"> & { tags: string[] };
-
-// export interface SyncRecordResp {
-//   range: number[];
-//   recordsMap: { [key in string]?: RecordDetail[] };
-//   txInfoList: AleoTxHistoryItem[];
-//   spentRecordTags?: BlockSpentTags[];
-//   measureMap: {
-//     [key in string]: { time: number; max: number; count: number };
-//   };
-// }
-
-export type SyncRecordResp = SyncRecordParams & SyncBlockResult;
-
-export interface SyncBlockResult {
-  recordsMap: { [program in string]?: RecordDetail[] };
-  spentRecordTags: BlockSpentTags[];
-  txInfoList: AleoTxHistoryItem[];
-  range: number[];
-}
-
-export type SyncRecordResultWithDuration = SyncBlockResult & {
-  measure: {
-    totalTime: number;
-    requestTime: number;
-  };
-};
-
-export type AleoAddressInfo = {
-  recordsMap: {
-    [program in string]?: { [commitment in string]?: RecordDetailWithSpent };
-  };
-  spentRecordTags: string[];
-  txInfoList: AleoTxHistoryItem[];
-  range: number[];
-};
-
-export interface AddressSyncRecordResp {
-  chainId: string;
-  addressResultMap: {
-    [x in string]: SyncRecordResp;
-  };
-  measureMap: {
-    [key in string]: { time: number; max: number; count: number };
-  };
-}
-
-export interface TaskParams {
-  priority: TaskPriority;
-  timestamp: number;
-}
-
-export interface TaskParamWithRange {
-  address: string[]; // easier to change priority
-  begin: number;
-  end: number;
-  chainId: string;
-  priority: TaskPriority;
-  timestamp: number;
-}
-
-export type WorkerSyncTask = TaskParamWithRange & {
-  syncParams: SyncRecordParams[];
-};
 
 export interface AleoSendTxParams {
   privateKey: string;
@@ -316,10 +209,8 @@ export type ConfirmedTransaction = {
 };
 
 export enum MessageOrigin {
-  OFFSCREEN_TO_BACKGROUND = "offscreen_to_background",
   OFFSCREEN_TX_TO_BACKGROUND = "offscreen_tx_to_background",
   OFFSCREEN_SCANNER_TO_BACKGROUND = "offscreen_scanner_to_background",
-  BACKGROUND_TO_OFFSCREEN = "background_to_offscreen",
   BACKGROUND_TO_OFFSCREEN_TX = "background_to_offscreen_tx",
   BACKGROUND_TO_OFFSCREEN_SCANNER = "background_to_offscreen_scanner",
 }
@@ -341,7 +232,6 @@ export interface OffscreenMessage<T = any> {
 }
 
 export enum OffscreenMethod {
-  INIT_WORKER = "init_worker",
   SEND_TX = "send_tx",
   DEPLOY = "deploy",
   IS_SENDING_TX = "is_sending_tx",

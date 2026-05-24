@@ -1,17 +1,14 @@
 import { Mutex } from "async-mutex";
 import * as browser from "webextension-polyfill";
 
-export const OFFSCREEN_SYNC_PATH = "/offscreen.html";
 export const OFFSCREEN_TX_PATH = "/offscreen_tx.html";
 export const OFFSCREEN_SCANNER_PATH = "/offscreen_scanner.html";
 
 export type OffscreenPath =
-  | typeof OFFSCREEN_SYNC_PATH
   | typeof OFFSCREEN_TX_PATH
   | typeof OFFSCREEN_SCANNER_PATH;
 
 const KNOWN_PATHS: readonly OffscreenPath[] = [
-  OFFSCREEN_SYNC_PATH,
   OFFSCREEN_TX_PATH,
   OFFSCREEN_SCANNER_PATH,
 ];
@@ -40,16 +37,10 @@ async function hasDocumentRaw(path: string): Promise<boolean> {
   );
 }
 
-// Pure observation — does NOT take the lock. Safe to call from any caller
+// Pure observation. Does not take the lock. Safe to call from any caller
 // that just wants to know whether a document is up right now.
 export async function hasDocument(path: OffscreenPath): Promise<boolean> {
   return hasDocumentRaw(path);
-}
-
-// Cache-only snapshot. Fast path for the watchdog: if scanner/tx is up we
-// bail before touching chrome.runtime.
-export function currentOffscreenPath(): OffscreenPath | null {
-  return currentPath;
 }
 
 // Must be called inside the mutex. Seeds `currentPath` once per SW lifecycle
@@ -84,7 +75,7 @@ async function createLocked(
 async function closeLocked(): Promise<void> {
   if (currentPath === null) {
     // Defensive: if reconcile thinks nothing is up but Chrome disagrees,
-    // a closeDocument() call will throw "No offscreen document to close" —
+    // a closeDocument() call will throw "No offscreen document to close";
     // swallow that specific case.
     return;
   }

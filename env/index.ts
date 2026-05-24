@@ -9,9 +9,6 @@ export const ReserveChainConfigs = {
   //   rpcList: shuffle(
   //     JSON.parse(import.meta.env.VITE_ALEO_RPC_LIST) as string[],
   //   ),
-  //   syncApiList: shuffle(
-  //     JSON.parse(import.meta.env.VITE_ALEO_SYNC_API_LIST) as string[],
-  //   ),
   //   walletApiList: shuffle(
   //     JSON.parse(import.meta.env.VITE_ALEO_WALLET_API_LIST) as string[],
   //   ),
@@ -19,9 +16,6 @@ export const ReserveChainConfigs = {
   aleo_mainnet: {
     rpcList: shuffle(
       JSON.parse(import.meta.env.VITE_ALEO_RPC_LIST) as string[],
-    ),
-    syncApiList: shuffle(
-      JSON.parse(import.meta.env.VITE_ALEO_SYNC_API_LIST) as string[],
     ),
     walletApiList: shuffle(
       JSON.parse(import.meta.env.VITE_ALEO_WALLET_API_LIST) as string[],

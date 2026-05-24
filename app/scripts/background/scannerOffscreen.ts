@@ -7,12 +7,7 @@ import {
   type ScannerEncryptRegistrationPayload,
   type ScannerEncryptRegistrationResult,
 } from "../../../offscreen_transaction/src/types";
-import {
-  getTxInFlight,
-  restartSyncBlocks,
-  startCheckSyncing,
-  stopCheckSyncing,
-} from "./offscreen";
+import { getTxInFlight } from "./offscreen";
 import {
   OFFSCREEN_SCANNER_PATH,
   closeOffscreen,
@@ -21,7 +16,7 @@ import {
 
 // Upper bound on how long scanner will wait for an in-flight tx/deploy
 // before giving up. 5 minutes covers the longest realistic deploy budget
-// (prover key generation + broadcast). If we hit this, the tx is stuck —
+// (prover key generation + broadcast). If we hit this, the tx is stuck;
 // failing fast is better than hanging the caller forever.
 const SCANNER_TX_WAIT_TIMEOUT_MS = 5 * 60 * 1000;
 
@@ -55,7 +50,6 @@ export async function encryptRegistrationViaOffscreen(
     }
   }
 
-  stopCheckSyncing();
   try {
     return await withOffscreen(
       OFFSCREEN_SCANNER_PATH,
@@ -67,9 +61,9 @@ export async function encryptRegistrationViaOffscreen(
           origin: MessageOrigin.BACKGROUND_TO_OFFSCREEN_SCANNER,
           payload,
         };
-        const resp = (await chrome.runtime.sendMessage(
-          message,
-        )) as OffscreenMessage<ScannerEncryptRegistrationResult> | undefined;
+        const resp = (await chrome.runtime.sendMessage(message)) as
+          | OffscreenMessage<ScannerEncryptRegistrationResult>
+          | undefined;
 
         if (
           !resp ||
@@ -93,7 +87,5 @@ export async function encryptRegistrationViaOffscreen(
     } catch (e) {
       console.error("[scanner-offscreen] close failed", e);
     }
-    await restartSyncBlocks();
-    startCheckSyncing();
   }
 }

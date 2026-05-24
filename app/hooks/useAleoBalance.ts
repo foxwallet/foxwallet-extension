@@ -17,7 +17,7 @@ export interface Balance {
  *
  * @param uniqueId ChainUniqueId
  * @param address string
- * @param refreshInterval the refresh interval, should be greater than SYNS_BLOCK_INTERVAL
+ * @param refreshInterval the SWR balance refresh interval
  * @returns {Balance} balance
  */
 export const useAleoBalance = ({

@@ -1,6 +1,4 @@
 import Dexie from "dexie";
-import { type AleoAddressInfo } from "./types/address";
-import { type AddressRecords } from "./types/records";
 import { type AleoLocalTx } from "./types/tx";
 import { type AleoProgram } from "./types/program";
 import {
@@ -10,8 +8,6 @@ import {
 } from "../types";
 
 export class AleoBlockDatabase extends Dexie {
-  infos: Dexie.Table<AleoAddressInfo, string>;
-  records: Dexie.Table<AddressRecords, string>;
   txs: Dexie.Table<AleoLocalTx, string>;
   programs: Dexie.Table<AleoProgram, string>;
   cacheTxs: Dexie.Table<AleoOnChainHistoryItem>;
@@ -56,50 +52,20 @@ export class AleoBlockDatabase extends Dexie {
           });
       });
 
-    this.infos = this.table("infos");
-    this.records = this.table("records");
+    this.version(5).stores({
+      infos: null,
+      records: null,
+    });
+
     this.txs = this.table("txs");
     this.programs = this.table("programs");
     this.cacheTxs = this.table("cacheTxs");
   }
 
   async deleteAddressData(address: string): Promise<void> {
-    await this.transaction(
-      "rw",
-      this.infos,
-      this.records,
-      this.txs,
-      async () => {
-        const infosToDelete = this.infos.where({ address });
-        await infosToDelete.delete();
-        const recordsToDelete = this.records.where({ address });
-        await recordsToDelete.delete();
-        const txsToDelete = this.txs.where({ address });
-        await txsToDelete.delete();
-      },
-    );
-  }
-
-  async setRecords(address: string, recordsData: AddressRecords) {
-    await this.transaction("rw", this.records, async () => {
-      const { begin } = recordsData;
-      // delete the item with same begin
-      const count = await this.records
-        .where({
-          address,
-          begin,
-        })
-        .count();
-      if (count) {
-        await this.records
-          .where({
-            address,
-            begin,
-          })
-          .modify(recordsData);
-      } else {
-        await this.records.add(recordsData);
-      }
+    await this.transaction("rw", this.txs, async () => {
+      const txsToDelete = this.txs.where({ address });
+      await txsToDelete.delete();
     });
   }
 }

@@ -20,10 +20,6 @@ export default defineConfig(({ mode }) => ({
     minify: mode === "production",
     assetsInlineLimit: 0,
     rollupOptions: {
-      input: {
-        offscreen: "./offscreen.html",
-        // offscreen_tx: "./offscreen_tx.html",
-      },
       output: {
         entryFileNames: "[name].js",
         format: "esm",
@@ -56,7 +52,10 @@ export default defineConfig(({ mode }) => ({
       { find: "@", replacement: path.resolve(__dirname, "app") },
       { find: "core", replacement: path.resolve(__dirname, "core") },
       { find: "aleo", replacement: path.resolve(__dirname, "aleo") },
-      { find: "axios/lib", replacement: path.resolve(__dirname, "node_modules/axios/lib") },
+      {
+        find: "axios/lib",
+        replacement: path.resolve(__dirname, "node_modules/axios/lib"),
+      },
     ],
   },
   define: {},

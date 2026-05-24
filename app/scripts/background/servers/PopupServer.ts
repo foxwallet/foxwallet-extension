@@ -35,8 +35,6 @@ import {
   sendAleoTransaction,
   sendDeployment,
   stopSending,
-  stopSync,
-  syncBlocks,
 } from "../offscreen";
 import { AccountSettingStorage } from "../store/account/AccountStorage";
 import { DappStorage } from "../store/dapp/DappStorage";
@@ -53,7 +51,6 @@ import {
 } from "core/coins/ALEO/types/Transaction";
 import { CoinServiceEntry } from "core/coins/CoinServiceEntry";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
-import { TaskPriority } from "core/coins/ALEO/types/SyncTask";
 import { ConnectHistory, DappRequest } from "@/database/types/dapp";
 import { AleoTxType } from "core/coins/ALEO/types/History";
 import {
@@ -1011,11 +1008,7 @@ export class PopupWalletServer implements IPopupServer {
   async rescanAleo(): Promise<boolean> {
     try {
       await stopSending();
-      await stopSync();
       const groupAccount = await this.getSelectedGroupAccount({});
-      // const selectedUniqueId = await this.getSelectedUniqueId({
-      //   coinType: CoinType.ALEO,
-      // });
       const account = groupAccount?.group.accounts.find(
         (account) => account.coinType === CoinType.ALEO,
       );
@@ -1025,38 +1018,17 @@ export class PopupWalletServer implements IPopupServer {
           selectedUniqueId,
         ) as AleoService;
         await instance.clearAddressLocalData(account.address);
-        const viewKey = await this.keyringManager.getViewKey({
-          coinType: CoinType.ALEO,
-          address: account.address,
-        });
-        if (viewKey) {
-          await instance.setAleoSyncAccount({
-            walletId: groupAccount.wallet.walletId,
-            accountId: account.accountId,
-            address: account.address,
-            viewKey,
-            priority: TaskPriority.MEDIUM,
-          });
-        } else {
-          console.error("===> rescanAleo error: viewKey is null");
-        }
       }
       return true;
     } catch (err) {
       console.error("===> rescanAleo error: ", err);
       return false;
-    } finally {
-      syncBlocks();
     }
   }
 
   async resetChain(): Promise<boolean> {
     try {
       await stopSending();
-      await stopSync();
-      // const selectedUniqueId = await this.getSelectedUniqueId({
-      //   coinType: CoinType.ALEO,
-      // });
       const instance = this.coinService.getInstance(
         InnerChainUniqueId.ALEO_MAINNET,
       ) as AleoService;
@@ -1065,8 +1037,6 @@ export class PopupWalletServer implements IPopupServer {
     } catch (err) {
       console.error("===> resetChain error: ", err);
       return false;
-    } finally {
-      syncBlocks();
     }
   }
 
@@ -1239,7 +1209,6 @@ export class PopupWalletServer implements IPopupServer {
 
   async resetWallet(): Promise<boolean> {
     try {
-      await stopSync();
       await Promise.all([
         this.accountSettingStorage.removeSelectedAccount(),
         this.keyringManager.resetWallet(),
@@ -1247,14 +1216,11 @@ export class PopupWalletServer implements IPopupServer {
       return true;
     } catch (err) {
       return false;
-    } finally {
-      syncBlocks();
     }
   }
 
   async deleteWallet(walletId: string): Promise<DisplayKeyring> {
     try {
-      await stopSync();
       const groupAccount =
         await this.accountSettingStorage.getSelectedGroupAccount();
       let newSelectedAccount: OneMatchGroupAccount | null = null;
@@ -1298,8 +1264,6 @@ export class PopupWalletServer implements IPopupServer {
       await this.keyringManager.deleteWallet(walletId);
     } catch (err) {
       console.error("===> deleteWallet error: ", err);
-    } finally {
-      syncBlocks();
     }
     return await this.getAllWallet();
   }

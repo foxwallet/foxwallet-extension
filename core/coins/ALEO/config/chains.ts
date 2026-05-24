@@ -47,8 +47,6 @@ export const ALEO_CHAIN_CONFIGS: { [key in string]: AleoConfig } = {
   //   chainId: "testnet",
   //   chainName: "Aleo",
   //   rpcList: ReserveChainConfigs[InnerChainUniqueId.ALEO_TESTNET].rpcList,
-  //   syncApiList:
-  //     ReserveChainConfigs[InnerChainUniqueId.ALEO_TESTNET].syncApiList,
   //   walletApiList:
   //     ReserveChainConfigs[InnerChainUniqueId.ALEO_TESTNET].walletApiList,
   //   nativeCurrency: ALEO_NATIVE_CURRENCY,
@@ -73,8 +71,6 @@ export const ALEO_CHAIN_CONFIGS: { [key in string]: AleoConfig } = {
     chainId: "mainnet",
     chainName: "Aleo Mainnet",
     rpcList: ReserveChainConfigs[InnerChainUniqueId.ALEO_MAINNET].rpcList,
-    syncApiList:
-      ReserveChainConfigs[InnerChainUniqueId.ALEO_MAINNET].syncApiList,
     walletApiList:
       ReserveChainConfigs[InnerChainUniqueId.ALEO_MAINNET].walletApiList,
     nativeCurrency: ALEO_NATIVE_CURRENCY,
