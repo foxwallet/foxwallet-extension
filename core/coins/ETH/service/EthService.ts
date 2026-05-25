@@ -41,7 +41,7 @@ import {
   ethAddressFromDelegated,
   validateAddressString,
 } from "@glif/filecoin-address";
-import { Address } from "@zondax/izari-tools";
+import { Address } from "@zondax/izari-tools/address";
 import {
   type TokenMetaParams,
   type FilForwarderTxParams,

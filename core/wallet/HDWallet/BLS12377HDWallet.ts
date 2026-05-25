@@ -11,8 +11,9 @@ import {
 import { getCoinDerivation } from "../../helper/CoinBasic";
 import { CoreError } from "../../types/Error";
 import { encryptStr } from "../../utils/encrypt";
-import init, { PrivateKey } from "aleo_wasm_mainnet";
+import { PrivateKey } from "aleo_wasm_mainnet";
 import { DEFAULT_ALEO_ACCOUNT_OPTION } from "core/coins/ALEO/config/derivation";
+import { initAleoWasm } from "core/coins/ALEO/utils/wasmInit";
 
 export class BLS12377HDWallet<T extends CoinType> implements BaseHDWallet<T> {
   private readonly coinRootPath: string;
@@ -34,7 +35,7 @@ export class BLS12377HDWallet<T extends CoinType> implements BaseHDWallet<T> {
     switch (this.symbol) {
       case CoinType.ALEO: {
         try {
-          await init();
+          await initAleoWasm();
           const wallet = this.coinRoot.deriveChild(i);
           const pk = PrivateKey.from_seed_unchecked(wallet.key);
 

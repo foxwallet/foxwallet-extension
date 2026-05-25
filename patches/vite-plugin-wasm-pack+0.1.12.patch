@@ -1,0 +1,18 @@
+diff --git a/node_modules/vite-plugin-wasm-pack/dist/index.js b/node_modules/vite-plugin-wasm-pack/dist/index.js
+index a46327d..9466480 100644
+--- a/node_modules/vite-plugin-wasm-pack/dist/index.js
++++ b/node_modules/vite-plugin-wasm-pack/dist/index.js
+@@ -121,10 +121,10 @@ function vitePluginWasmPack(crates, moduleCrates) {
+                 if (isNodeModule) {
+                     jsPath = path_1.default.join(pkgPath, jsName);
+                 }
+-                const regex = /input = new URL\('(.+)'.+;/g;
++                const regex = /(input|module_or_path)\s*=\s*new URL\('(.+?)'.+?;/g;
+                 let code = fs_extra_1.default.readFileSync(path_1.default.resolve(jsPath), { encoding: 'utf-8' });
+-                code = code.replace(regex, (_match, group1) => {
+-                    return `input = "${path_1.default.posix.join(config_base, config_assetsDir, group1)}"`;
++                code = code.replace(regex, (_match, varName, group1) => {
++                    return `${varName} = "${path_1.default.posix.join(config_base, config_assetsDir, group1)}"`;
+                 });
+                 fs_extra_1.default.writeFileSync(jsPath, code);
+             };

@@ -1,4 +1,4 @@
-import init, { PrivateKey, Address } from "aleo_wasm_mainnet";
+import { PrivateKey, Address } from "aleo_wasm_mainnet";
 import { encode as bs58Encode, decode as bs58Decode } from "bs58";
 import { CoinBasic } from "../../CoinBasic";
 import { CoinType } from "core/types";
@@ -6,11 +6,12 @@ import { ALEO_PRIVATE_PREFIX } from "../constants";
 import { AleoExportPKType, AleoImportPKType } from "../types/AleoAccount";
 import { CoreError, CoreErrorCode } from "core/types/Error";
 import { logger } from "@/common/utils/logger";
+import { initAleoWasm } from "core/coins/ALEO/utils/wasmInit";
 
 class AleoBasic extends CoinBasic<CoinType.ALEO> {
   constructor() {
     super(CoinType.ALEO);
-    void init();
+    void initAleoWasm();
   }
 
   public isValidPrivateKey(
