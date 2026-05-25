@@ -6,12 +6,10 @@ import { ALEO_PRIVATE_PREFIX } from "../constants";
 import { AleoExportPKType, AleoImportPKType } from "../types/AleoAccount";
 import { CoreError, CoreErrorCode } from "core/types/Error";
 import { logger } from "@/common/utils/logger";
-import { initAleoWasm } from "core/coins/ALEO/utils/wasmInit";
 
 class AleoBasic extends CoinBasic<CoinType.ALEO> {
   constructor() {
     super(CoinType.ALEO);
-    void initAleoWasm();
   }
 
   public isValidPrivateKey(

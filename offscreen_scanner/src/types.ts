@@ -14,6 +14,7 @@ export enum OffscreenMessageType {
 
 export enum OffscreenMethod {
   SCANNER_ENCRYPT_REGISTRATION = "scanner_encrypt_registration",
+  SCANNER_PING = "scanner_ping",
 }
 
 export interface OffscreenMessagePayload<T = any> {

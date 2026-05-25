@@ -479,6 +479,9 @@ export class KeyringManager {
         }
       }
     }
+    if (coinType === CoinType.ALEO) {
+      await initAleoWasm();
+    }
     const account = coinBasicFactory(coinType).deriveAccount(
       privateKey,
       privateKeyType,

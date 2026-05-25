@@ -13,10 +13,9 @@ import {
   type ScannerEncryptRegistrationResult,
 } from "./types.js";
 
-const respond = (
+const respond = async (
   message: OffscreenMessage<ScannerEncryptRegistrationResult>,
-): Promise<OffscreenMessage<ScannerEncryptRegistrationResult>> =>
-  Promise.resolve(message);
+): Promise<OffscreenMessage<ScannerEncryptRegistrationResult>> => message;
 
 // webextension-polyfill only treats a returned Promise (or sendResponse/true)
 // as a response. Return undefined for unrelated messages so other listeners can
@@ -33,6 +32,13 @@ browser.runtime.onMessage.addListener(
     }
 
     switch (message.type) {
+      case OffscreenMethod.SCANNER_PING: {
+        return respond({
+          type: OffscreenMessageType.RESPONSE,
+          origin: MessageOrigin.OFFSCREEN_SCANNER_TO_BACKGROUND,
+          payload: { error: null, data: null },
+        });
+      }
       case OffscreenMethod.SCANNER_ENCRYPT_REGISTRATION: {
         const payload =
           message.payload as ScannerEncryptRegistrationPayload | null;

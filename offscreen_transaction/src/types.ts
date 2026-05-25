@@ -236,6 +236,7 @@ export enum OffscreenMethod {
   DEPLOY = "deploy",
   IS_SENDING_TX = "is_sending_tx",
   SCANNER_ENCRYPT_REGISTRATION = "scanner_encrypt_registration",
+  SCANNER_PING = "scanner_ping",
 }
 
 export interface ScannerEncryptRegistrationPayload {

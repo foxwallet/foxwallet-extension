@@ -34,7 +34,6 @@ keepAliveConnection.connect();
 
 const authManager = new AuthManager();
 const keyringManager = new KeyringManager(authManager);
-keyringManager.init();
 const dappStorage = new DappStorage();
 const coinService = coinServiceEntry;
 
