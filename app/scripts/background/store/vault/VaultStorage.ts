@@ -346,8 +346,6 @@ export class VaultStorage {
     const release = await mutex.acquire();
     try {
       const vault = await this.getVault();
-      console.log("migrate", vault);
-      console.log("migrate", JSON.stringify(vault, null, 2));
       if (
         vault[VaultKeys.keyring] &&
         vault[VaultKeys.keyring].version !== vaultVersion
@@ -566,8 +564,6 @@ export class VaultStorage {
               };
             }
           }
-
-          console.log("migrate", selectedGroupAccount);
           if (selectedGroupAccount) {
             await accountSettingStorage.setSelectedGroupAccount(
               selectedGroupAccount,
