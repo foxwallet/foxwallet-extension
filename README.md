@@ -14,8 +14,8 @@ FoxWallet is a secure and user-friendly decentralized self-custody wallet design
 - **app**: Contains all application UI pages, data management, routing, i18n (multi-language support), and other related functionalities.
 - **core**: Wallet service functionalities, including mnemonic phrase handling, private key import, address derivation, transaction sending, etc.
 - **env**: Directory for RPC and public API configuration files.
-- **offscreen_sync**: Offscreen Document functionality added specifically for Aleo blockchain synchronization.
 - **offscreen_transaction**: Offscreen Document functionality added specifically for sending Aleo transactions.
+- **offscreen_scanner**: Offscreen Document functionality for Aleo Record Scanner ViewKey registration encryption.
 - **fox-aleo-sdk**: A customized package based on [@provablehq/sdk](https://github.com/ProvableHQ/sdk), which is compiled using `fox-aleo-sdk/wasm` to generate a WASM package suitable for JavaScript.
 - **@provablehq**: Packaged output based on `fox-aleo-sdk`, intended for use in different scenarios.
 - **script**: Contains scripts for specific functionalities.
@@ -95,7 +95,7 @@ Since this project started early, it was initially built based on `@aleohq/wasm`
   ```
   > You can find the corresponding dependencies for `@provablehq/wasm-mainnet` in the `package.json` file.
 
-The existence of these two packaging methods is related to the project's technical architecture and the characteristics of the compiled output. Chrome Extension Manifest V3 does not support the **Top-Level Await** feature, which is included in the official package. To resolve this issue, we leverage the **Offscreen Document** feature, which is why you can see `offscreen_sync` and `offscreen_transaction` in the project.
+The existence of these two packaging methods is related to the project's technical architecture and the characteristics of the compiled output. Chrome Extension Manifest V3 does not support the **Top-Level Await** feature, which is included in the official package. To resolve this issue, we leverage the **Offscreen Document** feature, which is why you can see `offscreen_transaction` and `offscreen_scanner` in the project.
 
 > In summary, if you need to call the `initThreadPool` function, you must import `@provablehq/wasm-mainnet`. Since it involves the **Top-Level Await** feature, it must be placed inside an **Offscreen Document**. In all other cases, `aleo_wasm_mainnet` can be imported and used directly.
 
