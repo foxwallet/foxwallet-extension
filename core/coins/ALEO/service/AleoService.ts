@@ -172,15 +172,19 @@ export class AleoService extends CoinServiceBasic {
     }
   }
 
+  // validateAddress(address: string): boolean {
+  //   try {
+  //     const addressObj = Address.from_string(address);
+  //     console.log("===> addressObj: ", addressObj, !!addressObj);
+  //     return !!addressObj;
+  //   } catch (err) {
+  //     logger.log("===> isValidAddress failed: ", err, address);
+  //     return false;
+  //   }
+  // }
+
   validateAddress(address: string): boolean {
-    try {
-      const addressObj = Address.from_string(address);
-      console.log("===> addressObj: ", addressObj, !!addressObj);
-      return !!addressObj;
-    } catch (err) {
-      logger.log("===> isValidAddress failed: ", err, address);
-      return false;
-    }
+    return /^aleo1[0-9a-z]{58}$/.test(address);
   }
 
   private scannerAccountCacheKey(address: string): string {
