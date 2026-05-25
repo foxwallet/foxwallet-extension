@@ -76,6 +76,7 @@ import {
   type ArcaneService,
   createArcaneService,
 } from "core/coins/ALEO/service/instances/arcane";
+import { ProvableApi } from "core/coins/ALEO/service/api/provable";
 
 const CREDITS_MAPPING_NAME = "account";
 
@@ -124,6 +125,7 @@ export class AleoService extends CoinServiceBasic {
   aleoInfoApi: AleoInfoApi;
   private aleoStorage: IAleoStorage;
   private rpcService: AleoRpcService;
+  private provableApi: ProvableApi;
   private arcaneService: ArcaneService;
   private walletService: AleoWalletService;
   private tokenService: AlphaSwapTokenService;
@@ -145,6 +147,7 @@ export class AleoService extends CoinServiceBasic {
         chainId: config.chainId,
       })),
     );
+    this.provableApi = new ProvableApi();
     this.walletService = createAleoWalletService(
       config.walletApiList.map((item) => ({
         url: item,
@@ -467,22 +470,31 @@ export class AleoService extends CoinServiceBasic {
   }
 
   async getPublicBalance(address: string): Promise<bigint> {
-    const balance = await this.rpcService.getProgramMappingValue(
-      this.config.nativeCurrency.address,
-      CREDITS_MAPPING_NAME,
+    const balance = await this.provableApi.getPublicBalance(
+      this.chainId,
       address,
     );
-    if (!balance || balance === "null") {
+    if (!balance) {
       return 0n;
     }
     return parseU64(balance);
   }
 
   async getBalance(address: string) {
-    const [privateBalance, publicBalance] = await Promise.all([
+    const [privateRes, publicRes] = await Promise.allSettled([
       this.getPrivateBalance(address),
       this.getPublicBalance(address),
     ]);
+    const privateBalance =
+      privateRes.status === "fulfilled" ? privateRes.value : 0n;
+    const publicBalance =
+      publicRes.status === "fulfilled" ? publicRes.value : 0n;
+    if (privateRes.status === "rejected") {
+      logger.log("===> getPrivateBalance failed: ", privateRes.reason);
+    }
+    if (publicRes.status === "rejected") {
+      logger.log("===> getPublicBalance failed: ", publicRes.reason);
+    }
 
     return {
       privateBalance,

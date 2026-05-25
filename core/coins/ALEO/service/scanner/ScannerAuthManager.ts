@@ -16,8 +16,8 @@ import {
 } from "./ScannerTypes";
 import { ScannerStorage } from "./ScannerStorage";
 import { type ProvableScannerNetwork, scannerPath } from "./network";
+import { PROVABLE_EXPLORER_API } from "../api/provable";
 
-const PROVABLE_EXPLORER_API = "https://api.provable.com";
 const JWT_REFRESH_GRACE_MS = 5 * 60 * 1000;
 const DEFAULT_TIMEOUT_MS = 15000;
 const DEFAULT_HEADERS = { "Content-Type": "application/json" };
