@@ -293,19 +293,11 @@ function executeFunction<T>(
         hasNext,
         result,
         (error: any, retryTimes: number) => {
-          console.log(
-            `AutoSwitchProxy [${retryTimes}] ${method.toString()} switch to next due to: ${error}`,
-          );
           const nextApi = getNextInstance();
           return func.apply(nextApi, args);
         },
         rootResolve,
         (error: any, retryTimes: number) => {
-          console.warn(
-            `AutoSwitchProxy ${method.toString()} failed with ${retryTimes} times retry: ${
-              (error as Error).message
-            }`,
-          );
           rootReject(error);
         },
       );
