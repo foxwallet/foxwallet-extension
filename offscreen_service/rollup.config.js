@@ -12,7 +12,7 @@ export default {
     worker: "./src/worker.ts",
   },
   output: {
-    dir: "../dist/offscreen_transaction",
+    dir: "../dist/offscreen",
     format: "es",
     sourcemap: true,
   },

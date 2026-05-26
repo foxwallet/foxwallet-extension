@@ -1241,6 +1241,10 @@ export class PopupWalletServer implements IPopupServer {
       privateKey: pk,
     }).then(async (resp) => {
       console.log("===> sendAleoTransaction sendTransaction resp: ", resp);
+
+      console.log("===> 111 resp.payload JSON: ", JSON.stringify(resp?.payload));  // 临时加
+      console.log("===> 222 resp.payload.error: ", resp?.payload?.error);          // 临时加
+
       if (!resp) {
         const finalTxInfo: AleoLocalTxInfo = {
           ...params,

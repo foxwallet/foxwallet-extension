@@ -1,17 +1,11 @@
 import { Mutex } from "async-mutex";
 import * as browser from "webextension-polyfill";
 
-export const OFFSCREEN_TX_PATH = "/offscreen_tx.html";
-export const OFFSCREEN_SCANNER_PATH = "/offscreen_scanner.html";
+export const OFFSCREEN_PATH = "/offscreen.html";
 
-export type OffscreenPath =
-  | typeof OFFSCREEN_TX_PATH
-  | typeof OFFSCREEN_SCANNER_PATH;
+export type OffscreenPath = typeof OFFSCREEN_PATH;
 
-const KNOWN_PATHS: readonly OffscreenPath[] = [
-  OFFSCREEN_TX_PATH,
-  OFFSCREEN_SCANNER_PATH,
-];
+const KNOWN_PATHS: readonly OffscreenPath[] = [OFFSCREEN_PATH];
 
 const lock = new Mutex();
 
@@ -20,12 +14,16 @@ const lock = new Mutex();
 let currentPath: OffscreenPath | null = null;
 let reconciled = false;
 
+function getDocumentUrl(path: string): string {
+  return browser.runtime.getURL(path.replace(/^\//, ""));
+}
+
 async function hasDocumentRaw(path: string): Promise<boolean> {
   if ("getContexts" in chrome.runtime) {
     // @ts-expect-error getContexts not in @types/chrome yet
     const contexts = await chrome.runtime.getContexts({
       contextTypes: ["OFFSCREEN_DOCUMENT"],
-      documentUrls: [browser.runtime.getURL(path)],
+      documentUrls: [getDocumentUrl(path)],
     });
     return contexts.length > 0;
   }
@@ -73,12 +71,6 @@ async function createLocked(
 }
 
 async function closeLocked(): Promise<void> {
-  if (currentPath === null) {
-    // Defensive: if reconcile thinks nothing is up but Chrome disagrees,
-    // a closeDocument() call will throw "No offscreen document to close";
-    // swallow that specific case.
-    return;
-  }
   try {
     await chrome.offscreen.closeDocument();
   } catch (err: any) {
@@ -108,10 +100,10 @@ async function ensureLocked(
     // the case where a different SW instance / extension reload left a
     // stale document we didn't know about.
     const msg = String(err?.message ?? "");
-    if (!msg.startsWith("Only a single offscreen")) throw err;
+    if (!msg.includes("Only a single offscreen")) throw err;
     reconciled = false;
     await reconcileLocked();
-    if (currentPath !== null && currentPath !== target) {
+    if (currentPath !== target) {
       await closeLocked();
     }
     if (currentPath !== target) {
@@ -139,13 +131,8 @@ export async function withOffscreen<T>(
   justification: string,
   fn: () => Promise<T>,
 ): Promise<T> {
-  const release = await lock.acquire();
-  try {
-    await ensureLocked(target, reasons, justification);
-    return await fn();
-  } finally {
-    release();
-  }
+  await ensureOffscreen(target, reasons, justification);
+  return await fn();
 }
 
 export async function closeOffscreen(target?: OffscreenPath): Promise<void> {

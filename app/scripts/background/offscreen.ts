@@ -5,11 +5,11 @@ import {
   MessageOrigin,
   OffscreenMethod,
   OffscreenMessage,
-} from "../../../offscreen_transaction/src/types";
+} from "../../../offscreen_service/src/types";
 import { AleoSendTxParams } from "core/coins/ALEO/types/Transaction";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import {
-  OFFSCREEN_TX_PATH,
+  OFFSCREEN_PATH,
   closeOffscreen,
   hasDocument,
   withOffscreen,
@@ -20,14 +20,46 @@ const TX_REASONS: chrome.offscreen.Reason[] = [
   chrome.offscreen.Reason.LOCAL_STORAGE,
 ];
 const TX_JUSTIFICATION = "Sending aleo transaction";
+const TX_READY_TIMEOUT_MS = 30 * 1000;
+const TX_READY_POLL_INTERVAL_MS = 200;
 
 // In-process "a tx/deploy broadcast is happening" signal. Mutated only by
-// trackTx below. Scanner reads this to wait for tx completion before
-// touching the offscreen slot. See scannerOffscreen.ts.
+// trackTx below, so status checks can return true even before the offscreen
+// listener has answered its first message.
 let txInFlight: Promise<unknown> | null = null;
 
 export function getTxInFlight(): Promise<unknown> | null {
   return txInFlight;
+}
+
+const sleep = async (ms: number): Promise<void> => {
+  await new Promise((resolve) => setTimeout(resolve, ms));
+};
+
+async function waitForTxOffscreenReady(): Promise<void> {
+  const timeoutAt = Date.now() + TX_READY_TIMEOUT_MS;
+
+  while (Date.now() < timeoutAt) {
+    try {
+      const message: BackgroundMessage = {
+        type: OffscreenMethod.IS_SENDING_TX,
+        origin: MessageOrigin.BACKGROUND_TO_OFFSCREEN_TX,
+        payload: {},
+      };
+      const resp = (await chrome.runtime.sendMessage(message)) as
+        | OffscreenMessage
+        | undefined;
+      if (resp?.payload && !resp.payload.error) {
+        return;
+      }
+    } catch {
+      // The document can exist before its module has registered the listener.
+    }
+
+    await sleep(TX_READY_POLL_INTERVAL_MS);
+  }
+
+  throw new Error("tx offscreen did not become ready in time");
 }
 
 async function trackTx<T>(fn: () => Promise<T>): Promise<T> {
@@ -50,17 +82,18 @@ async function trackTx<T>(fn: () => Promise<T>): Promise<T> {
 }
 
 export async function stopSending() {
-  await closeOffscreen(OFFSCREEN_TX_PATH);
+  await closeOffscreen(OFFSCREEN_PATH);
 }
 
 export async function sendAleoTransaction(params: AleoSendTxParams) {
   return trackTx(async () => {
     try {
       return await withOffscreen(
-        OFFSCREEN_TX_PATH,
+        OFFSCREEN_PATH,
         TX_REASONS,
         TX_JUSTIFICATION,
         async () => {
+          await waitForTxOffscreenReady();
           console.log("===> initWorker sendMessage");
           const messsage: BackgroundMessage = {
             type: OffscreenMethod.SEND_TX,
@@ -80,8 +113,6 @@ export async function sendAleoTransaction(params: AleoSendTxParams) {
     } catch (err) {
       console.error("sendTransaction failed: ", err);
       return undefined;
-    } finally {
-      await closeOffscreen(OFFSCREEN_TX_PATH);
     }
   });
 }
@@ -103,13 +134,20 @@ async function getSendingTxStatus() {
     }
     return !!sendingTxResp.payload.data;
   } catch (err) {
-    console.error("===> getSendingTxStatus error: ", err);
+    const msg = String((err as Error)?.message ?? err);
+    if (!msg.includes("Receiving end does not exist")) {
+      console.error("===> getSendingTxStatus error: ", err);
+    }
     return false;
   }
 }
 
 export async function isSendingAleoTransaction() {
-  const has = await hasDocument(OFFSCREEN_TX_PATH);
+  if (txInFlight) {
+    return true;
+  }
+
+  const has = await hasDocument(OFFSCREEN_PATH);
   console.log("===> isSendingAleoTransaction has document: ", has);
   if (!has) {
     return false;
@@ -120,12 +158,16 @@ export async function isSendingAleoTransaction() {
   }
   const delayStatus = await new Promise<boolean>((resolve) => {
     setTimeout(async () => {
+      if (txInFlight) {
+        resolve(true);
+        return;
+      }
       const status = await getSendingTxStatus();
       resolve(status);
     }, 2000);
   });
   console.log("===> isSendingAleoTransaction: ", status, delayStatus);
-  if (!delayStatus) {
+  if (!delayStatus && !txInFlight) {
     await stopSending();
   }
   return delayStatus;
@@ -135,10 +177,11 @@ export async function sendDeployment(params: AleoRequestDeploymentParams) {
   return trackTx(async () => {
     try {
       return await withOffscreen(
-        OFFSCREEN_TX_PATH,
+        OFFSCREEN_PATH,
         TX_REASONS,
         TX_JUSTIFICATION,
         async () => {
+          await waitForTxOffscreenReady();
           console.log("===> initWorker sendMessage");
           const messsage: BackgroundMessage = {
             type: OffscreenMethod.DEPLOY,
@@ -158,8 +201,6 @@ export async function sendDeployment(params: AleoRequestDeploymentParams) {
     } catch (err) {
       console.error("sendDeployment failed: ", err);
       return undefined;
-    } finally {
-      await closeOffscreen(OFFSCREEN_TX_PATH);
     }
   });
 }
