@@ -79,6 +79,7 @@ import {
   type SyncStatusResp,
 } from "core/coins/ALEO/service/scanner";
 import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
+import { AleoStorage } from "../store/aleo/AleoStorage";
 
 export type OnRequestFinishCallback = (
   error: null | Error,
@@ -94,6 +95,7 @@ export class PopupWalletServer implements IPopupServer {
   requestIdCallbackMap: { [requestId in string]?: OnRequestFinishCallback } =
     {};
   coinService: CoinServiceEntry;
+  #aleoScannerPrewarmed = false;
 
   constructor(
     authManager: AuthManager,
@@ -836,11 +838,46 @@ export class PopupWalletServer implements IPopupServer {
   async hasAuth(): Promise<boolean> {
     console.log("===> popup server hasAuth: ");
     const result = this.authManager.hasAuth();
+    if (result) {
+      void this.prewarmAleoScannerRegistrations();
+    }
     return result;
   }
 
   async login(params: { password: string }): Promise<boolean> {
-    return await this.authManager.login(params.password);
+    const ok = await this.authManager.login(params.password);
+    if (ok) {
+      void this.prewarmAleoScannerRegistrations();
+    }
+    return ok;
+  }
+
+  private async prewarmAleoScannerRegistrations(): Promise<void> {
+    if (this.#aleoScannerPrewarmed) return;
+    if (!this.authManager.hasAuth()) return;
+    this.#aleoScannerPrewarmed = true;
+
+    try {
+      const chainId = InnerChainUniqueId.ALEO_MAINNET;
+      const addresses = await AleoStorage.getInstance().getAccountsAddress();
+      if (addresses.length === 0) return;
+
+      await Promise.allSettled(
+        addresses.map(async (address) => {
+          try {
+            await this.ensureScannerRegistration({ chainId, address });
+          } catch (error) {
+            console.warn("[RSS] prewarm scanner registration failed", {
+              address,
+              error,
+            });
+          }
+        }),
+      );
+    } catch (error) {
+      this.#aleoScannerPrewarmed = false;
+      console.warn("[RSS] prewarm scanner registrations aborted", error);
+    }
   }
 
   async lock(): Promise<void> {
