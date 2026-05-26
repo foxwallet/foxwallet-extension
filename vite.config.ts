@@ -40,7 +40,7 @@ export default defineConfig(({ mode }) => ({
         global: "globalThis",
       },
     },
-    exclude: [],
+    exclude: ["provable-wasm-no-tla"],
   },
   esbuild: {
     pure:
@@ -57,6 +57,7 @@ export default defineConfig(({ mode }) => ({
         replacement: path.resolve(__dirname, "node_modules/axios/lib"),
       },
     ],
+    dedupe: ["provable-wasm-no-tla"],
   },
   define: {},
   plugins: [
