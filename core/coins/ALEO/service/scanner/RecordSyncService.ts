@@ -1,4 +1,5 @@
-import { ViewKey } from "aleo_wasm_mainnet";
+import { ViewKey } from "provable-wasm-no-tla/mainnet.js";
+import { initAleoWasm } from "core/coins/ALEO/utils/wasmInit";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import type { IAleoStorage } from "core/coins/ALEO/types/IAleoStorage";
 import type { ScannerDecryptedRecordMap } from "core/coins/ALEO/types/ScannerDecryptedRecord";
@@ -1123,6 +1124,11 @@ export class RecordSyncService {
     // persisted ScannerDatabase cache). Only these need to be flushed to disk.
     newlyDecrypted: Map<string, string>;
   }> {
+    // ViewKey.from_string / decrypt go through wasm-bindgen. The popup realm
+    // never runs initAleoWasm on its own, so without this await the first
+    // decrypt throws "Cannot read properties of undefined (__wbindgen_export_2)".
+    // initAleoWasm caches its promise, so this is a no-op once wasm is ready.
+    await initAleoWasm();
     let viewKey: ViewKey | undefined;
     const getViewKey = () => {
       viewKey ??= ViewKey.from_string(account.viewKey);

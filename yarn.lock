@@ -8459,6 +8459,11 @@ prop-types@^15.5.0, prop-types@^15.5.8, prop-types@^15.6.2, prop-types@^15.8.1:
     object-assign "^4.1.1"
     react-is "^16.13.1"
 
+"provable-wasm-no-tla@npm:@provablehq/wasm@0.10.2":
+  version "0.10.2"
+  resolved "https://registry.yarnpkg.com/@provablehq/wasm/-/wasm-0.10.2.tgz#62017efa5235b211360b81a5405578cd34b8532b"
+  integrity sha512-/SdilgSWmUshels/DmqmzM1KwCFcQXUSI++SdrL029m6qvgU/kX22J0SqmZ46z/NhDp6ZJRDNNEd0A+tzPTSIA==
+
 proxy-from-env@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/proxy-from-env/-/proxy-from-env-1.1.0.tgz#e102f16ca355424865755d2c9e8ea4f24d58c3e2"

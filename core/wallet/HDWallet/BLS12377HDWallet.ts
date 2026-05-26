@@ -11,7 +11,7 @@ import {
 import { getCoinDerivation } from "../../helper/CoinBasic";
 import { CoreError } from "../../types/Error";
 import { encryptStr } from "../../utils/encrypt";
-import { PrivateKey } from "aleo_wasm_mainnet";
+import { PrivateKey } from "provable-wasm-no-tla/mainnet.js";
 import { DEFAULT_ALEO_ACCOUNT_OPTION } from "core/coins/ALEO/config/derivation";
 import { initAleoWasm } from "core/coins/ALEO/utils/wasmInit";
 

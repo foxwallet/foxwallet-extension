@@ -1,4 +1,3 @@
-import { RecordPlaintext } from "aleo_wasm_mainnet";
 import {
   ALPHA_TOKEN_PROGRAM_ID,
   ARCANE_PROGRAM_ID,
@@ -6,26 +5,49 @@ import {
   NATIVE_TOKEN_PROGRAM_ID,
 } from "core/coins/ALEO/constants";
 import type { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
-import { parseU128, parseU64 } from "core/coins/ALEO/utils/num";
 import type { OwnedRecord } from "./ScannerTypes";
 
 type AleoRecordContent = Record<string, string>;
 
+export function parseRecordCiphertext(input: string): AleoRecordContent {
+  const body = input.trim().replace(/^\{|\}$/g, "");
+  const entries: string[] = [];
+
+  let depth = 0;
+  let buf = "";
+  for (const ch of body) {
+    if (ch === "{") depth++;
+    if (ch === "}") depth--;
+    if ((ch === "," || ch === "\n") && depth === 0) {
+      const line = buf.trim();
+      if (line) entries.push(line);
+      buf = "";
+      continue;
+    }
+    buf += ch;
+  }
+  if (buf.trim()) entries.push(buf.trim());
+
+  const result: AleoRecordContent = {};
+  for (const line of entries) {
+    const colonIndex = line.indexOf(":");
+    if (colonIndex === -1) continue;
+    const key = line.slice(0, colonIndex).trim();
+    const value = line
+      .slice(colonIndex + 1)
+      .trim()
+      .replace(/,$/, "");
+    if (key) result[key] = value;
+  }
+  return result;
+}
+
 export function ownedToRecordDetail(
   record: OwnedRecord,
 ): RecordDetailWithSpent {
-  // Parse the plaintext once. We need both the JSON-shaped content (for
-  // downstream filters / parsedContent) and the WASM RecordPlaintext
-  // instance so we can pull `.nonce()` — RSS does not include nonce in
-  // the response payload.
-  const recordPlaintext = RecordPlaintext.fromString(record.recordPlaintext);
-  const content = JSON.parse(recordPlaintext.toJSON()) as AleoRecordContent;
-  const nonce = recordPlaintext.nonce();
+  const content = parseRecordCiphertext(record.recordPlaintext);
+  const nonce = stripVisibilitySuffix(content._nonce ?? "");
 
-  // commitment is the canonical map key downstream (recordsMap is keyed
-  // by commitment). ProvableScannerService requests it by default; a
-  // missing commitment is a server bug and we'd rather crash loudly than
-  // collide records on the tag.
   if (!record.commitment) {
     throw new Error(
       `OwnedRecord missing commitment (tag=${record.tag}, program=${record.programName})`,
@@ -44,11 +66,6 @@ export function ownedToRecordDetail(
     transactionId: record.transactionId ?? "",
     transitionId: record.transitionId ?? "",
     height: record.blockHeight ? Number(record.blockHeight) : 0,
-    // RSS /records/owned does not return block_timestamp; CypherOwnedRecord
-    // intentionally has no `blockTimestamp` field. UIs that need a real
-    // wall-clock must look it up from the block height via a separate block
-    // API. We emit 0 here rather than synthesizing a value, so "no timestamp"
-    // is surfaced explicitly and ordering still falls back to height.
     timestamp: 0,
     recordName: record.recordName,
     spent: record.spent ?? false,
@@ -57,7 +74,7 @@ export function ownedToRecordDetail(
 }
 
 export function parseRecordContent(plaintext: string): AleoRecordContent {
-  return JSON.parse(RecordPlaintext.fromString(plaintext).toJSON());
+  return parseRecordCiphertext(plaintext);
 }
 
 export function parseRecordParsedContent(
@@ -66,27 +83,27 @@ export function parseRecordParsedContent(
 ): Record<string, bigint | string> | undefined {
   if (programId === NATIVE_TOKEN_PROGRAM_ID && content.microcredits) {
     return {
-      microcredits: parseU64(content.microcredits),
+      microcredits: parseAleoInteger(content.microcredits),
     };
   }
 
   if (programId === ALPHA_TOKEN_PROGRAM_ID && content.token && content.amount) {
     return {
       token: stripVisibilitySuffix(content.token),
-      amount: parseU128(content.amount),
+      amount: parseAleoInteger(content.amount),
     };
   }
 
   if (programId === BETA_STAKING_PROGRAM_ID && content.amount) {
     return {
-      amount: parseU64(content.amount),
+      amount: parseAleoInteger(content.amount),
     };
   }
 
   if (programId === ARCANE_PROGRAM_ID && content.token_id && content.amount) {
     return {
       token: stripVisibilitySuffix(content.token_id),
-      amount: parseU128(content.amount),
+      amount: parseAleoInteger(content.amount),
     };
   }
 
@@ -111,12 +128,14 @@ export function stripVisibilitySuffix(value: string): string {
 }
 
 function parseAleoInteger(value: string): bigint {
+  // Accept any Aleo integer literal (u8/u16/u32/u64/u128/i*), with optional
+  // visibility suffix. e.g. "1234u64.private", "9u128", "42u32".
   const base = stripVisibilitySuffix(value);
-  if (base.endsWith("u128")) {
-    return parseU128(value);
+  const match = /^(\d+)[iu](?:8|16|32|64|128)$/.exec(base);
+  if (!match) return 0n;
+  try {
+    return BigInt(match[1]);
+  } catch {
+    return 0n;
   }
-  if (base.endsWith("u64")) {
-    return parseU64(value);
-  }
-  return 0n;
 }

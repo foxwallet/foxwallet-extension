@@ -34,13 +34,22 @@ import {
 } from "../types/History";
 import {
   Address,
-  FoxFuture,
-  hashBHP256,
+  BHP256,
   Plaintext,
   Program,
   RecordCiphertext,
   ViewKey,
-} from "aleo_wasm_mainnet";
+} from "provable-wasm-no-tla/mainnet.js";
+
+// Replacement for fox-aleo-sdk's `hashBHP256(struct: string)` helper, which
+// the upstream @provablehq/wasm 0.10.x does not expose. Mirrors the
+// reference project (provable-extension src/app/common/utils/tokenUtils.ts):
+// hash a struct literal via BHP256 over the Plaintext's little-endian bits.
+const hashBHP256 = (struct: string): string => {
+  const hasher = new BHP256();
+  const plaintext = Plaintext.fromString(struct);
+  return hasher.hash(plaintext.toBitsLe()).toString();
+};
 import {
   type AleoWalletService,
   createAleoWalletService,
@@ -592,18 +601,16 @@ export class AleoService extends CoinServiceBasic {
     }
   };
 
-  private parseFuture = (futureStr?: string): FutureJSON | undefined => {
-    if (!futureStr) {
-      return undefined;
-    }
-    try {
-      const future = FoxFuture.fromString(futureStr);
-      const futureObj = JSON.parse(future.toJSON());
-      return futureObj;
-    } catch (err) {
-      console.error("===> parseFuture error: ", err);
-      return undefined;
-    }
+  private parseFuture = (_futureStr?: string): FutureJSON | undefined => {
+    // FoxFuture was a fox-aleo-sdk extension to wasm-pack output that the
+    // upstream @provablehq/wasm 0.10.x does not provide, and there is no
+    // drop-in replacement (Future is consumed inside the SDK's Transaction
+    // pipeline rather than exported as a standalone parser). History views
+    // that depended on this currently degrade to undefined; private balance
+    // and the scanner decrypt path do not depend on it.
+    // TODO: reimplement using either a hand-rolled future literal parser or
+    // a future helper added to fox-aleo-sdk.
+    return undefined;
   };
 
   private parseRecordCiphertext = (recordCiphertextStr: string) => {

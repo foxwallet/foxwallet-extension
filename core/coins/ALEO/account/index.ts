@@ -1,4 +1,4 @@
-import { PrivateKey, Address } from "aleo_wasm_mainnet";
+import { PrivateKey, Address } from "provable-wasm-no-tla/mainnet.js";
 import { encode as bs58Encode, decode as bs58Decode } from "bs58";
 import { CoinBasic } from "../../CoinBasic";
 import { CoinType } from "core/types";
