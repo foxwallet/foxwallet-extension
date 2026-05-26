@@ -81,6 +81,31 @@ import {
 import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 import { AleoStorage } from "../store/aleo/AleoStorage";
 
+// Tag value that hydrateRecordParsedContent uses to recognize a BigInt that
+// was flattened to string for chrome.runtime port serialization. Keeping it
+// unusual avoids collisions with any genuine record string value.
+const BIGINT_PORT_TAG = "__bigint__:";
+
+function stringifyBigInt(value: bigint | string): string {
+  return typeof value === "bigint"
+    ? `${BIGINT_PORT_TAG}${value.toString()}`
+    : value;
+}
+
+function serializeRecordForPort(
+  record: RecordDetailWithSpent,
+): RecordDetailWithSpent {
+  if (!record.parsedContent) return record;
+  const next: Record<string, string | bigint> = {};
+  for (const [key, value] of Object.entries(record.parsedContent)) {
+    next[key] = stringifyBigInt(value);
+  }
+  return {
+    ...record,
+    parsedContent: next as unknown as RecordDetailWithSpent["parsedContent"],
+  };
+}
+
 export type OnRequestFinishCallback = (
   error: null | Error,
   data: any,
@@ -1174,7 +1199,12 @@ export class PopupWalletServer implements IPopupServer {
       },
     );
 
-    return records ?? [];
+    // chrome.runtime port serializes payloads via JSON, which does not
+    // support BigInt. parseRecordParsedContent emits bigint values for
+    // microcredits / amount; flatten them to string here and let the popup
+    // client hydrate them back on receipt. Keeps the wire format JSON-safe
+    // without forcing every consumer to switch to string semantics.
+    return (records ?? []).map(serializeRecordForPort);
   }
 
   async scannerGetSyncStatus(

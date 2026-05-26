@@ -42,6 +42,32 @@ import { type CoinType } from "core/types";
 import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 import { type SyncStatusResp } from "core/coins/ALEO/service/scanner";
 
+// Mirror PopupServer.BIGINT_PORT_TAG. Encoded form is the marker followed
+// by the decimal digits of the bigint. Anything else passes through.
+const BIGINT_PORT_TAG = "__bigint__:";
+
+function reviveBigInt(value: string | bigint): string | bigint {
+  if (typeof value !== "string") return value;
+  if (!value.startsWith(BIGINT_PORT_TAG)) return value;
+  const digits = value.slice(BIGINT_PORT_TAG.length);
+  if (!/^-?\d+$/.test(digits)) return value;
+  return BigInt(digits);
+}
+
+function hydrateRecordFromPort(
+  record: RecordDetailWithSpent,
+): RecordDetailWithSpent {
+  if (!record.parsedContent) return record;
+  const next: Record<string, string | bigint> = {};
+  for (const [key, value] of Object.entries(record.parsedContent)) {
+    next[key] = reviveBigInt(value as string | bigint);
+  }
+  return {
+    ...record,
+    parsedContent: next as unknown as RecordDetailWithSpent["parsedContent"],
+  };
+}
+
 export interface IClient {
   _connect: () => void;
 }
@@ -212,7 +238,14 @@ export class PopupServerClient implements IClient, IPopupServer {
   async scannerGetDecryptedOwnedRecords(
     params: ScannerGetDecryptedOwnedRecordsProps,
   ): Promise<RecordDetailWithSpent[]> {
-    return await this.#send("scannerGetDecryptedOwnedRecords", params);
+    const raw: RecordDetailWithSpent[] = await this.#send(
+      "scannerGetDecryptedOwnedRecords",
+      params,
+    );
+    // chrome.runtime ports JSON-serialize the response, so bigint fields
+    // PopupServer emitted as "__bigint__:N" strings need to be revived
+    // before downstream UI consumers use them in arithmetic / TokenNum.
+    return raw.map(hydrateRecordFromPort);
   }
 
   async scannerGetSyncStatus(
