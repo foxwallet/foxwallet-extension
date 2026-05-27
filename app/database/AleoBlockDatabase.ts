@@ -54,6 +54,26 @@ export class AleoBlockDatabase extends Dexie {
       records: null,
     });
 
+    // SDK 0.10.x changed credits.aleo verifying key indexes; any prover/
+    // verifier blobs synthesized under the old SDK no longer match and
+    // SnarkVM rejects them with "instance generated during proving does
+    // not match that in the index". Drop the cached keypairs so the next
+    // transaction re-synthesizes against the current SDK. Mirrors the
+    // matching v6 bump in offscreen_service/src/database/AleoBlockDatabase.ts
+    // so both Dexie definitions agree on the schema version.
+    this.version(6)
+      .stores({
+        programs: "programId",
+      })
+      .upgrade(async (transaction) => {
+        return transaction
+          .table("programs")
+          .toCollection()
+          .modify((program) => {
+            program.keypairs = {};
+          });
+      });
+
     this.txs = this.table("txs");
     this.programs = this.table("programs");
     this.cacheTxs = this.table("cacheTxs");

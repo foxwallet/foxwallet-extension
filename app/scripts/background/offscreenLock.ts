@@ -125,6 +125,22 @@ export async function ensureOffscreen(
   }
 }
 
+export async function recreateOffscreen(
+  target: OffscreenPath,
+  reasons: chrome.offscreen.Reason[],
+  justification: string,
+): Promise<void> {
+  const release = await lock.acquire();
+  try {
+    reconciled = false;
+    await reconcileLocked();
+    await closeLocked();
+    await createLocked(target, reasons, justification);
+  } finally {
+    release();
+  }
+}
+
 export async function withOffscreen<T>(
   target: OffscreenPath,
   reasons: chrome.offscreen.Reason[],

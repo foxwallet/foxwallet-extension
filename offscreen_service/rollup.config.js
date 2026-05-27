@@ -9,6 +9,7 @@ const production = process.env.NODE_ENV === "production";
 export default {
   input: {
     index: "./src/index.ts",
+    scannerWorker: "./src/scannerWorker.ts",
     worker: "./src/worker.ts",
   },
   output: {

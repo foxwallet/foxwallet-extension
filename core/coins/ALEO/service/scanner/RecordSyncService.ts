@@ -56,6 +56,7 @@ type ViewScope = {
   network: ProvableScannerNetwork;
   uuid: string;
   address: string;
+  unspent?: boolean;
   recordsByKey: Map<string, CypherOwnedRecord>;
   consumerPrograms: Map<string, string[]>;
   consumerCallbacks: Map<string, () => void>;
@@ -842,9 +843,6 @@ export class RecordSyncService {
       }
 
       let changed = false;
-      if (mode === "light") {
-        changed = (await this.updateSpentFromTags(scope)) || changed;
-      }
 
       const start =
         mode === "light"
@@ -860,6 +858,7 @@ export class RecordSyncService {
           ...(start !== undefined ? { start } : {}),
         },
         uuid: scope.uuid,
+        ...(scope.unspent !== undefined ? { unspent: scope.unspent } : {}),
       };
 
       const { records, latestHeight } = await this.fetchOwnedAndHeight(
@@ -873,6 +872,9 @@ export class RecordSyncService {
       }
 
       if (!records) {
+        if (mode === "light") {
+          changed = (await this.updateSpentFromTags(scope)) || changed;
+        }
         if (changed) {
           this.notifyScopeConsumers(scope);
         }
@@ -892,6 +894,8 @@ export class RecordSyncService {
       } else {
         changed = this.mergeRecordsIntoScope(scope, records) || changed;
       }
+
+      changed = (await this.updateSpentFromTags(scope)) || changed;
 
       if (changed) {
         this.notifyScopeConsumers(scope);
@@ -946,7 +950,9 @@ export class RecordSyncService {
   ): Promise<ViewScope> {
     const chainId = this.resolveChainId(options);
     const network = networkFromChainId(chainId);
-    const scopeKey = `${chainId}:${req.uuid}:${account.address}`;
+    const stateKey =
+      req.unspent === undefined ? "all" : req.unspent ? "unspent" : "spent";
+    const scopeKey = `${chainId}:${req.uuid}:${account.address}:${stateKey}`;
     const programs = sorted(req.filter?.programs);
     const consumerId = options.consumerId;
     const currentScopeKey = consumerId
@@ -972,6 +978,7 @@ export class RecordSyncService {
         network,
         pendingHardRefresh: false,
         recordsByKey: new Map(),
+        unspent: req.unspent,
         uuid: req.uuid,
       };
       this.viewScopes.set(scopeKey, scope);

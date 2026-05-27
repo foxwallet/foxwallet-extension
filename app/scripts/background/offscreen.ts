@@ -12,6 +12,7 @@ import {
   OFFSCREEN_PATH,
   closeOffscreen,
   hasDocument,
+  recreateOffscreen,
   withOffscreen,
 } from "./offscreenLock";
 
@@ -22,6 +23,7 @@ const TX_REASONS: chrome.offscreen.Reason[] = [
 const TX_JUSTIFICATION = "Sending aleo transaction";
 const TX_READY_TIMEOUT_MS = 30 * 1000;
 const TX_READY_POLL_INTERVAL_MS = 200;
+const TX_READY_RECREATE_AFTER_MS = 5 * 1000;
 
 // In-process "a tx/deploy broadcast is happening" signal. Mutated only by
 // trackTx below, so status checks can return true even before the offscreen
@@ -37,7 +39,11 @@ const sleep = async (ms: number): Promise<void> => {
 };
 
 async function waitForTxOffscreenReady(): Promise<void> {
+  const startedAt = Date.now();
   const timeoutAt = Date.now() + TX_READY_TIMEOUT_MS;
+  let didRecreate = false;
+  let lastError: unknown;
+  let lastResp: OffscreenMessage | undefined;
 
   while (Date.now() < timeoutAt) {
     try {
@@ -49,17 +55,40 @@ async function waitForTxOffscreenReady(): Promise<void> {
       const resp = (await chrome.runtime.sendMessage(message)) as
         | OffscreenMessage
         | undefined;
+      lastResp = resp;
       if (resp?.payload && !resp.payload.error) {
         return;
       }
-    } catch {
+    } catch (err) {
+      lastError = err;
       // The document can exist before its module has registered the listener.
+    }
+
+    if (!didRecreate && Date.now() - startedAt >= TX_READY_RECREATE_AFTER_MS) {
+      didRecreate = true;
+      console.warn(
+        "[offscreen] tx offscreen is not ready; recreating document",
+        {
+          lastError:
+            lastError instanceof Error ? lastError.message : String(lastError),
+          lastResp,
+        },
+      );
+      await recreateOffscreen(OFFSCREEN_PATH, TX_REASONS, TX_JUSTIFICATION);
+      lastError = undefined;
+      lastResp = undefined;
     }
 
     await sleep(TX_READY_POLL_INTERVAL_MS);
   }
 
-  throw new Error("tx offscreen did not become ready in time");
+  const detail =
+    lastError instanceof Error
+      ? lastError.message
+      : lastError
+      ? String(lastError)
+      : JSON.stringify(lastResp);
+  throw new Error(`tx offscreen did not become ready in time: ${detail}`);
 }
 
 async function trackTx<T>(fn: () => Promise<T>): Promise<T> {
@@ -107,6 +136,10 @@ export async function sendAleoTransaction(params: AleoSendTxParams) {
           const sendTxResp: OffscreenMessage =
             await chrome.runtime.sendMessage(messsage);
           console.log("===> sendTx resp: ", sendTxResp);
+          console.log("===> sendTx resp payload: ", {
+            error: sendTxResp?.payload?.error,
+            data: sendTxResp?.payload?.data,
+          });
           return sendTxResp;
         },
       );
@@ -167,9 +200,6 @@ export async function isSendingAleoTransaction() {
     }, 2000);
   });
   console.log("===> isSendingAleoTransaction: ", status, delayStatus);
-  if (!delayStatus && !txInFlight) {
-    await stopSending();
-  }
   return delayStatus;
 }
 
@@ -195,6 +225,10 @@ export async function sendDeployment(params: AleoRequestDeploymentParams) {
           const sendTxResp: OffscreenMessage =
             await chrome.runtime.sendMessage(messsage);
           console.log("===> sendTx resp: ", sendTxResp);
+          console.log("===> sendDeployment resp payload: ", {
+            error: sendTxResp?.payload?.error,
+            data: sendTxResp?.payload?.data,
+          });
           return sendTxResp;
         },
       );

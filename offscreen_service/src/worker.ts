@@ -1,4 +1,4 @@
-import { initThreadPool } from "@provablehq/wasm-mainnet";
+import { initThreadPool } from "@provablehq/sdk/mainnet.js";
 import type { AleoSendTxParams } from "../../core/coins/ALEO/types/Transaction";
 import { AleoTxWorker } from "./transaction";
 import { type AleoRequestDeploymentParams } from "./types";
@@ -12,6 +12,10 @@ const taskQuene: Array<{
   taskType: "sendTx" | "deploy";
   payload: any;
 }> = [];
+
+function toErrorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
 
 function initAleoTxWorker(rpcList: string[], enableMeasure: boolean) {
   if (!aleoTxWorker) {
@@ -63,6 +67,9 @@ async function executeTask() {
           const { rpcList } = payload;
           initAleoTxWorker(rpcList, true);
           const result = await sendTransaction(payload);
+          if (!result?.id) {
+            throw new Error("send transaction failed");
+          }
           postMessage({ data: result?.id, error: null });
           break;
         }
@@ -70,12 +77,15 @@ async function executeTask() {
           const { rpcList } = payload;
           initAleoTxWorker(rpcList, true);
           const result = await deploy(payload);
+          if (!result?.id) {
+            throw new Error("deploy transaction failed");
+          }
           postMessage({ data: result?.id, error: null });
           break;
         }
       }
     } catch (err) {
-      postMessage({ data: null, error: (err as Error).message });
+      postMessage({ data: null, error: toErrorMessage(err) });
     } finally {
       if (taskQuene.length === 0) {
         // wait 2s for possible task

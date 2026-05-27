@@ -18,7 +18,14 @@ export default defineManifest((env) => {
       "tabs",
       "offscreen",
     ],
-    host_permissions: ["https://api.provable.com/*"],
+    host_permissions: [
+      "https://api.provable.com/*",
+      "https://aleo1-web3.foxnb.net/*",
+      "https://aleo2-web3.foxnb.net/*",
+      "https://aleo3-web3.foxnb.net/*",
+      "https://aleo4-web3.foxnb.net/*",
+      "https://aleo5-web3.foxnb.net/*",
+    ],
     content_scripts: [
       {
         matches: ["http://*/*", "https://*/*"],

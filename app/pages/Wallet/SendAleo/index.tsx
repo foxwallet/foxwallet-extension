@@ -130,6 +130,34 @@ function SendScreen() {
             if (!finalTransferRecord || !finalTransferRecord.plaintext) {
               throw new Error(ERROR_CODE.INVALID_ARGUMENT);
             }
+            console.log("[SendAleo] transfer_private selected record:", {
+              commitment: finalTransferRecord.commitment,
+              serialNumber: finalTransferRecord.serialNumber,
+              amount:
+                finalTransferRecord.parsedContent?.microcredits ??
+                finalTransferRecord.parsedContent?.amount,
+              programId: finalTransferRecord.programId,
+              plaintextHasNonce:
+                finalTransferRecord.plaintext.includes("_nonce"),
+              plaintextHasVersion:
+                finalTransferRecord.plaintext.includes("_version"),
+            });
+            console.log(
+              "[SendAleo] transfer_private fee record:",
+              feeRecord
+                ? {
+                    commitment: feeRecord.commitment,
+                    serialNumber: feeRecord.serialNumber,
+                    amount:
+                      feeRecord.parsedContent?.microcredits ??
+                      feeRecord.parsedContent?.amount,
+                    programId: feeRecord.programId,
+                    plaintextHasNonce: feeRecord.plaintext.includes("_nonce"),
+                    plaintextHasVersion:
+                      feeRecord.plaintext.includes("_version"),
+                  }
+                : null,
+            );
             switch (programId) {
               case NATIVE_TOKEN_PROGRAM_ID: {
                 inputs = [finalTransferRecord.plaintext, to, `${amount}u64`];

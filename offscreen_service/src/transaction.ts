@@ -3,11 +3,12 @@ import {
   PrivateKey,
   Program,
   ProgramManager,
+  ProgramManagerBase,
   RecordPlaintext,
   type Transaction,
   ProvingKey,
   VerifyingKey,
-} from "@provablehq/wasm-mainnet";
+} from "@provablehq/sdk/mainnet.js";
 import { AleoStorage } from "./AleoStorage";
 import {
   AleoTxStatus,
@@ -33,7 +34,7 @@ export class AleoTxWorker {
 
   constructor(
     private workerId: number,
-    rpcList: string[],
+    private readonly rpcList: string[],
     public enableMeasure: boolean,
   ) {
     // rpcList = shuffle(rpcList);
@@ -160,7 +161,7 @@ export class AleoTxWorker {
       functionName,
     );
     const startTime = performance.now();
-    const keyPair = await ProgramManager.synthesizeKeyPair(
+    const keyPair = await ProgramManagerBase.synthesizeKeyPair(
       privateKey,
       programStr,
       functionName,
@@ -216,6 +217,61 @@ export class AleoTxWorker {
     return await this.rpcService.submitTransaction(tx);
   }
 
+  toErrorMessage(err: unknown): string {
+    return err instanceof Error ? err.message : String(err);
+  }
+
+  private isRpcFetchError(err: unknown): boolean {
+    const message = this.toErrorMessage(err);
+    return /Failed to fetch/i.test(message) || /network error/i.test(message);
+  }
+
+  private getBuildRpcUrls(): string[] {
+    const currentRpcUrl = this.rpcService.proxyCurrConfig();
+    const seen = new Set<string>();
+    return [currentRpcUrl, ...this.rpcList].filter((rpcUrl) => {
+      if (seen.has(rpcUrl)) {
+        return false;
+      }
+      seen.add(rpcUrl);
+      return true;
+    });
+  }
+
+  private async buildWithRpcFallback<T extends Transaction>(
+    operation: string,
+    build: (rpcUrl: string) => Promise<T>,
+  ): Promise<T> {
+    const rpcUrls = this.getBuildRpcUrls();
+    let lastError: unknown;
+
+    for (let index = 0; index < rpcUrls.length; index++) {
+      const rpcUrl = rpcUrls[index];
+      try {
+        console.log(
+          `===> ${operation} rpc attempt`,
+          index + 1,
+          rpcUrls.length,
+          rpcUrl,
+        );
+        return await build(rpcUrl);
+      } catch (err) {
+        lastError = err;
+        const message = this.toErrorMessage(err);
+        console.warn(`===> ${operation} rpc attempt failed`, {
+          rpcUrl,
+          error: message,
+        });
+
+        if (!this.isRpcFetchError(err) || index === rpcUrls.length - 1) {
+          throw err;
+        }
+      }
+    }
+
+    throw lastError;
+  }
+
   async sendTransaction({
     privateKey,
     address,
@@ -231,15 +287,17 @@ export class AleoTxWorker {
     amount,
     tokenId,
   }: AleoSendTxParams): Promise<null | AleoTransaction> {
+    const normalizedInputs = inputs;
+    const normalizedFeeRecordStr = feeRecordStr;
     const pendingTxInfo: AleoLocalTxInfo = {
       localId,
       address,
       programId,
       functionName,
-      inputs,
+      inputs: normalizedInputs,
       baseFee,
       priorityFee,
-      feeRecord: feeRecordStr,
+      feeRecord: normalizedFeeRecordStr,
       status: AleoTxStatus.QUEUED,
       timestamp,
       amount,
@@ -257,7 +315,7 @@ export class AleoTxWorker {
         "===> before getProverKeyPair ",
         programId,
         functionName,
-        inputs,
+        normalizedInputs,
       );
 
       pendingTxInfo.status = AleoTxStatus.GENERATING_PROVER_FILES;
@@ -269,74 +327,71 @@ export class AleoTxWorker {
         chainId,
         programId,
         functionName,
-        inputs,
+        normalizedInputs,
       );
       const totalProverTiime = performance.now() - startProverTime;
       console.log("===> after getProverKeyPair ", totalProverTiime);
-      let feeProverFile: ProvingKey | undefined;
-      let feeVerifierKey: VerifyingKey | undefined;
+      // SDK 0.10.x handles the fee circuit keys internally — synthesizing
+      // fee_private/fee_public via the execution-flow API yields a key
+      // SnarkVM rejects with "trace cannot call 'prove_execution' for a
+      // fee type". The fee record / priorityFee / privateFee are passed
+      // through ExecuteOptions; the SDK takes care of the rest.
       const isSplitTx =
         programId === NATIVE_TOKEN_PROGRAM_ID && functionName === "split";
-      if (!isSplitTx) {
-        const baseFeeStr = `${baseFee}u64`;
-        const priorityFeeStr = `${priorityFee}u64`;
-        const feeMethod = feeRecordStr ? "fee_private" : "fee_public";
-        const placeHolderExecutionId =
-          "1143400038019697993839685533973968560341409464418545224213773009891993380112field";
-        const feeInputs = feeRecordStr
-          ? [feeRecordStr, baseFeeStr, priorityFeeStr, placeHolderExecutionId]
-          : [baseFeeStr, priorityFeeStr, placeHolderExecutionId];
-        console.log("===> before getFeeProverKeyPair ");
-        const startFeeProverTime = performance.now();
-        const keys = await this.getProverKeyPair(
-          privateKeyObj,
-          chainId,
-          NATIVE_TOKEN_PROGRAM_ID,
-          feeMethod,
-          feeInputs,
-        );
-        feeProverFile = keys.proverFile;
-        feeVerifierKey = keys.verifierFile;
-        const totalFeeProverTiime = performance.now() - startFeeProverTime;
-        console.log("===> after getFeeProverKeyPair ", totalFeeProverTiime);
-      }
 
       pendingTxInfo.status = AleoTxStatus.GENERATING_TRANSACTION;
       await this.storage.setAddressLocalTx(chainId, address, pendingTxInfo);
 
       const imports = await this.getProgramImports(chainId, programId);
-      const feeRecord = feeRecordStr
-        ? this.parseRecord(feeRecordStr)
-        : undefined;
       console.log("===> before buildExecutionTransaction ");
       // TODO: regenerate tx when encounter inclusion error
       let tx: Transaction;
-      if (!isSplitTx) {
-        tx = await ProgramManager.buildExecutionTransaction(
-          privateKeyObj,
-          programStr,
-          functionName,
-          inputs,
-          BigInt(baseFee),
-          BigInt(priorityFee),
-          feeRecord,
-          this.rpcService.proxyCurrConfig(),
-          imports,
-          proverFile,
-          verifierFile,
-          feeProverFile,
-          feeVerifierKey,
+      const priorityFeeCredits =
+        Number(BigInt(baseFee) + BigInt(priorityFee)) /
+        10 ** NATIVE_TOKEN_DECIMALS;
+      const privateFee = !!normalizedFeeRecordStr;
+
+      if (isSplitTx) {
+        // SDK split() builds + broadcasts in one shot and returns a tx id.
+        // Skip the manual submitTransaction path below.
+        const splitAmountMicrocredits = Number(parseU64(normalizedInputs[1]));
+        const splitTxId = await this.buildWithRpcFallback(
+          "buildSplitTransaction",
+          async (rpcUrl) => {
+            const programManager = new ProgramManager(rpcUrl);
+            return await programManager.split(
+              splitAmountMicrocredits,
+              normalizedInputs[0],
+              privateKeyObj,
+            );
+          },
         );
-      } else {
-        tx = await ProgramManager.buildSplitTransaction(
-          privateKeyObj,
-          Number(utils.formatUnits(parseU64(inputs[1]), NATIVE_TOKEN_DECIMALS)),
-          RecordPlaintext.fromString(inputs[0]),
-          this.rpcService.proxyCurrConfig(),
-          proverFile,
-          verifierFile,
-        );
+        pendingTxInfo.status = AleoTxStatus.COMPLETED;
+        await this.storage.setAddressLocalTx(chainId, address, pendingTxInfo);
+        const totalTime = performance.now() - startTime;
+        console.log("===> split tx done", totalTime, splitTxId);
+        return null;
       }
+
+      tx = await this.buildWithRpcFallback(
+        "buildExecutionTransaction",
+        async (rpcUrl) => {
+          const programManager = new ProgramManager(rpcUrl);
+          return await programManager.buildExecutionTransaction({
+            privateKey: privateKeyObj,
+            programName: programId,
+            functionName,
+            inputs: normalizedInputs,
+            priorityFee: priorityFeeCredits,
+            privateFee,
+            feeRecord: normalizedFeeRecordStr ?? undefined,
+            program: programStr,
+            imports,
+            provingKey: proverFile.copy(),
+            verifyingKey: verifierFile.copy(),
+          });
+        },
+      );
       console.log("===> before submitTransaction ", tx.toString());
 
       pendingTxInfo.status = AleoTxStatus.BROADCASTING;
@@ -353,13 +408,13 @@ export class AleoTxWorker {
         await this.storage.setAddressLocalTx(chainId, address, pendingTxInfo);
         return JSON.parse(tx.toString());
       }
-      return null;
+      throw new Error("submitTransaction returned empty response");
     } catch (err) {
       console.error("===> sendTransaction error ", err);
       pendingTxInfo.status = AleoTxStatus.FAILED;
-      pendingTxInfo.error = (err as Error).toString();
+      pendingTxInfo.error = this.toErrorMessage(err);
       await this.storage.setAddressLocalTx(chainId, address, pendingTxInfo);
-      return null;
+      throw err;
     }
   }
 
@@ -375,6 +430,7 @@ export class AleoTxWorker {
     feeRecord: feeRecordStr,
     timestamp,
   }: AleoRequestDeploymentParams) {
+    const normalizedFeeRecordStr = feeRecordStr;
     const pendingTxInfo: AleoLocalTxInfo = {
       localId,
       address,
@@ -383,7 +439,7 @@ export class AleoTxWorker {
       inputs: [],
       baseFee,
       priorityFee,
-      feeRecord: feeRecordStr,
+      feeRecord: normalizedFeeRecordStr,
       status: AleoTxStatus.QUEUED,
       timestamp,
       notification: false,
@@ -394,49 +450,33 @@ export class AleoTxWorker {
       const privateKeyObj = this.parsePrivateKey(privateKey);
       const programObj = this.parseProgram(program);
 
-      pendingTxInfo.status = AleoTxStatus.GENERATING_PROVER_FILES;
-      await this.storage.setAddressLocalTx(chainId, address, pendingTxInfo);
-
-      const baseFeeStr = `${baseFee}u64`;
-      const priorityFeeStr = `${priorityFee}u64`;
-      const feeMethod = feeRecordStr ? "fee_private" : "fee_public";
-      const placeHolderExecutionId =
-        "1143400038019697993839685533973968560341409464418545224213773009891993380112field";
-      const feeInputs = feeRecordStr
-        ? [feeRecordStr, baseFeeStr, priorityFeeStr, placeHolderExecutionId]
-        : [baseFeeStr, priorityFeeStr, placeHolderExecutionId];
-      console.log("===> before getFeeProverKeyPair ");
-      const startFeeProverTime = performance.now();
-      const { proverFile: feeProverFile, verifierFile: feeVerifierKey } =
-        await this.getProverKeyPair(
-          privateKeyObj,
-          chainId,
-          NATIVE_TOKEN_PROGRAM_ID,
-          feeMethod,
-          feeInputs,
-        );
-      const totalFeeProverTiime = performance.now() - startFeeProverTime;
-      console.log("===> after getFeeProverKeyPair ", totalFeeProverTiime);
+      // SDK 0.10.x handles fee circuit keys internally; no local
+      // fee_private/fee_public prover synthesis here. See sendTransaction
+      // for the same reason.
 
       pendingTxInfo.status = AleoTxStatus.GENERATING_TRANSACTION;
       await this.storage.setAddressLocalTx(chainId, address, pendingTxInfo);
 
       const imports = await this.getProgramImports(chainId, programObj);
-      const feeRecord = feeRecordStr
-        ? this.parseRecord(feeRecordStr)
-        : undefined;
       console.log("===> before buildExecutionTransaction ");
       // TODO: regenerate tx when encounter inclusion error
-      const tx = await ProgramManager.buildDeploymentTransaction(
-        privateKeyObj,
-        program,
-        BigInt(baseFee),
-        BigInt(priorityFee),
-        feeRecord,
-        this.rpcService.proxyCurrConfig(),
-        imports,
-        feeProverFile,
-        feeVerifierKey,
+      const deployPriorityFeeCredits =
+        Number(BigInt(baseFee) + BigInt(priorityFee)) /
+        10 ** NATIVE_TOKEN_DECIMALS;
+      const deployPrivateFee = !!normalizedFeeRecordStr;
+      const tx = await this.buildWithRpcFallback(
+        "buildDeploymentTransaction",
+        async (rpcUrl) => {
+          const programManager = new ProgramManager(rpcUrl);
+          return await programManager.buildDeploymentTransaction(
+            program,
+            deployPriorityFeeCredits,
+            deployPrivateFee,
+            undefined,
+            normalizedFeeRecordStr ?? undefined,
+            privateKeyObj,
+          );
+        },
       );
       console.log("===> before submitTransaction ", tx.toString());
 
@@ -453,13 +493,13 @@ export class AleoTxWorker {
         await this.storage.setAddressLocalTx(chainId, address, pendingTxInfo);
         return JSON.parse(tx.toString());
       }
-      return null;
+      throw new Error("submitTransaction returned empty response");
     } catch (err) {
       console.error("===> sendTransaction error ", err);
       pendingTxInfo.status = AleoTxStatus.FAILED;
-      pendingTxInfo.error = (err as Error).toString();
+      pendingTxInfo.error = this.toErrorMessage(err);
       await this.storage.setAddressLocalTx(chainId, address, pendingTxInfo);
-      return null;
+      throw err;
     }
   }
 }

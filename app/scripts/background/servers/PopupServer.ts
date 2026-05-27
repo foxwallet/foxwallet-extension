@@ -537,13 +537,21 @@ export class PopupWalletServer implements IPopupServer {
                 "===> createRequestAleoTxPopup sendTransaction resp: ",
                 resp,
               );
-              if (!resp) {
+              console.log(
+                "===> createRequestAleoTxPopup sendTransaction payload: ",
+                {
+                  error: resp?.payload?.error,
+                  data: resp?.payload?.data,
+                },
+              );
+              const error = resp?.payload?.error;
+              if (!resp || error) {
                 const finalTxInfo: AleoLocalTxInfo = {
                   ...params,
                   status: AleoTxStatus.FAILED,
                   txType: AleoTxType.EXECUTION,
                   notification: false,
-                  error: "sendTransaction failed",
+                  error: error ?? "sendTransaction failed",
                 };
                 await instance.setAddressLocalTx(address, finalTxInfo);
               }
@@ -636,7 +644,8 @@ export class PopupWalletServer implements IPopupServer {
               privateKey: pk,
             }).then(async (resp) => {
               console.log("===> createRequestDeployPopup resp: ", resp);
-              if (!resp) {
+              const error = resp?.payload?.error;
+              if (!resp || error) {
                 const finalTxInfo: AleoLocalTxInfo = {
                   ...params,
                   functionName: "",
@@ -644,7 +653,7 @@ export class PopupWalletServer implements IPopupServer {
                   status: AleoTxStatus.FAILED,
                   txType: AleoTxType.DEPLOYMENT,
                   notification: false,
-                  error: "sendDeployment failed",
+                  error: error ?? "sendDeployment failed",
                   tokenId: NATIVE_TOKEN_PROGRAM_ID,
                 };
                 await instance.setAddressLocalTx(address, finalTxInfo);
@@ -1241,17 +1250,19 @@ export class PopupWalletServer implements IPopupServer {
       privateKey: pk,
     }).then(async (resp) => {
       console.log("===> sendAleoTransaction sendTransaction resp: ", resp);
+      console.log("===> sendAleoTransaction sendTransaction payload: ", {
+        error: resp?.payload?.error,
+        data: resp?.payload?.data,
+      });
 
-      console.log("===> 111 resp.payload JSON: ", JSON.stringify(resp?.payload));  // 临时加
-      console.log("===> 222 resp.payload.error: ", resp?.payload?.error);          // 临时加
-
-      if (!resp) {
+      const error = resp?.payload?.error;
+      if (!resp || error) {
         const finalTxInfo: AleoLocalTxInfo = {
           ...params,
           status: AleoTxStatus.FAILED,
           txType: AleoTxType.EXECUTION,
           notification: false,
-          error: "sendTransaction failed",
+          error: error ?? "sendTransaction failed",
         };
         const instance = this.coinService.getInstance(
           params.uniqueId,
