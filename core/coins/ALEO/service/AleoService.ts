@@ -20,6 +20,8 @@ import {
   ALPHA_TOKEN_PROGRAM_ID,
   ARCANE_PROGRAM_ID,
   BETA_STAKING_PROGRAM_ID,
+  COMPLIANCE_BALANCES_MAPPING_NAME,
+  isComplianceProgram,
   LOCAL_TX_EXPIRE_TIME,
   NATIVE_TOKEN_PROGRAM_ID,
   NATIVE_TOKEN_TOKEN_ID,
@@ -1486,6 +1488,17 @@ export class AleoService extends CoinServiceBasic {
     programId: InnerProgramId,
     tokenId: string,
   ) {
+    if (isComplianceProgram(programId)) {
+      const balance = await this.rpcService.getProgramMappingValue(
+        programId,
+        COMPLIANCE_BALANCES_MAPPING_NAME,
+        address,
+      );
+      if (!balance || balance === "null") {
+        return 0n;
+      }
+      return parseU128(balance);
+    }
     switch (programId) {
       case ALPHA_TOKEN_PROGRAM_ID: {
         const id = hashBHP256(`{ token: ${tokenId}, user: ${address} }`);
@@ -1542,6 +1555,19 @@ export class AleoService extends CoinServiceBasic {
     programId: InnerProgramId,
     tokenId: string,
   ) {
+    if (isComplianceProgram(programId)) {
+      const result = await this.getRecords(
+        address,
+        programId,
+        RecordFilter.UNSPENT,
+        undefined,
+        this.getTokenPrivateBalanceConsumerId(address, programId, tokenId),
+      );
+      return result.reduce((sum, record) => {
+        this.assertScannerRecordParsedContent(record);
+        return sum + BigInt(record.parsedContent.amount);
+      }, 0n);
+    }
     switch (programId) {
       case ALPHA_TOKEN_PROGRAM_ID: {
         const result = await this.getRecords(

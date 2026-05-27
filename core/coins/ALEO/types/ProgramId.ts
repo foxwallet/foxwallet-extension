@@ -4,6 +4,8 @@ import {
   type NATIVE_TOKEN_PROGRAM_ID,
   type TOKEN_REGISTRY_PROGRAM_ID,
   type ARCANE_PROGRAM_ID,
+  type USAD_STABLECOIN_PROGRAM_ID,
+  type USDCX_STABLECOIN_PROGRAM_ID,
 } from "../constants";
 
 export type InnerProgramId =
@@ -11,4 +13,6 @@ export type InnerProgramId =
   | typeof ALPHA_TOKEN_PROGRAM_ID
   | typeof BETA_STAKING_PROGRAM_ID
   | typeof TOKEN_REGISTRY_PROGRAM_ID
-  | typeof ARCANE_PROGRAM_ID;
+  | typeof ARCANE_PROGRAM_ID
+  | typeof USAD_STABLECOIN_PROGRAM_ID
+  | typeof USDCX_STABLECOIN_PROGRAM_ID;
