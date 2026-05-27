@@ -23,6 +23,7 @@ import {
   ALPHA_TOKEN_PROGRAM_ID,
   ARCANE_PROGRAM_ID,
   BETA_STAKING_PROGRAM_ID,
+  isComplianceProgram,
   NATIVE_TOKEN_PROGRAM_ID,
 } from "core/coins/ALEO/constants";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
@@ -124,7 +125,22 @@ function SendScreen() {
       try {
         const address = selectedAccount.account.address;
         let inputs: string[] = [];
-        switch (finalTransferMethod) {
+        if (isComplianceProgram(programId)) {
+          switch (finalTransferMethod) {
+            case AleoTransferMethod.PUBLIC:
+            case AleoTransferMethod.PUBLIC_TO_PRIVATE: {
+              inputs = [to, `${amount}u128`];
+              break;
+            }
+            case AleoTransferMethod.PRIVATE:
+            case AleoTransferMethod.PRIVATE_TO_PUBLIC: {
+              throw new Error(
+                `Private transfers for compliance token ${programId} are not supported yet`,
+              );
+            }
+          }
+        } else {
+          switch (finalTransferMethod) {
           case AleoTransferMethod.PRIVATE:
           case AleoTransferMethod.PRIVATE_TO_PUBLIC: {
             if (!finalTransferRecord || !finalTransferRecord.plaintext) {
@@ -220,6 +236,7 @@ function SendScreen() {
               }
             }
             break;
+          }
           }
         }
         const localId = nanoid();
