@@ -134,9 +134,27 @@ function SendScreen() {
             }
             case AleoTransferMethod.PRIVATE:
             case AleoTransferMethod.PRIVATE_TO_PUBLIC: {
-              throw new Error(
-                `Private transfers for compliance token ${programId} are not supported yet`,
-              );
+              if (!finalTransferRecord || !finalTransferRecord.plaintext) {
+                throw new Error(ERROR_CODE.INVALID_ARGUMENT);
+              }
+              const complianceProof =
+                await popupServerClient.getAleoComplianceProof({
+                  uniqueId: chainConfig.uniqueId,
+                  programId,
+                  address,
+                });
+              if (!complianceProof) {
+                throw new Error(
+                  `Failed to obtain compliance proof for ${programId}`,
+                );
+              }
+              inputs = [
+                to,
+                `${amount}u128`,
+                finalTransferRecord.plaintext,
+                complianceProof,
+              ];
+              break;
             }
           }
         } else {

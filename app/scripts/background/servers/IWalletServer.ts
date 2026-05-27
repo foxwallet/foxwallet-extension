@@ -132,6 +132,12 @@ export interface ScannerDeactivateViewConsumerProps {
   consumerId: string;
 }
 
+export interface AleoComplianceProofProps {
+  uniqueId: ChainUniqueId;
+  programId: string;
+  address: string;
+}
+
 export type AleoSendTxProps = Omit<AleoSendTxParams, "privateKey"> & {
   walletId: string;
   uniqueId: ChainUniqueId;
@@ -214,6 +220,8 @@ export interface IPopupServer {
   scannerDeactivateViewConsumer(
     params: ScannerDeactivateViewConsumerProps,
   ): Promise<void>;
+
+  getAleoComplianceProof(params: AleoComplianceProofProps): Promise<string>;
 
   sendAleoTransaction(params: AleoSendTxProps): Promise<void>;
 

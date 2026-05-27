@@ -88,6 +88,10 @@ import {
   createArcaneService,
 } from "core/coins/ALEO/service/instances/arcane";
 import { ProvableApi } from "core/coins/ALEO/service/api/provable";
+import {
+  ComplianceService,
+  createComplianceService,
+} from "core/coins/ALEO/service/instances/compliance";
 
 const CREDITS_MAPPING_NAME = "account";
 
@@ -140,6 +144,7 @@ export class AleoService extends CoinServiceBasic {
   private arcaneService: ArcaneService;
   private walletService: AleoWalletService;
   private tokenService: AlphaSwapTokenService;
+  private complianceService: ComplianceService;
   private scannerAccountCache = new Map<string, ScannerAccountCache>();
   private scannerAccountPromiseCache = new Map<
     string,
@@ -159,6 +164,7 @@ export class AleoService extends CoinServiceBasic {
       })),
     );
     this.provableApi = new ProvableApi();
+    this.complianceService = createComplianceService(this.chainId);
     this.walletService = createAleoWalletService(
       config.walletApiList.map((item) => ({
         url: item,
@@ -1638,6 +1644,13 @@ export class AleoService extends CoinServiceBasic {
   }
 
   // TODO impl new api
+  async getComplianceProof(
+    programId: string,
+    address: string,
+  ): Promise<string> {
+    return await this.complianceService.getComplianceProof(programId, address);
+  }
+
   async getTokenBalanceOld(
     address: string,
     programId: InnerProgramId,

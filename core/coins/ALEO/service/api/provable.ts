@@ -44,4 +44,26 @@ export class ProvableApi {
       key: address,
     });
   }
+
+  // Returns the addresses currently on the freezelist as decimal U256 strings.
+  // Used by ComplianceService to build the Sealance non-inclusion Merkle tree.
+  async getProgramFreezeList(
+    network: string,
+    freezelistProgramId: string,
+  ): Promise<string[]> {
+    const url = `${this.baseURL}/${network}/programs/${freezelistProgramId}/compliance/freeze-list`;
+    const response = await get(url);
+    if (!response.ok) {
+      throw new Error(
+        `ProvableApi getProgramFreezeList error: url ${url} statusCode ${
+          response.status
+        } body ${await response.text()}`,
+      );
+    }
+    const value = (await response.json()) as unknown;
+    if (!Array.isArray(value)) {
+      return [];
+    }
+    return value.filter((item): item is string => typeof item === "string");
+  }
 }

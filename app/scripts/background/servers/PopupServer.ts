@@ -9,6 +9,7 @@ import {
 import {
   AddAccountProps,
   ALEOConnectProps,
+  AleoComplianceProofProps,
   AleoRequestDeploymentProps,
   AleoRequestTxProps,
   AleoSendTxProps,
@@ -1236,6 +1237,15 @@ export class PopupWalletServer implements IPopupServer {
     consumerId,
   }: ScannerDeactivateViewConsumerProps): Promise<void> {
     recordSyncService.deactivateViewConsumer(consumerId);
+  }
+
+  async getAleoComplianceProof({
+    uniqueId,
+    programId,
+    address,
+  }: AleoComplianceProofProps): Promise<string> {
+    const instance = this.coinService.getInstance(uniqueId) as AleoService;
+    return await instance.getComplianceProof(programId, address);
   }
 
   async sendAleoTransaction(params: AleoSendTxProps): Promise<void> {

@@ -1,4 +1,8 @@
 import { getBlockDatabaseByChainId } from "./database/AleoBlockDatabase";
+import {
+  INCLUSION_KEY_ROW_ID,
+  type InclusionKey,
+} from "./database/types/inclusionKey";
 import { type ProverKeyPair, type AleoLocalTxInfo } from "./types";
 
 export class AleoStorage {
@@ -169,5 +173,43 @@ export class AleoStorage {
         },
       });
     }
+  }
+
+  // Returns the cached inclusion prover bytes for this chain, or null if no
+  // valid entry exists. `expectedSourceUrl` lets the caller invalidate the
+  // cache when the upstream filename (which embeds a version hash) rotates.
+  async getInclusionProver(
+    chainId: string,
+    expectedSourceUrl: string,
+  ): Promise<Uint8Array | null> {
+    const instance = await this.getBlockDBInstance(chainId);
+    const row = await instance.inclusionKeys.get(INCLUSION_KEY_ROW_ID);
+    if (!row || row.proverBytes.byteLength === 0) {
+      return null;
+    }
+    if (row.sourceUrl !== expectedSourceUrl) {
+      // Upstream key rotated — drop the stale row so the next call refetches.
+      await instance.inclusionKeys.delete(INCLUSION_KEY_ROW_ID);
+      return null;
+    }
+    return row.proverBytes;
+  }
+
+  async setInclusionProver(
+    chainId: string,
+    proverBytes: Uint8Array,
+    sourceUrl: string,
+  ): Promise<void> {
+    if (proverBytes.byteLength === 0) {
+      return;
+    }
+    const instance = await this.getBlockDBInstance(chainId);
+    const record: InclusionKey = {
+      id: INCLUSION_KEY_ROW_ID,
+      proverBytes,
+      sourceUrl,
+      fetchedAt: Date.now(),
+    };
+    await instance.inclusionKeys.put(record);
   }
 }

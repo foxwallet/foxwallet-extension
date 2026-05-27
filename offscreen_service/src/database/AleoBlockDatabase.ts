@@ -1,6 +1,7 @@
 import Dexie from "dexie";
 import { type AleoLocalTx } from "./types/tx";
 import { type AleoProgram } from "./types/program";
+import { type InclusionKey } from "./types/inclusionKey";
 import {
   type AleoOnChainHistoryItem,
   NATIVE_TOKEN_PROGRAM_ID,
@@ -11,6 +12,7 @@ export class AleoBlockDatabase extends Dexie {
   txs: Dexie.Table<AleoLocalTx, string>;
   programs: Dexie.Table<AleoProgram, string>;
   cacheTxs: Dexie.Table<AleoOnChainHistoryItem>;
+  inclusionKeys: Dexie.Table<InclusionKey, string>;
 
   constructor(chainId: string) {
     super(chainId);
@@ -75,9 +77,17 @@ export class AleoBlockDatabase extends Dexie {
           });
       });
 
+    // Persist the SnarkVM inclusion proving key so transfer_private avoids
+    // re-downloading the multi-MB blob from keys.provable.com on every
+    // execution. Single-row table keyed by a constant id.
+    this.version(7).stores({
+      inclusionKeys: "id",
+    });
+
     this.txs = this.table("txs");
     this.programs = this.table("programs");
     this.cacheTxs = this.table("cacheTxs");
+    this.inclusionKeys = this.table("inclusionKeys");
   }
 
   async deleteAddressData(address: string): Promise<void> {

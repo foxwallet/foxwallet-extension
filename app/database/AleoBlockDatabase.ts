@@ -74,6 +74,10 @@ export class AleoBlockDatabase extends Dexie {
           });
       });
 
+    this.version(7).stores({
+      inclusionKeys: "id",
+    });
+
     this.txs = this.table("txs");
     this.programs = this.table("programs");
     this.cacheTxs = this.table("cacheTxs");

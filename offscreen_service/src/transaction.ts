@@ -25,6 +25,13 @@ import { parseU64 } from "./utils/num";
 
 const NATIVE_TOKEN_DECIMALS = 6;
 
+// SnarkVM inclusion proving key for transfer_private style executions. The
+// filename embeds a content hash; bumping it here both forces a redownload
+// and invalidates the IndexedDB cache row tagged with the old URL.
+// Mirrors the reference Provable extension's wallet_v2 CDN.
+const INCLUSION_PROVER_URL =
+  "https://keys.provable.com/wallet_v2/inclusion.prover.9fe710f";
+
 export class AleoTxWorker {
   rpcService: AleoRpcService;
   storage: AleoStorage;
@@ -272,6 +279,50 @@ export class AleoTxWorker {
     throw lastError;
   }
 
+  // Fetch the SnarkVM inclusion prover bytes, preferring the IndexedDB cache
+  // and falling back to a one-time CDN download that gets persisted for next
+  // time. Returns null on any failure so callers can let the SDK's auto-fetch
+  // path (slow but functional) take over.
+  private async loadInclusionProverBytes(
+    chainId: string,
+  ): Promise<Uint8Array | null> {
+    try {
+      const cached = await this.storage.getInclusionProver(
+        chainId,
+        INCLUSION_PROVER_URL,
+      );
+      if (cached) {
+        return cached;
+      }
+      const start = performance.now();
+      const response = await fetch(INCLUSION_PROVER_URL);
+      if (!response.ok) {
+        console.warn(
+          `[InclusionProver] fetch failed status=${response.status}`,
+        );
+        return null;
+      }
+      const buffer = await response.arrayBuffer();
+      const bytes = new Uint8Array(buffer);
+      console.log(
+        "[InclusionProver] downloaded",
+        bytes.byteLength,
+        "bytes in",
+        (performance.now() - start).toFixed(0),
+        "ms",
+      );
+      await this.storage.setInclusionProver(
+        chainId,
+        bytes,
+        INCLUSION_PROVER_URL,
+      );
+      return bytes;
+    } catch (err) {
+      console.warn("[InclusionProver] preload failed:", err);
+      return null;
+    }
+  }
+
   async sendTransaction({
     privateKey,
     address,
@@ -373,10 +424,24 @@ export class AleoTxWorker {
         return null;
       }
 
+      const inclusionProverBytes = await this.loadInclusionProverBytes(chainId);
+
       tx = await this.buildWithRpcFallback(
         "buildExecutionTransaction",
         async (rpcUrl) => {
           const programManager = new ProgramManager(rpcUrl);
+          if (inclusionProverBytes) {
+            try {
+              await programManager.setInclusionProver(
+                ProvingKey.fromBytes(inclusionProverBytes),
+              );
+            } catch (err) {
+              console.warn(
+                "[InclusionProver] setInclusionProver failed, SDK will auto-fetch:",
+                err,
+              );
+            }
+          }
           return await programManager.buildExecutionTransaction({
             privateKey: privateKeyObj,
             programName: programId,

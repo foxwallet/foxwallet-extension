@@ -6,6 +6,7 @@ import {
   type RegenerateWalletProps,
   type ImportHDWalletProps,
   type AddAccountProps,
+  type AleoComplianceProofProps,
   type AleoSendTxProps,
   type GetSelectedAccountProps,
   type SetSelectedAccountProps,
@@ -258,6 +259,12 @@ export class PopupServerClient implements IClient, IPopupServer {
     params: ScannerDeactivateViewConsumerProps,
   ): Promise<void> {
     await this.#send("scannerDeactivateViewConsumer", params);
+  }
+
+  async getAleoComplianceProof(
+    params: AleoComplianceProofProps,
+  ): Promise<string> {
+    return await this.#send("getAleoComplianceProof", params);
   }
 
   async sendAleoTransaction(params: AleoSendTxProps): Promise<void> {
