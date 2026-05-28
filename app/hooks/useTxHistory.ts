@@ -367,16 +367,21 @@ export const useAleoTxHistory = ({
       if (privateTx.executionRecords.length === 0) {
         continue;
       }
+      const primaryRecord = privateTx.executionRecords[0];
+      const recordAmount =
+        primaryRecord.parsedContent?.microcredits ??
+        primaryRecord.parsedContent?.amount;
       const item: AleoOnChainHistoryItem = {
         txId: privateTx.txId,
         txType: AleoTxType.EXECUTION,
         height: privateTx.height,
-        programId: privateTx.executionRecords[0].programId,
-        functionName: privateTx.executionRecords[0].functionName,
-        timestamp: privateTx.executionRecords[0].timestamp,
+        programId: primaryRecord.programId,
+        functionName: primaryRecord.functionName,
+        timestamp: primaryRecord.timestamp,
         type: AleoHistoryType.ON_CHAIN,
         addressType: AleoTxAddressType.SEND,
         status: AleoTxStatus.FINALIZD,
+        amount: recordAmount !== undefined ? recordAmount.toString() : undefined,
       };
       privateFinalizedTxs.push(item);
     }

@@ -66,7 +66,7 @@ export function ownedToRecordDetail(
     transactionId: record.transactionId ?? "",
     transitionId: record.transitionId ?? "",
     height: record.blockHeight ? Number(record.blockHeight) : 0,
-    timestamp: 0,
+    timestamp: record.blockTimestamp ? Number(record.blockTimestamp) : 0,
     recordName: record.recordName,
     spent: record.spent ?? false,
     parsedContent: parseRecordParsedContent(record.programName, content),

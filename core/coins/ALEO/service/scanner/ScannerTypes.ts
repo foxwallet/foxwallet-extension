@@ -58,6 +58,7 @@ export interface RegisterResp {
 
 export interface ResponseFilter {
   blockHeight?: boolean;
+  blockTimestamp?: boolean;
   checksum?: boolean;
   commitment?: boolean;
   recordCiphertext?: boolean;
@@ -110,6 +111,7 @@ export interface RecordSyncRequestOptions {
 // number — the API returns it as a stringified integer.
 export interface CypherOwnedRecord {
   blockHeight?: string;
+  blockTimestamp?: number;
   commitment?: string;
   functionName?: string;
   outputIndex?: number;

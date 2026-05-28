@@ -25,6 +25,7 @@ const MAX_UUID_REREGISTER_ATTEMPTS = 3;
 const DEFAULT_SCANNER_NETWORK: ProvableScannerNetwork = "mainnet";
 const DEFAULT_OWNED_RECORD_RESPONSE_FILTER: ResponseFilter = {
   blockHeight: true,
+  blockTimestamp: true,
   commitment: true,
   recordCiphertext: true,
   functionName: true,
