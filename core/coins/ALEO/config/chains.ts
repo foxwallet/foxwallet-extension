@@ -75,12 +75,11 @@ export const ALEO_CHAIN_CONFIGS: { [key in string]: AleoConfig } = {
       ReserveChainConfigs[InnerChainUniqueId.ALEO_MAINNET].walletApiList,
     nativeCurrency: ALEO_NATIVE_CURRENCY,
     explorerUrls: {
-      [ExplorerLanguages.EN]: "https://aleo.info/en/",
-      [ExplorerLanguages.ZH]: "https://aleo.info/en/",
+      [ExplorerLanguages.EN]: "https://explorer.provable.com/",
     },
     explorerPaths: {
       tx: "/transaction/{txid}",
-      address: "",
+      address: "/address/{addr}",
     },
     alphaSwapApi: "https://mainnet.alphaswap.pro/api",
     aleoInfoApi: "https://api.aleo.info",
