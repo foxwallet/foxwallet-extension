@@ -209,7 +209,9 @@
     "bridge": "সেতু",
     "receive": "গ্রহণ",
     "copyContractAddressMsg": "এটি টোকেনের চুক্তির ঠিকানা, ঠিকানা না পাওয়া, এই ঠিকানায় স্থানান্তর করবেন না।",
-    "failed": "ব্যর্থ"
+    "failed": "ব্যর্থ",
+    "transfer_public_to_private": "সর্বজনীন থেকে ব্যক্তিগত রূপান্তর",
+    "transfer_private_to_public": "ব্যক্তিগত থেকে সর্বজনীন রূপান্তর"
   },
   "Language": {
     "title": "ভাষা"

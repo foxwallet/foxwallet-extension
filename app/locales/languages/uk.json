@@ -209,7 +209,9 @@
     "bridge": "Мост",
     "receive": "Отримувати",
     "copyContractAddressMsg": "Це адреса договору Token, не отримуючи адреси, не передавайте цю адресу.",
-    "failed": "Провалився"
+    "failed": "Провалився",
+    "transfer_public_to_private": "Конвертувати з публічного в приватний",
+    "transfer_private_to_public": "Конвертувати з приватного в публічний"
   },
   "Language": {
     "title": "Мова"

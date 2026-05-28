@@ -69,6 +69,12 @@ interface AleoTokenTxHistoryItemProps {
   address: string;
 }
 
+const ALEO_CONVERT_TX_TITLE_KEYS: Partial<Record<AleoTransferMethod, string>> =
+  {
+    [AleoTransferMethod.PRIVATE_TO_PUBLIC]: "transfer_private_to_public",
+    [AleoTransferMethod.PUBLIC_TO_PRIVATE]: "transfer_public_to_private",
+  };
+
 const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
   uniqueId,
   item,
@@ -101,10 +107,21 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
     if (joinSplitKind) {
       return t(`JoinSplit:${joinSplitKind}`);
     }
+    const convertTitleKey =
+      ALEO_CONVERT_TX_TITLE_KEYS[item.functionName as AleoTransferMethod];
+    if (convertTitleKey !== undefined) {
+      return t(`TokenDetail:${convertTitleKey}`);
+    }
     return t(`TokenDetail:${item.addressType}`);
-  }, [joinSplitKind, item.addressType, t]);
+  }, [joinSplitKind, item.addressType, item.functionName, t]);
   const txPublicInfo = useMemo(() => {
     if (joinSplitKind) {
+      return undefined;
+    }
+    if (
+      ALEO_CONVERT_TX_TITLE_KEYS[item.functionName as AleoTransferMethod] !==
+      undefined
+    ) {
       return undefined;
     }
     const prefix = "transfer_";
@@ -368,14 +385,14 @@ const TxHistoryItem = (props: TxHistoryItemProps) => {
                 decimals={decimals}
                 symbol={symbol}
                 textColor={
-                  joinSplitKind
-                    ? "gray.600"
-                    : isSend
-                    ? "#00D856"
-                    : "#EF466F"
+                  joinSplitKind ? "gray.600" : isSend ? "#00D856" : "#EF466F"
                 }
                 extraPreText={
-                  joinSplitKind || amount === 0n ? "" : isSend ? "- " : "+ "
+                  joinSplitKind !== undefined || amount === 0n
+                    ? ""
+                    : isSend
+                    ? "- "
+                    : "+ "
                 }
               />
             </Box>

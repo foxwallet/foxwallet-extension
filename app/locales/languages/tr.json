@@ -209,7 +209,9 @@
     "bridge": "Köprü",
     "receive": "Almak",
     "copyContractAddressMsg": "Bu, jetonun sözleşme adresi, adres almayan, bu adrese aktarmayın.",
-    "failed": "Arızalı"
+    "failed": "Arızalı",
+    "transfer_public_to_private": "Açıktan gizliye dönüştür",
+    "transfer_private_to_public": "Gizliden açığa dönüştür"
   },
   "Language": {
     "title": "Dil"

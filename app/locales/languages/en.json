@@ -203,7 +203,9 @@
     "bridge": "Bridge",
     "receive": "Receive",
     "copyContractAddressMsg": "This is token's contract address, not receiving address, do not transfer to this address.",
-    "failed": "Failed"
+    "failed": "Failed",
+    "transfer_public_to_private": "Convert public to private",
+    "transfer_private_to_public": "Convert private to public"
   },
   "TransactionDetail": {
     "hash": "Hash",
