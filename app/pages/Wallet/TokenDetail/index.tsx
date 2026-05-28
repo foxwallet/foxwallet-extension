@@ -1,8 +1,10 @@
 import {
   IconCopyBlack,
   IconEmptyTxPlaceholder,
+  IconJoinSrc,
   IconReceiveBlack,
   IconSendBlack,
+  IconSplitSrc,
 } from "@/components/Custom/Icon";
 import { TokenNum } from "@/components/Wallet/TokenNum";
 import { useCoinService } from "@/hooks/useCoinService";
@@ -12,6 +14,7 @@ import {
   Button,
   Divider,
   Flex,
+  Image,
   Spinner,
   Text,
   useClipboard,
@@ -89,16 +92,27 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
     );
   }, [address, item, navigate, token, uniqueId]);
 
+  const joinSplitKind = useMemo<"join" | "split" | undefined>(() => {
+    if (item.functionName === "join") return "join";
+    if (item.functionName === "split") return "split";
+    return undefined;
+  }, [item.functionName]);
   const txTitle = useMemo(() => {
+    if (joinSplitKind) {
+      return t(`JoinSplit:${joinSplitKind}`);
+    }
     return t(`TokenDetail:${item.addressType}`);
-  }, [item.addressType, t]);
+  }, [joinSplitKind, item.addressType, t]);
   const txPublicInfo = useMemo(() => {
+    if (joinSplitKind) {
+      return undefined;
+    }
     const prefix = "transfer_";
     const functionName = item.functionName.startsWith(prefix)
       ? item.functionName.slice(prefix.length)
       : item.functionName;
     return `(${functionName.split("_").join(" ")})`;
-  }, [item.functionName]);
+  }, [joinSplitKind, item.functionName]);
   const amount = useMemo(() => {
     if (item.functionName === "join" || item.functionName === "split") {
       return 0n;
@@ -128,6 +142,7 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
   return (
     <TxHistoryItem
       isSend={item.addressType === AleoTxAddressType.SEND}
+      joinSplitKind={joinSplitKind}
       timeStr={timeStr}
       txTitle={txTitle}
       txTitle2={txPublicInfo}
@@ -214,6 +229,7 @@ const TokenTxHistoryItem = (props: TokenTxHistoryItemProps) => {
 
 type TxHistoryItemProps = {
   isSend: boolean;
+  joinSplitKind?: "join" | "split";
   timeStr?: string;
   onClick?: () => void;
   txTitle?: string;
@@ -228,6 +244,7 @@ type TxHistoryItemProps = {
 const TxHistoryItem = (props: TxHistoryItemProps) => {
   const {
     isSend,
+    joinSplitKind,
     timeStr,
     txTitle,
     txTitle2,
@@ -253,7 +270,27 @@ const TxHistoryItem = (props: TxHistoryItemProps) => {
     >
       <Flex align={"center"}>
         <Box bg={"#E6E8EC"} p={1} borderRadius={"50px"}>
-          {isSend ? <IconSendBlack /> : <IconReceiveBlack />}
+          {joinSplitKind === "join" ? (
+            <Image
+              src={IconJoinSrc}
+              w={4}
+              h={4}
+              alt="join"
+              filter="grayscale(1) contrast(2)"
+            />
+          ) : joinSplitKind === "split" ? (
+            <Image
+              src={IconSplitSrc}
+              w={4}
+              h={4}
+              alt="split"
+              filter="grayscale(1) contrast(2)"
+            />
+          ) : isSend ? (
+            <IconSendBlack />
+          ) : (
+            <IconReceiveBlack />
+          )}
         </Box>
         <Flex direction={"column"} ml={2.5} alignItems={"flex-start"}>
           <Flex align={"center"}>
