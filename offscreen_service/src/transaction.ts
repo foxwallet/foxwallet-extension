@@ -20,15 +20,8 @@ import {
   NATIVE_TOKEN_TOKEN_ID,
 } from "./types";
 import { type AleoRpcService, createAleoRpcService } from "./instances/rpc";
-import { utils } from "ethers";
-import { parseU64 } from "./utils/num";
 
 const NATIVE_TOKEN_DECIMALS = 6;
-
-// SnarkVM inclusion proving key for transfer_private style executions. The
-// filename embeds a content hash; bumping it here both forces a redownload
-// and invalidates the IndexedDB cache row tagged with the old URL.
-// Mirrors the reference Provable extension's wallet_v2 CDN.
 const INCLUSION_PROVER_URL =
   "https://keys.provable.com/wallet_v2/inclusion.prover.9fe710f";
 
@@ -382,51 +375,20 @@ export class AleoTxWorker {
       );
       const totalProverTiime = performance.now() - startProverTime;
       console.log("===> after getProverKeyPair ", totalProverTiime);
-      // SDK 0.10.x handles the fee circuit keys internally — synthesizing
-      // fee_private/fee_public via the execution-flow API yields a key
-      // SnarkVM rejects with "trace cannot call 'prove_execution' for a
-      // fee type". The fee record / priorityFee / privateFee are passed
-      // through ExecuteOptions; the SDK takes care of the rest.
-      const isSplitTx =
-        programId === NATIVE_TOKEN_PROGRAM_ID && functionName === "split";
 
       pendingTxInfo.status = AleoTxStatus.GENERATING_TRANSACTION;
       await this.storage.setAddressLocalTx(chainId, address, pendingTxInfo);
 
       const imports = await this.getProgramImports(chainId, programId);
       console.log("===> before buildExecutionTransaction ");
-      // TODO: regenerate tx when encounter inclusion error
-      let tx: Transaction;
       const priorityFeeCredits =
         Number(BigInt(baseFee) + BigInt(priorityFee)) /
         10 ** NATIVE_TOKEN_DECIMALS;
       const privateFee = !!normalizedFeeRecordStr;
 
-      if (isSplitTx) {
-        // SDK split() builds + broadcasts in one shot and returns a tx id.
-        // Skip the manual submitTransaction path below.
-        const splitAmountMicrocredits = Number(parseU64(normalizedInputs[1]));
-        const splitTxId = await this.buildWithRpcFallback(
-          "buildSplitTransaction",
-          async (rpcUrl) => {
-            const programManager = new ProgramManager(rpcUrl);
-            return await programManager.split(
-              splitAmountMicrocredits,
-              normalizedInputs[0],
-              privateKeyObj,
-            );
-          },
-        );
-        pendingTxInfo.status = AleoTxStatus.COMPLETED;
-        await this.storage.setAddressLocalTx(chainId, address, pendingTxInfo);
-        const totalTime = performance.now() - startTime;
-        console.log("===> split tx done", totalTime, splitTxId);
-        return null;
-      }
-
       const inclusionProverBytes = await this.loadInclusionProverBytes(chainId);
 
-      tx = await this.buildWithRpcFallback(
+      const tx: Transaction = await this.buildWithRpcFallback(
         "buildExecutionTransaction",
         async (rpcUrl) => {
           const programManager = new ProgramManager(rpcUrl);
