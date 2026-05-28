@@ -368,9 +368,40 @@ export const useAleoTxHistory = ({
         continue;
       }
       const primaryRecord = privateTx.executionRecords[0];
-      const recordAmount =
-        primaryRecord.parsedContent?.microcredits ??
-        primaryRecord.parsedContent?.amount;
+      // Pick the amount we want to surface on the history row:
+      //  - join: amount of the joined output record (= sum of inputs) →
+      //          biggest record in the group.
+      //  - split: amount of the original record that got split (= sum of
+      //           outputs) → also the biggest record in the group, since
+      //           every output is strictly smaller than the input it came
+      //           from.
+      //  - everything else: just the primary record's amount (existing
+      //           behavior).
+      // Picking the max record handles both cases without needing to inspect
+      // record.spent (which can be flipped to true later when the user spends
+      // the new output, polluting the signal).
+      const recordValueOf = (r: (typeof privateTx.executionRecords)[number]) =>
+        (r.parsedContent?.microcredits as bigint | undefined) ??
+        (r.parsedContent?.amount as bigint | undefined) ??
+        0n;
+      const isJoinOrSplit =
+        primaryRecord.functionName === "join" ||
+        primaryRecord.functionName === "split";
+      let displayAmount: bigint | undefined;
+      if (isJoinOrSplit) {
+        displayAmount = privateTx.executionRecords.reduce<bigint>(
+          (max, r) => {
+            const v = recordValueOf(r);
+            return v > max ? v : max;
+          },
+          0n,
+        );
+      } else {
+        const raw =
+          primaryRecord.parsedContent?.microcredits ??
+          primaryRecord.parsedContent?.amount;
+        displayAmount = raw !== undefined ? BigInt(raw) : undefined;
+      }
       const item: AleoOnChainHistoryItem = {
         txId: privateTx.txId,
         txType: AleoTxType.EXECUTION,
@@ -381,7 +412,8 @@ export const useAleoTxHistory = ({
         type: AleoHistoryType.ON_CHAIN,
         addressType: AleoTxAddressType.SEND,
         status: AleoTxStatus.FINALIZD,
-        amount: recordAmount !== undefined ? recordAmount.toString() : undefined,
+        amount:
+          displayAmount !== undefined ? displayAmount.toString() : undefined,
       };
       privateFinalizedTxs.push(item);
     }

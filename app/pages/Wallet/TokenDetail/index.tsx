@@ -114,9 +114,6 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
     return `(${functionName.split("_").join(" ")})`;
   }, [joinSplitKind, item.functionName]);
   const amount = useMemo(() => {
-    if (item.functionName === "join" || item.functionName === "split") {
-      return 0n;
-    }
     return BigInt(item.amount ?? 0n);
   }, [item]);
 
@@ -351,8 +348,16 @@ const TxHistoryItem = (props: TxHistoryItemProps) => {
               amount={amount}
               decimals={decimals}
               symbol={symbol}
-              textColor={isSend ? "#00D856" : "#EF466F"}
-              extraPreText={amount === 0n ? "" : isSend ? "- " : "+ "}
+              textColor={
+                joinSplitKind
+                  ? "gray.600"
+                  : isSend
+                  ? "#00D856"
+                  : "#EF466F"
+              }
+              extraPreText={
+                joinSplitKind || amount === 0n ? "" : isSend ? "- " : "+ "
+              }
             />
           </Box>
         )}
