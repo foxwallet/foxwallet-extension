@@ -1,5 +1,6 @@
 import {
   IconCopyBlack,
+  IconConvertSrc,
   IconEmptyTxPlaceholder,
   IconJoinSrc,
   IconReceiveBlack,
@@ -75,6 +76,10 @@ const ALEO_CONVERT_TX_TITLE_KEYS: Partial<Record<AleoTransferMethod, string>> =
     [AleoTransferMethod.PUBLIC_TO_PRIVATE]: "transfer_public_to_private",
   };
 
+function getAleoConvertTxTitleKey(functionName: string): string | undefined {
+  return ALEO_CONVERT_TX_TITLE_KEYS[functionName as AleoTransferMethod];
+}
+
 const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
   uniqueId,
   item,
@@ -103,25 +108,23 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
     if (item.functionName === "split") return "split";
     return undefined;
   }, [item.functionName]);
+  const convertTitleKey = useMemo(() => {
+    return getAleoConvertTxTitleKey(item.functionName);
+  }, [item.functionName]);
   const txTitle = useMemo(() => {
     if (joinSplitKind) {
       return t(`JoinSplit:${joinSplitKind}`);
     }
-    const convertTitleKey =
-      ALEO_CONVERT_TX_TITLE_KEYS[item.functionName as AleoTransferMethod];
     if (convertTitleKey !== undefined) {
       return t(`TokenDetail:${convertTitleKey}`);
     }
     return t(`TokenDetail:${item.addressType}`);
-  }, [joinSplitKind, item.addressType, item.functionName, t]);
+  }, [convertTitleKey, joinSplitKind, item.addressType, t]);
   const txPublicInfo = useMemo(() => {
     if (joinSplitKind) {
       return undefined;
     }
-    if (
-      ALEO_CONVERT_TX_TITLE_KEYS[item.functionName as AleoTransferMethod] !==
-      undefined
-    ) {
+    if (convertTitleKey !== undefined) {
       return undefined;
     }
     const prefix = "transfer_";
@@ -129,7 +132,7 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
       ? item.functionName.slice(prefix.length)
       : item.functionName;
     return `(${functionName.split("_").join(" ")})`;
-  }, [joinSplitKind, item.functionName]);
+  }, [convertTitleKey, joinSplitKind, item.functionName]);
   const amount = useMemo(() => {
     return BigInt(item.amount ?? 0n);
   }, [item]);
@@ -165,6 +168,7 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
   return (
     <TxHistoryItem
       isSend={item.addressType === AleoTxAddressType.SEND}
+      isConvertTx={convertTitleKey !== undefined}
       joinSplitKind={joinSplitKind}
       timeStr={timeStr}
       txTitle={txTitle}
@@ -253,6 +257,7 @@ const TokenTxHistoryItem = (props: TokenTxHistoryItemProps) => {
 
 type TxHistoryItemProps = {
   isSend: boolean;
+  isConvertTx?: boolean;
   joinSplitKind?: "join" | "split";
   /** When true, render `---` instead of a number — for private Aleo ops
    *  whose amount can't be inferred locally. */
@@ -271,6 +276,7 @@ type TxHistoryItemProps = {
 const TxHistoryItem = (props: TxHistoryItemProps) => {
   const {
     isSend,
+    isConvertTx,
     joinSplitKind,
     amountHidden,
     timeStr,
@@ -312,6 +318,14 @@ const TxHistoryItem = (props: TxHistoryItemProps) => {
               w={4}
               h={4}
               alt="split"
+              filter="grayscale(1) contrast(2)"
+            />
+          ) : isConvertTx === true ? (
+            <Image
+              src={IconConvertSrc}
+              w={4}
+              h={4}
+              alt="convert"
               filter="grayscale(1) contrast(2)"
             />
           ) : isSend ? (
@@ -385,10 +399,16 @@ const TxHistoryItem = (props: TxHistoryItemProps) => {
                 decimals={decimals}
                 symbol={symbol}
                 textColor={
-                  joinSplitKind ? "gray.600" : isSend ? "#00D856" : "#EF466F"
+                  joinSplitKind !== undefined || isConvertTx === true
+                    ? "gray.600"
+                    : isSend
+                    ? "#00D856"
+                    : "#EF466F"
                 }
                 extraPreText={
-                  joinSplitKind !== undefined || amount === 0n
+                  joinSplitKind !== undefined ||
+                  isConvertTx === true ||
+                  amount === 0n
                     ? ""
                     : isSend
                     ? "- "
