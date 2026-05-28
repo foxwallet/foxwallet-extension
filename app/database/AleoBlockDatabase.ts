@@ -1,6 +1,7 @@
 import Dexie from "dexie";
 import { type AleoLocalTx } from "./types/tx";
 import { type AleoProgram } from "./types/program";
+import { type AleoTxDetailCacheRow } from "./types/txDetailCache";
 import { type AleoOnChainHistoryItem } from "core/coins/ALEO/types/History";
 import { NATIVE_TOKEN_TOKEN_ID } from "core/coins/ALEO/constants";
 
@@ -8,6 +9,7 @@ export class AleoBlockDatabase extends Dexie {
   txs: Dexie.Table<AleoLocalTx, string>;
   programs: Dexie.Table<AleoProgram, string>;
   cacheTxs: Dexie.Table<AleoOnChainHistoryItem>;
+  txDetailCache: Dexie.Table<AleoTxDetailCacheRow, string>;
 
   constructor(chainId: string) {
     super(chainId);
@@ -78,9 +80,14 @@ export class AleoBlockDatabase extends Dexie {
       inclusionKeys: "id",
     });
 
+    this.version(8).stores({
+      txDetailCache: "txId",
+    });
+
     this.txs = this.table("txs");
     this.programs = this.table("programs");
     this.cacheTxs = this.table("cacheTxs");
+    this.txDetailCache = this.table("txDetailCache");
   }
 
   async deleteAddressData(address: string): Promise<void> {

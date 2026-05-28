@@ -5,7 +5,10 @@ import {
 } from "core/coins/ALEO/types/IAleoStorage";
 import { AleoSyncAccount } from "core/coins/ALEO/types/AleoSyncAccount";
 import { ProverKeyPair } from "core/coins/ALEO/types/ProverKeyPair";
-import { AleoLocalTxInfo } from "core/coins/ALEO/types/Transaction";
+import {
+  type AleoLocalTxInfo,
+  type AleoTransaction,
+} from "core/coins/ALEO/types/Transaction";
 import { ALEO_CHAIN_IDS } from "core/coins/ALEO/config/chains";
 import { getBlockDatabaseByChainId } from "@/database/AleoBlockDatabase";
 import { AleoOnChainHistoryItem } from "core/coins/ALEO/types/History";
@@ -131,6 +134,34 @@ export class AleoStorage implements IAleoStorage {
     const instance = await this.getBlockDBInstance(chainId);
     const data = await instance.cacheTxs.where({ txId: txId }).first();
     return data;
+  }
+
+  /**
+   * txDetailCache: full transaction body (transitions + inputs/outputs) keyed
+   * by txId. Populated lazily by AleoService.getCachedTxDetail and consumed
+   * by the private-transfer amount resolver. We never invalidate entries: an
+   * Aleo confirmed tx is immutable once finalized.
+   */
+  async getCachedTxDetail(
+    chainId: string,
+    txId: string,
+  ): Promise<AleoTransaction | undefined> {
+    const instance = await this.getBlockDBInstance(chainId);
+    const row = await instance.txDetailCache.where({ txId }).first();
+    return row?.tx;
+  }
+
+  async setCachedTxDetail(
+    chainId: string,
+    txId: string,
+    tx: AleoTransaction,
+  ): Promise<void> {
+    const instance = await this.getBlockDBInstance(chainId);
+    await instance.txDetailCache.put({
+      txId,
+      tx,
+      cachedAt: Date.now(),
+    });
   }
 
   async clearAddressLocalData(

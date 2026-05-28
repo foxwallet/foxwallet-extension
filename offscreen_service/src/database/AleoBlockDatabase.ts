@@ -84,6 +84,15 @@ export class AleoBlockDatabase extends Dexie {
       inclusionKeys: "id",
     });
 
+    // v8: txDetailCache. Owned/populated by the popup-side AleoService for
+    // private-transfer amount resolution. Offscreen doesn't read or write
+    // this table, but must declare the same schema version so Dexie does not
+    // refuse to open the database after the popup upgrades it. Mirrors
+    // app/database/AleoBlockDatabase.ts.
+    this.version(8).stores({
+      txDetailCache: "txId",
+    });
+
     this.txs = this.table("txs");
     this.programs = this.table("programs");
     this.cacheTxs = this.table("cacheTxs");

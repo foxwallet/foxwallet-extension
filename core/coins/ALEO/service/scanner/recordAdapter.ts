@@ -70,6 +70,7 @@ export function ownedToRecordDetail(
     recordName: record.recordName,
     spent: record.spent ?? false,
     parsedContent: parseRecordParsedContent(record.programName, content),
+    outputIndex: record.outputIndex,
   };
 }
 

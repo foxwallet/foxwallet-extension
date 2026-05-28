@@ -4,7 +4,10 @@ import {
   type ScannerDecryptedRecord,
   type ScannerDecryptedRecordMap,
 } from "./ScannerDecryptedRecord";
-import { type AleoLocalTxInfo } from "./Transaction";
+import {
+  type AleoLocalTxInfo,
+  type AleoTransaction,
+} from "./Transaction";
 
 export interface ClearAddressLocalDataOptions {
   scannerCacheCleanup?: "best-effort" | "strict";
@@ -55,6 +58,20 @@ export interface IAleoStorage {
     chainId: string,
     txId: string,
   ): Promise<AleoOnChainHistoryItem | undefined>;
+
+  // Full transaction body cache (used by AleoService to resolve private
+  // transfer amounts). Persisted in IndexedDB so a service-worker restart
+  // doesn't force a re-fetch.
+  getCachedTxDetail(
+    chainId: string,
+    txId: string,
+  ): Promise<AleoTransaction | undefined>;
+
+  setCachedTxDetail(
+    chainId: string,
+    txId: string,
+    tx: AleoTransaction,
+  ): Promise<void>;
 
   getProgramContent(chainId: string, programId: string): Promise<string | null>;
 

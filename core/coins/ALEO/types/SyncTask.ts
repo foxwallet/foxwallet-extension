@@ -14,6 +14,7 @@ export interface RecordDetail {
   height: number;
   timestamp: number;
   recordName?: string;
+  outputIndex?: number;
 }
 
 export interface RecordTrimDetail {

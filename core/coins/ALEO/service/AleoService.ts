@@ -72,7 +72,10 @@ import { AleoStorage } from "@/scripts/background/store/aleo/AleoStorage";
 import { CoinServiceBasic } from "core/coins/CoinServiceBasic";
 import { AssetType, type TokenV2 } from "core/types/Token";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
-import type { InteractiveTokenParams } from "core/types/TokenTransaction";
+import type {
+  InteractiveTokenParams,
+  TokenTxHistoryParams,
+} from "core/types/TokenTransaction";
 import { type BalanceResp, type TokenBalanceParams } from "core/types/Balance";
 import {
   type CoinTxDetailParams,
@@ -355,6 +358,106 @@ export class AleoService extends CoinServiceBasic {
       default:
         return true;
     }
+  }
+
+  /**
+   * Position of the recipient's output record in a transfer_private
+   * transition's outputs array. The ABI is program-family dependent:
+   *   credits.aleo        → recipient at index 0 (change at 1)
+   *   token_registry / ARC-21 (alpha/arcane) → recipient at index 1
+   *   compliance tokens (USAD/USDCx)         → recipient at index 2
+   * Used to tell sender vs recipient apart when the local scanner only
+   * surfaces one side of the transition.
+   */
+  private getRecipientOutputIndex(programId: string): number {
+    if (programId === NATIVE_TOKEN_PROGRAM_ID) return 0;
+    if (isComplianceProgram(programId)) return 2;
+    return 1;
+  }
+
+  private getRecordAmountBigInt(
+    record: RecordDetailWithSpent,
+  ): bigint | undefined {
+    const raw =
+      record.parsedContent?.microcredits ?? record.parsedContent?.amount;
+    if (raw === undefined || raw === null) return undefined;
+    try {
+      return typeof raw === "bigint" ? raw : BigInt(raw);
+    } catch {
+      return undefined;
+    }
+  }
+
+  /**
+   * Lazy IndexedDB-backed cache for full transaction bodies. Confirmed
+   * Aleo transactions are immutable so cached entries never need
+   * invalidation. Used by getPrivateTxHistory to compute private-transfer
+   * amounts: we need the spent input record's `tag` (visible on the
+   * transition input, even though the input itself is ciphertext) to look
+   * up the local plaintext copy we scanned earlier.
+   */
+  private async getCachedTxDetail(
+    txId: string,
+  ): Promise<AleoTransaction | undefined> {
+    try {
+      const cached = await this.aleoStorage.getCachedTxDetail(
+        this.chainId,
+        txId,
+      );
+      if (cached) return cached;
+    } catch (err) {
+      console.warn("getCachedTxDetail read failed", err);
+    }
+    try {
+      const item = await this.walletService.getTransaction(txId);
+      const body = item.origin_data;
+      if (!body) return undefined;
+      // Best-effort: persist for next time. Don't fail the call if write fails.
+      this.aleoStorage
+        .setCachedTxDetail(this.chainId, txId, body)
+        .catch((err) =>
+          console.warn("setCachedTxDetail write failed", txId, err),
+        );
+      return body;
+    } catch (err) {
+      console.warn("getCachedTxDetail fetch failed", txId, err);
+      return undefined;
+    }
+  }
+
+  /**
+   * Extracts the spent input record's tag from a transfer_private-style
+   * transaction. Returns the first `type: "record"` input that carries a
+   * `tag` field, since transfer-style functions consume exactly one record
+   * (the rest are ciphertext / public scalars / addresses).
+   */
+  private findSpentInputTagInTx(
+    tx: AleoTransaction,
+    programId: string,
+  ): string | undefined {
+    const transitions = tx.execution?.transitions ?? [];
+    // Walk transitions; pick the one matching this token's program. Fee
+    // transitions are on credits.aleo and have their own record input, so
+    // a naive `transitions[0]` would mis-grab the fee record for token
+    // programs.
+    for (const transition of transitions) {
+      if (transition.program !== programId) continue;
+      for (const input of transition.inputs ?? []) {
+        if (input.type === "record" && input.tag) {
+          return input.tag;
+        }
+      }
+    }
+    // Fallback: any transition's record input. Better than nothing for
+    // non-standard programs.
+    for (const transition of transitions) {
+      for (const input of transition.inputs ?? []) {
+        if (input.type === "record" && input.tag) {
+          return input.tag;
+        }
+      }
+    }
+    return undefined;
   }
 
   private assertScannerRecordParsedContent(
@@ -1210,6 +1313,18 @@ export class AleoService extends CoinServiceBasic {
 
     const groupRecords = groupBy(records, (item) => item.transactionId);
 
+    // Flat tag→record lookup across every owned record we just pulled,
+    // regardless of which tx group they belong to. Needed for the
+    // private-transfer sender amount calculation: the spent input record
+    // lives in the tx that CREATED it (e.g. an earlier
+    // transfer_public_to_private), but its tag is referenced by the tx
+    // that consumed it. Mirrors the `recordsLookup.find(r => r.tag === ...)`
+    // pattern in provable-extension's parseSentPrivateTransaction.
+    const tagToRecord = new Map<string, RecordDetailWithSpent>();
+    for (const r of records) {
+      if (r.tag) tagToRecord.set(r.tag, r);
+    }
+
     const transactionIds = Object.keys(groupRecords);
     transactionIds.sort((txId1, txId2) => {
       const records1 = groupRecords[txId1];
@@ -1217,30 +1332,127 @@ export class AleoService extends CoinServiceBasic {
       return records2[0].height - records1[0].height;
     });
 
-    return transactionIds.map((txId) => {
-      const records = groupRecords[txId];
-      const executionRecords = [];
-      const feeRecords = [];
-      let height = 0;
-      for (const record of records) {
-        height = record.height;
-        record.timestamp = record.timestamp * 1000;
-        if (
-          record.programId === NATIVE_TOKEN_PROGRAM_ID &&
-          record.functionName.startsWith("fee")
-        ) {
-          feeRecords.push(record);
-        } else {
-          executionRecords.push(record);
+    // Async per-tx work (potential getCachedTxDetail fetch for senders) is
+    // gated by IndexedDB cache, so the network hit only happens once per
+    // tx across all sessions.
+    return await Promise.all(
+      transactionIds.map(async (txId) => {
+        const txRecords = groupRecords[txId];
+        const executionRecords: RecordDetailWithSpent[] = [];
+        const feeRecords: RecordDetailWithSpent[] = [];
+        let height = 0;
+        for (const record of txRecords) {
+          height = record.height;
+          record.timestamp = record.timestamp * 1000;
+          if (
+            record.programId === NATIVE_TOKEN_PROGRAM_ID &&
+            record.functionName.startsWith("fee")
+          ) {
+            feeRecords.push(record);
+          } else {
+            executionRecords.push(record);
+          }
         }
+
+        const amount = await this.resolvePrivateTxAmount({
+          txId,
+          executionRecords,
+          tagToRecord,
+        });
+
+        return {
+          txId,
+          height,
+          executionRecords,
+          feeRecords,
+          amount,
+        };
+      }),
+    );
+  }
+
+  /**
+   * Best-effort: derive the on-history-row amount for one private transaction
+   * given the records the local scanner owns from it.
+   *
+   * - transfer_private (sender): change record (unspent, our owner) is
+   *   visible here; the spent input record lives in another tx group (the
+   *   tx that produced it) — looked up by tag. amount = input − change.
+   * - transfer_private (recipient): only the new output (our owner,
+   *   unspent) is in this group. amount = that record.
+   * - transfer_private_to_public (sender): spent input lives in another
+   *   group; we may or may not see a change record here. Fetch the tx and
+   *   look up the spent input via tag → amount = input − any local change.
+   * - transfer_public_to_private (recipient): only the unspent output is
+   *   in this group. amount = that record.
+   * - join / split: keep the "max record in the group" heuristic (handled
+   *   by the caller in useTxHistory for now since we don't surface joinData
+   *   here yet).
+   *
+   * Returns `undefined` when we genuinely can't tell (caller falls back to
+   * "---" in the UI).
+   */
+  private async resolvePrivateTxAmount({
+    txId,
+    executionRecords,
+    tagToRecord,
+  }: {
+    txId: string;
+    executionRecords: RecordDetailWithSpent[];
+    tagToRecord: Map<string, RecordDetailWithSpent>;
+  }): Promise<string | undefined> {
+    if (executionRecords.length === 0) return undefined;
+    const primary = executionRecords[0];
+    const fn = primary.functionName;
+    const programId = primary.programId;
+
+    if (fn === "transfer_public_to_private") {
+      // Recipient view: amount is our new private record's value.
+      const recvRecord =
+        executionRecords.find((r) => !r.spent) ?? primary;
+      const amt = this.getRecordAmountBigInt(recvRecord);
+      return amt !== undefined ? amt.toString() : undefined;
+    }
+
+    if (fn === "transfer_private" || fn === "transfer_private_to_public") {
+      const recipientIdx = this.getRecipientOutputIndex(programId);
+      // We're the recipient of transfer_private when the only record we
+      // own in this tx group sits at the recipient output index.
+      const looksLikeRecipient =
+        fn === "transfer_private" &&
+        executionRecords.length === 1 &&
+        !executionRecords[0].spent &&
+        executionRecords[0].outputIndex === recipientIdx;
+      if (looksLikeRecipient) {
+        const amt = this.getRecordAmountBigInt(executionRecords[0]);
+        return amt !== undefined ? amt.toString() : undefined;
       }
-      return {
-        txId,
-        height,
-        executionRecords,
-        feeRecords,
-      };
-    });
+
+      // Otherwise treat as sender: find the spent input record by tag from
+      // the on-chain tx body, then compute amount = inputTotal − changeTotal.
+      const tx = await this.getCachedTxDetail(txId);
+      if (!tx) return undefined;
+      const inputTag = this.findSpentInputTagInTx(tx, programId);
+      if (!inputTag) return undefined;
+      const inputRecord = tagToRecord.get(inputTag);
+      if (!inputRecord) return undefined;
+      const inputAmount = this.getRecordAmountBigInt(inputRecord);
+      if (inputAmount === undefined) return undefined;
+
+      // Sum any owned outputs that are NOT the input itself (the change
+      // record for transfer_private; potentially zero records for
+      // transfer_private_to_public where the output is public).
+      let ownedOutputs = 0n;
+      for (const r of executionRecords) {
+        if (r.tag === inputTag) continue;
+        const v = this.getRecordAmountBigInt(r);
+        if (v !== undefined) ownedOutputs += v;
+      }
+      const diff = inputAmount - ownedOutputs;
+      return diff >= 0n ? diff.toString() : inputAmount.toString();
+    }
+
+    return undefined;
   }
 
   async getTxHistory(
@@ -2207,6 +2419,115 @@ export class AleoService extends CoinServiceBasic {
   }
 
   supportTokenTxHistory(): boolean {
-    return false;
+    return true;
+  }
+
+  /**
+   * Token-level on-chain history via the Provable explorer
+   * (`/{network}/transactions/address/{addr}`). The endpoint returns every
+   * transition the address took part in across all programs; we filter to
+   * the program (and tokenId, when present) of the token we're viewing.
+   *
+   * `api.aleo.info/transfer` (used by getNativeCoinTxHistory) only covers
+   * credits.aleo transfers and silently returns 0 for token programs like
+   * usad_stablecoin.aleo, so this method is the only path for token
+   * transfer_public history.
+   */
+  async getTokenTxHistory(
+    params: TokenTxHistoryParams,
+  ): Promise<TransactionHistoryResp | undefined> {
+    const { address, token, pagination } = params;
+    const { pageSize, pageNum } = pagination;
+    // Remote token feeds (USAD/USDCx and friends) sometimes ship without
+    // top-level programId/tokenId fields, but always carry a
+    // `${programId}-${tokenId}` contractAddress. Fall back to parsing it so
+    // we can still filter the upstream feed by program. Mirrors the same
+    // fallback in SendAleo/TransferInfoStep.
+    const { programId: parsedProgramId, tokenId: parsedTokenId } =
+      token.contractAddress
+        ? this.parseContractAddress(token.contractAddress)
+        : { programId: undefined, tokenId: undefined };
+    const programId = token.programId ?? parsedProgramId ?? "";
+    const tokenId = token.tokenId ?? parsedTokenId;
+    if (!programId) {
+      return {
+        txs: [],
+        pagination: {
+          pageSize,
+          pageNum,
+          endReach: true,
+        },
+      };
+    }
+
+    // Provable explorer caps `limit` at 50; clamp our pageSize too so the
+    // `offset = effectivePageSize * pageNum` math stays consistent (otherwise
+    // requesting pageSize=100 from upstream returns 50 rows but our offset
+    // jumps in steps of 100, skipping half the feed each page).
+    const effectivePageSize = Math.min(50, Math.max(1, pageSize));
+
+    let resp;
+    try {
+      resp = await this.provableApi.getTransferHistory({
+        network: this.chainId,
+        address,
+        limit: effectivePageSize,
+        offset: effectivePageSize * pageNum,
+      });
+    } catch (err) {
+      console.error("===> aleo getTokenTxHistory error", err);
+      return undefined;
+    }
+
+    const rows = resp.transactions ?? [];
+    // Filter to the token we're viewing. tokenId is only meaningful for
+    // token_registry-style programs (alpha/arcane); compliance + native
+    // programs use the program identity alone to scope the token, so only
+    // tighten the filter by tokenId when both ends supply one. The Provable
+    // explorer endpoint omits `token_id` for compliance programs (one program
+    // == one token), so this naturally degrades to a program-only filter.
+    const filtered = rows.filter((row) => {
+      if (row.programId !== programId) return false;
+      if (tokenId && row.tokenId && row.tokenId !== tokenId) {
+        return false;
+      }
+      return true;
+    });
+
+    const txs = filtered.map((row) => {
+      const status =
+        row.transactionStatus === "Accepted" ||
+        row.transactionStatus === "Confirmed"
+          ? TransactionStatus.SUCCESS
+          : row.transactionStatus === "Pending"
+          ? TransactionStatus.PENDING
+          : TransactionStatus.FAILED;
+      return {
+        id: row.transactionId,
+        from: row.senderAddress ?? "",
+        to: row.recipientAddress ?? "",
+        value:
+          row.amount !== undefined && row.amount !== null
+            ? BigInt(row.amount)
+            : 0n,
+        timestamp: Number(row.blockTimestamp) * 1000,
+        status,
+        height: row.blockNumber,
+        programId: row.programId,
+        functionName: row.functionId,
+      };
+    });
+
+    return {
+      txs,
+      pagination: {
+        pageSize,
+        pageNum,
+        // Compare against effectivePageSize (what upstream actually saw), not
+        // the caller's pageSize, otherwise endReach=true is reported as soon
+        // as we get a single capped page back even though more might exist.
+        endReach: !resp.nextCursor || rows.length < effectivePageSize,
+      },
+    };
   }
 }

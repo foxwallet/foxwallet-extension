@@ -116,6 +116,15 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
   const amount = useMemo(() => {
     return BigInt(item.amount ?? 0n);
   }, [item]);
+  const amountHidden = useMemo(() => {
+    if (item.amount !== undefined) {
+      return false;
+    }
+    return (
+      item.functionName === "transfer_private" ||
+      item.functionName === "transfer_private_to_public"
+    );
+  }, [item.amount, item.functionName]);
 
   const addressLabel = useMemo(() => {
     let ret = "";
@@ -148,6 +157,7 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
         txStatus === SimplifiedAleoTxStatus.Success ? undefined : txStatusStr
       }
       amount={amount}
+      amountHidden={amountHidden}
       decimals={token.decimals}
       symbol={token.symbol}
       onClick={onClick}
@@ -227,6 +237,9 @@ const TokenTxHistoryItem = (props: TokenTxHistoryItemProps) => {
 type TxHistoryItemProps = {
   isSend: boolean;
   joinSplitKind?: "join" | "split";
+  /** When true, render `---` instead of a number — for private Aleo ops
+   *  whose amount can't be inferred locally. */
+  amountHidden?: boolean;
   timeStr?: string;
   onClick?: () => void;
   txTitle?: string;
@@ -242,6 +255,7 @@ const TxHistoryItem = (props: TxHistoryItemProps) => {
   const {
     isSend,
     joinSplitKind,
+    amountHidden,
     timeStr,
     txTitle,
     txTitle2,
@@ -342,24 +356,30 @@ const TxHistoryItem = (props: TxHistoryItemProps) => {
         justifyContent={"center"}
         alignItems={"flex-end"}
       >
-        {amount >= 0n && (
-          <Box fontWeight={"bold"} fontSize={12} ml={1}>
-            <TokenNum
-              amount={amount}
-              decimals={decimals}
-              symbol={symbol}
-              textColor={
-                joinSplitKind
-                  ? "gray.600"
-                  : isSend
-                  ? "#00D856"
-                  : "#EF466F"
-              }
-              extraPreText={
-                joinSplitKind || amount === 0n ? "" : isSend ? "- " : "+ "
-              }
-            />
+        {amountHidden ? (
+          <Box fontWeight={"bold"} fontSize={12} ml={1} color={"gray.600"}>
+            --- {symbol}
           </Box>
+        ) : (
+          amount >= 0n && (
+            <Box fontWeight={"bold"} fontSize={12} ml={1}>
+              <TokenNum
+                amount={amount}
+                decimals={decimals}
+                symbol={symbol}
+                textColor={
+                  joinSplitKind
+                    ? "gray.600"
+                    : isSend
+                    ? "#00D856"
+                    : "#EF466F"
+                }
+                extraPreText={
+                  joinSplitKind || amount === 0n ? "" : isSend ? "- " : "+ "
+                }
+              />
+            </Box>
+          )
         )}
         <Text color={"gray.500"} fontSize={10}>
           {timeStr}
