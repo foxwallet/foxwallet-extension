@@ -81,6 +81,7 @@ type ScannerOffscreenMessage =
 type ScannerTaskResolver = (message: ScannerOffscreenMessage) => void;
 
 let scannerWorker: Worker | null = null;
+let scannerWorkerReady: Promise<void> | null = null;
 let scannerTaskId = 0;
 const scannerPendingTasks = new Map<number, ScannerTaskResolver>();
 
@@ -124,41 +125,76 @@ function resetScannerWorker(): void {
   );
   scannerWorker.terminate();
   scannerWorker = null;
+  scannerWorkerReady = null;
 }
 
+// Resolves scannerWorkerReady's promise; assigned when the worker is created.
+let markScannerWorkerReady: (() => void) | null = null;
+
 function onScannerWorkerMessage(
-  event: MessageEvent<ScannerWorkerResponse>,
+  event: MessageEvent<ScannerWorkerResponse | { type?: string }>,
 ): void {
   const response = event.data;
-  if (typeof response?.id !== "number") return;
+
+  // Readiness handshake: worker posts {type:"ready"} once its WASM init is done.
+  if (
+    response &&
+    (response as { type?: string }).type === "ready" &&
+    markScannerWorkerReady
+  ) {
+    markScannerWorkerReady();
+    markScannerWorkerReady = null;
+    return;
+  }
+
+  const taskResponse = response as ScannerWorkerResponse;
+  if (typeof taskResponse?.id !== "number") return;
 
   resolveScannerTask(
-    response.id,
-    scannerResponse(response.error ?? null, response.data ?? null),
+    taskResponse.id,
+    scannerResponse(taskResponse.error ?? null, taskResponse.data ?? null),
   );
+}
+
+// Unblock `ready` waiters if the worker dies before signaling readiness, so
+// they error out instead of hitting the full readiness timeout.
+function releaseScannerWorkerReady(): void {
+  if (markScannerWorkerReady) {
+    markScannerWorkerReady();
+    markScannerWorkerReady = null;
+  }
 }
 
 function onScannerWorkerError(event: ErrorEvent): void {
   const message = event.message || "scanner worker failed";
+  releaseScannerWorkerReady();
   resolveAllScannerTasks(message);
   resetScannerWorker();
 }
 
 function onScannerWorkerMessageError(): void {
+  releaseScannerWorkerReady();
   resolveAllScannerTasks("scanner worker message serialization failed");
   resetScannerWorker();
 }
 
-function getScannerWorker(): Worker {
+function getScannerWorker(): { worker: Worker; ready: Promise<void> } {
   if (!scannerWorker) {
-    scannerWorker = new Worker(getOffscreenAssetUrl("scannerWorker.js"), {
+    const worker = new Worker(getOffscreenAssetUrl("scannerWorker.js"), {
       type: "module",
     });
-    scannerWorker.addEventListener("message", onScannerWorkerMessage);
-    scannerWorker.addEventListener("error", onScannerWorkerError);
-    scannerWorker.addEventListener("messageerror", onScannerWorkerMessageError);
+    scannerWorkerReady = new Promise<void>((resolve) => {
+      markScannerWorkerReady = resolve;
+    });
+    worker.addEventListener("message", onScannerWorkerMessage);
+    worker.addEventListener("error", onScannerWorkerError);
+    worker.addEventListener("messageerror", onScannerWorkerMessageError);
+    scannerWorker = worker;
   }
-  return scannerWorker;
+  return {
+    worker: scannerWorker,
+    ready: scannerWorkerReady ?? Promise.resolve(),
+  };
 }
 
 const runWorkerTask = async (
@@ -227,13 +263,29 @@ const runWorkerTask = async (
   });
 };
 
+const SCANNER_WORKER_READY_TIMEOUT_MS = 60 * 1000;
+
 const handleScannerEncrypt = async (
   payload: ScannerEncryptRegistrationPayload,
 ): Promise<OffscreenMessage<ScannerEncryptRegistrationResult>> => {
   try {
-    const worker = getScannerWorker();
-    const id = ++scannerTaskId;
+    const { worker, ready } = getScannerWorker();
 
+    // Wait for worker readiness before posting; bound it so a wedged worker
+    // errors out instead of hanging forever.
+    let readyTimer: ReturnType<typeof setTimeout> | undefined;
+    const readyTimeout = new Promise<never>((_, reject) => {
+      readyTimer = setTimeout(() => {
+        reject(new Error("scanner worker did not become ready in time"));
+      }, SCANNER_WORKER_READY_TIMEOUT_MS);
+    });
+    try {
+      await Promise.race([ready, readyTimeout]);
+    } finally {
+      if (readyTimer !== undefined) clearTimeout(readyTimer);
+    }
+
+    const id = ++scannerTaskId;
     return await new Promise<ScannerOffscreenMessage>((resolve) => {
       scannerPendingTasks.set(id, resolve);
       const task: ScannerWorkerTask = {

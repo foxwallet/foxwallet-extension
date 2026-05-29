@@ -45,7 +45,16 @@ export class Port implements IPort {
       logger.log(this.portName, " reconnect...");
       this.port = this.createPort();
     }
-    this.port.postMessage(message);
+    try {
+      this.port.postMessage(message);
+    } catch (err) {
+      // Chrome may tear the port down before onDisconnect flips `connected`.
+      // Rethrow so the owning client's onDisconnect path handles reconnection;
+      // don't swap the underlying port here or its bound listeners orphan.
+      this.connected = false;
+      logger.warn(this.portName, " postMessage on disconnected port", err);
+      throw err;
+    }
   }
 
   get disconnect() {

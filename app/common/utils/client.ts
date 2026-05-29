@@ -322,7 +322,14 @@ export class PopupServerClient implements IClient, IPopupServer {
         }
       };
       this.callbackMap.set(id, callback);
-      this.port.postMessage(message);
+      try {
+        this.port.postMessage(message);
+      } catch (err) {
+        // Reject via callback instead of leaking an unhandled rejection when
+        // the port was torn down before its disconnect listener fired.
+        this.callbackMap.delete(id);
+        callback(err instanceof Error ? err : new Error(String(err)), null);
+      }
     });
   }
 }

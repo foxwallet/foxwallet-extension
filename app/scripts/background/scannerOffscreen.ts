@@ -1,3 +1,4 @@
+import { Mutex } from "async-mutex";
 import {
   MessageOrigin,
   OffscreenMethod,
@@ -87,38 +88,45 @@ async function waitForScannerOffscreenReady(): Promise<void> {
   throw new Error(`scanner offscreen did not become ready in time: ${detail}`);
 }
 
+// Serialize encrypt-registration round-trips: the single offscreen doc can be
+// recreated mid-flight, and overlapping callers race that recreation into
+// "the message channel closed before a response was received".
+const offscreenEncryptMutex = new Mutex();
+
 export async function encryptRegistrationViaOffscreen(
   payload: ScannerEncryptRegistrationPayload,
 ): Promise<string> {
-  return await withOffscreen(
-    OFFSCREEN_PATH,
-    SCANNER_REASONS,
-    SCANNER_JUSTIFICATION,
-    async () => {
-      await waitForScannerOffscreenReady();
-      const message: BackgroundMessage<ScannerEncryptRegistrationPayload> = {
-        type: OffscreenMethod.SCANNER_ENCRYPT_REGISTRATION,
-        origin: MessageOrigin.BACKGROUND_TO_OFFSCREEN_SCANNER,
-        payload,
-      };
-      const resp = (await chrome.runtime.sendMessage(message)) as
-        | OffscreenMessage<ScannerEncryptRegistrationResult>
-        | undefined;
+  return await offscreenEncryptMutex.runExclusive(async () =>
+    withOffscreen(
+      OFFSCREEN_PATH,
+      SCANNER_REASONS,
+      SCANNER_JUSTIFICATION,
+      async () => {
+        await waitForScannerOffscreenReady();
+        const message: BackgroundMessage<ScannerEncryptRegistrationPayload> = {
+          type: OffscreenMethod.SCANNER_ENCRYPT_REGISTRATION,
+          origin: MessageOrigin.BACKGROUND_TO_OFFSCREEN_SCANNER,
+          payload,
+        };
+        const resp = (await chrome.runtime.sendMessage(message)) as
+          | OffscreenMessage<ScannerEncryptRegistrationResult>
+          | undefined;
 
-      if (
-        !resp ||
-        resp.type === OffscreenMessageType.ERROR ||
-        resp.payload.error
-      ) {
-        const reason =
-          resp?.payload?.error ?? "no response from scanner offscreen";
-        throw new Error(`scanner encrypt failed: ${reason}`);
-      }
-      const ciphertext = resp.payload.data?.ciphertext;
-      if (!ciphertext) {
-        throw new Error("scanner encrypt returned empty ciphertext");
-      }
-      return ciphertext;
-    },
+        if (
+          !resp ||
+          resp.type === OffscreenMessageType.ERROR ||
+          resp.payload.error
+        ) {
+          const reason =
+            resp?.payload?.error ?? "no response from scanner offscreen";
+          throw new Error(`scanner encrypt failed: ${reason}`);
+        }
+        const ciphertext = resp.payload.data?.ciphertext;
+        if (!ciphertext) {
+          throw new Error("scanner encrypt returned empty ciphertext");
+        }
+        return ciphertext;
+      },
+    ),
   );
 }

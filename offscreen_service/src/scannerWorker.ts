@@ -58,3 +58,10 @@ function handleTask(task: ScannerWorkerTask): void {
 addEventListener("message", (event: MessageEvent<ScannerWorkerTask>) => {
   handleTask(event.data);
 });
+
+// The @provablehq/sdk import runs a top-level await that compiles the Aleo
+// WASM; ESM settles it before this module body, so reaching here means both
+// the WASM is ready and the listener above is attached. Signal readiness so
+// the host doesn't postMessage before the listener exists (Workers drop such
+// messages, which would hang the encrypt request forever).
+postMessage({ type: "ready" });
