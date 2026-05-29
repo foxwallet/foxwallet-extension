@@ -28,8 +28,31 @@ import {
   ALPHA_TOKEN_PROGRAM_ID,
   ARCANE_PROGRAM_ID,
   BETA_STAKING_PROGRAM_ID,
+  isComplianceProgram,
+  NATIVE_TOKEN_PROGRAM_ID,
   NATIVE_TOKEN_TOKEN_ID,
 } from "core/coins/ALEO/constants";
+
+const getRecipientOutputIndex = (programId: string): number => {
+  if (programId === NATIVE_TOKEN_PROGRAM_ID) return 0;
+  if (isComplianceProgram(programId)) return 2;
+  return 1;
+};
+
+const isRecipientRecord = (record: {
+  programId: string;
+  functionName: string;
+  outputIndex?: number;
+}): boolean => {
+  if (
+    record.functionName !== "transfer_private" &&
+    record.functionName !== "transfer_public_to_private" &&
+    record.functionName !== "mint_private"
+  ) {
+    return false;
+  }
+  return record.outputIndex === getRecipientOutputIndex(record.programId);
+};
 
 const NotificationExpiredTime = 1000 * 60 * 60 * 5;
 
@@ -396,6 +419,7 @@ export const useAleoTxHistory = ({
           primaryRecord.parsedContent?.amount;
         displayAmount = raw !== undefined ? BigInt(raw) : undefined;
       }
+      const isRecipient = records.some((r) => isRecipientRecord(r));
       const item: AleoOnChainHistoryItem = {
         txId: privateTx.txId,
         txType: AleoTxType.EXECUTION,
@@ -404,7 +428,11 @@ export const useAleoTxHistory = ({
         functionName: primaryRecord.functionName,
         timestamp: primaryRecord.timestamp,
         type: AleoHistoryType.ON_CHAIN,
-        addressType: AleoTxAddressType.SEND,
+        addressType: isRecipient
+          ? AleoTxAddressType.RECEIVE
+          : AleoTxAddressType.SEND,
+        senderAddress: isRecipient ? undefined : address,
+        recipientAddress: isRecipient ? address : undefined,
         status: AleoTxStatus.FINALIZD,
         amount:
           displayAmount !== undefined ? displayAmount.toString() : undefined,

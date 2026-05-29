@@ -111,6 +111,18 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
   const convertTitleKey = useMemo(() => {
     return getAleoConvertTxTitleKey(item.functionName);
   }, [item.functionName]);
+  const computedAddressType = useMemo<AleoTxAddressType>(() => {
+    if (item.type === AleoHistoryType.LOCAL) {
+      return item.addressType;
+    }
+    if (item.recipientAddress && item.recipientAddress === address) {
+      return AleoTxAddressType.RECEIVE;
+    }
+    if (item.senderAddress && item.senderAddress === address) {
+      return AleoTxAddressType.SEND;
+    }
+    return item.addressType;
+  }, [item, address]);
   const txTitle = useMemo(() => {
     if (joinSplitKind) {
       return t(`JoinSplit:${joinSplitKind}`);
@@ -118,8 +130,8 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
     if (convertTitleKey !== undefined) {
       return t(`TokenDetail:${convertTitleKey}`);
     }
-    return t(`TokenDetail:${item.addressType}`);
-  }, [convertTitleKey, joinSplitKind, item.addressType, t]);
+    return t(`TokenDetail:${computedAddressType}`);
+  }, [convertTitleKey, joinSplitKind, computedAddressType, t]);
   const txPublicInfo = useMemo(() => {
     if (joinSplitKind) {
       return undefined;
@@ -149,8 +161,8 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
   const addressLabel = useMemo(() => {
     let ret = "";
     let addr = "";
-    const isSend = item.addressType === AleoTxAddressType.SEND;
-    const fromTo = isSend ? "To" : "From"; // if send , show to address
+    const isSend = computedAddressType === AleoTxAddressType.SEND;
+    const fromTo = isSend ? "To" : "From";
 
     if (item.functionName === AleoTransferMethod.PUBLIC) {
       if (item.type === AleoHistoryType.LOCAL) {
@@ -161,13 +173,13 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
       ret = `${fromTo} ${addr}`;
     }
     return ret;
-  }, [item]);
+  }, [item, computedAddressType]);
 
   const { txStatus, txStatusStr } = simplifyAleoTxStatus(item.status);
 
   return (
     <TxHistoryItem
-      isSend={item.addressType === AleoTxAddressType.SEND}
+      isSend={computedAddressType === AleoTxAddressType.SEND}
       isConvertTx={convertTitleKey !== undefined}
       joinSplitKind={joinSplitKind}
       timeStr={timeStr}
