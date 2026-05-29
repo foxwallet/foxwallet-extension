@@ -93,6 +93,38 @@ export const tokens = createModel<RootModel>()({
       };
     },
 
+    upsertAddressToken(
+      state,
+      payload: {
+        uniqueId: ChainUniqueId;
+        address: string;
+        token: TokenV2;
+      },
+    ) {
+      const { uniqueId, address, token: paramToken } = payload;
+      const token = { ...paramToken, ownerAddress: address };
+      const allChainTokens = state.userTokens;
+      const oldUniqueIdUserTokens = allChainTokens[uniqueId] ?? {};
+      const oldAddressTokens = oldUniqueIdUserTokens[address] ?? [];
+      const idx = oldAddressTokens.findIndex((item: TokenV2) =>
+        isSameUserToken(uniqueId, item, token),
+      );
+      const newAddressTokens =
+        idx >= 0
+          ? oldAddressTokens.map((item, i) => (i === idx ? token : item))
+          : [...oldAddressTokens, token];
+      return {
+        ...state,
+        userTokens: {
+          ...allChainTokens,
+          [uniqueId]: {
+            ...oldUniqueIdUserTokens,
+            [address]: newAddressTokens,
+          },
+        },
+      };
+    },
+
     selectToken(
       state,
       payload: {

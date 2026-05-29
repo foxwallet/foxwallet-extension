@@ -1943,7 +1943,7 @@ export class AleoService extends CoinServiceBasic {
   async getUserInteractiveTokens(
     params: InteractiveTokenParams,
   ): Promise<TokenV2[]> {
-    const { address } = params;
+    const { address, onPartial } = params;
 
     const trustedTokens: Token[] = [BETA_STAKING_ALEO_TOKEN, USAD_TOKEN, USDCX_TOKEN];
     const trustedKeys = new Set(
@@ -1955,72 +1955,24 @@ export class AleoService extends CoinServiceBasic {
       USDCX_STABLECOIN_PROGRAM_ID,
     ]);
 
-    let feedTokens: Token[] = [];
-    try {
-      feedTokens = await this.getAllTokens();
-    } catch (err) {
-      console.warn("===> getUserInteractiveTokens getAllTokens failed: ", err);
-    }
-    const top10Tokens = feedTokens.length > 0 ? feedTokens.slice(1, 11) : [];
+    type TokenWithBalance = Token & {
+      balance: {
+        privateBalance: bigint;
+        publicBalance: bigint;
+        total: bigint;
+      };
+    };
 
-    const top10WithoutTrusted = top10Tokens.filter(
-      (t) =>
-        !trustedKeys.has(`${t.programId}-${t.tokenId}`) &&
-        !trustedProgramIds.has(t.programId),
-    );
-
-    const tokensToCheck: Token[] = [...trustedTokens, ...top10WithoutTrusted];
-    const balances = await Promise.all(
-      tokensToCheck.map(async (token) => {
-        const [privateRes, publicRes] = await Promise.allSettled([
-          this.getTokenPrivateBalance(
-            address,
-            token.programId,
-            token.tokenId,
-          ),
-          this.getTokenPublicBalance(
-            address,
-            token.programId,
-            token.tokenId,
-          ),
-        ]);
-        if (privateRes.status === "rejected") {
-          console.warn(
-            "===> getUserInteractiveTokens private balance failed (treating as 0): ",
-            token.programId,
-            privateRes.reason,
-          );
-        }
-        if (publicRes.status === "rejected") {
-          console.warn(
-            "===> getUserInteractiveTokens public balance failed (treating as 0): ",
-            token.programId,
-            publicRes.reason,
-          );
-        }
-        const privateBalance =
-          privateRes.status === "fulfilled" ? privateRes.value : 0n;
-        const publicBalance =
-          publicRes.status === "fulfilled" ? publicRes.value : 0n;
-        return {
-          ...token,
-          balance: {
-            privateBalance,
-            publicBalance,
-            total: privateBalance + publicBalance,
-          },
-        };
-      }),
-    );
-
-    const kept = balances.filter((item) => {
+    // A token is kept if it has a non-zero balance, except for the staking
+    // program which is always shown.
+    const shouldKeep = (item: TokenWithBalance): boolean => {
       if (item.programId === BETA_STAKING_PROGRAM_ID) {
         return true;
       }
       return item.balance.total > 0n;
-    });
+    };
 
-    const res: TokenV2[] = kept.map((item) => {
+    const toTokenV2 = (item: TokenWithBalance): TokenV2 => {
       const {
         tokenId,
         name,
@@ -2054,7 +2006,90 @@ export class AleoService extends CoinServiceBasic {
           ? TokenSecurity.WHITE
           : undefined,
       };
-    });
+    };
+
+    // Resolve the balance for a single token. Each token's private + public
+    // balance are fetched in parallel; failures are logged and treated as 0.
+    // As soon as a kept token's balance resolves, `onPartial` is fired so the
+    // UI can render it incrementally without waiting for the whole batch.
+    const resolveTokenBalance = async (
+      token: Token,
+    ): Promise<TokenWithBalance> => {
+      const [privateRes, publicRes] = await Promise.allSettled([
+        this.getTokenPrivateBalance(address, token.programId, token.tokenId),
+        this.getTokenPublicBalance(address, token.programId, token.tokenId),
+      ]);
+      if (privateRes.status === "rejected") {
+        console.warn(
+          "===> getUserInteractiveTokens private balance failed (treating as 0): ",
+          token.programId,
+          privateRes.reason,
+        );
+      }
+      if (publicRes.status === "rejected") {
+        console.warn(
+          "===> getUserInteractiveTokens public balance failed (treating as 0): ",
+          token.programId,
+          publicRes.reason,
+        );
+      }
+      const privateBalance =
+        privateRes.status === "fulfilled" ? privateRes.value : 0n;
+      const publicBalance =
+        publicRes.status === "fulfilled" ? publicRes.value : 0n;
+      const item: TokenWithBalance = {
+        ...token,
+        balance: {
+          privateBalance,
+          publicBalance,
+          total: privateBalance + publicBalance,
+        },
+      };
+      if (onPartial && shouldKeep(item)) {
+        try {
+          onPartial(toTokenV2(item));
+        } catch (err) {
+          console.warn(
+            "===> getUserInteractiveTokens onPartial callback failed: ",
+            err,
+          );
+        }
+      }
+      return item;
+    };
+
+    // Trusted tokens (stAleo / USAD / USDCX) are hard-coded and always present,
+    // so their balances do not depend on the remote `getAllTokens()` feed.
+    const trustedBalancesPromise = Promise.all(
+      trustedTokens.map(resolveTokenBalance),
+    );
+
+    const top10BalancesPromise = (async () => {
+      let feedTokens: Token[] = [];
+      try {
+        feedTokens = await this.getAllTokens();
+      } catch (err) {
+        console.warn(
+          "===> getUserInteractiveTokens getAllTokens failed: ",
+          err,
+        );
+      }
+      const top10Tokens = feedTokens.length > 0 ? feedTokens.slice(1, 11) : [];
+      const top10WithoutTrusted = top10Tokens.filter(
+        (t) =>
+          !trustedKeys.has(`${t.programId}-${t.tokenId}`) &&
+          !trustedProgramIds.has(t.programId),
+      );
+      return await Promise.all(top10WithoutTrusted.map(resolveTokenBalance));
+    })();
+
+    const [trustedBalances, top10Balances] = await Promise.all([
+      trustedBalancesPromise,
+      top10BalancesPromise,
+    ]);
+    const balances = [...trustedBalances, ...top10Balances];
+
+    const res: TokenV2[] = balances.filter(shouldKeep).map(toTokenV2);
     return res;
   }
 

@@ -115,18 +115,34 @@ export const useInteractiveTokens = (
   uniqueId: ChainUniqueId,
   address: string,
   autoRequest: boolean = true,
+  onPartialToken?: (token: TokenV2) => void,
 ) => {
   const { coinService } = useCoinService(uniqueId);
 
   const key = `/interactive_token/${uniqueId}`;
+
   const fetchTokens = useCallback(async () => {
-    let tokens = await coinService.getUserInteractiveTokens({ address });
-    if (!coinService.config.testnet) {
-      const allTokens = await getAllTokensWithCache(uniqueId);
-      tokens = mergeStandardTokenMeta(tokens, allTokens);
-    }
+    const isMainnet = !coinService.config.testnet;
+    const standardTokens = isMainnet
+      ? await getAllTokensWithCache(uniqueId)
+      : [];
+    const decorate = (list: TokenV2[]): TokenV2[] =>
+      isMainnet ? mergeStandardTokenMeta(list, standardTokens) : list;
+
+    let tokens = await coinService.getUserInteractiveTokens({
+      address,
+      ...(onPartialToken
+        ? {
+            onPartial: (token: TokenV2) => {
+              const [decorated] = decorate([token]);
+              onPartialToken(decorated);
+            },
+          }
+        : {}),
+    });
+    tokens = decorate(tokens);
     return { address, uniqueId, tokens };
-  }, [coinService, address, uniqueId]);
+  }, [coinService, address, uniqueId, onPartialToken]);
 
   const {
     data: interactiveTokens,
