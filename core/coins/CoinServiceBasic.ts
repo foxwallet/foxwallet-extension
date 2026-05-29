@@ -198,7 +198,7 @@ export abstract class CoinServiceBasic {
     _params: InteractiveTokenParams,
     _auth?: AuthParams,
   ): Promise<TokenV2[]> {
-    console.error(
+    console.warn(
       "getUserInteractiveTokens not implemented for " +
         this.baseConfig.chainName,
     );

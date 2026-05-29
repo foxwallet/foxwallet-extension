@@ -1959,7 +1959,7 @@ export class AleoService extends CoinServiceBasic {
     try {
       feedTokens = await this.getAllTokens();
     } catch (err) {
-      console.error("===> getUserInteractiveTokens getAllTokens failed: ", err);
+      console.warn("===> getUserInteractiveTokens getAllTokens failed: ", err);
     }
     const top10Tokens = feedTokens.length > 0 ? feedTokens.slice(1, 11) : [];
 
