@@ -2,10 +2,44 @@ import { createModel } from "@rematch/core";
 import { type RootModel } from ".";
 import {
   type ChainUniqueId,
-  type InnerChainUniqueId,
+  InnerChainUniqueId,
 } from "core/types/ChainUniqueId";
 import { type Token } from "core/coins/ALEO/types/Token";
 import { type TokenV2 } from "core/types/Token";
+import { isComplianceProgram } from "core/coins/ALEO/constants";
+
+const getAleoProgramId = (token: TokenV2): string | undefined => {
+  if (token.programId) {
+    return token.programId;
+  }
+  if (token.contractAddress) {
+    const [programId] = token.contractAddress.split("-");
+    return programId || undefined;
+  }
+  return undefined;
+};
+
+const isSameUserToken = (
+  uniqueId: ChainUniqueId,
+  a: TokenV2,
+  b: TokenV2,
+): boolean => {
+  if (uniqueId === InnerChainUniqueId.ALEO_MAINNET) {
+    const aProgramId = getAleoProgramId(a);
+    const bProgramId = getAleoProgramId(b);
+    if (
+      aProgramId &&
+      bProgramId &&
+      isComplianceProgram(aProgramId) &&
+      aProgramId === bProgramId
+    ) {
+      return true;
+    }
+  }
+  return (
+    a.contractAddress.toLowerCase() === b.contractAddress.toLowerCase()
+  );
+};
 
 export type TokenMap = {
   [address: string]: TokenV2[] | undefined;
@@ -74,12 +108,9 @@ export const tokens = createModel<RootModel>()({
       const oldUniqueIdUserTokens = allChainTokens[uniqueId] ?? {};
       const oldAddressTokens = oldUniqueIdUserTokens[address] ?? [];
 
-      const exist = oldAddressTokens.some((item: TokenV2) => {
-        return (
-          item.contractAddress.toLowerCase() ===
-          token.contractAddress.toLowerCase()
-        );
-      });
+      const exist = oldAddressTokens.some((item: TokenV2) =>
+        isSameUserToken(uniqueId, item, token),
+      );
       if (exist) {
         return state;
       }
@@ -107,12 +138,9 @@ export const tokens = createModel<RootModel>()({
       const allChainTokens = state.userTokens;
       const oldUniqueIdUserTokens = allChainTokens[uniqueId] ?? {};
       const oldAddressTokens = oldUniqueIdUserTokens[address] ?? [];
-      const newTokens = oldAddressTokens.filter((item: TokenV2) => {
-        return (
-          item.contractAddress.toLowerCase() !==
-          token.contractAddress.toLowerCase()
-        );
-      });
+      const newTokens = oldAddressTokens.filter(
+        (item: TokenV2) => !isSameUserToken(uniqueId, item, token),
+      );
       return {
         ...state,
         userTokens: {

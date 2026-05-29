@@ -36,6 +36,7 @@ import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import type { AleoService } from "core/coins/ALEO/service/AleoService";
 import { useCoinService } from "@/hooks/useCoinService";
+import { dedupeUserTokens } from "@/common/utils/userTokens";
 
 function AddToken() {
   const { t } = useTranslation();
@@ -48,10 +49,14 @@ function AddToken() {
   const { coinService } = useCoinService(uniqueId);
   const dispatch = usePopupDispatch();
 
-  const userTokens = usePopupSelector(
+  const rawUserTokens = usePopupSelector(
     (state) =>
       state.tokens.userTokens?.[uniqueId]?.[selectedAccount?.account.address],
     isEqual,
+  );
+  const userTokens = useMemo(
+    () => (rawUserTokens ? dedupeUserTokens(uniqueId, rawUserTokens) : rawUserTokens),
+    [rawUserTokens, uniqueId],
   );
 
   const recommendTokens = useRecommendTokens(uniqueId); // 推荐 数量适中

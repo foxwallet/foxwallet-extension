@@ -10,6 +10,8 @@ import {
   BETA_STAKING_PROGRAM_ID,
   NATIVE_TOKEN_PROGRAM_ID,
   NATIVE_TOKEN_TOKEN_ID,
+  USAD_STABLECOIN_PROGRAM_ID,
+  USDCX_STABLECOIN_PROGRAM_ID,
 } from "../constants";
 import { ReserveChainConfigs } from "../../../../env";
 import { type Token } from "../types/Token";
@@ -36,6 +38,26 @@ export const BETA_STAKING_ALEO_TOKEN: Token = {
   programId: BETA_STAKING_PROGRAM_ID,
   logo: StAleoLogo,
   tokenId: BETA_STAKING_ALEO_TOKEN_ID,
+  official: true,
+};
+
+export const USAD_TOKEN: Token = {
+  name: "USAD",
+  decimals: 6,
+  symbol: "USAD",
+  programId: USAD_STABLECOIN_PROGRAM_ID,
+  logo: "",
+  tokenId: "__USAD_TOKEN__",
+  official: true,
+};
+
+export const USDCX_TOKEN: Token = {
+  name: "USDCx",
+  decimals: 6,
+  symbol: "USDCx",
+  programId: USDCX_STABLECOIN_PROGRAM_ID,
+  logo: "",
+  tokenId: "__USDCX_TOKEN__",
   official: true,
 };
 

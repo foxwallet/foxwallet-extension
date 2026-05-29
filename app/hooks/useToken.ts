@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import {
   BETA_STAKING_ALEO_TOKEN_ID,
+  isComplianceProgram,
   NATIVE_TOKEN_TOKEN_ID,
 } from "core/coins/ALEO/constants";
 import { ALEO_NATIVE_TOKEN } from "core/coins/ALEO/config/chains";
@@ -29,6 +30,17 @@ export type AssetIdentifier = {
   needUpdate?: boolean;
 };
 
+const getAleoProgramId = (token: TokenV2): string | undefined => {
+  if (token.programId) {
+    return token.programId;
+  }
+  if (token.contractAddress) {
+    const [programId] = token.contractAddress.split("-");
+    return programId || undefined;
+  }
+  return undefined;
+};
+
 const mergeStandardTokenMeta = (
   activeTokens: TokenV2[],
   standardTokens: TokenV2[],
@@ -38,9 +50,25 @@ const mergeStandardTokenMeta = (
   }
 
   return activeTokens.map((activeToken) => {
-    const matched = standardTokens.find((item) =>
-      isSameAddress(item.contractAddress, activeToken.contractAddress),
-    );
+    const activeProgramId =
+      activeToken.uniqueId === InnerChainUniqueId.ALEO_MAINNET
+        ? getAleoProgramId(activeToken)
+        : undefined;
+    const isAleoCompliance =
+      activeToken.uniqueId === InnerChainUniqueId.ALEO_MAINNET &&
+      !!activeProgramId &&
+      isComplianceProgram(activeProgramId);
+    const matched = isAleoCompliance
+      ? standardTokens.find((item) => {
+          if (item.uniqueId !== InnerChainUniqueId.ALEO_MAINNET) {
+            return false;
+          }
+          const itemProgramId = getAleoProgramId(item);
+          return !!itemProgramId && itemProgramId === activeProgramId;
+        })
+      : standardTokens.find((item) =>
+          isSameAddress(item.contractAddress, activeToken.contractAddress),
+        );
     return matched
       ? {
           ...activeToken,
@@ -139,6 +167,7 @@ export const matchedAndUnMatchedTokens = (
 
   if (standardTokens && standardTokens.length > 0) {
     let contractAddressSet: Set<string>;
+    let complianceProgramIdSet: Set<string> = new Set();
     if (uniqueId === InnerChainUniqueId.ALEO_MAINNET) {
       contractAddressSet = new Set(
         standardTokens.map((token) => {
@@ -151,15 +180,34 @@ export const matchedAndUnMatchedTokens = (
           }
         }) ?? [],
       );
+      complianceProgramIdSet = new Set(
+        standardTokens
+          .map((token) => getAleoProgramId(token))
+          .filter(
+            (programId): programId is string =>
+              !!programId && isComplianceProgram(programId),
+          )
+          .map((programId) => programId.toLowerCase()),
+      );
     } else {
       contractAddressSet = new Set(
         standardTokens.map((token) => token.contractAddress.toLowerCase()) ??
           [],
       );
     }
-    // debugger;
     targetTokens.forEach((t) => {
-      if (contractAddressSet.has(t.contractAddress.toLowerCase())) {
+      const matchedByAddress = contractAddressSet.has(
+        t.contractAddress.toLowerCase(),
+      );
+      const tProgramId =
+        uniqueId === InnerChainUniqueId.ALEO_MAINNET
+          ? getAleoProgramId(t)
+          : undefined;
+      const matchedByComplianceProgram =
+        !!tProgramId &&
+        isComplianceProgram(tProgramId) &&
+        complianceProgramIdSet.has(tProgramId.toLowerCase());
+      if (matchedByAddress || matchedByComplianceProgram) {
         matched.push(t);
       } else {
         unMatched.push(t);
@@ -190,12 +238,18 @@ export const useGroupInteractiveTokens = (
       const whiteTokens = allTokens.filter(
         (it) => it?.security === TokenSecurity.WHITE,
       );
-      const { matchedTokens } = matchedAndUnMatchedTokens(
+      const { matchedTokens, unMatchedTokens } = matchedAndUnMatchedTokens(
         uniqueId,
         userInteractiveTokens,
         whiteTokens,
       );
-      const tokens = mergeStandardTokenMeta(matchedTokens, whiteTokens);
+      const trustedUnmatched = unMatchedTokens.filter(
+        (t) => t?.security === TokenSecurity.WHITE,
+      );
+      const tokens = mergeStandardTokenMeta(
+        [...matchedTokens, ...trustedUnmatched],
+        whiteTokens,
+      );
       // console.log("      selectedTokens", selectedTokens);
       return { address, uniqueId, tokens };
     });

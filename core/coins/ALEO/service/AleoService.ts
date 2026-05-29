@@ -19,12 +19,15 @@ import { type AleoGasFee } from "core/types/GasFee";
 import {
   ALPHA_TOKEN_PROGRAM_ID,
   ARCANE_PROGRAM_ID,
+  BETA_STAKING_ALEO_TOKEN_ID,
   BETA_STAKING_PROGRAM_ID,
   COMPLIANCE_BALANCES_MAPPING_NAME,
   isComplianceProgram,
   LOCAL_TX_EXPIRE_TIME,
   NATIVE_TOKEN_PROGRAM_ID,
   NATIVE_TOKEN_TOKEN_ID,
+  USAD_STABLECOIN_PROGRAM_ID,
+  USDCX_STABLECOIN_PROGRAM_ID,
 } from "../constants";
 import {
   type AleoHistoryItem,
@@ -65,12 +68,16 @@ import {
 } from "./instances/token";
 import { type Token, type TokenWithBalance } from "../types/Token";
 import { type InnerProgramId } from "../types/ProgramId";
-import { BETA_STAKING_ALEO_TOKEN } from "../config/chains";
+import {
+  BETA_STAKING_ALEO_TOKEN,
+  USAD_TOKEN,
+  USDCX_TOKEN,
+} from "../config/chains";
 import { isNotEmpty } from "core/utils/is";
 import { recordSyncService, ScannerStorage } from "./scanner";
 import { AleoStorage } from "@/scripts/background/store/aleo/AleoStorage";
 import { CoinServiceBasic } from "core/coins/CoinServiceBasic";
-import { AssetType, type TokenV2 } from "core/types/Token";
+import { AssetType, TokenSecurity, type TokenV2 } from "core/types/Token";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import type {
   InteractiveTokenParams,
@@ -1937,57 +1944,83 @@ export class AleoService extends CoinServiceBasic {
     params: InteractiveTokenParams,
   ): Promise<TokenV2[]> {
     const { address } = params;
-    const tokens = await this.getAllTokens();
-    // exclude stAleo
-    const top10Tokens = tokens.slice(1, 11);
+
+    const trustedTokens: Token[] = [BETA_STAKING_ALEO_TOKEN, USAD_TOKEN, USDCX_TOKEN];
+    const trustedKeys = new Set(
+      trustedTokens.map((t) => `${t.programId}-${t.tokenId}`),
+    );
+    const trustedProgramIds = new Set<string>([
+      BETA_STAKING_PROGRAM_ID,
+      USAD_STABLECOIN_PROGRAM_ID,
+      USDCX_STABLECOIN_PROGRAM_ID,
+    ]);
+
+    let feedTokens: Token[] = [];
+    try {
+      feedTokens = await this.getAllTokens();
+    } catch (err) {
+      console.error("===> getUserInteractiveTokens getAllTokens failed: ", err);
+    }
+    const top10Tokens = feedTokens.length > 0 ? feedTokens.slice(1, 11) : [];
+
+    const top10WithoutTrusted = top10Tokens.filter(
+      (t) =>
+        !trustedKeys.has(`${t.programId}-${t.tokenId}`) &&
+        !trustedProgramIds.has(t.programId),
+    );
+
+    const tokensToCheck: Token[] = [...trustedTokens, ...top10WithoutTrusted];
     const balances = await Promise.all(
-      top10Tokens.map(async (token) => {
-        try {
-          const balance = await this.getTokenBalanceOld(
+      tokensToCheck.map(async (token) => {
+        const [privateRes, publicRes] = await Promise.allSettled([
+          this.getTokenPrivateBalance(
             address,
             token.programId,
             token.tokenId,
+          ),
+          this.getTokenPublicBalance(
+            address,
+            token.programId,
+            token.tokenId,
+          ),
+        ]);
+        if (privateRes.status === "rejected") {
+          console.warn(
+            "===> getUserInteractiveTokens private balance failed (treating as 0): ",
+            token.programId,
+            privateRes.reason,
           );
-          return {
-            ...token,
-            balance,
-          };
-        } catch (err) {
-          console.error("===> getUserInteractiveTokens error: ", err);
-          return {
-            ...token,
-            balance: {
-              privateBalance: 0n,
-              publicBalance: 0n,
-              total: 0n,
-            },
-          };
         }
+        if (publicRes.status === "rejected") {
+          console.warn(
+            "===> getUserInteractiveTokens public balance failed (treating as 0): ",
+            token.programId,
+            publicRes.reason,
+          );
+        }
+        const privateBalance =
+          privateRes.status === "fulfilled" ? privateRes.value : 0n;
+        const publicBalance =
+          publicRes.status === "fulfilled" ? publicRes.value : 0n;
+        return {
+          ...token,
+          balance: {
+            privateBalance,
+            publicBalance,
+            total: privateBalance + publicBalance,
+          },
+        };
       }),
     );
-    const non0Tokens = balances.filter((item) => item.balance.total > 0n);
-    const stAleoToken: TokenWithBalance = {
-      ...BETA_STAKING_ALEO_TOKEN,
-      balance: {
-        privateBalance: 0n,
-        publicBalance: 0n,
-        total: 0n,
-      },
-    };
-    try {
-      const balance = await this.getTokenBalanceOld(
-        address,
-        stAleoToken.programId,
-        stAleoToken.tokenId,
-      );
-      stAleoToken.balance = {
-        ...balance,
-      };
-    } catch (err) {
-      console.error("===> getUserInteractiveTokens stAleo error: ", err);
-    }
-    const temp: TokenWithBalance[] = [stAleoToken, ...non0Tokens];
-    const res: TokenV2[] = temp.map((item) => {
+
+    const kept = balances.filter((item) => {
+      if (item.programId === BETA_STAKING_PROGRAM_ID) {
+        return true;
+      }
+      return item.balance.total > 0n;
+    });
+
+    const res: TokenV2[] = kept.map((item) => {
       const {
         tokenId,
         name,
@@ -1998,6 +2031,10 @@ export class AleoService extends CoinServiceBasic {
         programId,
         balance,
       } = item;
+      const contractAddress =
+        tokenId === BETA_STAKING_ALEO_TOKEN_ID
+          ? `${programId}-stAleo`
+          : `${programId}-${tokenId}`;
       return {
         symbol,
         decimals,
@@ -2012,7 +2049,10 @@ export class AleoService extends CoinServiceBasic {
         privateBalance: balance.privateBalance,
         publicBalance: balance.publicBalance,
         ownerAddress: address,
-        contractAddress: "",
+        contractAddress,
+        security: trustedProgramIds.has(programId)
+          ? TokenSecurity.WHITE
+          : undefined,
       };
     });
     return res;

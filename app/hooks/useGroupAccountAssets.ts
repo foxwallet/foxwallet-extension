@@ -1,6 +1,7 @@
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { useChainMode } from "@/hooks/useChainMode";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
+import { dedupeUserTokens } from "@/common/utils/userTokens";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
 import { isEqual } from "lodash";
 import { useCallback, useMemo } from "react";
@@ -65,12 +66,12 @@ export const useUserAssets = () => {
         uniqueId === InnerChainUniqueId.ALEO_MAINNET
           ? { ...ALEO_NATIVE_TOKEN, ...coin }
           : coin;
-      // Ensure all tokens have ownerAddress set
       const tokensWithOwner = tokens.map((t) => ({
         ...t,
         ownerAddress: t.ownerAddress || address,
       }));
-      return [nativeToken, ...tokensWithOwner];
+      const dedupedTokens = dedupeUserTokens(uniqueId, tokensWithOwner);
+      return [nativeToken, ...dedupedTokens];
     });
     return res.flat();
   }, [userTokensMap]);
