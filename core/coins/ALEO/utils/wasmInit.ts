@@ -1,9 +1,13 @@
-import init, { initSync } from "provable-wasm-no-tla/mainnet.js";
+import init from "provable-wasm-no-tla/mainnet.js";
 import wasmUrl from "../../../../node_modules/provable-wasm-no-tla/dist/mainnet/aleo_wasm_mainnet_0.10.2.wasm?url";
 
 let initPromise: Promise<unknown> | undefined;
 
 const ABSOLUTE_URL_RE = /^(?:[a-z][a-z\d+\-.]*:)?\/\//i;
+
+type AleoWasmInit = (options?: {
+  module_or_path?: RequestInfo | URL | BufferSource | WebAssembly.Module;
+}) => Promise<unknown>;
 
 function resolveWasmUrl(): string {
   if (ABSOLUTE_URL_RE.test(wasmUrl) || wasmUrl.startsWith("data:")) {
@@ -24,7 +28,7 @@ async function initFromBundledWasm(): Promise<unknown> {
     );
   }
   const bytes = await response.arrayBuffer();
-  return initSync({ module: bytes });
+  return await (init as AleoWasmInit)({ module_or_path: bytes });
 }
 
 export async function initAleoWasm(): Promise<unknown> {
