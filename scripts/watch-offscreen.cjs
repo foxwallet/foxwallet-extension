@@ -48,6 +48,11 @@ const watcher = spawn("npx", ["rollup", "-c", "-w"], {
   stdio: ["ignore", "pipe", "pipe"],
 });
 
+watcher.on("error", (err) => {
+  console.error("[offscreen] failed to start rollup watch:", err);
+  process.exit(1);
+});
+
 watcher.stdout.on("data", (chunk) => {
   handleOutput(chunk, process.stdout);
 });

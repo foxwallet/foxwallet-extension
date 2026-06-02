@@ -213,9 +213,7 @@ export const useTxHistory = ({
     }
   }, [endReach, newPagination]);
 
-  const sortedHistory = txHistory.sort(
-    (a, b) => b.timestamp - a.timestamp,
-  );
+  const sortedHistory = txHistory.sort((a, b) => b.timestamp - a.timestamp);
 
   const ret = useMemo(() => {
     return {
@@ -391,10 +389,18 @@ export const useAleoTxHistory = ({
         continue;
       }
       const primaryRecord = privateTx.executionRecords[0];
+      const toRecordValue = (value: unknown): bigint | undefined => {
+        if (value === undefined || value === null) return undefined;
+        try {
+          return BigInt(value as bigint | number | string);
+        } catch {
+          return undefined;
+        }
+      };
       const recordValueOf = (r: (typeof privateTx.executionRecords)[number]) =>
-        (r.parsedContent?.microcredits as bigint | undefined) ??
-        (r.parsedContent?.amount as bigint | undefined) ??
-        0n;
+        toRecordValue(
+          r.parsedContent?.microcredits ?? r.parsedContent?.amount,
+        ) ?? 0n;
       const fnName = primaryRecord.functionName;
       const records = privateTx.executionRecords;
 
@@ -417,7 +423,7 @@ export const useAleoTxHistory = ({
         const raw =
           primaryRecord.parsedContent?.microcredits ??
           primaryRecord.parsedContent?.amount;
-        displayAmount = raw !== undefined ? BigInt(raw) : undefined;
+        displayAmount = toRecordValue(raw);
       }
       const isRecipient = records.some((r) => isRecipientRecord(r));
       const item: AleoOnChainHistoryItem = {

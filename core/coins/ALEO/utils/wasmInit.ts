@@ -2,6 +2,7 @@ import init from "provable-wasm-no-tla/mainnet.js";
 import wasmUrl from "../../../../node_modules/provable-wasm-no-tla/dist/mainnet/aleo_wasm_mainnet_0.10.2.wasm?url";
 
 let initPromise: Promise<unknown> | undefined;
+let aleoWasmReady = false;
 
 const ABSOLUTE_URL_RE = /^(?:[a-z][a-z\d+\-.]*:)?\/\//i;
 
@@ -37,17 +38,29 @@ export async function initAleoWasm(): Promise<unknown> {
     // bundled JS module. That URL is not reliable in MV3 popup/background dev
     // realms, so prefer Vite's explicit asset URL and only fall back to the
     // package init for non-Vite contexts.
-    const p = initFromBundledWasm().catch(async (err) => {
-      console.warn(
-        "[Aleo] bundled WASM init failed, retrying default init",
-        err,
-      );
-      return await init();
-    });
+    const p = initFromBundledWasm()
+      .catch(async (err) => {
+        console.warn(
+          "[Aleo] bundled WASM init failed, retrying default init",
+          err,
+        );
+        return await init();
+      })
+      .then((result) => {
+        aleoWasmReady = true;
+        return result;
+      });
     initPromise = p.catch((err) => {
       initPromise = undefined;
+      aleoWasmReady = false;
       throw err;
     });
   }
   return initPromise;
+}
+
+export function assertAleoWasmReady(): void {
+  if (!aleoWasmReady) {
+    throw new Error("Aleo WASM is not initialized");
+  }
 }
