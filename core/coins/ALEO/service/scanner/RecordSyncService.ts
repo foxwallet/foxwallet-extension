@@ -1160,12 +1160,19 @@ export class RecordSyncService {
       }
 
       if (!plaintext && record.recordCiphertext) {
-        plaintext = getViewKey().decrypt(record.recordCiphertext);
-        if (cacheKey) {
-          this.plaintextCache.set(cacheKey, plaintext);
-        }
-        if (record.tag) {
-          newlyDecrypted.set(record.tag, plaintext);
+        try {
+          plaintext = getViewKey().decrypt(record.recordCiphertext);
+          if (cacheKey) {
+            this.plaintextCache.set(cacheKey, plaintext);
+          }
+          if (record.tag) {
+            newlyDecrypted.set(record.tag, plaintext);
+          }
+        } catch (error) {
+          console.warn("[RecordSyncService] failed to decrypt scanner record", {
+            tag: record.tag,
+          });
+          continue;
         }
       }
 

@@ -113,11 +113,12 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
 
   const tokenRecords = useMemo(() => {
     if (resolvedProgramId && isComplianceProgram(resolvedProgramId)) {
-      return [...records].sort(
-        (record1, record2) =>
-          Number(record2.parsedContent?.amount ?? 0n) -
-          Number(record1.parsedContent?.amount ?? 0n),
-      );
+      return [...records].sort((record1, record2) => {
+        const amount1 = record1.parsedContent?.amount ?? 0n;
+        const amount2 = record2.parsedContent?.amount ?? 0n;
+        if (amount1 === amount2) return 0;
+        return amount1 > amount2 ? -1 : 1;
+      });
     }
     switch (resolvedProgramId) {
       case NATIVE_TOKEN_PROGRAM_ID: {

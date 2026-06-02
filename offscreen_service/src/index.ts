@@ -264,6 +264,7 @@ const runWorkerTask = async (
 };
 
 const SCANNER_WORKER_READY_TIMEOUT_MS = 60 * 1000;
+const SCANNER_TASK_TIMEOUT_MS = 30 * 1000;
 
 const handleScannerEncrypt = async (
   payload: ScannerEncryptRegistrationPayload,
@@ -287,7 +288,14 @@ const handleScannerEncrypt = async (
 
     const id = ++scannerTaskId;
     return await new Promise<ScannerOffscreenMessage>((resolve) => {
-      scannerPendingTasks.set(id, resolve);
+      const timeoutId = setTimeout(() => {
+        scannerPendingTasks.delete(id);
+        resolve(scannerResponse("scanner worker timed out", null));
+      }, SCANNER_TASK_TIMEOUT_MS);
+      scannerPendingTasks.set(id, (message) => {
+        clearTimeout(timeoutId);
+        resolve(message);
+      });
       const task: ScannerWorkerTask = {
         id,
         payload,
@@ -296,6 +304,7 @@ const handleScannerEncrypt = async (
       try {
         worker.postMessage(task);
       } catch (err) {
+        clearTimeout(timeoutId);
         scannerPendingTasks.delete(id);
         const msg = err instanceof Error ? err.message : String(err);
         resolve(scannerResponse(msg, null));

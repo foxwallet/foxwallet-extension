@@ -104,10 +104,12 @@ export class AleoBlockDatabase extends Dexie {
         this.txs,
         this.cacheTxs,
         this.programs,
+        this.txDetailCache,
         async () => {
           await this.txs.clear();
           await this.cacheTxs.clear();
           await this.programs.clear();
+          await this.txDetailCache.clear();
         },
       );
     } catch (e) {
