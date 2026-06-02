@@ -9,6 +9,7 @@ import {
   type AleoRequestFaucetResp,
 } from "./api.di";
 import { type AleoCreditMethod } from "../../types/TransferMethod";
+import { NATIVE_TOKEN_PROGRAM_ID } from "../../constants";
 
 const FAUCET_TYPE = "1001";
 
@@ -211,11 +212,17 @@ export class AleoWalletApi {
   }
 
   async getBaseFee(params: { txType: AleoCreditMethod; programId: string }) {
-    const { txType } = params;
+    const { txType, programId } = params;
     const res: AleoBaseFeeResp = await this.fetchData(
-      `/gas?function=${txType}&program=${params.programId}`,
+      `/gas?function=${txType}&program=${programId}`,
     );
-    if (res.status !== 0 || !res.data) {
+    if (res.status !== 0) {
+      throw new Error(res.msg);
+    }
+    if (!res.data && programId !== NATIVE_TOKEN_PROGRAM_ID) {
+      return this.getBaseFee({ txType, programId: NATIVE_TOKEN_PROGRAM_ID });
+    }
+    if (!res.data) {
       throw new Error(res.msg);
     }
     const num = BigInt(res.data.slice(0, -3));
