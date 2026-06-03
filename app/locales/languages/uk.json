@@ -208,6 +208,7 @@
     "token_approve": "Token затверджують",
     "bridge": "Мост",
     "receive": "Отримувати",
+    "mint": "Мінт",
     "copyContractAddressMsg": "Це адреса договору Token, не отримуючи адреси, не передавайте цю адресу.",
     "failed": "Провалився",
     "transfer_public_to_private": "Конвертувати з публічного в приватний",

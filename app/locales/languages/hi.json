@@ -208,6 +208,7 @@
     "token_approve": "टोकन अनुमोदन",
     "bridge": "पुल",
     "receive": "प्राप्त करें",
+    "mint": "मिंट",
     "copyContractAddressMsg": "यह टोकन का अनुबंध पता है, पता नहीं है, इस पते पर स्थानांतरित न करें।",
     "failed": "असफल",
     "transfer_public_to_private": "सार्वजनिक से निजी में बदलें",

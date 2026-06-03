@@ -32,6 +32,7 @@ import {
   NATIVE_TOKEN_PROGRAM_ID,
   NATIVE_TOKEN_TOKEN_ID,
 } from "core/coins/ALEO/constants";
+import { isNotEmpty } from "core/utils/is";
 
 const getRecipientOutputIndex = (programId: string): number => {
   if (programId === NATIVE_TOKEN_PROGRAM_ID) return 0;
@@ -43,7 +44,15 @@ const isRecipientRecord = (record: {
   programId: string;
   functionName: string;
   outputIndex?: number;
+  spent?: boolean;
 }): boolean => {
+  // A bare `mint` (e.g. puzzle_arcade_coin_v002.aleo::mint) credits a new
+  // private record to the minter with no spent input. The recipient output
+  // index is program-specific, so any owned unspent record we hold from a
+  // mint means we received it.
+  if (record.functionName === "mint") {
+    return !record.spent;
+  }
   if (
     record.functionName !== "transfer_private" &&
     record.functionName !== "transfer_public_to_private" &&
@@ -52,6 +61,39 @@ const isRecipientRecord = (record: {
     return false;
   }
   return record.outputIndex === getRecipientOutputIndex(record.programId);
+};
+
+const getAleoHistoryPriority = (item: AleoHistoryItem): number => {
+  if (item.type === AleoHistoryType.LOCAL) {
+    return 3;
+  }
+  if (item.addressType === AleoTxAddressType.SEND) {
+    return 2;
+  }
+  return 1;
+};
+
+const mergeAleoCompletedHistory = (
+  items: AleoHistoryItem[],
+): AleoHistoryItem[] => {
+  const historyMap = new Map<string, AleoHistoryItem>();
+  const order: string[] = [];
+
+  for (const item of items) {
+    const key =
+      item.txId ?? `${item.type}:${(item as AleoLocalHistoryItem).localId}`;
+    const existing = historyMap.get(key);
+    if (!existing) {
+      historyMap.set(key, item);
+      order.push(key);
+      continue;
+    }
+    if (getAleoHistoryPriority(item) > getAleoHistoryPriority(existing)) {
+      historyMap.set(key, item);
+    }
+  }
+
+  return order.map((key) => historyMap.get(key)).filter(isNotEmpty);
 };
 
 const NotificationExpiredTime = 1000 * 60 * 60 * 5;
@@ -425,7 +467,15 @@ export const useAleoTxHistory = ({
           primaryRecord.parsedContent?.amount;
         displayAmount = toRecordValue(raw);
       }
-      const isRecipient = records.some((r) => isRecipientRecord(r));
+      const resolvedAddressType = (
+        privateTx as {
+          addressType?: AleoTxAddressType;
+        }
+      ).addressType;
+      const isRecipient =
+        resolvedAddressType !== undefined
+          ? resolvedAddressType === AleoTxAddressType.RECEIVE
+          : records.some((r) => isRecipientRecord(r));
       const item: AleoOnChainHistoryItem = {
         txId: privateTx.txId,
         txType: AleoTxType.EXECUTION,
@@ -470,10 +520,11 @@ export const useAleoTxHistory = ({
       },
     );
 
-    const completedTxs = uniqBy(
-      [...completedLocalTxs, ...privateFinalizedTxs, ...onChainFinalizedTxs],
-      "txId",
-    );
+    const completedTxs = mergeAleoCompletedHistory([
+      ...completedLocalTxs,
+      ...privateFinalizedTxs,
+      ...onChainFinalizedTxs,
+    ]);
 
     const txs = [...uncompletedLocalTxs, ...completedTxs];
     txs.sort((item1, item2) => {

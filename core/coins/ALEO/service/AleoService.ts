@@ -45,16 +45,6 @@ import {
   RecordCiphertext,
   ViewKey,
 } from "provable-wasm-no-tla/mainnet.js";
-
-// Replacement for fox-aleo-sdk's `hashBHP256(struct: string)` helper, which
-// the upstream @provablehq/wasm 0.10.x does not expose. Mirrors the
-// reference project (provable-extension src/app/common/utils/tokenUtils.ts):
-// hash a struct literal via BHP256 over the Plaintext's little-endian bits.
-const hashBHP256 = (struct: string): string => {
-  const hasher = new BHP256();
-  const plaintext = Plaintext.fromString(struct);
-  return hasher.hash(plaintext.toBitsLe()).toString();
-};
 import {
   type AleoWalletService,
   createAleoWalletService,
@@ -99,9 +89,19 @@ import {
 } from "core/coins/ALEO/service/instances/arcane";
 import { ProvableApi } from "core/coins/ALEO/service/api/provable";
 import {
-  ComplianceService,
+  type ComplianceService,
   createComplianceService,
 } from "core/coins/ALEO/service/instances/compliance";
+
+// Replacement for fox-aleo-sdk's `hashBHP256(struct: string)` helper, which
+// the upstream @provablehq/wasm 0.10.x does not expose. Mirrors the
+// reference project (provable-extension src/app/common/utils/tokenUtils.ts):
+// hash a struct literal via BHP256 over the Plaintext's little-endian bits.
+const hashBHP256 = (struct: string): string => {
+  const hasher = new BHP256();
+  const plaintext = Plaintext.fromString(struct);
+  return hasher.hash(plaintext.toBitsLe()).toString();
+};
 
 const CREDITS_MAPPING_NAME = "account";
 
@@ -113,6 +113,10 @@ const ALEO_RECORDS_CONSUMER_ID_PREFIX = "aleo:records";
 
 const ALEO_TOKEN_PRIVATE_BALANCE_CONSUMER_ID_PREFIX =
   "aleo:token-private-balance";
+
+const normalizeAleoTimestampMs = (timestamp: number): number => {
+  return timestamp >= 10_000_000_000 ? timestamp : timestamp * 1000;
+};
 
 type ScannerAccountCache = {
   address: string;
@@ -1227,7 +1231,7 @@ export class AleoService extends CoinServiceBasic {
       programId,
       functionName: funcName,
       height: item.height,
-      timestamp: item.timestamp,
+      timestamp: normalizeAleoTimestampMs(item.timestamp),
       addressType: isSender
         ? AleoTxAddressType.SEND
         : AleoTxAddressType.RECEIVE,
@@ -1350,7 +1354,7 @@ export class AleoService extends CoinServiceBasic {
         let height = 0;
         for (const record of txRecords) {
           height = record.height;
-          record.timestamp = record.timestamp * 1000;
+          record.timestamp = normalizeAleoTimestampMs(record.timestamp);
           if (
             record.programId === NATIVE_TOKEN_PROGRAM_ID &&
             record.functionName.startsWith("fee")
@@ -1366,6 +1370,12 @@ export class AleoService extends CoinServiceBasic {
           executionRecords,
           tagToRecord,
         });
+        const addressType = await this.resolvePrivateTxAddressType({
+          txId,
+          executionRecords,
+          feeRecords,
+          tagToRecord,
+        });
 
         return {
           txId,
@@ -1373,9 +1383,63 @@ export class AleoService extends CoinServiceBasic {
           executionRecords,
           feeRecords,
           amount,
+          addressType,
         };
       }),
     );
+  }
+
+  private async resolvePrivateTxAddressType({
+    txId,
+    executionRecords,
+    feeRecords,
+    tagToRecord,
+  }: {
+    txId: string;
+    executionRecords: RecordDetailWithSpent[];
+    feeRecords: RecordDetailWithSpent[];
+    tagToRecord: Map<string, RecordDetailWithSpent>;
+  }): Promise<AleoTxAddressType> {
+    if (executionRecords.length === 0) return AleoTxAddressType.SEND;
+
+    const primary = executionRecords[0];
+    const fn = primary.functionName;
+    const programId = primary.programId;
+
+    if (feeRecords.length > 0) {
+      return AleoTxAddressType.SEND;
+    }
+
+    if (fn === "transfer_private" || fn === "transfer_private_to_public") {
+      const tx = await this.getCachedTxDetail(txId);
+      const inputTag = tx ? this.findSpentInputTagInTx(tx, programId) : "";
+      if (inputTag && tagToRecord.has(inputTag)) {
+        return AleoTxAddressType.SEND;
+      }
+
+      if (fn === "transfer_private") {
+        const recipientIdx = this.getRecipientOutputIndex(programId);
+        const onlyRecipientOutput =
+          executionRecords.length === 1 &&
+          !executionRecords[0].spent &&
+          executionRecords[0].outputIndex === recipientIdx;
+        if (onlyRecipientOutput) {
+          return AleoTxAddressType.RECEIVE;
+        }
+      }
+
+      return AleoTxAddressType.SEND;
+    }
+
+    if (
+      fn === "transfer_public_to_private" ||
+      fn === "mint" ||
+      fn === "mint_private"
+    ) {
+      return AleoTxAddressType.RECEIVE;
+    }
+
+    return AleoTxAddressType.SEND;
   }
 
   /**
@@ -1413,10 +1477,11 @@ export class AleoService extends CoinServiceBasic {
     const fn = primary.functionName;
     const programId = primary.programId;
 
-    if (fn === "transfer_public_to_private") {
-      // Recipient view: amount is our new private record's value.
-      const recvRecord =
-        executionRecords.find((r) => !r.spent) ?? primary;
+    if (fn === "transfer_public_to_private" || fn === "mint") {
+      // Recipient view: a public->private transfer or a `mint` (e.g.
+      // puzzle_arcade_coin_v002.aleo::mint) produces a new private record
+      // owned by us with no spent input. amount = that record's value.
+      const recvRecord = executionRecords.find((r) => !r.spent) ?? primary;
       const amt = this.getRecordAmountBigInt(recvRecord);
       return amt !== undefined ? amt.toString() : undefined;
     }
@@ -1945,7 +2010,11 @@ export class AleoService extends CoinServiceBasic {
   ): Promise<TokenV2[]> {
     const { address, onPartial } = params;
 
-    const trustedTokens: Token[] = [BETA_STAKING_ALEO_TOKEN, USAD_TOKEN, USDCX_TOKEN];
+    const trustedTokens: Token[] = [
+      BETA_STAKING_ALEO_TOKEN,
+      USAD_TOKEN,
+      USDCX_TOKEN,
+    ];
     const trustedKeys = new Set(
       trustedTokens.map((t) => `${t.programId}-${t.tokenId}`),
     );
@@ -2213,7 +2282,7 @@ export class AleoService extends CoinServiceBasic {
       programId,
       functionName: funcName,
       height: item.height,
-      timestamp: item.timestamp,
+      timestamp: normalizeAleoTimestampMs(item.timestamp),
       addressType: isSender
         ? AleoTxAddressType.SEND
         : AleoTxAddressType.RECEIVE,
@@ -2309,7 +2378,7 @@ export class AleoService extends CoinServiceBasic {
           from: item.transferFrom?.address ?? "",
           to: item.transferTo?.address ?? "",
           value: BigInt(item.credits),
-          timestamp: item.timestamp * 1000,
+          timestamp: normalizeAleoTimestampMs(item.timestamp),
           status:
             item.state === "Pending"
               ? TransactionStatus.PENDING
@@ -2476,7 +2545,7 @@ export class AleoService extends CoinServiceBasic {
       return {
         fee,
         height: height === 0 ? -1 : height,
-        timestamp: timestamp * 1000,
+        timestamp: normalizeAleoTimestampMs(timestamp),
         confirmations,
         call,
         status,

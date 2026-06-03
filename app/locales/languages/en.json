@@ -202,6 +202,7 @@
     "token_approve": "Token Approve",
     "bridge": "Bridge",
     "receive": "Receive",
+    "mint": "Mint",
     "copyContractAddressMsg": "This is token's contract address, not receiving address, do not transfer to this address.",
     "failed": "Failed",
     "transfer_public_to_private": "Convert public to private",

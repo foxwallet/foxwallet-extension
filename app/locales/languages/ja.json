@@ -167,7 +167,8 @@
     "empty_tx": "No transaction records",
     "jump_explorer": "Explorer",
     "transfer_public_to_private": "公開からプライベートへ変換",
-    "transfer_private_to_public": "プライベートから公開へ変換"
+    "transfer_private_to_public": "プライベートから公開へ変換",
+    "mint": "ミント"
   },
   "Tx": {
     "successToast": "Transaction Successful!",

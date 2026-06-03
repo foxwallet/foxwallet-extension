@@ -108,6 +108,9 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
     if (item.functionName === "split") return "split";
     return undefined;
   }, [item.functionName]);
+  const isMint = useMemo(() => {
+    return item.functionName === "mint";
+  }, [item.functionName]);
   const convertTitleKey = useMemo(() => {
     return getAleoConvertTxTitleKey(item.functionName);
   }, [item.functionName]);
@@ -127,13 +130,19 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
     if (joinSplitKind) {
       return t(`JoinSplit:${joinSplitKind}`);
     }
+    if (isMint) {
+      return t(`TokenDetail:mint`);
+    }
     if (convertTitleKey !== undefined) {
       return t(`TokenDetail:${convertTitleKey}`);
     }
     return t(`TokenDetail:${computedAddressType}`);
-  }, [convertTitleKey, joinSplitKind, computedAddressType, t]);
+  }, [convertTitleKey, joinSplitKind, isMint, computedAddressType, t]);
   const txPublicInfo = useMemo(() => {
     if (joinSplitKind) {
+      return undefined;
+    }
+    if (isMint) {
       return undefined;
     }
     if (convertTitleKey !== undefined) {
@@ -144,7 +153,7 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
       ? item.functionName.slice(prefix.length)
       : item.functionName;
     return `(${functionName.split("_").join(" ")})`;
-  }, [convertTitleKey, joinSplitKind, item.functionName]);
+  }, [convertTitleKey, joinSplitKind, isMint, item.functionName]);
   const amount = useMemo(() => {
     return BigInt(item.amount ?? 0n);
   }, [item]);
@@ -157,6 +166,9 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
       item.functionName === "transfer_private_to_public"
     );
   }, [item.amount, item.functionName]);
+  // mint credits a new record but the amount isn't a meaningful balance delta
+  // to surface; render the amount column empty (no `--- ALEO` placeholder).
+  const amountEmpty = isMint;
 
   const addressLabel = useMemo(() => {
     let ret = "";
@@ -191,6 +203,7 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
       }
       amount={amount}
       amountHidden={amountHidden}
+      amountEmpty={amountEmpty}
       decimals={token.decimals}
       symbol={token.symbol}
       onClick={onClick}
@@ -274,6 +287,9 @@ type TxHistoryItemProps = {
   /** When true, render `---` instead of a number — for private Aleo ops
    *  whose amount can't be inferred locally. */
   amountHidden?: boolean;
+  /** When true, render nothing in the amount column (not even the `---`
+   *  placeholder) — for ops like `mint` where no balance delta is shown. */
+  amountEmpty?: boolean;
   timeStr?: string;
   onClick?: () => void;
   txTitle?: string;
@@ -291,6 +307,7 @@ const TxHistoryItem = (props: TxHistoryItemProps) => {
     isConvertTx,
     joinSplitKind,
     amountHidden,
+    amountEmpty,
     timeStr,
     txTitle,
     txTitle2,
@@ -399,7 +416,7 @@ const TxHistoryItem = (props: TxHistoryItemProps) => {
         justifyContent={"center"}
         alignItems={"flex-end"}
       >
-        {amountHidden ? (
+        {amountEmpty ? null : amountHidden ? (
           <Box fontWeight={"bold"} fontSize={12} ml={1} color={"gray.600"}>
             --- {symbol}
           </Box>

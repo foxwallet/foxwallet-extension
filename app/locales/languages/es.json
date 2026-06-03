@@ -208,6 +208,7 @@
     "token_approve": "Token aprobar",
     "bridge": "Puente",
     "receive": "Recibir",
+    "mint": "Mint",
     "copyContractAddressMsg": "Esta es la dirección del contrato de Token, que no recibe la dirección, no transfiere a esta dirección.",
     "failed": "Fallido",
     "transfer_public_to_private": "Convertir de público a privado",
