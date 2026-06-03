@@ -217,6 +217,34 @@ export class AleoTxWorker {
     return await this.rpcService.submitTransaction(tx);
   }
 
+  // The transaction id the SDK precomputes in `tx.toString()` does not always
+  // match the id the network assigns on broadcast (e.g. once the inclusion
+  // proof / fee transition is finalized). The Record Scanner and explorer
+  // report the on-chain id, so storing the SDK id locally makes the same
+  // transaction show up twice in history (once from the local pending tx,
+  // once from the scanner). The broadcast endpoint returns the canonical
+  // `at1...` id, so prefer it whenever it looks valid and only fall back to
+  // the locally-derived id. Mirrors provable-extension's postTransactionExecution.
+  private resolveOnChainTxId(
+    broadcastResult: unknown,
+    fallbackId: string,
+  ): string {
+    const candidate =
+      typeof broadcastResult === "string"
+        ? broadcastResult
+        : broadcastResult &&
+          typeof broadcastResult === "object" &&
+          "id" in broadcastResult &&
+          typeof (broadcastResult as { id: unknown }).id === "string"
+        ? (broadcastResult as { id: string }).id
+        : undefined;
+    const normalized = candidate?.trim();
+    if (normalized && normalized.toLowerCase().startsWith("at1")) {
+      return normalized;
+    }
+    return fallbackId;
+  }
+
   toErrorMessage(err: unknown): string {
     return err instanceof Error ? err.message : String(err);
   }
@@ -431,9 +459,12 @@ export class AleoTxWorker {
       if (result) {
         pendingTxInfo.status = AleoTxStatus.COMPLETED;
         const txObj: AleoTransaction = JSON.parse(tx.toString());
+        // Use the network-assigned id from the broadcast response as the
+        // canonical id so the local tx merges with the scanner/explorer entry.
+        txObj.id = this.resolveOnChainTxId(result, txObj.id);
         pendingTxInfo.transaction = txObj;
         await this.storage.setAddressLocalTx(chainId, address, pendingTxInfo);
-        return JSON.parse(tx.toString());
+        return txObj;
       }
       throw new Error("submitTransaction returned empty response");
     } catch (err) {
@@ -516,9 +547,12 @@ export class AleoTxWorker {
       if (result) {
         pendingTxInfo.status = AleoTxStatus.COMPLETED;
         const txObj: AleoTransaction = JSON.parse(tx.toString());
+        // Use the network-assigned id from the broadcast response as the
+        // canonical id so the local tx merges with the scanner/explorer entry.
+        txObj.id = this.resolveOnChainTxId(result, txObj.id);
         pendingTxInfo.transaction = txObj;
         await this.storage.setAddressLocalTx(chainId, address, pendingTxInfo);
-        return JSON.parse(tx.toString());
+        return txObj;
       }
       throw new Error("submitTransaction returned empty response");
     } catch (err) {

@@ -73,6 +73,16 @@ const getAleoHistoryPriority = (item: AleoHistoryItem): number => {
   return 1;
 };
 
+// The same on-chain transaction can surface from three sources (the local
+// pending tx, the Record Scanner, the explorer feed). Aleo tx ids are
+// case-insensitive base32, so normalize before keying the dedup map —
+// otherwise any casing/whitespace drift between sources leaks a duplicate
+// row. Mirrors provable-extension's `transactionId.trim().toLowerCase()`.
+const normalizeTxId = (txId?: string): string | undefined => {
+  const normalized = txId?.trim().toLowerCase();
+  return normalized || undefined;
+};
+
 const mergeAleoCompletedHistory = (
   items: AleoHistoryItem[],
 ): AleoHistoryItem[] => {
@@ -81,7 +91,8 @@ const mergeAleoCompletedHistory = (
 
   for (const item of items) {
     const key =
-      item.txId ?? `${item.type}:${(item as AleoLocalHistoryItem).localId}`;
+      normalizeTxId(item.txId) ??
+      `${item.type}:${(item as AleoLocalHistoryItem).localId}`;
     const existing = historyMap.get(key);
     if (!existing) {
       historyMap.set(key, item);

@@ -1242,64 +1242,6 @@ export class AleoService extends CoinServiceBasic {
     return history;
   }
 
-  async getOnChainHistory({
-    address,
-    pagination,
-  }: {
-    address: string;
-    pagination: Pagination;
-  }): Promise<AleoOnChainHistoryItem[]> {
-    const [publicHistory] = await Promise.all([
-      this.getPublicTxHistory({ address, pagination }),
-    ]);
-    const lastHeight = pagination.cursor
-      ? parseInt(pagination.cursor)
-      : undefined;
-    const startHeight = publicHistory[publicHistory.length - 1]?.height;
-    let privateHistory: AleoOnChainHistoryItem[] = [];
-    const { account, records } = await this.getScannerRecordsSnapshot(address, {
-      end: lastHeight,
-      recordFilter: RecordFilter.ALL,
-      start: startHeight,
-    });
-    const viewKeyObj = this.parseViewKey(account.viewKey);
-    const recordsInRange = records.filter((item) => {
-      // record occurred in public history
-      if (
-        publicHistory.some((history) => history.txId === item.transactionId)
-      ) {
-        return false;
-      }
-      return true;
-    });
-    const recordTxIds = new Set<string>();
-    recordsInRange.forEach((item) => {
-      recordTxIds.add(item.transactionId);
-    });
-    const privateTxs = await Promise.all(
-      [...recordTxIds].map(async (item) => {
-        const tx = await this.getConfirmedTransactionInfo({
-          txId: item,
-          viewKey: viewKeyObj,
-          address,
-        });
-        return tx;
-      }),
-    );
-    privateHistory = privateTxs.filter(
-      (item) => !!item,
-    ) as AleoOnChainHistoryItem[];
-    const historyList = [...publicHistory, ...privateHistory];
-    historyList.sort((item1, item2) => {
-      if (item1.height && item2.height) {
-        return item2.height - item1.height;
-      }
-      return item2.timestamp - item1.timestamp;
-    });
-
-    return historyList;
-  }
-
   async getPrivateTxHistory(
     address: string,
     program?: string,
