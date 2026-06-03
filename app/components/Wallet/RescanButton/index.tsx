@@ -1,7 +1,7 @@
 import { IconLoading } from "@/components/Custom/Icon";
 import { useChainMode } from "@/hooks/useChainMode";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
-import { useSyncProgress } from "@/hooks/useSyncProgress";
+import { useScannerSyncStatus } from "@/hooks/useScannerSyncStatus";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
 import { Flex, Text, keyframes } from "@chakra-ui/react";
 import {
@@ -38,15 +38,15 @@ const RescanButton = (props: RescanButtonProps) => {
   }, [getMatchAccountsWithUniqueId, uniqueId]);
 
   const { t } = useTranslation();
-  const { progress, error, getProgress } = useSyncProgress(
+  const { syncStatus, error, getSyncStatus } = useScannerSyncStatus({
     uniqueId,
-    selectedAccount?.account.address,
-  );
-  // console.log("      progress", progress);
+    address: selectedAccount?.account.address,
+  });
+  const progress = syncStatus?.percentage;
 
   const onRescan = useCallback(() => {
-    void getProgress();
-  }, [getProgress]);
+    void getSyncStatus();
+  }, [getSyncStatus]);
 
   if (chainMode.mode !== ChainAssembleMode.SINGLE) return null;
   if (chainMode.uniqueId !== InnerChainUniqueId.ALEO_MAINNET) return null;

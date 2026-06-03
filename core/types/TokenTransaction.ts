@@ -15,6 +15,7 @@ export type FilForwarderTxParams = {
 
 export type InteractiveTokenParams = {
   address: string;
+  onPartial?: (token: TokenV2) => void;
 };
 
 export type TokenTxHistoryParams = {

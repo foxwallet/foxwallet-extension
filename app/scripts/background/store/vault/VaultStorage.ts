@@ -4,7 +4,8 @@ import {
   AccountMethod,
   AccountWithViewKey,
   Cipher,
-  ComposedAccount, GroupAccount,
+  ComposedAccount,
+  GroupAccount,
   HDWallet,
   KeyringObj,
   OneMatchGroupAccount,
@@ -14,16 +15,13 @@ import {
   WalletType,
 } from "./types/keyring";
 import browser from "webextension-polyfill";
-import { TaskPriority } from "core/coins/ALEO/types/SyncTask";
 import { AleoStorage } from "../aleo/AleoStorage";
 import { AleoSyncAccount } from "core/coins/ALEO/types/AleoSyncAccount";
 import { vaultVersion } from "./types/version";
 import { VaultV1 } from "./types/keyringV1";
 import { Mutex } from "async-mutex";
 import { nanoid } from "nanoid";
-import {
-  accountSettingStorage,
-} from "../account/AccountStorage";
+import { accountSettingStorage } from "../account/AccountStorage";
 import { AccountSettingStorageV1 } from "../account/AccountStorageV1";
 import { DEFAULT_ALEO_ACCOUNT_OPTION } from "core/coins/ALEO/config/derivation";
 import { keyringManager } from "@/scripts/background";
@@ -142,22 +140,11 @@ export class VaultStorage {
           (account) => account.coinType === CoinType.ALEO,
         );
         if (aleoAccount) {
-          const otherAccounts = await this.#aleoStorage.getAccountsAddress();
-          for (const otherAccount of otherAccounts) {
-            const info = await this.#aleoStorage.getAccountInfo(otherAccount);
-            if (info) {
-              await this.#aleoStorage.setAccountInfo({
-                ...info,
-                priority: TaskPriority.LOW,
-              });
-            }
-          }
           const item: AleoSyncAccount = {
             walletId: newHdWallet.walletId,
             accountId: aleoAccount.accountId,
             address: aleoAccount.address,
             viewKey: (aleoAccount as AccountWithViewKey).viewKey,
-            priority: TaskPriority.MEDIUM,
           };
           void this.#aleoStorage.setAccountInfo(item);
         }
@@ -169,24 +156,11 @@ export class VaultStorage {
           (account) => account.coinType === CoinType.ALEO,
         );
         if (aleoAccount) {
-          // const otherAccounts = await this.#aleoStorage.keys();
-          const otherAccounts = await this.#aleoStorage.getAccountsAddress();
-          for (const otherAccount of otherAccounts) {
-            const info = await this.#aleoStorage.getAccountInfo(otherAccount);
-            if (info) {
-              await this.#aleoStorage.setAccountInfo({
-                ...info,
-                priority: TaskPriority.LOW,
-              });
-            }
-          }
-
           const item: AleoSyncAccount = {
             walletId: newHdWallet.walletId,
             accountId: aleoAccount.accountId,
             viewKey: (aleoAccount as AccountWithViewKey).viewKey,
             address: aleoAccount.address,
-            priority: TaskPriority.MEDIUM,
           };
           this.#aleoStorage.setAccountInfo(item);
         }
@@ -222,22 +196,11 @@ export class VaultStorage {
             (account) => account.coinType === CoinType.ALEO,
           );
           if (aleoAccount) {
-            const otherAccounts = await this.#aleoStorage.getAccountsAddress();
-            for (const otherAccount of otherAccounts) {
-              const info = await this.#aleoStorage.getAccountInfo(otherAccount);
-              if (info) {
-                await this.#aleoStorage.setAccountInfo({
-                  ...info,
-                  priority: TaskPriority.LOW,
-                });
-              }
-            }
             const item: AleoSyncAccount = {
               walletId: hdWallet.walletId,
               accountId: aleoAccount.accountId,
               viewKey: (aleoAccount as AccountWithViewKey).viewKey,
               address: aleoAccount.address,
-              priority: TaskPriority.MEDIUM,
             };
             this.#aleoStorage.setAccountInfo(item);
           }
@@ -250,23 +213,11 @@ export class VaultStorage {
             (account) => account.coinType === CoinType.ALEO,
           );
           if (aleoAccount) {
-            const otherAccounts = await this.#aleoStorage.getAccountsAddress();
-            for (const otherAccount of otherAccounts) {
-              const info = await this.#aleoStorage.getAccountInfo(otherAccount);
-              if (info) {
-                await this.#aleoStorage.setAccountInfo({
-                  ...info,
-                  priority: TaskPriority.LOW,
-                });
-              }
-            }
-
             const item: AleoSyncAccount = {
               walletId: hdWallet.walletId,
               accountId: aleoAccount.accountId,
               viewKey: (aleoAccount as AccountWithViewKey).viewKey,
               address: aleoAccount.address,
-              priority: TaskPriority.MEDIUM,
             };
             this.#aleoStorage.setAccountInfo(item);
           }
@@ -293,22 +244,11 @@ export class VaultStorage {
       (account) => account.coinType === CoinType.ALEO,
     );
     if (aleoAccount) {
-      const otherAccounts = await this.#aleoStorage.getAccountsAddress();
-      for (const otherAccount of otherAccounts) {
-        const info = await this.#aleoStorage.getAccountInfo(otherAccount);
-        if (info) {
-          await this.#aleoStorage.setAccountInfo({
-            ...info,
-            priority: TaskPriority.LOW,
-          });
-        }
-      }
       const item: AleoSyncAccount = {
         walletId: newSimpleWallet.walletId,
         accountId: aleoAccount.accountId,
         address: aleoAccount.address,
         viewKey: (aleoAccount as AccountWithViewKey).viewKey,
-        priority: TaskPriority.MEDIUM,
       };
       this.#aleoStorage.setAccountInfo(item);
     }
@@ -406,18 +346,18 @@ export class VaultStorage {
     const release = await mutex.acquire();
     try {
       const vault = await this.getVault();
-      console.log("migrate", vault);
-      console.log("migrate", JSON.stringify(vault, null, 2));
       if (
         vault[VaultKeys.keyring] &&
         vault[VaultKeys.keyring].version !== vaultVersion
       ) {
         const currentVersion = vault[VaultKeys.keyring].version;
-        let oldSelectedAccountInfo: {
-          walletId: string;
-          groupId?: string;
-          index: number;
-        } | undefined = undefined;
+        let oldSelectedAccountInfo:
+          | {
+              walletId: string;
+              groupId?: string;
+              index: number;
+            }
+          | undefined = undefined;
         switch (currentVersion) {
           case 4: {
             // v4 -> v5: Add QTUM accounts to existing wallets
@@ -560,7 +500,10 @@ export class VaultStorage {
               for (let groupAccount of groupAccounts) {
                 const { index, groupId } = groupAccount;
                 if (index === oldSelectedAccountInfo.index) {
-                  if (oldSelectedAccountInfo.groupId && oldSelectedAccountInfo.groupId !== groupId) {
+                  if (
+                    oldSelectedAccountInfo.groupId &&
+                    oldSelectedAccountInfo.groupId !== groupId
+                  ) {
                     console.error("groupId not matching index");
                   }
                   selectedGroupAccount = {
@@ -582,7 +525,10 @@ export class VaultStorage {
               for (let groupAccount of groupAccounts) {
                 const { index, groupId } = groupAccount;
                 if (index === oldSelectedAccountInfo.index) {
-                  if (oldSelectedAccountInfo.groupId && oldSelectedAccountInfo.groupId !== groupId) {
+                  if (
+                    oldSelectedAccountInfo.groupId &&
+                    oldSelectedAccountInfo.groupId !== groupId
+                  ) {
                     console.error("groupId not matching index");
                   }
                   selectedGroupAccount = {
@@ -618,9 +564,6 @@ export class VaultStorage {
               };
             }
           }
-
-
-          console.log("migrate", selectedGroupAccount);
           if (selectedGroupAccount) {
             await accountSettingStorage.setSelectedGroupAccount(
               selectedGroupAccount,
@@ -628,8 +571,8 @@ export class VaultStorage {
           } else {
             throw new Error(
               "Vault migrate error, selected account is null " +
-              JSON.stringify(hdWalletsV2) +
-              JSON.stringify(simpleWalletsV2),
+                JSON.stringify(hdWalletsV2) +
+                JSON.stringify(simpleWalletsV2),
             );
           }
         }

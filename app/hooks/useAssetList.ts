@@ -2,7 +2,7 @@ import {
   type ChainUniqueId,
   InnerChainUniqueId,
 } from "core/types/ChainUniqueId";
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { usePopupDispatch, usePopupSelector } from "./useStore";
 import { useInteractiveTokens } from "./useToken";
 import { isEqual } from "lodash";
@@ -28,10 +28,19 @@ export const useAssetList = (uniqueId: ChainUniqueId, address: string) => {
     return state.tokens.userTokens[uniqueId]?.[address] ?? [];
   }, isEqual);
   const dispatch = usePopupDispatch();
+
+  const handlePartialToken = useCallback(
+    (token: TokenV2) => {
+      dispatch.tokens.upsertAddressToken({ uniqueId, address, token });
+    },
+    [dispatch.tokens, uniqueId, address],
+  );
+
   const { getUserInteractiveTokens } = useInteractiveTokens(
     uniqueId,
     address,
     true,
+    handlePartialToken,
   );
 
   useEffect(() => {

@@ -6,6 +6,7 @@ import {
   type RegenerateWalletProps,
   type ImportHDWalletProps,
   type AddAccountProps,
+  type AleoComplianceProofProps,
   type AleoSendTxProps,
   type GetSelectedAccountProps,
   type SetSelectedAccountProps,
@@ -17,6 +18,10 @@ import {
   type GetPrivateKeyProps,
   type ChangeAccountStateProps,
   type PopupSignMessageProps,
+  type ScannerDeactivateViewConsumerProps,
+  type ScannerGetDecryptedOwnedRecordsProps,
+  type ScannerRegisterProps,
+  type ScannerRegisterResp,
 } from "../../scripts/background/servers/IWalletServer";
 import {
   type DisplayWallet,
@@ -35,6 +40,34 @@ import { logger } from "./logger";
 import { type IPort, Port } from "./port";
 import { nanoid } from "nanoid";
 import { type CoinType } from "core/types";
+import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
+import { type SyncStatusResp } from "core/coins/ALEO/service/scanner";
+
+// Mirror PopupServer.BIGINT_PORT_TAG. Encoded form is the marker followed
+// by the decimal digits of the bigint. Anything else passes through.
+const BIGINT_PORT_TAG = "__bigint__:";
+
+function reviveBigInt(value: string | bigint): string | bigint {
+  if (typeof value !== "string") return value;
+  if (!value.startsWith(BIGINT_PORT_TAG)) return value;
+  const digits = value.slice(BIGINT_PORT_TAG.length);
+  if (!/^-?\d+$/.test(digits)) return value;
+  return BigInt(digits);
+}
+
+function hydrateRecordFromPort(
+  record: RecordDetailWithSpent,
+): RecordDetailWithSpent {
+  if (!record.parsedContent) return record;
+  const next: Record<string, string | bigint> = {};
+  for (const [key, value] of Object.entries(record.parsedContent)) {
+    next[key] = reviveBigInt(value as string | bigint);
+  }
+  return {
+    ...record,
+    parsedContent: next as unknown as RecordDetailWithSpent["parsedContent"],
+  };
+}
 
 export interface IClient {
   _connect: () => void;
@@ -197,6 +230,43 @@ export class PopupServerClient implements IClient, IPopupServer {
     return await this.#send("resetChain", {});
   }
 
+  async scannerRegister(
+    params: ScannerRegisterProps,
+  ): Promise<ScannerRegisterResp> {
+    return await this.#send("scannerRegister", params);
+  }
+
+  async scannerGetDecryptedOwnedRecords(
+    params: ScannerGetDecryptedOwnedRecordsProps,
+  ): Promise<RecordDetailWithSpent[]> {
+    const raw: RecordDetailWithSpent[] = await this.#send(
+      "scannerGetDecryptedOwnedRecords",
+      params,
+    );
+    // chrome.runtime ports JSON-serialize the response, so bigint fields
+    // PopupServer emitted as "__bigint__:N" strings need to be revived
+    // before downstream UI consumers use them in arithmetic / TokenNum.
+    return raw.map(hydrateRecordFromPort);
+  }
+
+  async scannerGetSyncStatus(
+    params: ScannerRegisterProps,
+  ): Promise<SyncStatusResp> {
+    return await this.#send("scannerGetSyncStatus", params);
+  }
+
+  async scannerDeactivateViewConsumer(
+    params: ScannerDeactivateViewConsumerProps,
+  ): Promise<void> {
+    await this.#send("scannerDeactivateViewConsumer", params);
+  }
+
+  async getAleoComplianceProof(
+    params: AleoComplianceProofProps,
+  ): Promise<string> {
+    return await this.#send("getAleoComplianceProof", params);
+  }
+
   async sendAleoTransaction(params: AleoSendTxProps): Promise<void> {
     await this.#send("sendAleoTransaction", params);
   }
@@ -252,7 +322,14 @@ export class PopupServerClient implements IClient, IPopupServer {
         }
       };
       this.callbackMap.set(id, callback);
-      this.port.postMessage(message);
+      try {
+        this.port.postMessage(message);
+      } catch (err) {
+        // Reject via callback instead of leaking an unhandled rejection when
+        // the port was torn down before its disconnect listener fired.
+        this.callbackMap.delete(id);
+        callback(err instanceof Error ? err : new Error(String(err)), null);
+      }
     });
   }
 }

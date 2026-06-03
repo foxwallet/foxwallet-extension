@@ -1,17 +1,15 @@
 import Dexie from "dexie";
-import { type AleoAddressInfo } from "./types/address";
-import { type AddressRecords } from "./types/records";
 import { type AleoLocalTx } from "./types/tx";
 import { type AleoProgram } from "./types/program";
+import { type AleoTxDetailCacheRow } from "./types/txDetailCache";
 import { type AleoOnChainHistoryItem } from "core/coins/ALEO/types/History";
 import { NATIVE_TOKEN_TOKEN_ID } from "core/coins/ALEO/constants";
 
 export class AleoBlockDatabase extends Dexie {
-  infos: Dexie.Table<AleoAddressInfo, string>;
-  records: Dexie.Table<AddressRecords, string>;
   txs: Dexie.Table<AleoLocalTx, string>;
   programs: Dexie.Table<AleoProgram, string>;
   cacheTxs: Dexie.Table<AleoOnChainHistoryItem>;
+  txDetailCache: Dexie.Table<AleoTxDetailCacheRow, string>;
 
   constructor(chainId: string) {
     super(chainId);
@@ -53,74 +51,70 @@ export class AleoBlockDatabase extends Dexie {
           });
       });
 
-    this.infos = this.table("infos");
-    this.records = this.table("records");
+    this.version(5).stores({
+      infos: null,
+      records: null,
+    });
+
+    // SDK 0.10.x changed credits.aleo verifying key indexes; any prover/
+    // verifier blobs synthesized under the old SDK no longer match and
+    // SnarkVM rejects them with "instance generated during proving does
+    // not match that in the index". Drop the cached keypairs so the next
+    // transaction re-synthesizes against the current SDK. Mirrors the
+    // matching v6 bump in offscreen_service/src/database/AleoBlockDatabase.ts
+    // so both Dexie definitions agree on the schema version.
+    this.version(6)
+      .stores({
+        programs: "programId",
+      })
+      .upgrade(async (transaction) => {
+        return transaction
+          .table("programs")
+          .toCollection()
+          .modify((program) => {
+            program.keypairs = {};
+          });
+      });
+
+    this.version(7).stores({
+      inclusionKeys: "id",
+    });
+
+    this.version(8).stores({
+      txDetailCache: "txId",
+    });
+
     this.txs = this.table("txs");
     this.programs = this.table("programs");
     this.cacheTxs = this.table("cacheTxs");
+    this.txDetailCache = this.table("txDetailCache");
   }
 
   async deleteAddressData(address: string): Promise<void> {
-    await this.transaction(
-      "rw",
-      this.infos,
-      this.records,
-      this.txs,
-      this.cacheTxs,
-      async () => {
-        const infosToDelete = this.infos.where({ address });
-        await infosToDelete.delete();
-        const recordsToDelete = this.records.where({ address });
-        await recordsToDelete.delete();
-        const txsToDelete = this.txs.where({ address });
-        await txsToDelete.delete();
-      },
-    );
+    await this.transaction("rw", this.txs, this.cacheTxs, async () => {
+      const txsToDelete = this.txs.where({ address });
+      await txsToDelete.delete();
+    });
   }
 
   async resetData(): Promise<void> {
     try {
       await this.transaction(
         "rw",
-        this.infos,
-        this.records,
         this.txs,
         this.cacheTxs,
         this.programs,
+        this.txDetailCache,
         async () => {
-          await this.infos.clear();
-          await this.records.clear();
           await this.txs.clear();
           await this.cacheTxs.clear();
           await this.programs.clear();
+          await this.txDetailCache.clear();
         },
       );
     } catch (e) {
       console.error("Failed to clear aleo tables:", e);
     }
-  }
-
-  async setRecords(address: string, recordsData: AddressRecords) {
-    await this.transaction("rw", this.records, async () => {
-      const { begin } = recordsData;
-      // delete the item with same begin
-      const count = await this.records
-        .where({
-          address,
-          begin,
-        })
-        .count();
-      if (count) {
-        await this.records
-          .where({
-            address,
-            begin,
-          })
-          .modify(recordsData);
-      } else {
-        await this.records.add(recordsData);
-      }
-    });
   }
 }
 

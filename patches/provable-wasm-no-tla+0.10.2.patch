@@ -1,0 +1,118 @@
+diff --git a/node_modules/provable-wasm-no-tla/dist/mainnet/aleo_wasm.d.ts b/node_modules/provable-wasm-no-tla/dist/mainnet/aleo_wasm_mainnet_0.10.2.d.ts
+similarity index 100%
+rename from node_modules/provable-wasm-no-tla/dist/mainnet/aleo_wasm.d.ts
+rename to node_modules/provable-wasm-no-tla/dist/mainnet/aleo_wasm_mainnet_0.10.2.d.ts
+diff --git a/node_modules/provable-wasm-no-tla/dist/mainnet/aleo_wasm.wasm b/node_modules/provable-wasm-no-tla/dist/mainnet/aleo_wasm_mainnet_0.10.2.wasm
+similarity index 100%
+rename from node_modules/provable-wasm-no-tla/dist/mainnet/aleo_wasm.wasm
+rename to node_modules/provable-wasm-no-tla/dist/mainnet/aleo_wasm_mainnet_0.10.2.wasm
+diff --git a/node_modules/provable-wasm-no-tla/dist/mainnet/index.d.ts b/node_modules/provable-wasm-no-tla/dist/mainnet/index.d.ts
+index b80b73be..5fc51c40 100644
+--- a/node_modules/provable-wasm-no-tla/dist/mainnet/index.d.ts
++++ b/node_modules/provable-wasm-no-tla/dist/mainnet/index.d.ts
+@@ -5,4 +5,5 @@
+  */
+ export function initThreadPool(threads?: number): Promise<void>;
+ 
+-export * from "./aleo_wasm.js";
+\ No newline at end of file
++export default function initWasm(): Promise<void>;
++export * from "./aleo_wasm_mainnet_0.10.2";
+\ No newline at end of file
+diff --git a/node_modules/provable-wasm-no-tla/dist/mainnet/index.js b/node_modules/provable-wasm-no-tla/dist/mainnet/index.js
+index c19c10dd..3fd21957 100644
+--- a/node_modules/provable-wasm-no-tla/dist/mainnet/index.js
++++ b/node_modules/provable-wasm-no-tla/dist/mainnet/index.js
+@@ -18769,9 +18769,11 @@ async function __wbg_init(module_or_path, memory) {
+     return __wbg_finalize_init(instance, module, thread_stack_size);
+ }
+ 
+-const module$1 = new URL("aleo_wasm.wasm", import.meta.url);
++async function initWasm() {
++  const module$1 = new URL("aleo_wasm_mainnet_0.10.2.wasm", import.meta.url);
+                 
+-                    await __wbg_init({ module_or_path: module$1 });
++  await __wbg_init({ module_or_path: module$1 });
++}
+ 
+ async function initThreadPool(threads) {
+     if (threads == null) {
+@@ -18783,5 +18785,6 @@ async function initThreadPool(threads) {
+     await initThreadPool$1(new URL("worker.js", import.meta.url), threads);
+ }
+ 
++export default initWasm;
+ export { Address, Authorization, BHP1024, BHP256, BHP512, BHP768, Boolean, Ciphertext, ComputeKey, DynamicRecord, EncryptionToolkit, Execution, ExecutionRequest, ExecutionResponse, Field, GraphKey, Group, I128, I16, I32, I64, I8, KeyPair, Metadata, OfflineQuery, Pedersen128, Pedersen64, Plaintext, Poseidon2, Poseidon4, Poseidon8, PrivateKey, PrivateKeyCiphertext, Program, ProgramManager, Proof, ProvingKey, ProvingRequest, RecordCiphertext, RecordPlaintext, Scalar, Signature, Transaction, Transition, U128, U16, U32, U64, U8, Value, VerifyingKey, ViewKey, getOrInitConsensusVersionTestHeights, initSync, initThreadPool, runRayonThread, snarkVerify, snarkVerifyBatch, stringToField, verifyFunctionExecution };
+ //# sourceMappingURL=index.js.map
+diff --git a/node_modules/provable-wasm-no-tla/dist/mainnet/worker.js b/node_modules/provable-wasm-no-tla/dist/mainnet/worker.js
+index 44fda3af..780f6928 100644
+--- a/node_modules/provable-wasm-no-tla/dist/mainnet/worker.js
++++ b/node_modules/provable-wasm-no-tla/dist/mainnet/worker.js
+@@ -18834,7 +18834,7 @@ var exports$1 = /*#__PURE__*/Object.freeze({
+     verifyFunctionExecution: verifyFunctionExecution
+ });
+ 
+-new URL("aleo_wasm.wasm", import.meta.url);
++new URL("aleo_wasm_mainnet_0.10.2.wasm", import.meta.url);
+ 
+                 async function init(options) {
+                     await __wbg_init({
+diff --git a/node_modules/provable-wasm-no-tla/dist/testnet/aleo_wasm.d.ts b/node_modules/provable-wasm-no-tla/dist/testnet/aleo_wasm_testnet_0.10.2.d.ts
+similarity index 100%
+rename from node_modules/provable-wasm-no-tla/dist/testnet/aleo_wasm.d.ts
+rename to node_modules/provable-wasm-no-tla/dist/testnet/aleo_wasm_testnet_0.10.2.d.ts
+diff --git a/node_modules/provable-wasm-no-tla/dist/testnet/aleo_wasm.wasm b/node_modules/provable-wasm-no-tla/dist/testnet/aleo_wasm_testnet_0.10.2.wasm
+similarity index 100%
+rename from node_modules/provable-wasm-no-tla/dist/testnet/aleo_wasm.wasm
+rename to node_modules/provable-wasm-no-tla/dist/testnet/aleo_wasm_testnet_0.10.2.wasm
+diff --git a/node_modules/provable-wasm-no-tla/dist/testnet/index.d.ts b/node_modules/provable-wasm-no-tla/dist/testnet/index.d.ts
+index b80b73be..d21ef2f2 100644
+--- a/node_modules/provable-wasm-no-tla/dist/testnet/index.d.ts
++++ b/node_modules/provable-wasm-no-tla/dist/testnet/index.d.ts
+@@ -5,4 +5,5 @@
+  */
+ export function initThreadPool(threads?: number): Promise<void>;
+ 
+-export * from "./aleo_wasm.js";
+\ No newline at end of file
++export default function initWasm(): Promise<void>;
++export * from "./aleo_wasm_testnet_0.10.2";
+\ No newline at end of file
+diff --git a/node_modules/provable-wasm-no-tla/dist/testnet/index.js b/node_modules/provable-wasm-no-tla/dist/testnet/index.js
+index df5020a5..13a2dc74 100644
+--- a/node_modules/provable-wasm-no-tla/dist/testnet/index.js
++++ b/node_modules/provable-wasm-no-tla/dist/testnet/index.js
+@@ -18769,9 +18769,11 @@ async function __wbg_init(module_or_path, memory) {
+     return __wbg_finalize_init(instance, module, thread_stack_size);
+ }
+ 
+-const module$1 = new URL("aleo_wasm.wasm", import.meta.url);
++async function initWasm() {
++  const module$1 = new URL("aleo_wasm_testnet_0.10.2.wasm", import.meta.url);
+                 
+-                    await __wbg_init({ module_or_path: module$1 });
++  await __wbg_init({ module_or_path: module$1 });
++}
+ 
+ async function initThreadPool(threads) {
+     if (threads == null) {
+@@ -18783,5 +18785,6 @@ async function initThreadPool(threads) {
+     await initThreadPool$1(new URL("worker.js", import.meta.url), threads);
+ }
+ 
++export default initWasm;
+ export { Address, Authorization, BHP1024, BHP256, BHP512, BHP768, Boolean, Ciphertext, ComputeKey, DynamicRecord, EncryptionToolkit, Execution, ExecutionRequest, ExecutionResponse, Field, GraphKey, Group, I128, I16, I32, I64, I8, KeyPair, Metadata, OfflineQuery, Pedersen128, Pedersen64, Plaintext, Poseidon2, Poseidon4, Poseidon8, PrivateKey, PrivateKeyCiphertext, Program, ProgramManager, Proof, ProvingKey, ProvingRequest, RecordCiphertext, RecordPlaintext, Scalar, Signature, Transaction, Transition, U128, U16, U32, U64, U8, Value, VerifyingKey, ViewKey, getOrInitConsensusVersionTestHeights, initSync, initThreadPool, runRayonThread, snarkVerify, snarkVerifyBatch, stringToField, verifyFunctionExecution };
+ //# sourceMappingURL=index.js.map
+diff --git a/node_modules/provable-wasm-no-tla/dist/testnet/worker.js b/node_modules/provable-wasm-no-tla/dist/testnet/worker.js
+index bd642e2f..29529e1a 100644
+--- a/node_modules/provable-wasm-no-tla/dist/testnet/worker.js
++++ b/node_modules/provable-wasm-no-tla/dist/testnet/worker.js
+@@ -18834,7 +18834,7 @@ var exports$1 = /*#__PURE__*/Object.freeze({
+     verifyFunctionExecution: verifyFunctionExecution
+ });
+ 
+-new URL("aleo_wasm.wasm", import.meta.url);
++new URL("aleo_wasm_testnet_0.10.2.wasm", import.meta.url);
+ 
+                 async function init(options) {
+                     await __wbg_init({

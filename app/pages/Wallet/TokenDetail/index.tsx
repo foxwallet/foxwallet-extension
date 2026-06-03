@@ -1,8 +1,11 @@
 import {
   IconCopyBlack,
+  IconConvertSrc,
   IconEmptyTxPlaceholder,
+  IconJoinSrc,
   IconReceiveBlack,
   IconSendBlack,
+  IconSplitSrc,
 } from "@/components/Custom/Icon";
 import { TokenNum } from "@/components/Wallet/TokenNum";
 import { useCoinService } from "@/hooks/useCoinService";
@@ -12,6 +15,7 @@ import {
   Button,
   Divider,
   Flex,
+  Image,
   Spinner,
   Text,
   useClipboard,
@@ -66,6 +70,16 @@ interface AleoTokenTxHistoryItemProps {
   address: string;
 }
 
+const ALEO_CONVERT_TX_TITLE_KEYS: Partial<Record<AleoTransferMethod, string>> =
+  {
+    [AleoTransferMethod.PRIVATE_TO_PUBLIC]: "transfer_private_to_public",
+    [AleoTransferMethod.PUBLIC_TO_PRIVATE]: "transfer_public_to_private",
+  };
+
+function getAleoConvertTxTitleKey(functionName: string): string | undefined {
+  return ALEO_CONVERT_TX_TITLE_KEYS[functionName as AleoTransferMethod];
+}
+
 const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
   uniqueId,
   item,
@@ -89,28 +103,78 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
     );
   }, [address, item, navigate, token, uniqueId]);
 
+  const joinSplitKind = useMemo<"join" | "split" | undefined>(() => {
+    if (item.functionName === "join") return "join";
+    if (item.functionName === "split") return "split";
+    return undefined;
+  }, [item.functionName]);
+  const isMint = useMemo(() => {
+    return item.functionName === "mint";
+  }, [item.functionName]);
+  const convertTitleKey = useMemo(() => {
+    return getAleoConvertTxTitleKey(item.functionName);
+  }, [item.functionName]);
+  const computedAddressType = useMemo<AleoTxAddressType>(() => {
+    if (item.type === AleoHistoryType.LOCAL) {
+      return item.addressType;
+    }
+    if (item.recipientAddress && item.recipientAddress === address) {
+      return AleoTxAddressType.RECEIVE;
+    }
+    if (item.senderAddress && item.senderAddress === address) {
+      return AleoTxAddressType.SEND;
+    }
+    return item.addressType;
+  }, [item, address]);
   const txTitle = useMemo(() => {
-    return t(`TokenDetail:${item.addressType}`);
-  }, [item.addressType, t]);
+    if (joinSplitKind) {
+      return t(`JoinSplit:${joinSplitKind}`);
+    }
+    if (isMint) {
+      return t(`TokenDetail:mint`);
+    }
+    if (convertTitleKey !== undefined) {
+      return t(`TokenDetail:${convertTitleKey}`);
+    }
+    return t(`TokenDetail:${computedAddressType}`);
+  }, [convertTitleKey, joinSplitKind, isMint, computedAddressType, t]);
   const txPublicInfo = useMemo(() => {
+    if (joinSplitKind) {
+      return undefined;
+    }
+    if (isMint) {
+      return undefined;
+    }
+    if (convertTitleKey !== undefined) {
+      return undefined;
+    }
     const prefix = "transfer_";
     const functionName = item.functionName.startsWith(prefix)
       ? item.functionName.slice(prefix.length)
       : item.functionName;
     return `(${functionName.split("_").join(" ")})`;
-  }, [item.functionName]);
+  }, [convertTitleKey, joinSplitKind, isMint, item.functionName]);
   const amount = useMemo(() => {
-    if (item.functionName === "join" || item.functionName === "split") {
-      return 0n;
-    }
     return BigInt(item.amount ?? 0n);
   }, [item]);
+  const amountHidden = useMemo(() => {
+    if (item.amount !== undefined) {
+      return false;
+    }
+    return (
+      item.functionName === "transfer_private" ||
+      item.functionName === "transfer_private_to_public"
+    );
+  }, [item.amount, item.functionName]);
+  // mint credits a new record but the amount isn't a meaningful balance delta
+  // to surface; render the amount column empty (no `--- ALEO` placeholder).
+  const amountEmpty = isMint;
 
   const addressLabel = useMemo(() => {
     let ret = "";
     let addr = "";
-    const isSend = item.addressType === AleoTxAddressType.SEND;
-    const fromTo = isSend ? "To" : "From"; // if send , show to address
+    const isSend = computedAddressType === AleoTxAddressType.SEND;
+    const fromTo = isSend ? "To" : "From";
 
     if (item.functionName === AleoTransferMethod.PUBLIC) {
       if (item.type === AleoHistoryType.LOCAL) {
@@ -121,13 +185,15 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
       ret = `${fromTo} ${addr}`;
     }
     return ret;
-  }, [item]);
+  }, [item, computedAddressType]);
 
   const { txStatus, txStatusStr } = simplifyAleoTxStatus(item.status);
 
   return (
     <TxHistoryItem
-      isSend={item.addressType === AleoTxAddressType.SEND}
+      isSend={computedAddressType === AleoTxAddressType.SEND}
+      isConvertTx={convertTitleKey !== undefined}
+      joinSplitKind={joinSplitKind}
       timeStr={timeStr}
       txTitle={txTitle}
       txTitle2={txPublicInfo}
@@ -136,6 +202,8 @@ const AleoTxHistoryItem: React.FC<AleoTokenTxHistoryItemProps> = ({
         txStatus === SimplifiedAleoTxStatus.Success ? undefined : txStatusStr
       }
       amount={amount}
+      amountHidden={amountHidden}
+      amountEmpty={amountEmpty}
       decimals={token.decimals}
       symbol={token.symbol}
       onClick={onClick}
@@ -214,6 +282,14 @@ const TokenTxHistoryItem = (props: TokenTxHistoryItemProps) => {
 
 type TxHistoryItemProps = {
   isSend: boolean;
+  isConvertTx?: boolean;
+  joinSplitKind?: "join" | "split";
+  /** When true, render `---` instead of a number — for private Aleo ops
+   *  whose amount can't be inferred locally. */
+  amountHidden?: boolean;
+  /** When true, render nothing in the amount column (not even the `---`
+   *  placeholder) — for ops like `mint` where no balance delta is shown. */
+  amountEmpty?: boolean;
   timeStr?: string;
   onClick?: () => void;
   txTitle?: string;
@@ -228,6 +304,10 @@ type TxHistoryItemProps = {
 const TxHistoryItem = (props: TxHistoryItemProps) => {
   const {
     isSend,
+    isConvertTx,
+    joinSplitKind,
+    amountHidden,
+    amountEmpty,
     timeStr,
     txTitle,
     txTitle2,
@@ -253,7 +333,35 @@ const TxHistoryItem = (props: TxHistoryItemProps) => {
     >
       <Flex align={"center"}>
         <Box bg={"#E6E8EC"} p={1} borderRadius={"50px"}>
-          {isSend ? <IconSendBlack /> : <IconReceiveBlack />}
+          {joinSplitKind === "join" ? (
+            <Image
+              src={IconJoinSrc}
+              w={4}
+              h={4}
+              alt="join"
+              filter="grayscale(1) contrast(2)"
+            />
+          ) : joinSplitKind === "split" ? (
+            <Image
+              src={IconSplitSrc}
+              w={4}
+              h={4}
+              alt="split"
+              filter="grayscale(1) contrast(2)"
+            />
+          ) : isConvertTx === true ? (
+            <Image
+              src={IconConvertSrc}
+              w={4}
+              h={4}
+              alt="convert"
+              filter="grayscale(1) contrast(2)"
+            />
+          ) : isSend ? (
+            <IconSendBlack />
+          ) : (
+            <IconReceiveBlack />
+          )}
         </Box>
         <Flex direction={"column"} ml={2.5} alignItems={"flex-start"}>
           <Flex align={"center"}>
@@ -308,16 +416,36 @@ const TxHistoryItem = (props: TxHistoryItemProps) => {
         justifyContent={"center"}
         alignItems={"flex-end"}
       >
-        {amount >= 0n && (
-          <Box fontWeight={"bold"} fontSize={12} ml={1}>
-            <TokenNum
-              amount={amount}
-              decimals={decimals}
-              symbol={symbol}
-              textColor={isSend ? "#00D856" : "#EF466F"}
-              extraPreText={amount === 0n ? "" : isSend ? "- " : "+ "}
-            />
+        {amountEmpty ? null : amountHidden ? (
+          <Box fontWeight={"bold"} fontSize={12} ml={1} color={"gray.600"}>
+            --- {symbol}
           </Box>
+        ) : (
+          amount >= 0n && (
+            <Box fontWeight={"bold"} fontSize={12} ml={1}>
+              <TokenNum
+                amount={amount}
+                decimals={decimals}
+                symbol={symbol}
+                textColor={
+                  joinSplitKind !== undefined || isConvertTx === true
+                    ? "gray.600"
+                    : isSend
+                    ? "#00D856"
+                    : "#EF466F"
+                }
+                extraPreText={
+                  joinSplitKind !== undefined ||
+                  isConvertTx === true ||
+                  amount === 0n
+                    ? ""
+                    : isSend
+                    ? "- "
+                    : "+ "
+                }
+              />
+            </Box>
+          )
         )}
         <Text color={"gray.500"} fontSize={10}>
           {timeStr}

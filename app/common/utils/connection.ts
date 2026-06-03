@@ -22,11 +22,6 @@ export class Connection implements IConnection {
     console.log(this.portName, " addListener ");
     browser.runtime.onConnect.addListener((port: IPort) => {
       if (port.name !== this.portName) {
-        logger.error(
-          port.name,
-          " background connect wrong port ",
-          this.portName,
-        );
         return;
       }
       console.log(port.name, " background connect ");

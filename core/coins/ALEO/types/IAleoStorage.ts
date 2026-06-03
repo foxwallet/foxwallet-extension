@@ -1,45 +1,23 @@
 import { type AleoSyncAccount } from "./AleoSyncAccount";
 import { type AleoOnChainHistoryItem } from "./History";
 import {
-  type AleoAddressInfo,
-  type SyncRecordResultWithDuration,
-} from "./SyncTask";
-import { type AleoLocalTxInfo } from "./Transaction";
+  type ScannerDecryptedRecord,
+  type ScannerDecryptedRecordMap,
+} from "./ScannerDecryptedRecord";
+import {
+  type AleoLocalTxInfo,
+  type AleoTransaction,
+} from "./Transaction";
+
+export interface ClearAddressLocalDataOptions {
+  scannerCacheCleanup?: "best-effort" | "strict";
+}
 
 export interface IAleoStorage {
   getAccountsAddress(): Promise<string[]>;
   getAccountInfo(address: string): Promise<AleoSyncAccount | undefined>;
 
   setAccountInfo(account: AleoSyncAccount): Promise<AleoSyncAccount>;
-
-  getAleoRecordRanges(chainId: string, address: string): Promise<string[]>;
-  getAleoRecords(
-    chainId: string,
-    address: string,
-  ): Promise<SyncRecordResultWithDuration[]>;
-  setAleoRecords(
-    chainId: string,
-    address: string,
-    key: string,
-    blockInfo: SyncRecordResultWithDuration,
-  ): Promise<SyncRecordResultWithDuration>;
-
-  getAleoRecordsInfo(
-    chainId: string,
-    address: string,
-    key: string,
-  ): Promise<SyncRecordResultWithDuration | null>;
-
-  getAddressInfo(
-    chainId: string,
-    address: string,
-  ): Promise<AleoAddressInfo | null>;
-
-  setAddressInfo(
-    chainId: string,
-    address: string,
-    info: AleoAddressInfo,
-  ): Promise<AleoAddressInfo>;
 
   setLocalTxNotification(chainId: string, localId: string): Promise<void>;
 
@@ -66,7 +44,11 @@ export interface IAleoStorage {
     localId: string,
   ): Promise<void>;
 
-  clearAddressLocalData(chainId: string, address: string): Promise<void>;
+  clearAddressLocalData(
+    chainId: string,
+    address: string,
+    options?: ClearAddressLocalDataOptions,
+  ): Promise<void>;
 
   reset(chainId: string): Promise<void>;
 
@@ -77,6 +59,20 @@ export interface IAleoStorage {
     txId: string,
   ): Promise<AleoOnChainHistoryItem | undefined>;
 
+  // Full transaction body cache (used by AleoService to resolve private
+  // transfer amounts). Persisted in IndexedDB so a service-worker restart
+  // doesn't force a re-fetch.
+  getCachedTxDetail(
+    chainId: string,
+    txId: string,
+  ): Promise<AleoTransaction | undefined>;
+
+  setCachedTxDetail(
+    chainId: string,
+    txId: string,
+    tx: AleoTransaction,
+  ): Promise<void>;
+
   getProgramContent(chainId: string, programId: string): Promise<string | null>;
 
   setProgramContent(
@@ -84,4 +80,18 @@ export interface IAleoStorage {
     programId: string,
     program: string,
   ): Promise<void>;
+
+  getScannerDecryptedRecords(
+    chainId: string,
+    address: string,
+    tags: string[],
+  ): Promise<ScannerDecryptedRecordMap>;
+
+  setScannerDecryptedRecords(
+    chainId: string,
+    address: string,
+    records: ScannerDecryptedRecord[],
+  ): Promise<void>;
+
+  clearScannerDecryptedRecords(chainId: string, address: string): Promise<void>;
 }

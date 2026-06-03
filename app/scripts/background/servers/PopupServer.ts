@@ -9,6 +9,7 @@ import {
 import {
   AddAccountProps,
   ALEOConnectProps,
+  AleoComplianceProofProps,
   AleoRequestDeploymentProps,
   AleoRequestTxProps,
   AleoSendTxProps,
@@ -22,6 +23,10 @@ import {
   PopupSignMessageProps,
   RegenerateWalletProps,
   RequestFinfishProps,
+  ScannerDeactivateViewConsumerProps,
+  ScannerGetDecryptedOwnedRecordsProps,
+  ScannerRegisterProps,
+  ScannerRegisterResp,
   SetSelectedAccountProps,
   SignMessageProps,
   SiteMetadata,
@@ -31,8 +36,6 @@ import {
   sendAleoTransaction,
   sendDeployment,
   stopSending,
-  stopSync,
-  syncBlocks,
 } from "../offscreen";
 import { AccountSettingStorage } from "../store/account/AccountStorage";
 import { DappStorage } from "../store/dapp/DappStorage";
@@ -41,7 +44,7 @@ import browser from "webextension-polyfill";
 import { nanoid } from "nanoid";
 import { createPopup } from "../helper/popup";
 import { SiteInfo } from "@/scripts/content/host";
-import { PrivateKey } from "aleo_wasm_mainnet";
+import { PrivateKey } from "provable-wasm-no-tla/mainnet.js";
 import { hexToUint8Array } from "@/common/utils/buffer";
 import {
   AleoLocalTxInfo,
@@ -49,7 +52,6 @@ import {
 } from "core/coins/ALEO/types/Transaction";
 import { CoinServiceEntry } from "core/coins/CoinServiceEntry";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
-import { TaskPriority } from "core/coins/ALEO/types/SyncTask";
 import { ConnectHistory, DappRequest } from "@/database/types/dapp";
 import { AleoTxType } from "core/coins/ALEO/types/History";
 import {
@@ -70,6 +72,40 @@ import {
 } from "core/coins/QTUM/utils/address";
 import { wrapLoggerArgs } from "@/common/utils/wrapConsole";
 import { QTUMNetwork } from "core/coins/QTUM/types/QTUMAccount";
+import {
+  networkFromChainId,
+  provableScannerService,
+  recordSyncService,
+  ScannerStorage,
+  type SyncStatusResp,
+} from "core/coins/ALEO/service/scanner";
+import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
+import { AleoStorage } from "../store/aleo/AleoStorage";
+
+// Tag value that hydrateRecordParsedContent uses to recognize a BigInt that
+// was flattened to string for chrome.runtime port serialization. Keeping it
+// unusual avoids collisions with any genuine record string value.
+const BIGINT_PORT_TAG = "__bigint__:";
+
+function stringifyBigInt(value: bigint | string): string {
+  return typeof value === "bigint"
+    ? `${BIGINT_PORT_TAG}${value.toString()}`
+    : value;
+}
+
+function serializeRecordForPort(
+  record: RecordDetailWithSpent,
+): RecordDetailWithSpent {
+  if (!record.parsedContent) return record;
+  const next: Record<string, string | bigint> = {};
+  for (const [key, value] of Object.entries(record.parsedContent)) {
+    next[key] = stringifyBigInt(value);
+  }
+  return {
+    ...record,
+    parsedContent: next as unknown as RecordDetailWithSpent["parsedContent"],
+  };
+}
 
 export type OnRequestFinishCallback = (
   error: null | Error,
@@ -85,6 +121,7 @@ export class PopupWalletServer implements IPopupServer {
   requestIdCallbackMap: { [requestId in string]?: OnRequestFinishCallback } =
     {};
   coinService: CoinServiceEntry;
+  #aleoScannerPrewarmed = false;
 
   constructor(
     authManager: AuthManager,
@@ -501,13 +538,21 @@ export class PopupWalletServer implements IPopupServer {
                 "===> createRequestAleoTxPopup sendTransaction resp: ",
                 resp,
               );
-              if (!resp) {
+              console.log(
+                "===> createRequestAleoTxPopup sendTransaction payload: ",
+                {
+                  error: resp?.payload?.error,
+                  data: resp?.payload?.data,
+                },
+              );
+              const error = resp?.payload?.error;
+              if (!resp || error) {
                 const finalTxInfo: AleoLocalTxInfo = {
                   ...params,
                   status: AleoTxStatus.FAILED,
                   txType: AleoTxType.EXECUTION,
                   notification: false,
-                  error: "sendTransaction failed",
+                  error: error ?? "sendTransaction failed",
                 };
                 await instance.setAddressLocalTx(address, finalTxInfo);
               }
@@ -600,7 +645,8 @@ export class PopupWalletServer implements IPopupServer {
               privateKey: pk,
             }).then(async (resp) => {
               console.log("===> createRequestDeployPopup resp: ", resp);
-              if (!resp) {
+              const error = resp?.payload?.error;
+              if (!resp || error) {
                 const finalTxInfo: AleoLocalTxInfo = {
                   ...params,
                   functionName: "",
@@ -608,7 +654,7 @@ export class PopupWalletServer implements IPopupServer {
                   status: AleoTxStatus.FAILED,
                   txType: AleoTxType.DEPLOYMENT,
                   notification: false,
-                  error: "sendDeployment failed",
+                  error: error ?? "sendDeployment failed",
                   tokenId: NATIVE_TOKEN_PROGRAM_ID,
                 };
                 await instance.setAddressLocalTx(address, finalTxInfo);
@@ -761,7 +807,7 @@ export class PopupWalletServer implements IPopupServer {
                 return;
               }
               let realAddress: string = address;
-              if(coinType === CoinType.QTUM) {
+              if (coinType === CoinType.QTUM) {
                 let qNetwork = QTUMNetwork.qtum;
                 if (network) {
                   switch (network) {
@@ -827,11 +873,46 @@ export class PopupWalletServer implements IPopupServer {
   async hasAuth(): Promise<boolean> {
     console.log("===> popup server hasAuth: ");
     const result = this.authManager.hasAuth();
+    if (result) {
+      void this.prewarmAleoScannerRegistrations();
+    }
     return result;
   }
 
   async login(params: { password: string }): Promise<boolean> {
-    return await this.authManager.login(params.password);
+    const ok = await this.authManager.login(params.password);
+    if (ok) {
+      void this.prewarmAleoScannerRegistrations();
+    }
+    return ok;
+  }
+
+  private async prewarmAleoScannerRegistrations(): Promise<void> {
+    if (this.#aleoScannerPrewarmed) return;
+    if (!this.authManager.hasAuth()) return;
+    this.#aleoScannerPrewarmed = true;
+
+    try {
+      const chainId = InnerChainUniqueId.ALEO_MAINNET;
+      const addresses = await AleoStorage.getInstance().getAccountsAddress();
+      if (addresses.length === 0) return;
+
+      await Promise.allSettled(
+        addresses.map(async (address) => {
+          try {
+            await this.ensureScannerRegistration({ chainId, address });
+          } catch (error) {
+            console.warn("[RSS] prewarm scanner registration failed", {
+              address,
+              error,
+            });
+          }
+        }),
+      );
+    } catch (error) {
+      this.#aleoScannerPrewarmed = false;
+      console.warn("[RSS] prewarm scanner registrations aborted", error);
+    }
   }
 
   async lock(): Promise<void> {
@@ -999,11 +1080,7 @@ export class PopupWalletServer implements IPopupServer {
   async rescanAleo(): Promise<boolean> {
     try {
       await stopSending();
-      await stopSync();
       const groupAccount = await this.getSelectedGroupAccount({});
-      // const selectedUniqueId = await this.getSelectedUniqueId({
-      //   coinType: CoinType.ALEO,
-      // });
       const account = groupAccount?.group.accounts.find(
         (account) => account.coinType === CoinType.ALEO,
       );
@@ -1013,38 +1090,17 @@ export class PopupWalletServer implements IPopupServer {
           selectedUniqueId,
         ) as AleoService;
         await instance.clearAddressLocalData(account.address);
-        const viewKey = await this.keyringManager.getViewKey({
-          coinType: CoinType.ALEO,
-          address: account.address,
-        });
-        if (viewKey) {
-          await instance.setAleoSyncAccount({
-            walletId: groupAccount.wallet.walletId,
-            accountId: account.accountId,
-            address: account.address,
-            viewKey,
-            priority: TaskPriority.MEDIUM,
-          });
-        } else {
-          console.error("===> rescanAleo error: viewKey is null");
-        }
       }
       return true;
     } catch (err) {
       console.error("===> rescanAleo error: ", err);
       return false;
-    } finally {
-      syncBlocks();
     }
   }
 
   async resetChain(): Promise<boolean> {
     try {
       await stopSending();
-      await stopSync();
-      // const selectedUniqueId = await this.getSelectedUniqueId({
-      //   coinType: CoinType.ALEO,
-      // });
       const instance = this.coinService.getInstance(
         InnerChainUniqueId.ALEO_MAINNET,
       ) as AleoService;
@@ -1053,9 +1109,143 @@ export class PopupWalletServer implements IPopupServer {
     } catch (err) {
       console.error("===> resetChain error: ", err);
       return false;
-    } finally {
-      syncBlocks();
     }
+  }
+
+  private async ensureScannerRegistration(
+    { chainId, address }: ScannerRegisterProps,
+    viewKey?: string,
+  ): Promise<ScannerRegisterResp> {
+    const scannerStorage = ScannerStorage.getInstance();
+    const existingUuid = await scannerStorage.getScannerUuid(chainId, address);
+    if (existingUuid) {
+      return { uuid: existingUuid };
+    }
+
+    const resolvedViewKey =
+      viewKey ??
+      (await this.keyringManager.getViewKey({
+        coinType: CoinType.ALEO,
+        address,
+      }));
+    if (!resolvedViewKey) {
+      throw new Error("Aleo view key is required for scanner registration");
+    }
+
+    const registration = await provableScannerService.scannerRegister(
+      {
+        start: 0,
+        viewKey: resolvedViewKey,
+      },
+      networkFromChainId(chainId),
+      {
+        address,
+        chainId,
+      },
+    );
+    if (!registration?.uuid) {
+      throw new Error("Scanner registration failed");
+    }
+    return { uuid: registration.uuid };
+  }
+
+  async scannerRegister(
+    params: ScannerRegisterProps,
+  ): Promise<ScannerRegisterResp> {
+    return await this.ensureScannerRegistration(params);
+  }
+
+  async scannerGetDecryptedOwnedRecords({
+    chainId,
+    address,
+    programs,
+    unspent,
+    consumerId,
+    purpose = "default",
+    refreshMode = "auto",
+    start,
+    end,
+  }: ScannerGetDecryptedOwnedRecordsProps): Promise<RecordDetailWithSpent[]> {
+    if (purpose === "view" && !consumerId) {
+      throw new Error(
+        "scannerGetDecryptedOwnedRecords: view purpose requires consumerId",
+      );
+    }
+
+    const viewKey = await this.keyringManager.getViewKey({
+      coinType: CoinType.ALEO,
+      address,
+    });
+    if (!viewKey) {
+      throw new Error("Aleo view key is required to decrypt scanner records");
+    }
+    const { uuid } = await this.ensureScannerRegistration(
+      {
+        chainId,
+        address,
+      },
+      viewKey,
+    );
+
+    const records = await recordSyncService.getDecryptedOwnedRecords(
+      {
+        filter: {
+          ...(programs && programs.length > 0 ? { programs } : {}),
+          ...(start !== undefined ? { start } : {}),
+          ...(end !== undefined ? { end } : {}),
+        },
+        uuid,
+        ...(unspent !== undefined ? { unspent } : {}),
+      },
+      {
+        address,
+        viewKey,
+      },
+      {
+        chainId,
+        consumerId,
+        purpose,
+        refreshMode,
+      },
+    );
+
+    // chrome.runtime port serializes payloads via JSON, which does not
+    // support BigInt. parseRecordParsedContent emits bigint values for
+    // microcredits / amount; flatten them to string here and let the popup
+    // client hydrate them back on receipt. Keeps the wire format JSON-safe
+    // without forcing every consumer to switch to string semantics.
+    return (records ?? []).map(serializeRecordForPort);
+  }
+
+  async scannerGetSyncStatus(
+    params: ScannerRegisterProps,
+  ): Promise<SyncStatusResp> {
+    const { chainId, address } = params;
+    const scannerStorage = ScannerStorage.getInstance();
+    const uuid = await scannerStorage.getScannerUuid(chainId, address);
+    if (!uuid) {
+      return { percentage: 0, synced: false };
+    }
+    const status = await provableScannerService.getSyncStatus(
+      uuid,
+      networkFromChainId(chainId),
+    );
+    return status ?? { percentage: 0, synced: false };
+  }
+
+  async scannerDeactivateViewConsumer({
+    consumerId,
+  }: ScannerDeactivateViewConsumerProps): Promise<void> {
+    recordSyncService.deactivateViewConsumer(consumerId);
+  }
+
+  async getAleoComplianceProof({
+    uniqueId,
+    programId,
+    address,
+  }: AleoComplianceProofProps): Promise<string> {
+    const instance = this.coinService.getInstance(uniqueId) as AleoService;
+    return await instance.getComplianceProof(programId, address);
   }
 
   async sendAleoTransaction(params: AleoSendTxProps): Promise<void> {
@@ -1070,13 +1260,19 @@ export class PopupWalletServer implements IPopupServer {
       privateKey: pk,
     }).then(async (resp) => {
       console.log("===> sendAleoTransaction sendTransaction resp: ", resp);
-      if (!resp) {
+      console.log("===> sendAleoTransaction sendTransaction payload: ", {
+        error: resp?.payload?.error,
+        data: resp?.payload?.data,
+      });
+
+      const error = resp?.payload?.error;
+      if (!resp || error) {
         const finalTxInfo: AleoLocalTxInfo = {
           ...params,
           status: AleoTxStatus.FAILED,
           txType: AleoTxType.EXECUTION,
           notification: false,
-          error: "sendTransaction failed",
+          error: error ?? "sendTransaction failed",
         };
         const instance = this.coinService.getInstance(
           params.uniqueId,
@@ -1105,7 +1301,6 @@ export class PopupWalletServer implements IPopupServer {
 
   async resetWallet(): Promise<boolean> {
     try {
-      await stopSync();
       await Promise.all([
         this.accountSettingStorage.removeSelectedAccount(),
         this.keyringManager.resetWallet(),
@@ -1113,14 +1308,11 @@ export class PopupWalletServer implements IPopupServer {
       return true;
     } catch (err) {
       return false;
-    } finally {
-      syncBlocks();
     }
   }
 
   async deleteWallet(walletId: string): Promise<DisplayKeyring> {
     try {
-      await stopSync();
       const groupAccount =
         await this.accountSettingStorage.getSelectedGroupAccount();
       let newSelectedAccount: OneMatchGroupAccount | null = null;
@@ -1164,8 +1356,6 @@ export class PopupWalletServer implements IPopupServer {
       await this.keyringManager.deleteWallet(walletId);
     } catch (err) {
       console.error("===> deleteWallet error: ", err);
-    } finally {
-      syncBlocks();
     }
     return await this.getAllWallet();
   }

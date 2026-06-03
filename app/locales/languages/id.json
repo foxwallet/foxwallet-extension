@@ -208,8 +208,11 @@
     "token_approve": "Token menyetujui",
     "bridge": "Menjembatani",
     "receive": "Menerima",
+    "mint": "Mint",
     "copyContractAddressMsg": "Ini adalah alamat kontrak Token, tidak menerima alamat, tidak mentransfer ke alamat ini.",
-    "failed": "Gagal"
+    "failed": "Gagal",
+    "transfer_public_to_private": "Ubah dari publik ke privat",
+    "transfer_private_to_public": "Ubah dari privat ke publik"
   },
   "Language": {
     "title": "Bahasa"

@@ -208,8 +208,11 @@
     "token_approve": "Token 授权",
     "bridge": "桥",
     "receive": "收款",
+    "mint": "铸造",
     "copyContractAddressMsg": "此地址为当前Token的合约地址，非收币地址，请勿向此地址进行转账。",
-    "failed": "失败"
+    "failed": "失败",
+    "transfer_public_to_private": "公开转隐私",
+    "transfer_private_to_public": "隐私转公开"
   },
   "Language": {
     "title": "语言"

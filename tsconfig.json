@@ -25,5 +25,10 @@
       "aleo/*": ["./aleo/*"]
     }
   },
-  "include": ["./app", "./core", "./offscreen_sync","vite-injector.config.ts", "app/common/types/def.d.ts"]
+  "include": [
+    "./app",
+    "./core",
+    "vite-injector.config.ts",
+    "app/common/types/def.d.ts"
+  ]
 }

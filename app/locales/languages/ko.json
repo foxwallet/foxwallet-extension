@@ -165,7 +165,10 @@
     "balance": "Balance",
     "tx_records": "Transaction Records",
     "empty_tx": "No transaction records",
-    "jump_explorer": "Explorer"
+    "jump_explorer": "Explorer",
+    "transfer_public_to_private": "공개에서 비공개로 전환",
+    "transfer_private_to_public": "비공개에서 공개로 전환",
+    "mint": "민팅"
   },
   "Tx": {
     "successToast": "Transaction Successful!",

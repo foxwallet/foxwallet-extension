@@ -208,8 +208,11 @@
     "token_approve": "Token zustimmen",
     "bridge": "Brücke",
     "receive": "Erhalten",
+    "mint": "Mint",
     "copyContractAddressMsg": "Dies ist die Vertragsadresse von Token, die keine Adresse erhalten, und übertragen Sie diese Adresse nicht.",
-    "failed": "Fehlgeschlagen"
+    "failed": "Fehlgeschlagen",
+    "transfer_public_to_private": "Von öffentlich zu privat",
+    "transfer_private_to_public": "Von privat zu öffentlich"
   },
   "Language": {
     "title": "Sprache"

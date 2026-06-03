@@ -23,6 +23,7 @@ import {
   ALPHA_TOKEN_PROGRAM_ID,
   ARCANE_PROGRAM_ID,
   BETA_STAKING_PROGRAM_ID,
+  isComplianceProgram,
   NATIVE_TOKEN_PROGRAM_ID,
 } from "core/coins/ALEO/constants";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
@@ -124,12 +125,73 @@ function SendScreen() {
       try {
         const address = selectedAccount.account.address;
         let inputs: string[] = [];
-        switch (finalTransferMethod) {
+        if (isComplianceProgram(programId)) {
+          switch (finalTransferMethod) {
+            case AleoTransferMethod.PUBLIC:
+            case AleoTransferMethod.PUBLIC_TO_PRIVATE: {
+              inputs = [to, `${amount}u128`];
+              break;
+            }
+            case AleoTransferMethod.PRIVATE:
+            case AleoTransferMethod.PRIVATE_TO_PUBLIC: {
+              if (!finalTransferRecord || !finalTransferRecord.plaintext) {
+                throw new Error(ERROR_CODE.INVALID_ARGUMENT);
+              }
+              const complianceProof =
+                await popupServerClient.getAleoComplianceProof({
+                  uniqueId: chainConfig.uniqueId,
+                  programId,
+                  address,
+                });
+              if (!complianceProof) {
+                throw new Error(
+                  `Failed to obtain compliance proof for ${programId}`,
+                );
+              }
+              inputs = [
+                to,
+                `${amount}u128`,
+                finalTransferRecord.plaintext,
+                complianceProof,
+              ];
+              break;
+            }
+          }
+        } else {
+          switch (finalTransferMethod) {
           case AleoTransferMethod.PRIVATE:
           case AleoTransferMethod.PRIVATE_TO_PUBLIC: {
             if (!finalTransferRecord || !finalTransferRecord.plaintext) {
               throw new Error(ERROR_CODE.INVALID_ARGUMENT);
             }
+            console.log("[SendAleo] transfer_private selected record:", {
+              commitment: finalTransferRecord.commitment,
+              serialNumber: finalTransferRecord.serialNumber,
+              amount:
+                finalTransferRecord.parsedContent?.microcredits ??
+                finalTransferRecord.parsedContent?.amount,
+              programId: finalTransferRecord.programId,
+              plaintextHasNonce:
+                finalTransferRecord.plaintext.includes("_nonce"),
+              plaintextHasVersion:
+                finalTransferRecord.plaintext.includes("_version"),
+            });
+            console.log(
+              "[SendAleo] transfer_private fee record:",
+              feeRecord
+                ? {
+                    commitment: feeRecord.commitment,
+                    serialNumber: feeRecord.serialNumber,
+                    amount:
+                      feeRecord.parsedContent?.microcredits ??
+                      feeRecord.parsedContent?.amount,
+                    programId: feeRecord.programId,
+                    plaintextHasNonce: feeRecord.plaintext.includes("_nonce"),
+                    plaintextHasVersion:
+                      feeRecord.plaintext.includes("_version"),
+                  }
+                : null,
+            );
             switch (programId) {
               case NATIVE_TOKEN_PROGRAM_ID: {
                 inputs = [finalTransferRecord.plaintext, to, `${amount}u64`];
@@ -192,6 +254,7 @@ function SendScreen() {
               }
             }
             break;
+          }
           }
         }
         const localId = nanoid();

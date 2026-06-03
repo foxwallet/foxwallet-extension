@@ -24,6 +24,7 @@ import {
   ALPHA_TOKEN_PROGRAM_ID,
   ARCANE_PROGRAM_ID,
   BETA_STAKING_PROGRAM_ID,
+  isComplianceProgram,
   NATIVE_TOKEN_PROGRAM_ID,
 } from "core/coins/ALEO/constants";
 import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
@@ -82,22 +83,51 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
+  // Remote token feeds (e.g. compliance tokens like USAD/USDCx) sometimes ship
+  // without top-level programId/tokenId fields, but always carry a
+  // `${programId}-${tokenId}` contractAddress. Fall back to parsing it so the
+  // record-scanning paths below get the right program.
+  const { resolvedProgramId, resolvedTokenId } = useMemo(() => {
+    if (tokenInfo.programId) {
+      return {
+        resolvedProgramId: tokenInfo.programId,
+        resolvedTokenId: tokenInfo.tokenId,
+      };
+    }
+    if (tokenInfo.contractAddress) {
+      const [programId, tokenId] = tokenInfo.contractAddress.split("-");
+      return {
+        resolvedProgramId: programId || undefined,
+        resolvedTokenId: tokenInfo.tokenId ?? tokenId,
+      };
+    }
+    return { resolvedProgramId: undefined, resolvedTokenId: tokenInfo.tokenId };
+  }, [tokenInfo.programId, tokenInfo.tokenId, tokenInfo.contractAddress]);
+
   const { records, loading: loadingRecords } = useRecords({
     uniqueId,
     address: selectedAccount.account.address,
     recordFilter: RecordFilter.UNSPENT,
-    programId: tokenInfo.programId,
+    programId: resolvedProgramId,
   });
 
   const tokenRecords = useMemo(() => {
-    switch (tokenInfo.programId) {
+    if (resolvedProgramId && isComplianceProgram(resolvedProgramId)) {
+      return [...records].sort((record1, record2) => {
+        const amount1 = record1.parsedContent?.amount ?? 0n;
+        const amount2 = record2.parsedContent?.amount ?? 0n;
+        if (amount1 === amount2) return 0;
+        return amount1 > amount2 ? -1 : 1;
+      });
+    }
+    switch (resolvedProgramId) {
       case NATIVE_TOKEN_PROGRAM_ID: {
         return records;
       }
       case ALPHA_TOKEN_PROGRAM_ID: {
         return records
           .filter((record) => {
-            return record.parsedContent?.token === tokenInfo.tokenId;
+            return record.parsedContent?.token === resolvedTokenId;
           })
           .sort(
             (record1, record2) =>
@@ -110,7 +140,7 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
       case ARCANE_PROGRAM_ID: {
         return records
           .filter((record) => {
-            return record.parsedContent?.token === tokenInfo.tokenId;
+            return record.parsedContent?.token === resolvedTokenId;
           })
           .sort(
             (record1, record2) =>
@@ -118,11 +148,11 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
           );
       }
       default: {
-        console.error(`Unsupport programId ${tokenInfo.programId}`);
+        console.error(`Unsupport programId ${resolvedProgramId}`);
         return [];
       }
     }
-  }, [records, tokenInfo]);
+  }, [records, resolvedProgramId, resolvedTokenId]);
 
   const { balance, loadingBalance } = useBalance({
     uniqueId,
@@ -208,7 +238,10 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
     selectedTransferRecord ?? tokenRecords[0];
 
   const recordAmount = useMemo(() => {
-    switch (tokenInfo.programId) {
+    if (resolvedProgramId && isComplianceProgram(resolvedProgramId)) {
+      return currTransferRecord?.parsedContent?.amount;
+    }
+    switch (resolvedProgramId) {
       case NATIVE_TOKEN_PROGRAM_ID: {
         return currTransferRecord?.parsedContent?.microcredits;
       }
@@ -222,10 +255,10 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
         return currTransferRecord?.parsedContent?.amount;
       }
       default: {
-        console.error(`Unsupport programId ${tokenInfo.programId}`);
+        console.error(`Unsupport programId ${resolvedProgramId}`);
       }
     }
-  }, [tokenInfo, currTransferRecord]);
+  }, [resolvedProgramId, currTransferRecord]);
 
   const onSelectTransferRecord = useCallback(async () => {
     const { data } = await showSelectRecordDialog({

@@ -5,142 +5,149 @@ import {
   MessageOrigin,
   OffscreenMethod,
   OffscreenMessage,
-} from "../../../offscreen_transaction/src/types";
-import * as browser from "webextension-polyfill";
+} from "../../../offscreen_service/src/types";
 import { AleoSendTxParams } from "core/coins/ALEO/types/Transaction";
-import { offscreen } from "./aleo";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
+import {
+  OFFSCREEN_PATH,
+  closeOffscreen,
+  hasDocument,
+  recreateOffscreen,
+  withOffscreen,
+} from "./offscreenLock";
 
-const OFFSCREEN_TX_DOCUMENT_PATH = "/offscreen_tx.html";
-const OFFSCREEN_DOCUMENT_PATH = "/offscreen.html";
+const TX_REASONS: chrome.offscreen.Reason[] = [
+  chrome.offscreen.Reason.WORKERS,
+  chrome.offscreen.Reason.LOCAL_STORAGE,
+];
+const TX_JUSTIFICATION = "Sending aleo transaction";
+const TX_READY_TIMEOUT_MS = 30 * 1000;
+const TX_READY_POLL_INTERVAL_MS = 200;
+const TX_READY_RECREATE_AFTER_MS = 5 * 1000;
 
-// A global promise to avoid concurrency issues
-let creating: Promise<void> | null;
+// In-process "a tx/deploy broadcast is happening" signal. Mutated only by
+// trackTx below, so status checks can return true even before the offscreen
+// listener has answered its first message.
+let txInFlight: Promise<unknown> | null = null;
 
-async function hasDocument(path: string): Promise<boolean> {
-  if ("getContexts" in chrome.runtime) {
-    // @ts-expect-error getContexts not in type
-    const contexts = await chrome.runtime.getContexts({
-      contextTypes: ["OFFSCREEN_DOCUMENT"],
-      documentUrls: [browser.runtime.getURL(path)],
-    });
-    return contexts.length > 0;
-  } else {
-    // @ts-expect-error matchAll not in type
-    const matchedClients = await clients.matchAll();
-    // @ts-expect-error client type
-    return await matchedClients.some((client) => {
-      return client.url.includes(chrome.runtime.id);
-    });
-  }
+export function getTxInFlight(): Promise<unknown> | null {
+  return txInFlight;
 }
 
-async function setupOffscreenDocument(path: string) {
-  try {
-    const has = await hasDocument(path);
-    if (!has) {
-      // create offscreen document
-      if (creating) {
-        await creating;
-      } else {
-        creating = chrome.offscreen.createDocument({
-          url: path,
-          reasons: [
-            chrome.offscreen.Reason.WORKERS,
-            chrome.offscreen.Reason.LOCAL_STORAGE,
-          ],
-          justification: "Syncing aleo blocks",
-        });
+const sleep = async (ms: number): Promise<void> => {
+  await new Promise((resolve) => setTimeout(resolve, ms));
+};
 
-        await creating;
-        creating = null;
+async function waitForTxOffscreenReady(): Promise<void> {
+  const startedAt = Date.now();
+  const timeoutAt = Date.now() + TX_READY_TIMEOUT_MS;
+  let didRecreate = false;
+  let lastError: unknown;
+  let lastResp: OffscreenMessage | undefined;
+
+  while (Date.now() < timeoutAt) {
+    try {
+      const message: BackgroundMessage = {
+        type: OffscreenMethod.IS_SENDING_TX,
+        origin: MessageOrigin.BACKGROUND_TO_OFFSCREEN_TX,
+        payload: {},
+      };
+      const resp = (await chrome.runtime.sendMessage(message)) as
+        | OffscreenMessage
+        | undefined;
+      lastResp = resp;
+      if (resp?.payload && !resp.payload.error) {
+        return;
       }
+    } catch (err) {
+      lastError = err;
+      // The document can exist before its module has registered the listener.
     }
-  } catch (err: any) {
-    if (!err.message.startsWith("Only a single offscreen")) {
-      throw err;
+
+    if (!didRecreate && Date.now() - startedAt >= TX_READY_RECREATE_AFTER_MS) {
+      didRecreate = true;
+      console.warn(
+        "[offscreen] tx offscreen is not ready; recreating document",
+        {
+          lastError:
+            lastError instanceof Error ? lastError.message : String(lastError),
+          lastResp,
+        },
+      );
+      await recreateOffscreen(OFFSCREEN_PATH, TX_REASONS, TX_JUSTIFICATION);
+      lastError = undefined;
+      lastResp = undefined;
     }
+
+    await sleep(TX_READY_POLL_INTERVAL_MS);
   }
+
+  const detail =
+    lastError instanceof Error
+      ? lastError.message
+      : lastError
+      ? String(lastError)
+      : JSON.stringify(lastResp);
+  throw new Error(`tx offscreen did not become ready in time: ${detail}`);
 }
 
-async function closeOffscreenDocument(path: string) {
-  const has = await hasDocument(path);
-  if (!has) {
-    return;
+async function trackTx<T>(fn: () => Promise<T>): Promise<T> {
+  if (txInFlight) {
+    // Two tx requests overlapping: serialize, matching today's behavior
+    // where the offscreen mutex already forces this ordering.
+    try {
+      await txInFlight;
+    } catch {
+      /* prior tx failure is not ours */
+    }
   }
-  await chrome.offscreen.closeDocument();
-}
-
-export async function stopSync() {
-  await closeOffscreenDocument(OFFSCREEN_DOCUMENT_PATH);
+  const p = fn();
+  txInFlight = p;
+  try {
+    return await p;
+  } finally {
+    if (txInFlight === p) txInFlight = null;
+  }
 }
 
 export async function stopSending() {
-  await closeOffscreenDocument(OFFSCREEN_TX_DOCUMENT_PATH);
-}
-
-export async function isSyncingBlocks() {
-  const has = await hasDocument(OFFSCREEN_DOCUMENT_PATH);
-  return has;
-}
-
-export async function syncBlocks() {
-  const has = await hasDocument(OFFSCREEN_DOCUMENT_PATH);
-  if (has) {
-    return;
-  }
-  console.log("===> initWorker setupOffscreenDocument");
-  await setupOffscreenDocument(OFFSCREEN_DOCUMENT_PATH);
-  console.log("===> initWorker sendMessage");
-  const messsage: BackgroundMessage = {
-    type: OffscreenMethod.INIT_WORKER,
-    origin: MessageOrigin.BACKGROUND_TO_OFFSCREEN,
-    payload: null,
-  };
-  const initResp = await chrome.runtime.sendMessage(messsage);
-  console.log("===> initWorker resp: ", initResp);
-  return initResp;
+  await closeOffscreen(OFFSCREEN_PATH);
 }
 
 export async function sendAleoTransaction(params: AleoSendTxParams) {
-  try {
-    stopCheckSyncing();
-    console.log("===> sendTransaction closeOffscreenTxDocument");
-    await closeOffscreenDocument(OFFSCREEN_DOCUMENT_PATH);
-    console.log(
-      "===> initWorker setupOffscreenDocument ",
-      OFFSCREEN_TX_DOCUMENT_PATH,
-    );
-    await setupOffscreenDocument(OFFSCREEN_TX_DOCUMENT_PATH);
-    console.log("===> initWorker sendMessage");
-    const messsage: BackgroundMessage = {
-      type: OffscreenMethod.SEND_TX,
-      origin: MessageOrigin.BACKGROUND_TO_OFFSCREEN_TX,
-      payload: {
-        ...params,
-        rpcList: ReserveChainConfigs[InnerChainUniqueId.ALEO_MAINNET].rpcList,
-      },
-    };
-    const sendTxResp: OffscreenMessage =
-      await chrome.runtime.sendMessage(messsage);
-    console.log("===> sendTx resp: ", sendTxResp);
-    return sendTxResp;
-  } catch (err) {
-    console.error("sendTransaction failed: ", err);
-    return undefined;
-  } finally {
-    console.log(
-      "===> closeOffscreenDocument after tx",
-      OFFSCREEN_TX_DOCUMENT_PATH,
-    );
-    await closeOffscreenDocument(OFFSCREEN_TX_DOCUMENT_PATH);
-    console.log(
-      "===> setupOffscreenDocument after tx",
-      OFFSCREEN_DOCUMENT_PATH,
-    );
-    syncBlocks();
-    startCheckSyncing();
-  }
+  return trackTx(async () => {
+    try {
+      return await withOffscreen(
+        OFFSCREEN_PATH,
+        TX_REASONS,
+        TX_JUSTIFICATION,
+        async () => {
+          await waitForTxOffscreenReady();
+          console.log("===> initWorker sendMessage");
+          const messsage: BackgroundMessage = {
+            type: OffscreenMethod.SEND_TX,
+            origin: MessageOrigin.BACKGROUND_TO_OFFSCREEN_TX,
+            payload: {
+              ...params,
+              rpcList:
+                ReserveChainConfigs[InnerChainUniqueId.ALEO_MAINNET].rpcList,
+            },
+          };
+          const sendTxResp: OffscreenMessage =
+            await chrome.runtime.sendMessage(messsage);
+          console.log("===> sendTx resp: ", sendTxResp);
+          console.log("===> sendTx resp payload: ", {
+            error: sendTxResp?.payload?.error,
+            data: sendTxResp?.payload?.data,
+          });
+          return sendTxResp;
+        },
+      );
+    } catch (err) {
+      console.error("sendTransaction failed: ", err);
+      return undefined;
+    }
+  });
 }
 
 async function getSendingTxStatus() {
@@ -160,13 +167,20 @@ async function getSendingTxStatus() {
     }
     return !!sendingTxResp.payload.data;
   } catch (err) {
-    console.error("===> getSendingTxStatus error: ", err);
+    const msg = String((err as Error)?.message ?? err);
+    if (!msg.includes("Receiving end does not exist")) {
+      console.error("===> getSendingTxStatus error: ", err);
+    }
     return false;
   }
 }
 
 export async function isSendingAleoTransaction() {
-  const has = await hasDocument(OFFSCREEN_TX_DOCUMENT_PATH);
+  if (txInFlight) {
+    return true;
+  }
+
+  const has = await hasDocument(OFFSCREEN_PATH);
   console.log("===> isSendingAleoTransaction has document: ", has);
   if (!has) {
     return false;
@@ -177,151 +191,50 @@ export async function isSendingAleoTransaction() {
   }
   const delayStatus = await new Promise<boolean>((resolve) => {
     setTimeout(async () => {
+      if (txInFlight) {
+        resolve(true);
+        return;
+      }
       const status = await getSendingTxStatus();
       resolve(status);
     }, 2000);
   });
   console.log("===> isSendingAleoTransaction: ", status, delayStatus);
-  if (!delayStatus) {
-    await stopSending();
-    syncBlocks();
-  }
   return delayStatus;
 }
 
 export async function sendDeployment(params: AleoRequestDeploymentParams) {
-  try {
-    stopCheckSyncing();
-    console.log("===> sendTransaction closeOffscreenTxDocument");
-    await closeOffscreenDocument(OFFSCREEN_DOCUMENT_PATH);
-    console.log(
-      "===> initWorker setupOffscreenDocument ",
-      OFFSCREEN_TX_DOCUMENT_PATH,
-    );
-    await setupOffscreenDocument(OFFSCREEN_TX_DOCUMENT_PATH);
-    console.log("===> initWorker sendMessage");
-    const messsage: BackgroundMessage = {
-      type: OffscreenMethod.DEPLOY,
-      origin: MessageOrigin.BACKGROUND_TO_OFFSCREEN_TX,
-      payload: {
-        ...params,
-        rpcList: ReserveChainConfigs[InnerChainUniqueId.ALEO_MAINNET].rpcList,
-      },
-    };
-    const sendTxResp: OffscreenMessage =
-      await chrome.runtime.sendMessage(messsage);
-    console.log("===> sendTx resp: ", sendTxResp);
-    return sendTxResp;
-  } catch (err) {
-    console.error("sendDeployment failed: ", err);
-    return undefined;
-  } finally {
-    await closeOffscreenDocument(OFFSCREEN_TX_DOCUMENT_PATH);
-    console.log(
-      "===> closeOffscreenDocument after tx",
-      OFFSCREEN_TX_DOCUMENT_PATH,
-    );
-    syncBlocks();
-    console.log(
-      "===> setupOffscreenDocument after tx",
-      OFFSCREEN_DOCUMENT_PATH,
-    );
-    startCheckSyncing();
-  }
-}
-
-/*
-const makeSureSyncing2 = () => {
-  let interval = 5000;
-  let timer: any = null;
-
-  const checkSyncing = async () => {
-    const isSyncing = await isSyncingBlocks();
-    const isSending = await isSendingAleoTransaction();
-    console.log("===> checkSyncing: ", isSyncing, isSending);
-    if (!isSyncing && !isSending) {
-      offscreen();
-    }
-  };
-
-  const startCheckSyncing = () => {
-    console.log("===> startCheckSyncing ", timer, interval);
-    if (timer !== null) return;
-    timer = setTimeout(() => {
-      checkSyncing();
-      timer = null;
-      interval = 60 * 1000;
-      startCheckSyncing();
-    }, interval);
-  };
-
-  const stopCheckSyncing = () => {
-    console.log("===> stopCheckSyncing ", timer, interval);
-    clearTimeout(timer);
-    timer = null;
-  };
-
-  return {
-    startCheckSyncing,
-    stopCheckSyncing,
-  };
-};
- */
-
-const makeSureSyncing = () => {
-  let interval = 5000;
-  let timer: NodeJS.Timeout | null = null;
-
-  // 检查同步状态的逻辑
-  const checkSyncing = async () => {
+  return trackTx(async () => {
     try {
-      const [isSyncing, isSending] = await Promise.all([
-        isSyncingBlocks(),
-        isSendingAleoTransaction(),
-      ]);
-      console.log("===> checkSyncing: isSyncingBlocks, isSendingTx ", isSyncing, isSending);
-      if (!isSyncing && !isSending) {
-        offscreen();
-      }
-    } catch (error) {
-      console.error("Error while checking syncing status:", error);
+      return await withOffscreen(
+        OFFSCREEN_PATH,
+        TX_REASONS,
+        TX_JUSTIFICATION,
+        async () => {
+          await waitForTxOffscreenReady();
+          console.log("===> initWorker sendMessage");
+          const messsage: BackgroundMessage = {
+            type: OffscreenMethod.DEPLOY,
+            origin: MessageOrigin.BACKGROUND_TO_OFFSCREEN_TX,
+            payload: {
+              ...params,
+              rpcList:
+                ReserveChainConfigs[InnerChainUniqueId.ALEO_MAINNET].rpcList,
+            },
+          };
+          const sendTxResp: OffscreenMessage =
+            await chrome.runtime.sendMessage(messsage);
+          console.log("===> sendTx resp: ", sendTxResp);
+          console.log("===> sendDeployment resp payload: ", {
+            error: sendTxResp?.payload?.error,
+            data: sendTxResp?.payload?.data,
+          });
+          return sendTxResp;
+        },
+      );
+    } catch (err) {
+      console.error("sendDeployment failed: ", err);
+      return undefined;
     }
-  };
-
-  // 启动定时器
-  const startCheckSyncing = () => {
-    console.log("===> startCheckSyncing ", timer, interval);
-    if (timer !== null) return; // 如果定时器已启动，则不再重复启动
-
-    timer = setInterval(async () => {
-      await checkSyncing();
-      // 第一次检查后，将间隔时间调整为 60 秒
-      if (interval !== 60 * 1000) {
-        interval = 60 * 1000;
-        resetTimer();
-      }
-    }, interval);
-  };
-
-  // 停止定时器
-  const stopCheckSyncing = () => {
-    console.log("===> stopCheckSyncing ", timer, interval);
-    if (timer) {
-      clearInterval(timer);
-      timer = null;
-    }
-  };
-
-  // 重置定时器
-  const resetTimer = () => {
-    stopCheckSyncing();
-    startCheckSyncing();
-  };
-
-  return {
-    startCheckSyncing,
-    stopCheckSyncing,
-  };
-};
-
-export const { startCheckSyncing, stopCheckSyncing } = makeSureSyncing();
+  });
+}

@@ -14,7 +14,13 @@ import { Mutex } from "async-mutex";
 
 const mutex = new Mutex();
 export class PopupServerHandler implements IHandler {
+  private readonly popupPorts = new Set<Runtime.Port>();
+
   constructor(private popupServer: PopupWalletServer) {}
+
+  hasActivePort(): boolean {
+    return this.popupPorts.size > 0;
+  }
 
   wrapPopupResp(rawResp: ServerPayload, id: string) {
     return {
@@ -24,6 +30,7 @@ export class PopupServerHandler implements IHandler {
   }
 
   handle(port: Runtime.Port): void | Promise<void> {
+    this.popupPorts.add(port);
     port.onMessage.addListener(async (msg: ServerMessage) => {
       const release = await mutex.acquire();
       await executeServerMethod(this.popupServer.clearTimeoutLock());
@@ -46,6 +53,7 @@ export class PopupServerHandler implements IHandler {
       }
     });
     port.onDisconnect.addListener(async () => {
+      this.popupPorts.delete(port);
       console.log("===> PopupServerHandler onDisconnect");
       await executeServerMethod(this.popupServer.timeoutLock());
     });

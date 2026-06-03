@@ -11,9 +11,10 @@ import sleep from "sleep-promise";
 export const useWallets = () => {
   const { popupServerClient } = useClient();
 
-  const { allWalletInfo } = usePopupSelector(
+  const { allWalletInfo, hasAuth } = usePopupSelector(
     (state) => ({
       allWalletInfo: state.accountV2.allWalletInfo,
+      hasAuth: state.user.hasAuth,
     }),
     isEqual,
   );
@@ -24,8 +25,9 @@ export const useWallets = () => {
   }, [allWalletInfo]);
 
   useEffect(() => {
+    if (!hasAuth) return;
     void dispatch.accountV2.resyncAllWalletsToStore();
-  }, [dispatch]);
+  }, [dispatch, hasAuth]);
 
   const addAccount = useCallback(
     async (walletId: string, accountId: string) => {

@@ -208,8 +208,11 @@
     "token_approve": "တိုကင်အတည်ပြု",
     "bridge": "တံတား",
     "receive": "ခံယူ",
+    "mint": "Mint",
     "copyContractAddressMsg": "ဤသည် token ၏စာချုပ်လိပ်စာသည်လိပ်စာကိုလက်ခံရရှိခြင်းမဟုတ်ဘဲဤလိပ်စာသို့မပြောင်းပါနှင့်။",
-    "failed": "မအောင်မြင်"
+    "failed": "မအောင်မြင်",
+    "transfer_public_to_private": "အများမှ ကိုယ်ပိုင်သို့ ပြောင်းမည်",
+    "transfer_private_to_public": "ကိုယ်ပိုင်မှ အများသို့ ပြောင်းမည်"
   },
   "Language": {
     "title": "ဘာသာစကား"

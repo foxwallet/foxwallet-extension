@@ -208,8 +208,11 @@
     "token_approve": "Mã thông báo phê duyệt",
     "bridge": "Cầu",
     "receive": "Nhận được",
+    "mint": "Mint",
     "copyContractAddressMsg": "Đây là địa chỉ hợp đồng của Token, không nhận được địa chỉ, không chuyển đến địa chỉ này.",
-    "failed": "Thất bại"
+    "failed": "Thất bại",
+    "transfer_public_to_private": "Chuyển từ công khai sang riêng tư",
+    "transfer_private_to_public": "Chuyển từ riêng tư sang công khai"
   },
   "Language": {
     "title": "Ngôn ngữ"

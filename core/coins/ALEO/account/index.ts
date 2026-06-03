@@ -1,4 +1,4 @@
-import init, { PrivateKey, Address } from "aleo_wasm_mainnet";
+import { PrivateKey } from "provable-wasm-no-tla/mainnet.js";
 import { encode as bs58Encode, decode as bs58Decode } from "bs58";
 import { CoinBasic } from "../../CoinBasic";
 import { CoinType } from "core/types";
@@ -6,17 +6,18 @@ import { ALEO_PRIVATE_PREFIX } from "../constants";
 import { AleoExportPKType, AleoImportPKType } from "../types/AleoAccount";
 import { CoreError, CoreErrorCode } from "core/types/Error";
 import { logger } from "@/common/utils/logger";
+import { assertAleoWasmReady } from "../utils/wasmInit";
 
 class AleoBasic extends CoinBasic<CoinType.ALEO> {
   constructor() {
     super(CoinType.ALEO);
-    void init();
   }
 
   public isValidPrivateKey(
     privateKey: string,
     pkType: AleoImportPKType,
   ): boolean {
+    assertAleoWasmReady();
     try {
       const pkObj = PrivateKey.from_string(privateKey);
       return !!pkObj;
@@ -59,6 +60,7 @@ class AleoBasic extends CoinBasic<CoinType.ALEO> {
     address: string;
     publicKey: string;
   } {
+    assertAleoWasmReady();
     const pk = PrivateKey.from_string(privateKey);
 
     const viewKey = pk.to_view_key().to_string();

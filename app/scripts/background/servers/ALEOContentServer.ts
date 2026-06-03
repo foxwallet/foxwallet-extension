@@ -27,6 +27,8 @@ import {
   AleoRequestTxProps,
   AleoRequestDeploymentProps,
   ServerMethodContext,
+  type RequestRecordBody,
+  type RequestRecordPlaintextBody,
 } from "./IWalletServer";
 import { nanoid } from "nanoid";
 import { CoinType } from "core/types";
@@ -35,7 +37,7 @@ import { AccountSettingStorage } from "../store/account/AccountStorage";
 import { PopupWalletServer } from "./PopupServer";
 import { SiteInfo } from "@/scripts/content/host";
 import { DAPP_CONNECTION_EXPIRE_TIME } from "@/common/constants";
-import { ViewKey, Program } from "aleo_wasm_mainnet";
+import { ViewKey, Program } from "provable-wasm-no-tla/mainnet.js";
 import { CoinServiceEntry } from "core/coins/CoinServiceEntry";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { AleoLocalHistoryItem } from "core/coins/ALEO/types/History";
@@ -47,6 +49,7 @@ import { DecryptPermission } from "@/database/types/dapp";
 import { matchAccountsWithUniqueId } from "@/store/accountV2";
 import { AleoService } from "core/coins/ALEO/service/AleoService";
 import { SerializableError } from "@/scripts/content/ErrorCode";
+import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 
 //TODO Error code for aleo provider
 export class ALEOContentWalletServer implements IContentServer<CoinType.ALEO> {
@@ -218,6 +221,106 @@ export class ALEOContentWalletServer implements IContentServer<CoinType.ALEO> {
     return true;
   };
 
+  private getAleoService = (network: string): AleoService => {
+    switch (network) {
+      case "mainnet": {
+        return this.coinService.getInstance(
+          InnerChainUniqueId.ALEO_MAINNET,
+        ) as AleoService;
+      }
+      default: {
+        throw new SerializableError("Unknown network " + network);
+      }
+    }
+  };
+
+  private recordFilterToUnspent = (
+    filter: RecordFilter,
+  ): boolean | undefined => {
+    switch (filter) {
+      case RecordFilter.UNSPENT:
+        return true;
+      case RecordFilter.SPENT:
+        return false;
+      case RecordFilter.ALL:
+        return undefined;
+      default:
+        return undefined;
+    }
+  };
+
+  private fillRecordNames = async (
+    instance: AleoService,
+    programId: string,
+    records: RecordDetailWithSpent[],
+  ): Promise<RecordDetailWithSpent[]> => {
+    const recordsWithoutName = records.filter((record) => !record.recordName);
+    if (recordsWithoutName.length === 0) {
+      return records;
+    }
+
+    const program = await instance.getProgram(instance.chainId, programId);
+    if (!program) {
+      throw new SerializableError("Can't get program " + programId);
+    }
+
+    return records.map((record) => {
+      if (record.recordName) {
+        return record;
+      }
+      return {
+        ...record,
+        recordName: program.matchRecordPlaintext(record.plaintext),
+      };
+    });
+  };
+
+  private getDappRecords = async (
+    address: string,
+    network: string,
+    params: RequestRecordsProps,
+  ): Promise<RecordDetailWithSpent[]> => {
+    const instance = this.getAleoService(network);
+    const { program } = params;
+    const filter = params.filter ?? RecordFilter.ALL;
+    const unspent = this.recordFilterToUnspent(filter);
+
+    const records = await this.popupServer.scannerGetDecryptedOwnedRecords({
+      chainId: instance.chainId,
+      address,
+      programs: [program],
+      ...(unspent !== undefined ? { unspent } : {}),
+      purpose: "default",
+      refreshMode: "auto",
+    });
+
+    return await this.fillRecordNames(instance, program, records);
+  };
+
+  private formatRecord = (
+    address: string,
+    record: RecordDetailWithSpent,
+  ): RequestRecordBody => {
+    return {
+      id: record.commitment,
+      owner: address,
+      program_id: record.programId,
+      spent: record.spent,
+      data: record.content,
+      recordName: record.recordName!,
+    };
+  };
+
+  private formatRecordPlaintext = (
+    address: string,
+    record: RecordDetailWithSpent,
+  ): RequestRecordPlaintextBody => {
+    return {
+      ...this.formatRecord(address, record),
+      plaintext: record.plaintext,
+    };
+  };
+
   decrypt = async (
     params: DecrtptProps,
     { siteMetadata }: ServerMethodContext,
@@ -262,30 +365,10 @@ export class ALEOContentWalletServer implements IContentServer<CoinType.ALEO> {
   ): Promise<RequestRecordsResp> => {
     const { address, network, siteInfo } = this.checkSiteMetadata(siteMetadata);
     await this.checkPermissionExist(address, network, siteInfo);
-    switch (network) {
-      case "mainnet": {
-        const { program, filter } = params;
-        const records = await (
-          this.coinService.getInstance(
-            InnerChainUniqueId.ALEO_MAINNET,
-          ) as AleoService
-        ).getRecords(address, program, filter || RecordFilter.ALL, true);
-        const formatRecords = records.map((record) => {
-          return {
-            id: record.commitment,
-            owner: address,
-            program_id: record.programId,
-            spent: record.spent,
-            data: record.content,
-            recordName: record.recordName!,
-          };
-        });
-        return { records: formatRecords };
-      }
-      default: {
-        throw new SerializableError("Unknown network " + network);
-      }
-    }
+    const records = await this.getDappRecords(address, network, params);
+    return {
+      records: records.map((record) => this.formatRecord(address, record)),
+    };
   };
 
   requestRecordPlaintexts = async (
@@ -294,31 +377,12 @@ export class ALEOContentWalletServer implements IContentServer<CoinType.ALEO> {
   ): Promise<RequestRecordsPlaintextResp> => {
     const { address, network, siteInfo } = this.checkSiteMetadata(siteMetadata);
     await this.checkPermissionExist(address, network, siteInfo);
-    switch (network) {
-      case "mainnet": {
-        const { program, filter } = params;
-        const records = await (
-          this.coinService.getInstance(
-            InnerChainUniqueId.ALEO_MAINNET,
-          ) as AleoService
-        ).getRecords(address, program, filter || RecordFilter.ALL, true);
-        const formatRecords = records.map((record) => {
-          return {
-            id: record.commitment,
-            owner: address,
-            program_id: record.programId,
-            spent: record.spent,
-            data: record.content,
-            recordName: record.recordName!,
-            plaintext: record.plaintext,
-          };
-        });
-        return { records: formatRecords };
-      }
-      default: {
-        throw new SerializableError("Unknown network " + network);
-      }
-    }
+    const records = await this.getDappRecords(address, network, params);
+    return {
+      records: records.map((record) =>
+        this.formatRecordPlaintext(address, record),
+      ),
+    };
   };
 
   requestTransaction = async (

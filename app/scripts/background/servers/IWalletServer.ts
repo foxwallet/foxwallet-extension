@@ -10,6 +10,12 @@ import { logger } from "../../../common/utils/logger";
 import { ChainUniqueId } from "core/types/ChainUniqueId";
 import { AleoSendTxParams } from "core/coins/ALEO/types/Transaction";
 import { CustomRecord } from "core/coins/ALEO/types/Record";
+import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
+import {
+  type RecordSyncRequestOptions,
+  type SyncStatusResp,
+  type ViewRefreshMode,
+} from "core/coins/ALEO/service/scanner";
 import {
   AleoDeployment,
   AleoRequestDeploymentParams,
@@ -17,7 +23,7 @@ import {
 import { SiteInfo } from "@/scripts/content/host";
 import { AccountOption, ImportPrivateKeyTypeMap } from "core/types/CoinBasic";
 import { DecryptPermission } from "@/database/types/dapp";
-import {ProviderError, SerializableError} from "@/scripts/content/ErrorCode";
+import { ProviderError, SerializableError } from "@/scripts/content/ErrorCode";
 import { QtumDappAddress } from "@/scripts/background/servers/QTUMContentSever";
 
 export type PopupServerMethod = keyof IPopupServer;
@@ -101,6 +107,37 @@ export interface AleoRecordsProps {
   recordFilter: RecordFilter;
 }
 
+export interface ScannerRegisterProps {
+  chainId: string;
+  address: string;
+}
+
+export interface ScannerRegisterResp {
+  uuid: string;
+}
+
+export interface ScannerGetDecryptedOwnedRecordsProps {
+  chainId: string;
+  address: string;
+  programs?: string[];
+  unspent?: boolean;
+  consumerId?: string;
+  purpose?: RecordSyncRequestOptions["purpose"];
+  refreshMode?: ViewRefreshMode;
+  start?: number;
+  end?: number;
+}
+
+export interface ScannerDeactivateViewConsumerProps {
+  consumerId: string;
+}
+
+export interface AleoComplianceProofProps {
+  uniqueId: ChainUniqueId;
+  programId: string;
+  address: string;
+}
+
 export type AleoSendTxProps = Omit<AleoSendTxParams, "privateKey"> & {
   walletId: string;
   uniqueId: ChainUniqueId;
@@ -171,6 +208,20 @@ export interface IPopupServer {
   rescanAleo(): Promise<boolean>;
 
   resetChain(): Promise<boolean>;
+
+  scannerRegister(params: ScannerRegisterProps): Promise<ScannerRegisterResp>;
+
+  scannerGetDecryptedOwnedRecords(
+    params: ScannerGetDecryptedOwnedRecordsProps,
+  ): Promise<RecordDetailWithSpent[]>;
+
+  scannerGetSyncStatus(params: ScannerRegisterProps): Promise<SyncStatusResp>;
+
+  scannerDeactivateViewConsumer(
+    params: ScannerDeactivateViewConsumerProps,
+  ): Promise<void>;
+
+  getAleoComplianceProof(params: AleoComplianceProofProps): Promise<string>;
 
   sendAleoTransaction(params: AleoSendTxProps): Promise<void>;
 
@@ -569,7 +620,6 @@ export interface IQTUMContentServer {
     serverMethodContext: ServerMethodContext,
   ) => Promise<any>;
 }
-
 
 export type IContentServer<T extends CoinType> = T extends CoinType.ALEO
   ? IALEOContentServer

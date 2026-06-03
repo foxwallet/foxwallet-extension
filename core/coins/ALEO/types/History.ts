@@ -28,6 +28,8 @@ export interface AleoOnChainHistoryItem {
   status: AleoTxStatus;
   from?: string;
   to?: string;
+  senderAddress?: string;
+  recipientAddress?: string;
 }
 
 export interface AleoLocalHistoryItem {

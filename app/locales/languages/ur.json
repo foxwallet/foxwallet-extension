@@ -208,8 +208,11 @@
     "token_approve": "ٹوکن منظور کریں",
     "bridge": "پل",
     "receive": "وصول کریں",
+    "mint": "منٹ",
     "copyContractAddressMsg": "یہ ٹوکن کا معاہدہ ایڈریس ہے ، پتہ نہیں مل رہا ہے ، اس پتے پر منتقل نہ کریں۔",
-    "failed": "ناکام"
+    "failed": "ناکام",
+    "transfer_public_to_private": "عوامی سے نجی میں تبدیل کریں",
+    "transfer_private_to_public": "نجی سے عوامی میں تبدیل کریں"
   },
   "Language": {
     "title": "زبان"
