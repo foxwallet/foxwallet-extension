@@ -1,73 +1,48 @@
-import {
-  FOX_DAPP_EMIT,
-  FOX_DAPP_REQUEST,
-  FOX_DAPP_RESP,
-} from "@/common/constants";
 import mitt, { Emitter } from "mitt";
-import { nanoid } from "nanoid";
-import { ContentServerMethod } from "../background/servers/IWalletServer";
-import { CallbackParams, EmitData, RequestParams } from "./type";
-import { CoinType } from "core/types";
-
-type RequestCallback = (error?: string, data?: any) => void;
+import type { ContentServerMethod } from "../background/servers/IWalletServer";
+import type { EmitData, ProviderMetadata } from "./type";
+import type { CoinType } from "core/types";
+import { getWebsiteMessenger } from "@/messaging/injectorToContent";
+import { isContentMethod } from "@/messaging/contentMethods";
+import { ProviderError } from "./ErrorCode";
 
 export class BaseProvider {
   #isFoxWallet: boolean;
   #events: Emitter<any>;
-  #callbackMap: Map<string, RequestCallback | null>;
-  chain: CoinType; // coin type
+  readonly chain: CoinType;
+  #messenger: ReturnType<typeof getWebsiteMessenger>;
 
-  constructor() {
+  constructor(coinType: CoinType) {
+    this.chain = coinType;
     this.#isFoxWallet = true;
     this.#events = mitt();
-    this.#callbackMap = new Map();
     this.emit = this.emit.bind(this);
-    window.addEventListener(FOX_DAPP_RESP, this.onMessage);
-    this.onDappEmit = this.onDappEmit.bind(this);
-    window.addEventListener(FOX_DAPP_EMIT, this.onDappEmit);
+    this.#messenger = getWebsiteMessenger(coinType);
+    this.#messenger.onMessage("emit", ({ data }) => {
+      if (data?.type === "EmitData" && data.coinType === this.chain) {
+        this.onDappEmit({ detail: data });
+      }
+    });
   }
 
-  onMessage = (event: CallbackParams) => {
-    const { id, error, data } = event.detail;
-    const callback = this.#callbackMap.get(id);
-    if (callback) {
-      callback(error, data);
-      this.#callbackMap.delete(id);
-    }
-  };
+  onDappEmit(event: { detail: EmitData }) {}
 
-  onDappEmit(event: { detail: EmitData }) {
-  }
-
-  send<T>(
+  async send<T>(
     method: ContentServerMethod<CoinType>,
     payload: any,
-    metadata: any = {},
+    metadata: ProviderMetadata = {},
   ) {
-    return new Promise<T | undefined>((resolve, reject) => {
-      const id = nanoid();
-      const customEvent = new CustomEvent<RequestParams<CoinType>>(
-        FOX_DAPP_REQUEST,
-        {
-          detail: {
-            id,
-            coinType: this.chain,
-            method,
-            payload,
-            metadata,
-          },
-        },
-      );
-      const callback = (error?: string, data?: T) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(data);
-        }
-      };
-      this.#callbackMap.set(id, callback);
-      window.dispatchEvent(customEvent);
+    if (!isContentMethod(this.chain, method)) {
+      throw new ProviderError(4200, `Unsupported method: ${method}`);
+    }
+    const { error, data } = await this.#messenger.sendMessage(method, {
+      payload,
+      metadata,
     });
+    if (error) {
+      throw error;
+    }
+    return data as T | undefined;
   }
 
   get isFoxWallet() {
@@ -91,7 +66,7 @@ export class BaseProvider {
     this.#events.all.clear();
   };
 
-  emit(event: string, params: any)  {
+  emit(event: string, params: any) {
     this.#events.emit(event, params);
-  };
+  }
 }

@@ -36,13 +36,12 @@ const getInjectedFoxProvider = (): QtumProvider | undefined => {
 };
 
 export class QtumProvider extends BaseProvider {
-  chain = CoinType.QTUM;
   address: QtumDappAddress | null = null;
   ready: boolean;
   _chainId: string;
   isDebug: boolean;
   constructor() {
-    super();
+    super(CoinType.QTUM);
     this._setInitialChainId();
   }
 
@@ -146,6 +145,8 @@ export class QtumProvider extends BaseProvider {
         return this.eth_requestAccounts(payload);
       case "eth_accounts":
         return this.eth_accounts(payload);
+      case "eth_getBalance":
+        return this.eth_getBalance(payload);
       case "eth_coinbase":
         return this.eth_coinbase(payload);
       case "net_version":
@@ -246,6 +247,10 @@ export class QtumProvider extends BaseProvider {
         .then((data) => callback(null, that!._wrapResult(payload, data)))
         .catch((error) => callback(error, null));
     }
+  }
+
+  async eth_getBalance(payload: any) {
+    return this.send<string>("eth_getBalance", payload);
   }
 
   async eth_accounts(payload: any) {

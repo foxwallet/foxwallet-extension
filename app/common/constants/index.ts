@@ -30,12 +30,6 @@ export const ALEO_WORKER_TASK_SIZE = 5000;
 
 export const ALEO_BLOCK_RANGE = 50;
 
-export const FOX_DAPP_REQUEST = "fox_dapp_request";
-
-export const FOX_DAPP_RESP = "fox_dapp_response";
-
-export const FOX_DAPP_EMIT = "fox_dapp_emit";
-
 export const DAPP_CONNECTION_EXPIRE_TIME = 1000 * 60 * 60 * 12;
 
 export const HELP_CENTER_URL = "https://hc.foxwallet.com";

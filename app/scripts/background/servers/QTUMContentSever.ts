@@ -6,6 +6,7 @@ import { PopupWalletServer } from "@/scripts/background/servers/PopupServer";
 import { CoinServiceEntry } from "core/coins/CoinServiceEntry";
 import {
   ETHRequestParams,
+  type ETHGetBalanceParams,
   type IContentServer,
   ServerMethodContext,
   SiteMetadata,
@@ -50,6 +51,7 @@ import {
 } from "core/coins/QTUM/utils/address";
 import { QTUMNetwork } from "core/coins/QTUM/types/QTUMAccount";
 import { hashMessage, recoverAddress } from "qtum-ethers-wrapper";
+import { getEthBalance } from "../helper/ethGetBalance";
 
 export type SIGN_LEGACY_TX_PAYLOAD = {
   type: string;
@@ -84,7 +86,7 @@ export type SIGN_EIP11559_TX_PAYLOAD = {
 export type QtumDappAddress = {
   evmAddress: string;
   qtumAddress: string;
-}
+};
 
 export type TypedMessageV1 = Array<{
   type: string;
@@ -156,6 +158,15 @@ export class QTUMContentWalletServer implements IContentServer<CoinType.QTUM> {
     }
     return { chainUniqueId, qNetwork };
   }
+
+  eth_getBalance = async (
+    payload: ETHRequestParams<ETHGetBalanceParams>,
+    context: ServerMethodContext,
+  ): Promise<string> => {
+    return getEthBalance(payload, (request) =>
+      this.proxyRPCCall(request, context),
+    );
+  };
 
   eth_accounts = async (
     payload: {},

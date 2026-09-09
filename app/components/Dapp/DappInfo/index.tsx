@@ -32,22 +32,27 @@ export const DappInfo = (props: DappInfoProps) => {
         borderStyle={"solid"}
         borderColor={"gray.50"}
         mr={2}
+        flexShrink={0}
       />
-      <Flex flexDir={"column"} align={"flex-end"}>
+      <Flex flexDir={"column"} align={"flex-end"} minW={0} flex={1}>
         <Text
           textOverflow={"ellipsis"}
           overflow={"hidden"}
           whiteSpace={"nowrap"}
           fontWeight={"bold"}
           maxWidth={250}
+          width={"100%"}
+          textAlign={"right"}
         >
           {name}
         </Text>
         <Text
-          textOverflow={"ellipsis"}
-          overflow={"hidden"}
-          whiteSpace={"nowrap"}
-          maxWidth={250}
+          whiteSpace={"normal"}
+          overflowWrap={"anywhere"}
+          wordBreak={"break-all"}
+          dir={"ltr"}
+          textAlign={"right"}
+          width={"100%"}
           fontWeight={"bold"}
           color={"gray.500"}
           fontSize={"13"}

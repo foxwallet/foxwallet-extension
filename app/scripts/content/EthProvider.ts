@@ -37,13 +37,12 @@ const getInjectedFoxProvider = (): FoxWeb3Provider | undefined => {
 };
 
 export class FoxWeb3Provider extends BaseProvider {
-  chain = CoinType.ETH;
   address: string | null = null;
   ready: boolean;
   _chainId: string;
   isDebug: boolean;
   constructor() {
-    super();
+    super(CoinType.ETH);
     this._setInitialChainId();
   }
 
@@ -145,6 +144,8 @@ export class FoxWeb3Provider extends BaseProvider {
         return this.eth_requestAccounts(payload);
       case "eth_accounts":
         return this.eth_accounts(payload);
+      case "eth_getBalance":
+        return this.eth_getBalance(payload);
       case "eth_coinbase":
         return this.eth_coinbase(payload);
       case "net_version":
@@ -244,6 +245,10 @@ export class FoxWeb3Provider extends BaseProvider {
         .then((data) => callback(null, that!._wrapResult(payload, data)))
         .catch((error) => callback(error, null));
     }
+  }
+
+  async eth_getBalance(payload: any) {
+    return this.send<string>("eth_getBalance", payload);
   }
 
   async eth_accounts(payload: any) {

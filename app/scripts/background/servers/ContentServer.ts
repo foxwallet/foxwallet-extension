@@ -12,6 +12,7 @@ import type {
   SiteMetadata,
 } from "@/scripts/background/servers/IWalletServer";
 import { QTUMContentWalletServer } from "@/scripts/background/servers/QTUMContentSever";
+import { isContentMethod } from "@/messaging/contentMethods";
 
 export class ContentWalletServer {
   aleoServer: ALEOContentWalletServer;
@@ -65,7 +66,7 @@ export class ContentWalletServer {
     }
   }
 
-  execute<C extends CoinType, T = any>({
+  async execute<C extends CoinType, T = any>({
     method,
     payload,
     siteMetadata,
@@ -76,6 +77,9 @@ export class ContentWalletServer {
     siteMetadata: SiteMetadata;
     coinType: C;
   }) {
+    if (!isContentMethod(coinType, method)) {
+      throw new Error("Unsupported dApp method");
+    }
     // @ts-ignore
     return this.getChainServer(coinType)[method](payload, {siteMetadata, coinType});
   }

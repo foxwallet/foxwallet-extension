@@ -9,7 +9,10 @@ import { logger } from "../../../common/utils/logger";
 import { type ContentWalletServer } from "../servers/ContentServer";
 import { PortName } from "../../../common/types/port";
 import { executeServerMethod } from "../servers/IWalletServer";
-import {EmitData} from "@/scripts/content/type";
+import { EmitData } from "@/scripts/content/type";
+import browser from "webextension-polyfill";
+import { bindSiteMetadataToSender } from "../helper/contentOrigin";
+import { isContentMethod } from "@/messaging/contentMethods";
 
 export class ContentServerHandler implements IHandler {
   contentServer: ContentWalletServer;
@@ -33,7 +36,7 @@ export class ContentServerHandler implements IHandler {
       console.log("ContentServerHandler do get duplicate port");
     }
     port.onMessage.addListener(async (msg: ServerMessage) => {
-      if (msg.type !== MessageType.REQUEST) {
+      if (!msg || msg.type !== MessageType.REQUEST) {
         return;
       }
       if (msg.origin !== PortName.CONTENT_TO_BACKGROUND) {
@@ -41,23 +44,39 @@ export class ContentServerHandler implements IHandler {
         return;
       }
       console.log("ContentServerHandler msg", msg);
-      const { id, method, coinType, payload, origin, siteMetadata } = msg;
+      const { id, method, coinType, payload, siteMetadata } = msg;
+      if (typeof id !== "string") {
+        return;
+      }
       const resp = this.wrapContentResp(
         await executeServerMethod(
-          this.contentServer.execute({
-            method,
-            payload,
-            siteMetadata,
-            coinType,
-          }) as any,
+          Promise.resolve().then(() => {
+            if (!isContentMethod(coinType, method)) {
+              throw new Error("Unsupported dApp method");
+            }
+            return this.contentServer.execute({
+              method,
+              payload,
+              siteMetadata: bindSiteMetadataToSender(
+                siteMetadata,
+                port.sender,
+                browser.runtime.id,
+              ),
+              coinType,
+            });
+          }),
         ),
         id,
       );
-      port.postMessage(resp);
+      try {
+        port.postMessage(resp);
+      } catch {
+        // The page may have navigated or closed while approval was pending.
+      }
     });
-    port.onDisconnect.addListener((port)=>{
-      this.pagePorts = this.pagePorts.filter(lPort => lPort === port);
-    })
+    port.onDisconnect.addListener((port) => {
+      this.pagePorts = this.pagePorts.filter((lPort) => lPort !== port);
+    });
   }
 
   emitToDapps(message: EmitData) {
@@ -68,6 +87,6 @@ export class ContentServerHandler implements IHandler {
       } catch (e) {
         console.log("ContentServerHandler", e);
       }
-    })
+    });
   }
 }

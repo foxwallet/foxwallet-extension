@@ -12,19 +12,19 @@ import {
 } from "../background/servers/IWalletServer";
 import { nanoid } from "nanoid";
 import { CoinType } from "core/types";
-import {EmitData} from "@/scripts/content/type";
+import { EmitData } from "@/scripts/content/type";
 
 export type EmitRepeat = (_: EmitData) => void;
 
 export class ContentClient implements IClient {
   private port: IPort;
-  private callbackMap: Map<string, (error: string | null, data: any) => void>;
+  private callbackMap: Map<string, (error: Error | null, data: any) => void>;
   private emitRepeater: EmitRepeat;
 
   constructor(emitRepeater: EmitRepeat) {
     this.callbackMap = new Map();
-    this._connect();
     this.emitRepeater = emitRepeater;
+    this._connect();
   }
 
   _connect(): void {
@@ -32,8 +32,8 @@ export class ContentClient implements IClient {
     this.port.onMessage.addListener(this.#onMessage.bind(this));
     this.port.onDisconnect.addListener(() => {
       console.warn("ContentClient disconnected, try to reconnect");
-      Object.values(this.callbackMap).forEach((callback) => {
-        callback(new Error("PopupServerClient disconnected"));
+      this.callbackMap.forEach((callback) => {
+        callback(new Error("ContentClient disconnected"), null);
       });
       this.callbackMap = new Map();
       this._connect();
@@ -46,10 +46,10 @@ export class ContentClient implements IClient {
       this.emitRepeater(msg as EmitData);
       return;
     }
-    const {id, payload} = msg as ServerResp;
+    const { id, payload } = msg as ServerResp;
     const callback = this.callbackMap.get(id);
     if (callback) {
-      const {error, data} = payload;
+      const { error, data } = payload;
       if (error) {
         callback(error, null);
       } else {
@@ -65,7 +65,7 @@ export class ContentClient implements IClient {
     coinType: C,
     siteMetadata: SiteMetadata,
   ) {
-    return await new Promise<{ error: string | null; data: any }>((resolve) => {
+    return await new Promise<{ error: Error | null; data: any }>((resolve) => {
       const id = nanoid();
       const message: MsgContentToBackground<C, T> = {
         type: MessageType.REQUEST,
@@ -77,11 +77,19 @@ export class ContentClient implements IClient {
         siteMetadata,
       };
       console.log("postMessage", message);
-      const callback = (error: string | null, data: any) => {
+      const callback = (error: Error | null, data: any) => {
         resolve({ error, data });
       };
       this.callbackMap.set(id, callback);
-      this.port.postMessage(message);
+      try {
+        this.port.postMessage(message);
+      } catch (error) {
+        this.callbackMap.delete(id);
+        callback(
+          error instanceof Error ? error : new Error(String(error)),
+          null,
+        );
+      }
     });
   }
 }

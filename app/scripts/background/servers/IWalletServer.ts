@@ -463,11 +463,23 @@ export type ETHSignPersonalMessageParams = {
   data: string;
 };
 
+export type ETHGetBalanceParams = [
+  address: string,
+  block?:
+    | string
+    | { blockNumber: string }
+    | { blockHash: string; requireCanonical?: boolean },
+];
+
 export interface IETHContentServer {
   eth_accounts: (
     payload: ETHRequestParams<{}>,
     serverMethodContext: ServerMethodContext,
   ) => Promise<string[]>;
+  eth_getBalance: (
+    payload: ETHRequestParams<ETHGetBalanceParams>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<string>;
   eth_requestAccounts: (
     payload: ETHRequestParams<{}>,
     serverMethodContext: ServerMethodContext,
@@ -547,6 +559,10 @@ export interface IQTUMContentServer {
     payload: ETHRequestParams<{}>,
     serverMethodContext: ServerMethodContext,
   ) => Promise<QtumDappAddress[]>;
+  eth_getBalance: (
+    payload: ETHRequestParams<ETHGetBalanceParams>,
+    serverMethodContext: ServerMethodContext,
+  ) => Promise<string>;
   eth_requestAccounts: (
     payload: ETHRequestParams<{}>,
     serverMethodContext: ServerMethodContext,

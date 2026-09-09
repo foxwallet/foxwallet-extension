@@ -7,6 +7,11 @@
   resolved "https://registry.yarnpkg.com/@aashutoshrathi/word-wrap/-/word-wrap-1.2.6.tgz#bd9154aec9983f77b3a034ecaa015c2e4201f6cf"
   integrity sha512-1Yjs2SvM8TflER/OD3cOjhWWOZb58A2t7wpE2S9XfBYTiIl+XFhQG2bjy4Pu1I+EAlCNUzRDYDdFwFYUKvXcIA==
 
+"@aklinker1/zero-serialize-error@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@aklinker1/zero-serialize-error/-/zero-serialize-error-1.0.2.tgz#4da5ee6a5f81ef3af3c1b6a51d104b471f7e5ed0"
+  integrity sha512-hGVkgFqb8Zs80JJ7MOSCGQXH2SyWfwnJwOl8Qpp1lUdkp5T7GTf8QrAMib42Hnzx6HtnNYdmNaSSg4MQy+MDRQ==
+
 "@ampproject/remapping@^2.2.0":
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/@ampproject/remapping/-/remapping-2.2.1.tgz#99e8e11851128b8702cd57c33684f1d0f260b630"
@@ -4158,6 +4163,13 @@
   version "1.6.0"
   resolved "https://registry.yarnpkg.com/@webcomponents/custom-elements/-/custom-elements-1.6.0.tgz#5ecde1c332464ff00612f51874484b78395d504d"
   integrity sha512-CqTpxOlUCPWRNUPZDxT5v2NnHXA4oox612iUGnmTUGQFhZ1Gkj8kirtl/2wcF6MqX7+PqqicZzOCBKKfIn0dww==
+
+"@webext-core/messaging@4.0.0":
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/@webext-core/messaging/-/messaging-4.0.0.tgz#5439c15f8a6bbefd5a6d9fbe8aa67ca9753749a3"
+  integrity sha512-1GWLsiWeIRJ/LpSlI87jU3e4KCDhyTadQEwyhMlLSwXOt5/ui2xkVcE96/clxjxqp/FcUBA00c5iT5I3crjlTQ==
+  dependencies:
+    "@aklinker1/zero-serialize-error" "^1.0.2"
 
 "@yarnpkg/lockfile@^1.1.0":
   version "1.1.0"
