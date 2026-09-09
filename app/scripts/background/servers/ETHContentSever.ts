@@ -6,6 +6,7 @@ import { PopupWalletServer } from "@/scripts/background/servers/PopupServer";
 import { CoinServiceEntry } from "core/coins/CoinServiceEntry";
 import {
   ETHRequestParams,
+  type ETHGetBalanceParams,
   type IContentServer,
   ServerMethodContext,
   SiteMetadata,
@@ -44,6 +45,7 @@ import { getChainConfigsByFilter } from "@/hooks/useGroupAccount";
 import { RematchRootState } from "@rematch/core";
 import { RootModel } from "@/store";
 import { appStorageInstance } from "@/common/utils/indexeddb";
+import { getEthBalance } from "../helper/ethGetBalance";
 
 export type SIGN_LEGACY_TX_PAYLOAD = {
   type: string;
@@ -120,6 +122,15 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
       throw new Error("Address is null");
     }
     return { siteInfo, address };
+  };
+
+  eth_getBalance = async (
+    payload: ETHRequestParams<ETHGetBalanceParams>,
+    context: ServerMethodContext,
+  ): Promise<string> => {
+    return getEthBalance(payload, (request) =>
+      this.proxyRPCCall(request, context),
+    );
   };
 
   eth_accounts = async (

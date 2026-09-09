@@ -6,7 +6,7 @@ export type SiteInfo = {
 
 export function getSiteInfo(): SiteInfo {
   return {
-    origin: window.origin,
+    origin: window.location.origin,
     name: getSiteName(window),
     icon: getSiteIcon(window),
   };

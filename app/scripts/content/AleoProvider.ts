@@ -9,13 +9,12 @@ import { DecryptPermission } from "@/database/types/dapp";
 import { CoinType } from "core/types";
 
 export class AleoProvider extends BaseProvider {
-  chain = CoinType.ALEO;
   #publicKey: string | null;
   #network: string | null;
   _readyState: string;
 
   constructor() {
-    super();
+    super(CoinType.ALEO);
     this.#publicKey = null;
     this.#network = null;
     this._readyState = "Installed";
