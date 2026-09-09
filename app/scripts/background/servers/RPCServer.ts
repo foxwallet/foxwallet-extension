@@ -5,6 +5,13 @@ interface RpcPreference {
   requestSequence: number;
 }
 
+const NON_IDEMPOTENT_METHODS = new Set([
+  "eth_sendRawTransaction",
+  "eth_sendTransaction",
+  "sendrawtransaction",
+  "qtum_sendrawtransaction",
+]);
+
 export default class RPCServer {
   // Shared by the per-request instances created by the ETH and Qtum servers.
   // Each configured list has its own preference for this background session.
@@ -32,6 +39,7 @@ export default class RPCServer {
     const sequence = ++RPCServer.requestSequence;
     const firstIndex = this.currentRpcIndex;
     let lastError: unknown;
+    let providerError: ProviderError | undefined;
 
     // Snapshot the starting node. Concurrent calls must not change this call's
     // traversal, and each distinct endpoint is tried at most once.
@@ -99,13 +107,19 @@ export default class RPCServer {
         return json;
       } catch (error) {
         lastError = error;
+        if (error instanceof ProviderError) {
+          providerError ??= error;
+          if (NON_IDEMPOTENT_METHODS.has(payload?.method)) {
+            throw error;
+          }
+        }
       } finally {
         clearTimeout(timeout);
       }
     }
 
-    if (lastError instanceof ProviderError) {
-      throw lastError;
+    if (providerError) {
+      throw providerError;
     }
     throw new Error(
       `All ${this.rpcUrlList.length} RPC URLs failed: ${

@@ -246,3 +246,41 @@ test("all failed endpoints reject with a useful error and preserve RPC error cod
     /All 3 RPC URLs failed: .*offline/,
   );
 });
+
+test("preserves the first provider error when later endpoints fail differently", async () => {
+  const h = harness(async (url) => {
+    if (url === urls[0]) {
+      return reply({
+        jsonrpc: "2.0",
+        id: payload.id,
+        error: { code: -32001, message: "rejected by node" },
+      });
+    }
+    throw new Error("offline");
+  });
+  await assert.rejects(
+    new h.RPCServer(urls).call(payload),
+    (error) => error.code === -32001 && error.message === "rejected by node",
+  );
+  assert.equal(h.calls.length, urls.length);
+});
+
+test("does not retry provider errors for non-idempotent transaction methods", async () => {
+  const transactionPayload = {
+    ...payload,
+    method: "eth_sendRawTransaction",
+    params: ["0xdeadbeef"],
+  };
+  const h = harness(async () =>
+    reply({
+      jsonrpc: "2.0",
+      id: transactionPayload.id,
+      error: { code: -32003, message: "insufficient funds" },
+    }),
+  );
+  await assert.rejects(
+    new h.RPCServer(urls).call(transactionPayload),
+    (error) => error.code === -32003 && error.message === "insufficient funds",
+  );
+  assert.equal(h.calls.length, 1);
+});

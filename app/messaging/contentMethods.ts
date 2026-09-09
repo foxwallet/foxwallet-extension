@@ -24,7 +24,7 @@ const evmMethods = [
 
 // This list is the page API, not every property on the wallet server class.
 export const CONTENT_METHODS: {
-  [C in CoinType]: readonly ContentServerMethod<C>[];
+  [C in CoinType]: ReadonlyArray<ContentServerMethod<C>>;
 } = {
   [CoinType.ALEO]: [
     "connect",
