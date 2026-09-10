@@ -1,3 +1,4 @@
+import { actions } from "@/store/actions";
 import {
   IconAddCircle,
   IconRemoveCircle,
@@ -130,24 +131,24 @@ function AddToken() {
         }
       }
 
-      dispatch.tokens.selectToken({
+      dispatch(actions.tokens.selectToken({
         uniqueId,
         address: selectedAccount.account.address,
         token,
-      });
+      }));
     },
-    [uniqueId, dispatch.tokens, selectedAccount.account.address, coinService],
+    [uniqueId, dispatch, selectedAccount.account.address, coinService],
   );
 
   const unselectToken = useCallback(
     (token: TokenV2) => {
-      dispatch.tokens.unselectToken({
+      dispatch(actions.tokens.unselectToken({
         uniqueId,
         address: selectedAccount.account.address,
         token,
-      });
+      }));
     },
-    [dispatch.tokens, uniqueId, selectedAccount],
+    [dispatch, uniqueId, selectedAccount],
   );
 
   return (

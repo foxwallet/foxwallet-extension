@@ -2,7 +2,7 @@ import { useRoutes } from "react-router-dom";
 import { routesConfig } from "./routes";
 import ErrorBoundary from "./components/Custom/ErrorBoundary";
 import { ViewPort } from "./components/Custom/ViewPort";
-import { store } from "./store/store";
+import { usePopupSelector } from "./hooks/useStore";
 import { useEffect } from "react";
 import { changeLanguage } from "./locales/i18";
 import { ColorMode } from "./store/setting";
@@ -11,8 +11,8 @@ import { localStorageManager } from "@chakra-ui/react";
 function App() {
   const routes = useRoutes(routesConfig);
 
+  const language = usePopupSelector(state => state.setting.language);
   useEffect(() => {
-    const language = store.getState().setting.language;
     if (language) {
       void changeLanguage(language);
     }
@@ -22,7 +22,7 @@ function App() {
     // if (colorMode === ColorMode.System) {
     //   localStorageManager.set("system");
     // }
-  }, []);
+  }, [language]);
 
   return (
     <ViewPort>

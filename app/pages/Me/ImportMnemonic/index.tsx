@@ -1,3 +1,4 @@
+import { actions } from "@/store/actions";
 import { logger } from "@/common/utils/logger";
 import { showErrorToast } from "@/components/Custom/ErrorToast";
 import { ImportMnemonicStep } from "@/components/Onboard/ImportMnemonic";
@@ -51,12 +52,12 @@ const ImportMnemonicScreen = () => {
                     walletName,
                     mnemonic: mnemonic.trim(),
                   });
-                  await dispatch.accountV2.resyncAllWalletsToStore();
-                  dispatch.accountV2.changeWalletBackupedMnemonic({
+                  await dispatch(actions.accountV2.resyncAllWalletsToStore());
+                  dispatch(actions.accountV2.changeWalletBackupedMnemonic({
                     walletId: wallet.walletId,
                     backupedMnemonic: true,
-                  });
-                  dispatch.multiChain.addHdWalletChainItem({ walletId });
+                  }));
+                  dispatch(actions.multiChain.addHdWalletChainItem({ walletId }));
                   // await sleep(50);
                   navigate("/");
                 } catch (err) {

@@ -44,7 +44,6 @@ export const chainModeSelector = createAppSelector(
   selectedGroupAccountSelector,
   selectChainSelector,
   (groupAccount, selectedChain) => {
-    console.log("===> selector chainModeSelector");
     if (groupAccount && selectedChain) {
       return (
         selectedChain[groupAccount.wallet.walletId] ??
@@ -112,7 +111,6 @@ export const groupAccountAvailableNetworksSelector = createAppSelector(
   selectedGroupAccountSelector,
   allChainConfigsSelector,
   (groupAccount, allChainConfigs) => {
-    console.log("===> selector allNetworksSelector");
     if (!groupAccount) {
       return [];
     }
@@ -153,7 +151,6 @@ export const currChainConfigsSelector = createAppSelector(
   currChainUniqueIdsSelector,
   chainConfigItemsSelector,
   (chainUniqueIds, chainConfigItems) => {
-    console.log("===> selector currChainConfigsSelector");
     return chainUniqueIds.map((uniqueId) => {
       const config = chainConfigItems?.filter(
         (item) => item.uniqueId === uniqueId,

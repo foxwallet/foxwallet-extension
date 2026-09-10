@@ -1,3 +1,4 @@
+import { actions } from "@/store/actions";
 import { Content } from "@/layouts/Content";
 import { PageWithHeader } from "@/layouts/Page";
 import { useTranslation } from "react-i18next";
@@ -238,26 +239,26 @@ const NetworksScreen = () => {
           await showErrorToast({ message: t("Networks:defaultChainRemind") });
           return;
         }
-        dispatch.multiChain.removeUserSelectedChain({
+        dispatch(actions.multiChain.removeUserSelectedChain({
           walletId: groupAccount.wallet.walletId,
           uniqueId: item.uniqueId,
-        });
+        }));
       } else {
         if (groupAccount.wallet.walletType === WalletType.HD && wallet) {
           if (addingAccountRef.current) {
             return;
           }
         }
-        dispatch.multiChain.addUserSelectedChain({
+        dispatch(actions.multiChain.addUserSelectedChain({
           walletId: groupAccount.wallet.walletId,
           uniqueId: item.uniqueId,
           select: true,
-        });
+        }));
       }
     },
     [
       disableSwitchNetworkWithOptionFilter,
-      dispatch.multiChain,
+      dispatch,
       groupAccount,
       navigate,
       reserveUniqueId,

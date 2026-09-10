@@ -3,6 +3,7 @@ import { FoxWeb3Provider } from "@/scripts/content/EthProvider";
 import Constants from "@/scripts/content/Constants";
 import { QtumProvider } from "@/scripts/content/QtumProvider";
 
+export function injectProviders() {
 const aleoProvider = new AleoProvider();
 const ethereumProvider = new FoxWeb3Provider();
 const qtumProvider = new QtumProvider();
@@ -100,3 +101,5 @@ announceProvider();
 
 // eslint-disable-next-line no-void
 void 0;
+
+}

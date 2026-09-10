@@ -1,3 +1,4 @@
+import { actions } from "@/store/actions";
 import {
   Box,
   Button,
@@ -58,9 +59,9 @@ function OnboardHomeScreen() {
   const dispatch = usePopupDispatch();
   const changeLanguage = useCallback(
     (newLanguage: SupportLanguages) => {
-      void dispatch.setting.changeLanguage({ language: newLanguage });
+      void dispatch(actions.setting.changeLanguage({ language: newLanguage }));
     },
-    [dispatch.setting],
+    [dispatch],
   );
   const { t } = useTranslation();
 

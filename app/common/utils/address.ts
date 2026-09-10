@@ -1,6 +1,6 @@
 import { CoinType } from "core/types";
 import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
-import { store } from "@/store/store";
+import { getCurrentState } from "@/store/currentState";
 import { allChainConfigsSelector } from "@/store/selectors/account";
 import { coinServiceEntry } from "core/coins/CoinServiceEntry";
 import { DEFAULT_CHAIN_UNIQUE_ID } from "core/constants/chain";
@@ -17,7 +17,7 @@ export const matchAddressSupportedUniqueIds = (
     };
   }
   const chainConfigs =
-    targetChainConfigs ?? allChainConfigsSelector(store.getState());
+    targetChainConfigs ?? allChainConfigsSelector(getCurrentState());
   const supportChains: ChainBaseConfig[] = [];
   let isEVMAddress = false;
 

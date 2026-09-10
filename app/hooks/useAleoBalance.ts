@@ -33,10 +33,15 @@ export const useAleoBalance = ({
   tokenId?: string;
   refreshInterval?: number;
 }) => {
-  const { coinService } = useCoinService(uniqueId);
+  const { coinService, chainConfig } = useCoinService(uniqueId);
+  const { popupServerClient } = useClient();
 
   const key = `/balance/${uniqueId}/${programId}/${address}/${tokenId}`;
   const fetchBalance = useCallback(async () => {
+    await popupServerClient.scannerRegister({
+      chainId: chainConfig.chainId,
+      address,
+    });
     if (programId !== NATIVE_TOKEN_PROGRAM_ID && tokenId) {
       return await (coinService as AleoService).getTokenBalanceOld(
         address,
@@ -45,7 +50,14 @@ export const useAleoBalance = ({
       );
     }
     return await coinService.getBalance(address);
-  }, [programId, tokenId, coinService, address]);
+  }, [
+    programId,
+    tokenId,
+    coinService,
+    address,
+    chainConfig.chainId,
+    popupServerClient,
+  ]);
 
   const {
     data: balance,

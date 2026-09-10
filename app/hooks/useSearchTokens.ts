@@ -1,3 +1,4 @@
+import { actions } from "@/store/actions";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useFuseSearch } from "@/hooks/useFuseSearch";
 import { type ChainUniqueId } from "core/types/ChainUniqueId";
@@ -66,7 +67,7 @@ export const useSearchTokensByRpc = (
             token,
           });
           if (tokenBalance?.total) {
-            dispatch.coinBalanceV2.updateCoinBalance({
+            dispatch(actions.coinBalanceV2.updateCoinBalance({
               uniqueId,
               address: selectedAccount.account.address,
               contractAddress: token.contractAddress,
@@ -75,7 +76,7 @@ export const useSearchTokensByRpc = (
                 privateBalance: tokenBalance.privateBalance,
                 publicBalance: tokenBalance.publicBalance,
               },
-            });
+            }));
           }
         } catch (err) {
           console.log(err);
@@ -90,7 +91,7 @@ export const useSearchTokensByRpc = (
   }, [
     coinService,
     contractAddress,
-    dispatch.coinBalanceV2,
+    dispatch,
     selectedAccount.account.address,
     uniqueId,
   ]);

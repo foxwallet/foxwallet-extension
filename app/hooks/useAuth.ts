@@ -1,3 +1,4 @@
+import { actions } from "@/store/actions";
 import { useCallback, useEffect, useState } from "react";
 import { useClient } from "./useClient";
 import { usePopupDispatch, usePopupSelector } from "./useStore";
@@ -11,13 +12,11 @@ export const useAuth = () => {
   const getAuth = useCallback(async () => {
     setLoading(true);
     try {
-      console.log("===> before getAuth");
       const hasAuth = await popupServerClient.hasAuth();
-      console.log("===> hasAuth: ", hasAuth);
-      dispatch.user.setHasAuth({ hasAuth });
+      dispatch(actions.user.setHasAuth({ hasAuth }));
     } catch (err) {
       console.error("getAuth failed: ", err);
-      dispatch.user.setHasAuth({ hasAuth: false });
+      dispatch(actions.user.setHasAuth({ hasAuth: false }));
     } finally {
       setLoading(false);
     }
@@ -27,19 +26,19 @@ export const useAuth = () => {
     async (password: string) => {
       const res = await popupServerClient.login({ password });
       if (res) {
-        dispatch.user.setHasAuth({ hasAuth: true });
+        dispatch(actions.user.setHasAuth({ hasAuth: true }));
         // console.log("resyncAllWalletsToStore called");
-        await dispatch.accountV2.resyncAllWalletsToStore();
+        await dispatch(actions.accountV2.resyncAllWalletsToStore());
       }
       return res;
     },
-    [dispatch.accountV2, dispatch.user, popupServerClient],
+    [dispatch, popupServerClient],
   );
 
   const lock = useCallback(async () => {
     await popupServerClient.lock();
-    dispatch.user.setHasAuth({ hasAuth: false });
-  }, [dispatch.user, popupServerClient]);
+    dispatch(actions.user.setHasAuth({ hasAuth: false }));
+  }, [dispatch, popupServerClient]);
 
   const checkPassword = useCallback(
     async (password: string) => {

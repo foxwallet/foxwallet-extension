@@ -1,4 +1,5 @@
-import { type RootState, store } from "@/store/store";
+import type { RootState } from "@/store/types";
+import { getCurrentState } from "@/store/currentState";
 import { ALEO_CHAIN_CONFIGS } from "core/coins/ALEO/config/chains";
 import { ETH_CHAIN_CONFIGS } from "core/coins/ETH/config/chains";
 import { getInnerChainConfig } from "core/helper/ChainConfig";
@@ -25,7 +26,7 @@ export const getChainConfig = ({
 }) => {
   let currState = state;
   if (!currState) {
-    currState = store.getState();
+    currState = getCurrentState();
   }
   const config = currState.multiChain.chainConfigItems?.filter(
     (item) => item.uniqueId === uniqueId,

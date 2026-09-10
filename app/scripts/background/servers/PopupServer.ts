@@ -893,22 +893,27 @@ export class PopupWalletServer implements IPopupServer {
     this.#aleoScannerPrewarmed = true;
 
     try {
-      const chainId = InnerChainUniqueId.ALEO_MAINNET;
+      const chainId = networkFromChainId(InnerChainUniqueId.ALEO_MAINNET);
       const addresses = await AleoStorage.getInstance().getAccountsAddress();
-      if (addresses.length === 0) return;
+      if (addresses.length === 0) {
+        this.#aleoScannerPrewarmed = false;
+        return;
+      }
 
-      await Promise.allSettled(
-        addresses.map(async (address) => {
-          try {
-            await this.ensureScannerRegistration({ chainId, address });
-          } catch (error) {
-            console.warn("[RSS] prewarm scanner registration failed", {
-              address,
-              error,
-            });
-          }
-        }),
+      const results = await Promise.allSettled(
+        addresses.map(async (address) =>
+          await this.ensureScannerRegistration({ chainId, address }),
+        ),
       );
+      results.forEach((result, index) => {
+        if (result.status === "rejected") {
+          this.#aleoScannerPrewarmed = false;
+          console.warn("[RSS] prewarm scanner registration failed", {
+            address: addresses[index],
+            error: result.reason,
+          });
+        }
+      });
     } catch (error) {
       this.#aleoScannerPrewarmed = false;
       console.warn("[RSS] prewarm scanner registrations aborted", error);
@@ -1116,6 +1121,7 @@ export class PopupWalletServer implements IPopupServer {
     { chainId, address }: ScannerRegisterProps,
     viewKey?: string,
   ): Promise<ScannerRegisterResp> {
+    chainId = networkFromChainId(chainId);
     const scannerStorage = ScannerStorage.getInstance();
     const existingUuid = await scannerStorage.getScannerUuid(chainId, address);
     if (existingUuid) {

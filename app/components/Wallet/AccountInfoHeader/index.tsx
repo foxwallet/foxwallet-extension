@@ -1,3 +1,4 @@
+import { actions } from "@/store/actions";
 import {
   IconAllNetworks,
   IconArrowRight,
@@ -153,13 +154,13 @@ export const AccountInfoHeader = ({
         navigate("/networks");
       },
       onSelectNetwork: (data: ChainDisplayMode) => {
-        dispatch.wallet.selectChain({
+        dispatch(actions.wallet.selectChain({
           walletId: groupAccount.wallet.walletId,
           selectedChain: data,
-        });
+        }));
       },
     });
-  }, [chainMode, dispatch.wallet, groupAccount, navigate, wallet]);
+  }, [chainMode, dispatch, groupAccount, navigate, wallet]);
 
   const copyAddressHint: string = useMemo(() => {
     if (availableAccounts.length === 1) {
@@ -285,7 +286,7 @@ export const AccountInfoHeader = ({
             <Box
               cursor={"pointer"}
               ml={2}
-              onClick={() => dispatch.accountV2.changeBalanceState()}
+              onClick={() => dispatch(actions.accountV2.changeBalanceState())}
             >
               {showBalance ? (
                 <IconEyeOn w={4} h={4} />

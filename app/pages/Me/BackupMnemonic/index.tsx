@@ -1,3 +1,4 @@
+import { actions } from "@/store/actions";
 import { BackupMnemonicStep } from "@/components/Onboard/BackupMnemonic";
 import { ConfirmMnemonicStep } from "@/components/Onboard/ConfirmMnemonic";
 import { useClient } from "@/hooks/useClient";
@@ -46,16 +47,16 @@ const BackupMnemonicScreen = () => {
           <ConfirmMnemonicStep
             mnemonic={mnemonic}
             onConfirm={() => {
-              dispatch.accountV2.changeWalletBackupedMnemonic({
+              dispatch(actions.accountV2.changeWalletBackupedMnemonic({
                 walletId: walletIdRef.current,
                 backupedMnemonic: true,
-              });
+              }));
               navigate("/main");
             }}
           />
         );
     }
-  }, [dispatch.accountV2, step, mnemonic, navigate]);
+  }, [dispatch, step, mnemonic, navigate]);
 
   const title = useMemo(() => {
     if (step === 1) return t("Menmonic:backup");

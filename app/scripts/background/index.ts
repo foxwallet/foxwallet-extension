@@ -1,3 +1,4 @@
+import { initializeBackgroundStore } from "./store/redux";
 import { PortName } from "../../common/types/port";
 import { Connection } from "../../common/utils/connection";
 import { ContentServerHandler } from "./handlers/ContentServerHandler";
@@ -26,109 +27,113 @@ import { AleoStorage } from "./store/aleo/AleoStorage";
 import { encryptRegistrationViaOffscreen } from "./scannerOffscreen";
 import { CoinType } from "core/types";
 
-const keepAliveConnection = new Connection(
-  keepAliveHandler,
-  PortName.KEEP_ALIVE,
-);
-keepAliveConnection.connect();
+export function startBackground() {
+  initializeBackgroundStore();
+  const keepAliveConnection = new Connection(
+    keepAliveHandler,
+    PortName.KEEP_ALIVE,
+  );
+  keepAliveConnection.connect();
 
-const authManager = new AuthManager();
-const keyringManager = new KeyringManager(authManager);
-const dappStorage = new DappStorage();
-const coinService = coinServiceEntry;
+  const authManager = new AuthManager();
+  keyringManager = new KeyringManager(authManager);
+  const dappStorage = new DappStorage();
+  const coinService = coinServiceEntry;
 
-export const popupWalletServer = new PopupWalletServer(
-  authManager,
-  keyringManager,
-  dappStorage,
-  accountSettingStorage,
-  coinService,
-);
+  popupWalletServer = new PopupWalletServer(
+    authManager,
+    keyringManager,
+    dappStorage,
+    accountSettingStorage,
+    coinService,
+  );
 
-const popupServerHandler = new PopupServerHandler(popupWalletServer);
-provableScannerService.configure({
-  encryptRegistration: encryptRegistrationViaOffscreen,
-  resolveRegisterRequest: async ({ address }) => {
-    try {
-      const viewKey = await keyringManager.getViewKey({
-        coinType: CoinType.ALEO,
-        address,
-      });
-      if (!viewKey) {
+  const popupServerHandler = new PopupServerHandler(popupWalletServer);
+  provableScannerService.configure({
+    encryptRegistration: encryptRegistrationViaOffscreen,
+    resolveRegisterRequest: async ({ address }) => {
+      try {
+        const viewKey = await keyringManager.getViewKey({
+          coinType: CoinType.ALEO,
+          address,
+        });
+        if (!viewKey) {
+          return undefined;
+        }
+        return {
+          start: 0,
+          viewKey,
+        };
+      } catch (error) {
+        console.warn("[RSS] scanner re-registration resolver failed", {
+          address,
+          error,
+        });
         return undefined;
       }
-      return {
-        start: 0,
-        viewKey,
-      };
-    } catch (error) {
-      console.warn("[RSS] scanner re-registration resolver failed", {
-        address,
-        error,
-      });
-      return undefined;
+    },
+  });
+  recordSyncService.configure({
+    aleoStorage: AleoStorage.getInstance(),
+    defaultChainId: InnerChainUniqueId.ALEO_MAINNET,
+    shouldSkip: () =>
+      !popupServerHandler.hasActivePort() || !authManager.hasAuth(),
+  });
+
+  contentWalletServer = new ContentWalletServer(
+    authManager,
+    keyringManager,
+    dappStorage,
+    accountSettingStorage,
+    popupWalletServer,
+    coinService,
+  );
+
+  contentServerHandler = new ContentServerHandler(contentWalletServer);
+
+  const popupConnection = new Connection(
+    popupServerHandler,
+    PortName.POPUP_TO_BACKGROUND,
+  );
+  popupConnection.connect();
+
+  const contentConnection = new Connection(
+    contentServerHandler,
+    PortName.CONTENT_TO_BACKGROUND,
+  );
+  contentConnection.connect();
+
+  async function checkVersion() {
+    const existVersion = await extensionInfoDB.getVersion();
+    const currentVersion = getVersion();
+    if (existVersion) {
+      // 之前的版本如果是0.12.3及之前的版本，需要重置测试网数据
+      const beforeTestnetReset = compareVersion(existVersion, "0.12.4") < 1;
+
+      console.log(
+        "===> checkVersion ",
+        existVersion,
+        currentVersion,
+        beforeTestnetReset,
+      );
+      // if (beforeTestnetReset) {
+      //   await coinService
+      //     .getInstance(InnerChainUniqueId.ALEO_TESTNET)
+      //     .resetChainData();
+      //   await clearSwrCache();
+      // }
     }
-  },
-});
-recordSyncService.configure({
-  aleoStorage: AleoStorage.getInstance(),
-  defaultChainId: InnerChainUniqueId.ALEO_MAINNET,
-  shouldSkip: () =>
-    !popupServerHandler.hasActivePort() || !authManager.hasAuth(),
-});
-
-export const contentWalletServer = new ContentWalletServer(
-  authManager,
-  keyringManager,
-  dappStorage,
-  accountSettingStorage,
-  popupWalletServer,
-  coinService,
-);
-
-const contentServerHandler = new ContentServerHandler(contentWalletServer);
-
-export { contentServerHandler };
-
-const popupConnection = new Connection(
-  popupServerHandler,
-  PortName.POPUP_TO_BACKGROUND,
-);
-popupConnection.connect();
-
-const contentConnection = new Connection(
-  contentServerHandler,
-  PortName.CONTENT_TO_BACKGROUND,
-);
-contentConnection.connect();
-
-async function checkVersion() {
-  const existVersion = await extensionInfoDB.getVersion();
-  const currentVersion = getVersion();
-  if (existVersion) {
-    // 之前的版本如果是0.12.3及之前的版本，需要重置测试网数据
-    const beforeTestnetReset = compareVersion(existVersion, "0.12.4") < 1;
-
-    console.log(
-      "===> checkVersion ",
-      existVersion,
-      currentVersion,
-      beforeTestnetReset,
-    );
-    // if (beforeTestnetReset) {
-    //   await coinService
-    //     .getInstance(InnerChainUniqueId.ALEO_TESTNET)
-    //     .resetChainData();
-    //   await clearSwrCache();
-    // }
+    if (existVersion !== currentVersion) {
+      await extensionInfoDB.setVersion(currentVersion);
+    }
   }
-  if (existVersion !== currentVersion) {
-    await extensionInfoDB.setVersion(currentVersion);
-  }
+
+  checkVersion().finally(() => {
+    console.log("===> checkVersion done");
+  });
 }
 
-checkVersion().finally(() => {
-  console.log("===> checkVersion done");
-});
-
-export { keyringManager };
+export let keyringManager: KeyringManager;
+export let popupWalletServer: PopupWalletServer;
+export let contentWalletServer: ContentWalletServer;
+export let contentServerHandler: ContentServerHandler;

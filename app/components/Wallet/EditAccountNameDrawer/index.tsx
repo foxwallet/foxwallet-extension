@@ -1,3 +1,4 @@
+import { actions } from "@/store/actions";
 import { Box, Button, Flex, Text } from "@chakra-ui/react";
 import { promisifyChooseDialogWrapper } from "../../../common/utils/dialog";
 import type React from "react";
@@ -41,13 +42,13 @@ const EditAccountNameDrawer = (props: Props) => {
 
   const handleConfirmName = useCallback(async () => {
     if (!accountName) return;
-    dispatch.accountV2.changeAccountName({
+    dispatch(actions.accountV2.changeAccountName({
       walletId: walletOfAccount.walletId,
       groupId: account.group.groupId,
       accountName,
-    });
+    }));
     onConfirm?.();
-  }, [onConfirm, accountName, dispatch.accountV2, account, walletOfAccount]);
+  }, [onConfirm, accountName, dispatch, account, walletOfAccount]);
 
   const dupAccountName = usePopupSelector(
     (state) =>

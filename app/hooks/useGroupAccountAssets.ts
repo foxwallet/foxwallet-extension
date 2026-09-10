@@ -1,3 +1,4 @@
+import { actions } from "@/store/actions";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { useChainMode } from "@/hooks/useChainMode";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
@@ -17,21 +18,26 @@ import useSWR from "swr";
 import { utils } from "ethers";
 import { commaInteger } from "@/common/utils/comma";
 import { formatPrice } from "@/common/utils/num";
+import { useClient } from "@/hooks/useClient";
 
 export const useUserAssets = () => {
   const { getMatchAccountsWithUniqueId } = useGroupAccount();
   const { availableChains } = useChainMode();
 
-  const assetIdentifiers = availableChains
-    .map((item) => {
-      const selectAccount = getMatchAccountsWithUniqueId(item.uniqueId)[0];
-      if (!selectAccount) return null;
-      return {
-        uniqueId: item.uniqueId,
-        address: selectAccount.account.address,
-      };
-    })
-    .filter((item): item is NonNullable<typeof item> => item !== null);
+  const assetIdentifiers = useMemo(
+    () =>
+      availableChains
+        .map((item) => {
+          const selectAccount = getMatchAccountsWithUniqueId(item.uniqueId)[0];
+          if (!selectAccount) return null;
+          return {
+            uniqueId: item.uniqueId,
+            address: selectAccount.account.address,
+          };
+        })
+        .filter((item): item is NonNullable<typeof item> => item !== null),
+    [availableChains, getMatchAccountsWithUniqueId],
+  );
   // 获取用户的代币数据
   const userTokensMap = usePopupSelector((state) => {
     const res = assetIdentifiers.map((item) => {
@@ -133,6 +139,7 @@ export const useUserAssetsWithPrice = () => {
 // add balance and value
 export const useUserAssetsWithPriceBalanceAndValue = () => {
   const { assetsWithPrice: assets } = useUserAssetsWithPrice();
+  const { popupServerClient } = useClient();
 
   const fetchData = useCallback(async () => {
     const promises = assets.map(async (item) => {
@@ -153,6 +160,12 @@ export const useUserAssetsWithPriceBalanceAndValue = () => {
         !!tokenId;
 
       let balance: BalanceResp | undefined;
+      if (uniqueId === InnerChainUniqueId.ALEO_MAINNET) {
+        await popupServerClient.scannerRegister({
+          chainId: coinService.config.chainId,
+          address,
+        });
+      }
       if (hasContractAddress || isAleoToken) {
         if (hasContractAddress) {
           balance = await coinService.getTokenBalance({
@@ -182,7 +195,7 @@ export const useUserAssetsWithPriceBalanceAndValue = () => {
     });
     // console.log("      validResults", validResults);
     return validResults;
-  }, [assets]);
+  }, [assets, popupServerClient]);
 
   const key = useMemo(() => {
     const sortedAssets = [...assets].sort(
@@ -244,32 +257,36 @@ export const useGroupAccountAssets = () => {
   const { availableChains } = useChainMode();
   const dispatch = usePopupDispatch();
 
-  const assetIdentifiers = availableChains
-    .map((item) => {
-      const selectAccount = getMatchAccountsWithUniqueId(item.uniqueId)[0];
-      if (!selectAccount) return null;
-      return {
-        uniqueId: item.uniqueId,
-        address: selectAccount.account.address,
-      };
-    })
-    .filter((item): item is NonNullable<typeof item> => item !== null);
+  const assetIdentifiers = useMemo(
+    () =>
+      availableChains
+        .map((item) => {
+          const selectAccount = getMatchAccountsWithUniqueId(item.uniqueId)[0];
+          if (!selectAccount) return null;
+          return {
+            uniqueId: item.uniqueId,
+            address: selectAccount.account.address,
+          };
+        })
+        .filter((item): item is NonNullable<typeof item> => item !== null),
+    [availableChains, getMatchAccountsWithUniqueId],
+  );
 
   // 获取需要更新的账户
-  const needUpdateMap = usePopupSelector((state) => {
-    const res = assetIdentifiers.map((item) => {
-      const { address, uniqueId } = item;
-      const lastUpdateTimestamp =
-        state.tokens?.lastUpdateTimestamp[uniqueId]?.[address];
-      const needUpdate = !lastUpdateTimestamp;
-      return {
-        address,
-        uniqueId,
-        needUpdate,
-      };
-    });
-    return res;
-  });
+  const needUpdateMap = usePopupSelector(
+    (state) =>
+      assetIdentifiers.map((item) => {
+        const { address, uniqueId } = item;
+        const lastUpdateTimestamp =
+          state.tokens?.lastUpdateTimestamp[uniqueId]?.[address];
+        return {
+          address,
+          uniqueId,
+          needUpdate: !lastUpdateTimestamp,
+        };
+      }),
+    isEqual,
+  );
 
   const { getGroupInteractiveTokens } = useGroupInteractiveTokens(
     needUpdateMap,
@@ -290,22 +307,26 @@ export const useGroupAccountAssets = () => {
       const res = await getGroupInteractiveTokens();
       if (res && res.length > 0) {
         res.forEach(({ uniqueId, address, tokens }) => {
-          dispatch.tokens.updateAddressTokens({
-            uniqueId,
-            address,
-            tokens,
-          });
-          dispatch.tokens.updateTimestamp({
-            uniqueId,
-            address,
-            newUpdateTimestamp: Date.now(),
-          });
+          dispatch(
+            actions.tokens.updateAddressTokens({
+              uniqueId,
+              address,
+              tokens,
+            }),
+          );
+          dispatch(
+            actions.tokens.updateTimestamp({
+              uniqueId,
+              address,
+              newUpdateTimestamp: Date.now(),
+            }),
+          );
         });
       }
     } catch (error) {
-      console.log("Failed to update tokens:", error);
+      console.warn("Failed to update tokens:", error);
     }
-  }, [dispatch.tokens, getGroupInteractiveTokens]);
+  }, [dispatch, getGroupInteractiveTokens]);
 
   const {
     mutate: getGroupAccountAssets,

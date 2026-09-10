@@ -1,3 +1,4 @@
+import { actions } from "@/store/actions";
 import {
   type ChainUniqueId,
   InnerChainUniqueId,
@@ -31,9 +32,9 @@ export const useAssetList = (uniqueId: ChainUniqueId, address: string) => {
 
   const handlePartialToken = useCallback(
     (token: TokenV2) => {
-      dispatch.tokens.upsertAddressToken({ uniqueId, address, token });
+      dispatch(actions.tokens.upsertAddressToken({ uniqueId, address, token }));
     },
-    [dispatch.tokens, uniqueId, address],
+    [dispatch, uniqueId, address],
   );
 
   const { getUserInteractiveTokens } = useInteractiveTokens(
@@ -48,23 +49,23 @@ export const useAssetList = (uniqueId: ChainUniqueId, address: string) => {
       const updateTokens = async () => {
         const res = await getUserInteractiveTokens();
         if (res?.tokens) {
-          dispatch.tokens.updateAddressTokens({
+          dispatch(actions.tokens.updateAddressTokens({
             uniqueId,
             address,
             tokens: res.tokens,
-          });
-          dispatch.tokens.updateTimestamp({
+          }));
+          dispatch(actions.tokens.updateTimestamp({
             uniqueId,
             address,
             newUpdateTimestamp: Date.now(),
-          });
+          }));
         }
       };
       void updateTokens();
     }
   }, [
     getUserInteractiveTokens,
-    dispatch.tokens,
+    dispatch,
     uniqueId,
     address,
     needUpdate,

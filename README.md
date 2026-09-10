@@ -14,12 +14,11 @@ FoxWallet is a secure and user-friendly decentralized self-custody wallet design
 - **app**: Contains all application UI pages, data management, routing, i18n (multi-language support), and other related functionalities.
 - **core**: Wallet service functionalities, including mnemonic phrase handling, private key import, address derivation, transaction sending, etc.
 - **env**: Directory for RPC and public API configuration files.
-- **offscreen_transaction**: Offscreen Document functionality added specifically for sending Aleo transactions.
-- **offscreen_scanner**: Offscreen Document functionality for Aleo Record Scanner ViewKey registration encryption.
-- **fox-aleo-sdk**: A customized package based on [@provablehq/sdk](https://github.com/ProvableHQ/sdk), which is compiled using `fox-aleo-sdk/wasm` to generate a WASM package suitable for JavaScript.
-- **@provablehq**: Packaged output based on `fox-aleo-sdk`, intended for use in different scenarios.
-- **script**: Contains scripts for specific functionalities.
+- **entrypoints**: WXT entrypoints for the wallet page, background service, content scripts, and offscreen document.
+- **offscreen_service**: Offscreen workers for Aleo transactions and scanner registration encryption.
+- **scripts**: Dependency patching, static WASM resource copying, and translation utilities.
 - **patches**: Stores patch files for dependencies.
+- **docs**: Architecture migration and Aleo SDK integration notes.
 
 ## Installation
 
@@ -30,30 +29,29 @@ FoxWallet browser extension currently supports Google Chrome. Ensure your Chrome
 
 ## Build
 
-### Normal
-
-1. Rename .env.example to .env and Fill out the configs in .env.
-2. Run the following commands.
-
-- Environment: Require Node version 18
+Use Node.js 22.12.0 or later and Yarn 1.22.22. Copy `.env.example` to `.env` and fill in the configuration, then install dependencies:
 
 ```shell
-yarn wasm
-yarn
-yarn build:dev
+yarn install --frozen-lockfile
 ```
 
-### Modified Rust  
+Installation applies the committed SDK patches, copies WASM and thread-worker resources from npm packages into `public/`, and prepares WXT.
 
-If you modify the Rust code in `fox-aleo-sdk/wasm`, you need to recompile the WASM package:  
+Start development:
 
 ```shell
-cd fox-aleo-sdk/wasm && yarn install # Node >= 22.1.5 may be required, install and switch as needed
-yarn build:all
-cd ../.. && yarn build:dev
+yarn dev
 ```
 
-> If you ensure that your Node.js version is compatible, you can directly run `yarn wasm` in the root directory to compile the WASM package, and then run `yarn build:dev`.
+`web-ext.config.ts` launches Google Chrome for Testing with a dedicated profile under `.wxt/`. Set its binary path to match your installation. The development extension is written to `dist/chrome-mv3-dev/`.
+
+Build a release or development package:
+
+```shell
+yarn build:prod # dist/chrome-mv3/
+yarn build:dev  # dist/chrome-mv3-dev/
+yarn zip       # release archive under dist/
+```
 
 ## Locale
 
@@ -77,27 +75,11 @@ yarn translate -p [your port]
 | Fungible token             | Working            |
 | Non fungible token         | Working            |
 
-## About `@provablehq` folder
+## Aleo SDK
 
-Since this project started early, it was initially built based on `@aleohq/wasm` (which has now migrated to [@provablehq/sdk](https://github.com/ProvableHQ/sdk)). Additionally, we have added some custom Rust code to better align with the business needs of the extension. The current WebAssembly (WASM) compilation process involves the following two methods:
+Aleo functionality uses the npm packages `@provablehq/sdk` and `@provablehq/wasm`, pinned to `0.11.3`. Popup and background code use `"provable-wasm-no-tla": "npm:@provablehq/wasm@0.11.3"` with explicit initialization; offscreen workers use the SDK for transactions, scanner encryption, and thread pools.
 
-- **`wasm-pack`**: Compiles the original WASM package. After compilation, the output is copied to `@provablehq/mainnet/aleo_wasm_mainnet` and `@provablehq/testnet/aleo_wasm_testnet`. In the application, it is imported using:
-  ```js
-  import { PrivateKey } from "aleo_wasm_mainnet";
-  // or
-  import { PrivateKey } from "aleo_wasm_testnet";
-  ```
-- **Rollup**: Follows the packaging approach of `@provablehq/sdk`. The output is copied to `@provablehq/mainnet/wasm` and `@provablehq/testnet/wasm`. In the application, it is imported using:
-  ```js
-  import { initThreadPool } from "@provablehq/wasm-mainnet";
-  // or
-  import { initThreadPool } from "@provablehq/wasm-testnet";
-  ```
-  > You can find the corresponding dependencies for `@provablehq/wasm-mainnet` in the `package.json` file.
-
-The existence of these two packaging methods is related to the project's technical architecture and the characteristics of the compiled output. Chrome Extension Manifest V3 does not support the **Top-Level Await** feature, which is included in the official package. To resolve this issue, we leverage the **Offscreen Document** feature, which is why you can see `offscreen_transaction` and `offscreen_scanner` in the project.
-
-> In summary, if you need to call the `initThreadPool` function, you must import `@provablehq/wasm-mainnet`. Since it involves the **Top-Level Await** feature, it must be placed inside an **Offscreen Document**. In all other cases, `aleo_wasm_mainnet` can be imported and used directly.
+Run `yarn sdk:patch` when regenerating dependency patches. See [Aleo SDK integration](docs/aleo-sdk.md) for the upgrade procedure and verification commands.
 
 ## License
 

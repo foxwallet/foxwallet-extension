@@ -1,11 +1,9 @@
-import { createModel } from "@rematch/core";
-import { type RootModel } from "./index";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import {
   WalletType,
   type DisplayWallet,
   type OneMatchGroupAccount,
 } from "@/scripts/background/store/vault/types/keyring";
-import { getClients } from "@/hooks/useClient";
 import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import {
   chainUniqueIdToAccountOptions,
@@ -24,7 +22,7 @@ interface AccountModel {
   showBalance: boolean;
 }
 
-const EMPTY_GROUP_ACCOUNT = {
+export const EMPTY_GROUP_ACCOUNT = {
   wallet: {
     walletId: "",
     walletName: "",
@@ -45,9 +43,9 @@ const DEFAULT_ACCOUNT_MODEL: AccountModel = {
   showBalance: true,
 };
 
-export const accountV2 = createModel<RootModel>()({
+export const accountV2 = createSlice({
   name: "accountV2",
-  state: {
+  initialState: {
     ...DEFAULT_ACCOUNT_MODEL,
   },
   reducers: {
@@ -58,8 +56,9 @@ export const accountV2 = createModel<RootModel>()({
     },
     _setSelectedGroupAccount(
       state,
-      payload: { groupAccount: OneMatchGroupAccount },
+      action: PayloadAction<{ groupAccount: OneMatchGroupAccount }>,
     ) {
+      const payload = action.payload;
       let { groupAccount } = payload;
       const walletInStore = state.allWalletInfo[groupAccount.wallet.walletId];
       if (walletInStore) {
@@ -88,8 +87,9 @@ export const accountV2 = createModel<RootModel>()({
     },
     changeWalletBackupedMnemonic(
       state,
-      payload: { walletId: string; backupedMnemonic: boolean },
+      action: PayloadAction<{ walletId: string; backupedMnemonic: boolean }>,
     ) {
+      const payload = action.payload;
       const { walletId, backupedMnemonic } = payload;
       return {
         ...state,
@@ -99,7 +99,11 @@ export const accountV2 = createModel<RootModel>()({
         },
       };
     },
-    _setAllWalletInfo(state, payload: { walletList: DisplayWallet[] }) {
+    _setAllWalletInfo(
+      state,
+      action: PayloadAction<{ walletList: DisplayWallet[] }>,
+    ) {
+      const payload = action.payload;
       const { walletList } = payload;
       const oldAllWalletInfo = { ...state.allWalletInfo };
       const oldAllWalletIds = Object.keys(oldAllWalletInfo);
@@ -144,7 +148,11 @@ export const accountV2 = createModel<RootModel>()({
         allWalletInfo,
       };
     },
-    changeWalletName(state, payload: { walletId: string; walletName: string }) {
+    changeWalletName(
+      state,
+      action: PayloadAction<{ walletId: string; walletName: string }>,
+    ) {
+      const payload = action.payload;
       const { walletId, walletName } = payload;
       const oldWallet = state.allWalletInfo[walletId];
       return {
@@ -160,8 +168,13 @@ export const accountV2 = createModel<RootModel>()({
     },
     changeAccountName(
       state,
-      paylaod: { walletId: string; groupId: string; accountName: string },
+      action: PayloadAction<{
+        walletId: string;
+        groupId: string;
+        accountName: string;
+      }>,
     ) {
+      const paylaod = action.payload;
       const { walletId, groupId, accountName } = paylaod;
       const oldWallet = state.allWalletInfo[walletId];
       const oldAccountList = oldWallet.groupAccounts || [];
@@ -198,91 +211,6 @@ export const accountV2 = createModel<RootModel>()({
       };
     },
   },
-  effects: (dispatch) => ({
-    async setSelectedGroupAccount({
-      selectedGroupAccount,
-    }: {
-      selectedGroupAccount: OneMatchGroupAccount;
-    }) {
-      const clients = getClients();
-      await clients.popupServerClient.setSelectedGroupAccount({
-        groupAccount: selectedGroupAccount,
-      });
-      dispatch.accountV2._setSelectedGroupAccount({
-        groupAccount: selectedGroupAccount,
-      });
-    },
-    async getSelectedGroupAccount() {
-      const clients = getClients();
-      const [groupAccount] = await Promise.all([
-        clients.popupServerClient.getSelectedGroupAccount(),
-      ]);
-      if (groupAccount) {
-        dispatch.accountV2._setSelectedGroupAccount({
-          groupAccount,
-        });
-      } else {
-        dispatch.accountV2._setSelectedGroupAccount({
-          groupAccount: EMPTY_GROUP_ACCOUNT,
-        });
-      }
-      return { groupAccount };
-    },
-    async resyncAllWalletsToStore() {
-      try {
-        const clients = getClients();
-        const [wallets, selectedGroupAccount] = await Promise.all([
-          clients.popupServerClient.getAllWallet(),
-          clients.popupServerClient.getSelectedGroupAccount(),
-        ]);
-        console.log("resyncAllWalletsToStore", wallets);
-        console.log("resyncAllWalletsToStore", selectedGroupAccount);
-        if (!wallets) return;
-        const hdWallets = wallets[WalletType.HD] ?? [];
-        const simpleWallets = wallets[WalletType.SIMPLE] ?? [];
-        const walletList = [...hdWallets, ...simpleWallets];
-        dispatch.accountV2._setAllWalletInfo({ walletList });
-
-        if (!selectedGroupAccount) return;
-        console.log("resyncAllWalletsToStore===", selectedGroupAccount);
-        dispatch.accountV2._setSelectedGroupAccount({
-          groupAccount: selectedGroupAccount,
-        });
-        return walletList;
-      } catch (err) {
-        console.error("resyncAllWalletsToStore failed: ", err);
-        return [];
-      }
-    },
-    async deleteWallet(walletId: string) {
-      const clients = getClients();
-      const wallets = await clients.popupServerClient.deleteWallet(walletId);
-      if (!wallets) return [];
-      // update selectedAccount in Redux store immediately
-      await dispatch.accountV2.getSelectedGroupAccount();
-      const hdWallets = wallets[WalletType.HD] ?? [];
-      const simpleWallets = wallets[WalletType.SIMPLE] ?? [];
-      const walletList = [...hdWallets, ...simpleWallets];
-      dispatch.accountV2._setAllWalletInfo({ walletList });
-      return [...walletList];
-    },
-    async resetWallet() {
-      const clients = getClients();
-      try {
-        await clients.popupServerClient.resetWallet();
-        dispatch.accountV2._reset();
-        dispatch.account._reset();
-        dispatch.address._resetNameTags();
-        dispatch.multiChain._reset();
-        dispatch.tokens._reset();
-        dispatch.user._reset();
-        dispatch.wallet._reset();
-        return true;
-      } catch (e) {
-        return false;
-      }
-    },
-  }),
 });
 
 export const matchAccountsWithUniqueId = (

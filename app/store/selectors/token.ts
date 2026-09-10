@@ -18,7 +18,6 @@ export const userTokenPriceSelector = createAppSelector(
   (userTokenMap, priceMap) => {
     const newTokenMap: UserTokensMap = { ...userTokenMap };
     const uniqueIds = Object.keys(userTokenMap) as ChainUniqueId[];
-    console.log("      uniqueIds", uniqueIds);
 
     for (const uniqueId of uniqueIds) {
       const tokenMap = newTokenMap[uniqueId];

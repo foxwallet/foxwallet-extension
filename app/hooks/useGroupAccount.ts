@@ -1,3 +1,4 @@
+import { actions } from "@/store/actions";
 import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import { usePopupDispatch, usePopupSelector } from "./useStore";
 import { useCallback, useEffect, useMemo } from "react";
@@ -9,7 +10,8 @@ import { matchAccountsWithUniqueId } from "@/store/accountV2";
 import { type OneMatchAccount } from "@/scripts/background/store/vault/types/keyring";
 import { isEqual } from "lodash";
 import { useSelector } from "react-redux";
-import { type RootState, store } from "@/store/store";
+import type { RootState } from "@/store/types";
+import { getCurrentState } from "@/store/currentState";
 import { getChainConfig } from "@/services/coin/CoinService";
 import { coinServiceEntry } from "core/coins/CoinServiceEntry";
 import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
@@ -24,8 +26,8 @@ export const useGroupAccount = () => {
   const dispatch = usePopupDispatch();
 
   useEffect(() => {
-    void dispatch.accountV2.getSelectedGroupAccount();
-  }, [dispatch.accountV2]);
+    void dispatch(actions.accountV2.getSelectedGroupAccount());
+  }, [dispatch]);
 
   const getMatchAccountsWithUniqueId = useCallback(
     (uniqueId: ChainUniqueId) => {
@@ -115,7 +117,7 @@ export const getChainConfigsByFilter = ({
 }) => {
   let currState = state;
   if (!currState) {
-    currState = store.getState();
+    currState = getCurrentState();
   }
   const configs = currState.multiChain.chainConfigItems?.filter(filter);
   const innerConfigs = getInnerChainConfigByFilter({ filter });

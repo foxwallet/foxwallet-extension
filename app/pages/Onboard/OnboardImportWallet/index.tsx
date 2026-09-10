@@ -1,3 +1,4 @@
+import { actions } from "@/store/actions";
 import { useCallback, useContext, useMemo, useRef, useState } from "react";
 import { PageWithHeader } from "@/layouts/Page";
 import { Body } from "@/layouts/Body";
@@ -48,12 +49,12 @@ export default function OnboardImportWallet() {
                     walletName,
                     mnemonic: mnemonic.trim(),
                   });
-                  await dispatch.accountV2.resyncAllWalletsToStore();
-                  dispatch.accountV2.changeWalletBackupedMnemonic({
+                  await dispatch(actions.accountV2.resyncAllWalletsToStore());
+                  dispatch(actions.accountV2.changeWalletBackupedMnemonic({
                     walletId: wallet.walletId,
                     backupedMnemonic: true,
-                  });
-                  dispatch.multiChain.addHdWalletChainItem({ walletId });
+                  }));
+                  dispatch(actions.multiChain.addHdWalletChainItem({ walletId }));
                   // await sleep(50);
                   navigate("/");
                 } catch (err) {

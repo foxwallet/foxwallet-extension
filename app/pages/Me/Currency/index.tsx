@@ -1,3 +1,4 @@
+import { actions } from "@/store/actions";
 import { PageWithHeader } from "@/layouts/Page";
 import { Flex, Text } from "@chakra-ui/react";
 import { useCallback } from "react";
@@ -16,10 +17,10 @@ function CurrencyScreen() {
   const dispatch = usePopupDispatch();
   const changeCurrency = useCallback(
     (newCurrency: SupportCurrency) => {
-      dispatch.setting.updateCurrency({ currency: newCurrency });
+      dispatch(actions.setting.updateCurrency({ currency: newCurrency }));
       navigate(-1);
     },
-    [dispatch.setting, navigate],
+    [dispatch, navigate],
   );
 
   return (

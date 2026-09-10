@@ -1,3 +1,4 @@
+import { getBackgroundState } from "../store/redux";
 import { AuthManager } from "@/scripts/background/store/vault/managers/auth/AuthManager";
 import { KeyringManager } from "@/scripts/background/store/vault/managers/keyring/KeyringManager";
 import { DappStorage } from "@/scripts/background/store/dapp/DappStorage";
@@ -35,12 +36,9 @@ import { BigNumber } from "ethers";
 import { GasFeeEIP1559, GasFeeLegacy, GasFeeType } from "core/types/GasFee";
 import { contentServerHandler } from "@/scripts/background";
 import { v4 as uuidv4 } from "uuid";
-import { FullModel } from "@/store/store";
 import { getStorageData, setStorageData } from "@/common/utils/storage";
 import { ChainBaseConfig } from "core/types/ChainBaseConfig";
 import { getChainConfigsByFilter } from "@/hooks/useGroupAccount";
-import { RematchRootState } from "@rematch/core";
-import { RootModel } from "@/store";
 import { appStorageInstance } from "@/common/utils/indexeddb";
 import { QtumService } from "core/coins/QTUM/service/QtumService";
 import { QtumConfig } from "core/coins/QTUM/types/QtumConfig";
@@ -828,9 +826,7 @@ export class QTUMContentWalletServer implements IContentServer<CoinType.QTUM> {
 
       const chainIdRequest = parseEthChainId(network || "0x51");
 
-      const state = (await appStorageInstance.getItem(
-        "persist:root",
-      )) as RematchRootState<RootModel, FullModel>;
+      const state = await getBackgroundState();
 
       const existChainConfigs = getChainConfigsByFilter({
         state,
@@ -921,9 +917,7 @@ export class QTUMContentWalletServer implements IContentServer<CoinType.QTUM> {
         );
       }
 
-      const state = (await appStorageInstance.getItem(
-        "persist:root",
-      )) as RematchRootState<RootModel, FullModel>;
+      const state = await getBackgroundState();
 
       const existChainConfigs = getChainConfigsByFilter({
         state,
@@ -984,9 +978,7 @@ export class QTUMContentWalletServer implements IContentServer<CoinType.QTUM> {
         );
       }
 
-      const state = (await appStorageInstance.getItem(
-        "persist:root",
-      )) as RematchRootState<RootModel, FullModel>;
+      const state = await getBackgroundState();
 
       // check the chainId is in config
       const existChainConfigs = getChainConfigsByFilter({
@@ -1072,9 +1064,7 @@ export class QTUMContentWalletServer implements IContentServer<CoinType.QTUM> {
     if (!valid) {
       throw new ProviderError(errorCodes.rpc.invalidParams, "Invalid network");
     }
-    const state = (await appStorageInstance.getItem(
-      "persist:root",
-    )) as RematchRootState<RootModel, FullModel>;
+    const state = await getBackgroundState();
     const existChainConfigs = getChainConfigsByFilter({
       state,
       filter: (item: ChainBaseConfig) =>

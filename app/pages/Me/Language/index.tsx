@@ -1,3 +1,4 @@
+import { actions } from "@/store/actions";
 import { PageWithHeader } from "@/layouts/Page";
 import { Flex, Text } from "@chakra-ui/react";
 import { useCallback } from "react";
@@ -17,10 +18,10 @@ function LanguageScreen() {
   const dispatch = usePopupDispatch();
   const changeLanguage = useCallback(
     (newLanguage: SupportLanguages) => {
-      void dispatch.setting.changeLanguage({ language: newLanguage });
+      void dispatch(actions.setting.changeLanguage({ language: newLanguage }));
       navigate(-1);
     },
-    [dispatch.setting, navigate],
+    [dispatch, navigate],
   );
 
   const { borderColor } = useThemeStyle();

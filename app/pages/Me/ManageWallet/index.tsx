@@ -1,3 +1,4 @@
+import { actions } from "@/store/actions";
 import { PageWithHeader } from "@/layouts/Page";
 import { Box, Button, Flex, Text, useDisclosure } from "@chakra-ui/react";
 import type React from "react";
@@ -110,17 +111,17 @@ function ManageWalletScreen() {
           wallet.groupAccounts[0];
 
         if (account) {
-          void dispatch.accountV2.setSelectedGroupAccount({
+          void dispatch(actions.accountV2.setSelectedGroupAccount({
             selectedGroupAccount: {
               wallet: restWallet,
               group: account,
             },
-          });
+          }));
         }
       }
       navigate(-1);
     },
-    [dispatch.accountV2, navigate, selectedWallet?.walletId],
+    [dispatch, navigate, selectedWallet?.walletId],
   );
 
   const onDeleteWallet = useCallback(

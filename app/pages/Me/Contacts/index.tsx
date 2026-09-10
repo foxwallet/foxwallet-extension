@@ -1,3 +1,4 @@
+import { actions } from "@/store/actions";
 import { Content } from "@/layouts/Content";
 import { PageWithHeader } from "@/layouts/Page";
 import { useTranslation } from "react-i18next";
@@ -57,13 +58,13 @@ const ContactItem = ({
       try {
         const { confirmed } = await showContactDeleteDialog();
         if (confirmed) {
-          dispatch.address.removeAddress({ id: item.id });
+          dispatch(actions.address.removeAddress({ id: item.id }));
         }
       } catch (err) {
         console.error(err);
       }
     },
-    [dispatch.address],
+    [dispatch],
   );
 
   const onMore = useCallback(async () => {

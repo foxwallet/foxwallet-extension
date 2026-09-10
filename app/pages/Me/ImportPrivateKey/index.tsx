@@ -1,3 +1,4 @@
+import { actions } from "@/store/actions";
 import { logger } from "@/common/utils/logger";
 import { showErrorToast } from "@/components/Custom/ErrorToast";
 import { ImportPrivateKeyStep } from "@/components/Onboard/ImportPrivateKey";
@@ -64,21 +65,21 @@ const ImportPrivateKeyScreen = () => {
                   });
                   const { groupAccounts, ...restWallet } = wallet;
                   const groupAccount = wallet.groupAccounts[0];
-                  await dispatch.accountV2.setSelectedGroupAccount({
+                  await dispatch(actions.accountV2.setSelectedGroupAccount({
                     selectedGroupAccount: {
                       wallet: restWallet,
                       group: groupAccount,
                     },
-                  });
-                  dispatch.accountV2.changeWalletBackupedMnemonic({
+                  }));
+                  dispatch(actions.accountV2.changeWalletBackupedMnemonic({
                     walletId: wallet.walletId,
                     backupedMnemonic: true,
-                  });
-                  dispatch.multiChain.addSimpleWalletChainItem({
+                  }));
+                  dispatch(actions.multiChain.addSimpleWalletChainItem({
                     walletId,
                     coinType,
                     option: {},
-                  });
+                  }));
                   await sleep(500);
                   navigate("/");
                 } catch (err) {
@@ -98,8 +99,8 @@ const ImportPrivateKeyScreen = () => {
   }, [
     step,
     popupServerClient,
-    dispatch.accountV2,
-    dispatch.multiChain,
+    dispatch,
+    dispatch,
     navigate,
   ]);
 

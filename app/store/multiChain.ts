@@ -1,5 +1,4 @@
-import { createModel } from "@rematch/core";
-import { type RootModel } from "./index";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
 import { type CoinType } from "core/types";
 import {
@@ -13,7 +12,6 @@ import {
   getDefaultChainUniqueId,
 } from "core/constants/chain";
 import { type AccountOption } from "core/types/CoinBasic";
-import { walletByIdSelector } from "./selectors/account";
 import { produce } from "immer";
 
 export type ChainConfigItems = ChainBaseConfig[];
@@ -31,20 +29,21 @@ export type MultiChainModel = {
   walletChainMap: WalletChainMap;
 };
 
-export const multiChain = createModel<RootModel>()({
+export const multiChain = createSlice({
   name: "multiChain",
-  state: {
+  initialState: {
     chainConfigItems: [],
     walletChainMap: {},
   } as MultiChainModel,
   reducers: {
     _addChainConfig(
       state,
-      payload: {
+      action: PayloadAction<{
         chainConfigItems: ChainConfigItems;
         walletChainMap: WalletChainMap;
-      },
+      }>,
     ) {
+      const payload = action.payload;
       return {
         ...state,
         chainConfigItems: payload.chainConfigItems,
@@ -52,7 +51,11 @@ export const multiChain = createModel<RootModel>()({
       } as MultiChainModel;
     },
 
-    changeChainConfig(state, payload: { chainConfig: ChainBaseConfig }) {
+    changeChainConfig(
+      state,
+      action: PayloadAction<{ chainConfig: ChainBaseConfig }>,
+    ) {
+      const payload = action.payload;
       return produce(state, (draftState) => {
         const { chainConfig } = payload;
         const uniqueId = chainConfig.uniqueId;
@@ -78,7 +81,11 @@ export const multiChain = createModel<RootModel>()({
       });
     },
 
-    removeChainConfig(state, payload: { chainConfig: ChainBaseConfig }) {
+    removeChainConfig(
+      state,
+      action: PayloadAction<{ chainConfig: ChainBaseConfig }>,
+    ) {
+      const payload = action.payload;
       const { chainConfig } = payload;
       const { uniqueId } = chainConfig;
       if (INNER_CHAIN_CONFIG.some((item) => item.uniqueId === uniqueId)) {
@@ -91,7 +98,7 @@ export const multiChain = createModel<RootModel>()({
         return item.uniqueId !== uniqueId;
       });
 
-      const walletChainMap = state.walletChainMap;
+      const walletChainMap = { ...state.walletChainMap };
       for (const [walletId, chainMap] of Object.entries(walletChainMap)) {
         if (!chainMap) {
           console.error(
@@ -121,12 +128,13 @@ export const multiChain = createModel<RootModel>()({
 
     _addUserSelectedChain(
       state,
-      payload: {
+      action: PayloadAction<{
         walletId: string;
         uniqueId: ChainUniqueId;
         select?: boolean;
-      },
+      }>,
     ) {
+      const payload = action.payload;
       const { walletId, uniqueId } = payload;
       const chainMap: ChainMap | undefined = state.walletChainMap[walletId];
       if (!chainMap) {
@@ -154,12 +162,13 @@ export const multiChain = createModel<RootModel>()({
     // 如果是私钥钱包，那么不允许移除默认链，如果是助记词钱包，不允许移除eth主网
     _removeUserSelectedChain(
       state,
-      payload: {
+      action: PayloadAction<{
         walletId: string;
         uniqueId: ChainUniqueId;
         walletType: WalletType;
-      },
+      }>,
     ) {
+      const payload = action.payload;
       const { walletId, uniqueId, walletType } = payload;
       const chainMap: ChainMap | undefined = state.walletChainMap[walletId];
       if (!chainMap) {
@@ -201,7 +210,8 @@ export const multiChain = createModel<RootModel>()({
         walletChainMap: {},
       };
     },
-    resetWalletChainItem(state, payload: { walletId: string }) {
+    resetWalletChainItem(state, action: PayloadAction<{ walletId: string }>) {
+      const payload = action.payload;
       const { walletId } = payload;
       return {
         ...state,
@@ -211,7 +221,8 @@ export const multiChain = createModel<RootModel>()({
         },
       };
     },
-    _addHdWalletChainItem(state, payload: { walletId: string }) {
+    _addHdWalletChainItem(state, action: PayloadAction<{ walletId: string }>) {
+      const payload = action.payload;
       const { walletId } = payload;
       // 由于存在在添加网络时添加账户的操作，所以暂时不继承其他钱包的已选择网络
       return {
@@ -226,12 +237,13 @@ export const multiChain = createModel<RootModel>()({
     },
     addSimpleWalletChainItem(
       state,
-      payload: {
+      action: PayloadAction<{
         walletId: string;
         coinType: CoinType;
         option: AccountOption[CoinType];
-      },
+      }>,
     ) {
+      const payload = action.payload;
       const { walletId, coinType, option } = payload;
       const defaultChain = [getDefaultChainUniqueId(coinType, option)];
       return {
@@ -246,12 +258,13 @@ export const multiChain = createModel<RootModel>()({
     },
     batchAddSimpleWalletChainItem(
       state,
-      payload: {
+      action: PayloadAction<{
         walletId: string;
         coinType: CoinType;
         options: Array<AccountOption[CoinType]>;
-      },
+      }>,
     ) {
+      const payload = action.payload;
       const { walletId, coinType, options } = payload;
       const defaultChains = options.map((option) =>
         getDefaultChainUniqueId(coinType, option),
@@ -267,107 +280,4 @@ export const multiChain = createModel<RootModel>()({
       } as MultiChainModel;
     },
   },
-  effects: (dispatch) => ({
-    // select uses top store, effect instead of reducer
-    addChainConfig(payload: { chainConfig: ChainBaseConfig }, state) {
-      const { chainConfig } = payload;
-      const uniqueId = chainConfig.uniqueId;
-      const chainConfigItems: ChainConfigItems =
-        state.multiChain.chainConfigItems || [];
-      const exist = chainConfigItems.some(
-        (config) => config.uniqueId === uniqueId,
-      );
-      if (!exist) {
-        chainConfigItems.push(chainConfig);
-      }
-      const walletChainMap: WalletChainMap = state.multiChain.walletChainMap;
-      for (const [walletId, chainMap] of Object.entries(walletChainMap)) {
-        if (!chainMap) {
-          console.error(
-            `addChainConfig walletId ${walletId} isn't exist in walletChainMap`,
-          );
-          continue;
-        }
-        const walletById = walletByIdSelector(state as any, { walletId });
-        if (!walletById) {
-          continue;
-        }
-        if (walletById.walletType === WalletType.SIMPLE) {
-          const supportChain = walletById.groupAccounts[0].accounts.some(
-            (account) => {
-              if (chainConfig.chainOptionFilter) {
-                for (const filterKey in chainConfig.chainOptionFilter) {
-                  if (
-                    account.option?.[
-                      filterKey as keyof AccountOption[CoinType]
-                    ] !==
-                    chainConfig.chainOptionFilter[
-                      filterKey as keyof AccountOption[CoinType]
-                    ]
-                  ) {
-                    return false;
-                  }
-                }
-              }
-              return account.coinType === chainConfig.coinType;
-            },
-          );
-          // 如果当前钱包不支持该链，跳过
-          if (!supportChain) {
-            continue;
-          }
-        }
-        const userSelectedChains: ChainUniqueId[] = chainMap.userSelectedChains;
-        let newUserSelectedChains: ChainUniqueId[];
-        const selected = userSelectedChains.some((id) => id === uniqueId);
-        if (selected) {
-          newUserSelectedChains = [...userSelectedChains];
-        } else {
-          newUserSelectedChains = [...userSelectedChains, uniqueId];
-        }
-        walletChainMap[walletId] = {
-          ...chainMap,
-          userSelectedChains: newUserSelectedChains,
-        };
-      }
-
-      dispatch.multiChain._addChainConfig({
-        chainConfigItems: [...chainConfigItems],
-        walletChainMap: {
-          ...walletChainMap,
-        },
-      });
-    },
-    addHdWalletChainItem(payload: { walletId: string }) {
-      const { walletId } = payload;
-      dispatch.multiChain._addHdWalletChainItem({
-        walletId,
-      });
-    },
-    addUserSelectedChain(payload: {
-      walletId: string;
-      uniqueId: ChainUniqueId;
-      select?: boolean;
-    }) {
-      dispatch.multiChain._addUserSelectedChain(payload);
-    },
-    removeUserSelectedChain(
-      payload: {
-        walletId: string;
-        uniqueId: ChainUniqueId;
-      },
-      state,
-    ) {
-      const walletById = walletByIdSelector(state as any, {
-        walletId: payload.walletId,
-      });
-      if (!walletById) {
-        return;
-      }
-      dispatch.multiChain._removeUserSelectedChain({
-        ...payload,
-        walletType: walletById.walletType,
-      });
-    },
-  }),
 });

@@ -93,10 +93,8 @@ import {
   createComplianceService,
 } from "core/coins/ALEO/service/instances/compliance";
 
-// Replacement for fox-aleo-sdk's `hashBHP256(struct: string)` helper, which
-// the upstream @provablehq/wasm 0.10.x does not expose. Mirrors the
-// reference project (provable-extension src/app/common/utils/tokenUtils.ts):
-// hash a struct literal via BHP256 over the Plaintext's little-endian bits.
+// Hash a struct literal via the official BHP256 binding over the Plaintext's
+// little-endian bits, preserving the legacy helper's output.
 const hashBHP256 = (struct: string): string => {
   const hasher = new BHP256();
   const plaintext = Plaintext.fromString(struct);
@@ -724,14 +722,11 @@ export class AleoService extends CoinServiceBasic {
   };
 
   private parseFuture = (_futureStr?: string): FutureJSON | undefined => {
-    // FoxFuture was a fox-aleo-sdk extension to wasm-pack output that the
-    // upstream @provablehq/wasm 0.10.x does not provide, and there is no
-    // drop-in replacement (Future is consumed inside the SDK's Transaction
-    // pipeline rather than exported as a standalone parser). History views
-    // that depended on this currently degrade to undefined; private balance
-    // and the scanner decrypt path do not depend on it.
-    // TODO: reimplement using either a hand-rolled future literal parser or
-    // a future helper added to fox-aleo-sdk.
+    // The official SDK consumes futures inside its Transaction pipeline but
+    // does not export a standalone parser. History views that depended on
+    // the legacy parser currently receive undefined; private balance and
+    // scanner decryption do not depend on it.
+    // TODO: implement a future literal parser for transaction history.
     return undefined;
   };
 
