@@ -1,3 +1,4 @@
+import { groupBy, uniqBy } from "lodash";
 import { type AleoConfig } from "../types/AleoConfig";
 import { type IAleoStorage } from "../types/IAleoStorage";
 import { type FutureJSON, type RecordDetailWithSpent } from "../types/SyncTask";
@@ -7,7 +8,6 @@ import {
   type InputItem,
   RecordFilter,
 } from "@/scripts/background/servers/IWalletServer";
-import { groupBy, uniqBy } from "lodash";
 import { type AleoRpcService, createAleoRpcService } from "./instances/rpc";
 import { type AleoCreditMethod } from "../types/TransferMethod";
 import {

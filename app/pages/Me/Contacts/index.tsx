@@ -1,3 +1,4 @@
+import { isEqual } from "lodash";
 import { actions } from "@/store/actions";
 import { Content } from "@/layouts/Content";
 import { PageWithHeader } from "@/layouts/Page";
@@ -20,7 +21,6 @@ import {
 import type React from "react";
 import { useMemo, useCallback, useState } from "react";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
-import { isEqual } from "lodash";
 import { getChainAddressBooksSelector } from "@/store/selectors/address";
 import type { ChainUniqueId } from "core/types/ChainUniqueId";
 import { type AddressItemV2 } from "@/store/addressModel";

@@ -1,3 +1,4 @@
+import { isEqual } from "lodash";
 import { actions } from "@/store/actions";
 import {
   IconAddCircle,
@@ -25,7 +26,6 @@ import {
   BETA_STAKING_ALEO_TOKEN_ID,
   BETA_STAKING_PROGRAM_ID,
 } from "core/coins/ALEO/constants";
-import { isEqual } from "lodash";
 import type React from "react";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -56,7 +56,8 @@ function AddToken() {
     isEqual,
   );
   const userTokens = useMemo(
-    () => (rawUserTokens ? dedupeUserTokens(uniqueId, rawUserTokens) : rawUserTokens),
+    () =>
+      rawUserTokens ? dedupeUserTokens(uniqueId, rawUserTokens) : rawUserTokens,
     [rawUserTokens, uniqueId],
   );
 
@@ -131,22 +132,26 @@ function AddToken() {
         }
       }
 
-      dispatch(actions.tokens.selectToken({
-        uniqueId,
-        address: selectedAccount.account.address,
-        token,
-      }));
+      dispatch(
+        actions.tokens.selectToken({
+          uniqueId,
+          address: selectedAccount.account.address,
+          token,
+        }),
+      );
     },
     [uniqueId, dispatch, selectedAccount.account.address, coinService],
   );
 
   const unselectToken = useCallback(
     (token: TokenV2) => {
-      dispatch(actions.tokens.unselectToken({
-        uniqueId,
-        address: selectedAccount.account.address,
-        token,
-      }));
+      dispatch(
+        actions.tokens.unselectToken({
+          uniqueId,
+          address: selectedAccount.account.address,
+          token,
+        }),
+      );
     },
     [dispatch, uniqueId, selectedAccount],
   );

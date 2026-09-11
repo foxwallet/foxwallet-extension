@@ -1,9 +1,9 @@
+import { isEqual } from "lodash";
 import { type WalletType } from "@/scripts/background/store/vault/types/keyring";
 import {
   ChainAssembleMode,
   type ChainDisplayMode,
 } from "core/types/ChainUniqueId";
-import { isEqual } from "lodash";
 import { actions } from "../actions";
 import type { AppThunk } from "../types";
 

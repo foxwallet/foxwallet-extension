@@ -8,13 +8,14 @@ const manifest: UserManifest = {
   icons: {
     "128": "logo.png",
   },
-  action: { default_popup: "index.html" },
+  action: { default_title: "FoxWallet" },
   permissions: [
     "storage",
     "clipboardWrite",
     "unlimitedStorage",
     "tabs",
     "offscreen",
+    "sidePanel",
   ],
   host_permissions: [
     "https://api.provable.com/*",

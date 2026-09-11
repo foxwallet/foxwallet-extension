@@ -1,3 +1,4 @@
+import { isEqual } from "lodash";
 import { actions } from "@/store/actions";
 import { Content } from "@/layouts/Content";
 import { PageWithHeader } from "@/layouts/Page";
@@ -24,7 +25,6 @@ import { useLocationParams } from "@/hooks/useLocationParams";
 import { type AddressItemV2 } from "@/store/addressModel";
 import { usePopupDispatch } from "@/hooks/useStore";
 import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
-import { isEqual } from "lodash";
 import { useChainConfigs } from "@/hooks/useGroupAccount";
 import { showContactDeleteDialog } from "@/components/Me/ContactDeleteDialog";
 
@@ -188,10 +188,12 @@ const AddOrEditContactScreen = () => {
     if (isAdd) {
       dispatch(actions.address.addAddress({ addressItem: item }));
     } else {
-      dispatch(actions.address.editAddress({
-        id: addressItemInfo!.id,
-        newAddressItem: item,
-      }));
+      dispatch(
+        actions.address.editAddress({
+          id: addressItemInfo!.id,
+          newAddressItem: item,
+        }),
+      );
     }
     navigate(-1);
   }, [

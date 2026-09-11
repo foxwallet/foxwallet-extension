@@ -1,6 +1,6 @@
+import { isEqual } from "lodash";
 import { actions } from "@/store/actions";
 import { type Dispatch, type RootState } from "@/store/store";
-import { isEqual } from "lodash";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { type ChainUniqueId } from "core/types/ChainUniqueId";

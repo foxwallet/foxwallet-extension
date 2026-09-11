@@ -1,3 +1,4 @@
+import { isEqual } from "lodash";
 import { actions } from "@/store/actions";
 import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import { usePopupDispatch, usePopupSelector } from "./useStore";
@@ -8,7 +9,6 @@ import {
 } from "@/store/selectors/account";
 import { matchAccountsWithUniqueId } from "@/store/accountV2";
 import { type OneMatchAccount } from "@/scripts/background/store/vault/types/keyring";
-import { isEqual } from "lodash";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store/types";
 import { getCurrentState } from "@/store/currentState";

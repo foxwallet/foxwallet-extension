@@ -26,9 +26,54 @@ import {
 import { AleoStorage } from "./store/aleo/AleoStorage";
 import { encryptRegistrationViaOffscreen } from "./scannerOffscreen";
 import { CoinType } from "core/types";
+import { confirmUI } from "./helper/confirmUI";
+import { applyWalletUIMode } from "./helper/uiMode";
+import { WalletUIMode } from "@/store/setting";
 
 export function startBackground() {
-  initializeBackgroundStore();
+  confirmUI.start();
+  chrome.runtime.onMessage.addListener((message) => {
+    if (message?.type !== "restore-sidepanel") return;
+    setTimeout(() => {
+      void chrome.sidePanel
+        .setOptions({ enabled: true, path: "sidepanel.html" })
+        .catch((error) => {
+          console.error("Could not restore the wallet side panel", error);
+        });
+    }, 300);
+  });
+  const stateService = initializeBackgroundStore();
+  confirmUI.setPanelEnabled(
+    () =>
+      (stateService.store.getState().setting.uiMode ??
+        WalletUIMode.SidePanel) === WalletUIMode.SidePanel,
+  );
+  void stateService.ready
+    .then(async () => {
+      let currentMode =
+        stateService.store.getState().setting.uiMode ?? WalletUIMode.SidePanel;
+      const applyMode = async (mode: WalletUIMode) => {
+        try {
+          await applyWalletUIMode(mode);
+        } catch (error) {
+          console.error("Could not apply wallet UI mode", error);
+        }
+      };
+      await applyMode(currentMode);
+      stateService.store.subscribe(() => {
+        const nextMode =
+          stateService.store.getState().setting.uiMode ??
+          WalletUIMode.SidePanel;
+        if (nextMode === currentMode) return;
+        currentMode = nextMode;
+        void applyMode(nextMode);
+      });
+    })
+    .catch(() => {
+      void applyWalletUIMode(WalletUIMode.SidePanel).catch((error) => {
+        console.error("Could not enable the wallet side panel", error);
+      });
+    });
   const keepAliveConnection = new Connection(
     keepAliveHandler,
     PortName.KEEP_ALIVE,

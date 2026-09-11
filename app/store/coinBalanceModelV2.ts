@@ -1,5 +1,5 @@
-import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { groupBy, isEqual } from "lodash";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { type TokenV2 } from "core/types/Token";
 import { type ChainUniqueId } from "core/types/ChainUniqueId";
 

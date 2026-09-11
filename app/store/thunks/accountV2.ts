@@ -1,3 +1,4 @@
+import { isEqual } from "lodash";
 import {
   WalletType,
   type DisplayWallet,
@@ -9,7 +10,6 @@ import {
   chainUniqueIdToAccountOptions,
   chainUniqueIdToCoinType,
 } from "core/helper/CoinType";
-import { isEqual } from "lodash";
 import { actions } from "../actions";
 import type { AppThunk } from "../types";
 import { EMPTY_GROUP_ACCOUNT } from "../accountV2";

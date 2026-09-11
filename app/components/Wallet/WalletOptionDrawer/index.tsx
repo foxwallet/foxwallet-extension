@@ -1,3 +1,4 @@
+import { isEqual } from "lodash";
 import { Flex, Text } from "@chakra-ui/react";
 import { promisifyChooseDialogWrapper } from "@/common/utils/dialog";
 import { useCallback, useMemo } from "react";
@@ -9,7 +10,6 @@ import {
   WalletType,
 } from "@/scripts/background/store/vault/types/keyring";
 import { usePopupSelector } from "@/hooks/useStore";
-import { isEqual } from "lodash";
 
 export enum WalletOperateOption {
   ExportPhrase,

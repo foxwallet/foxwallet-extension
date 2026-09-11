@@ -11,6 +11,8 @@ import { type PopupWalletServer } from "../servers/PopupServer";
 import { PortName } from "../../../common/types/port";
 import { executeServerMethod } from "../servers/IWalletServer";
 import { Mutex } from "async-mutex";
+import browser from "webextension-polyfill";
+import { isWalletDocument } from "@/common/utils/walletUI";
 
 const mutex = new Mutex();
 export class PopupServerHandler implements IHandler {
@@ -30,6 +32,10 @@ export class PopupServerHandler implements IHandler {
   }
 
   handle(port: Runtime.Port): void | Promise<void> {
+    if (!isWalletDocument(browser.runtime, port.sender)) {
+      port.disconnect();
+      return;
+    }
     this.popupPorts.add(port);
     port.onMessage.addListener(async (msg: ServerMessage) => {
       const release = await mutex.acquire();
@@ -43,8 +49,12 @@ export class PopupServerHandler implements IHandler {
           logger.error("PopupServerHandler Invalid origin ", msg.origin);
           return;
         }
+        const result =
+          method === "onRequestFinish"
+            ? this.popupServer[method](payload, port.sender)
+            : this.popupServer[method](payload);
         const resp = this.wrapPopupResp(
-          await executeServerMethod(this.popupServer[method](payload) as any),
+          await executeServerMethod(result as any),
           id,
         );
         port.postMessage(resp);
@@ -55,7 +65,8 @@ export class PopupServerHandler implements IHandler {
     port.onDisconnect.addListener(async () => {
       this.popupPorts.delete(port);
       console.log("===> PopupServerHandler onDisconnect");
-      await executeServerMethod(this.popupServer.timeoutLock());
+      if (!this.hasActivePort())
+        await executeServerMethod(this.popupServer.timeoutLock());
     });
   }
 }

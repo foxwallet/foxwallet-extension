@@ -57,6 +57,7 @@ const ImportPrivateKey = lazy(
   async () => await import("../pages/Me/ImportPrivateKey"),
 );
 const Language = lazy(async () => await import("../pages/Me/Language"));
+const UIMode = lazy(async () => await import("../pages/Me/UIMode"));
 const ExportSeedPhrase = lazy(
   async () => await import("../pages/Me/ExportSeedPhrase"),
 );
@@ -206,6 +207,10 @@ export const routesConfig: RouteObject[] = [
       {
         path: "manage_language",
         element: <Language />,
+      },
+      {
+        path: "manage_ui_mode",
+        element: <UIMode />,
       },
       {
         path: "token_detail/:uniqueId/:address",

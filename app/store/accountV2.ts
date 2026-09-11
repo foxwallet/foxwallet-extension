@@ -1,3 +1,4 @@
+import { isEqual } from "lodash";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import {
   WalletType,
@@ -9,7 +10,6 @@ import {
   chainUniqueIdToAccountOptions,
   chainUniqueIdToCoinType,
 } from "core/helper/CoinType";
-import { isEqual } from "lodash";
 
 type WalletBackupedMnemonicMap = { [walletId in string]: boolean };
 

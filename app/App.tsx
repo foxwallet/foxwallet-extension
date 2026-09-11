@@ -7,11 +7,13 @@ import { useEffect } from "react";
 import { changeLanguage } from "./locales/i18";
 import { ColorMode } from "./store/setting";
 import { localStorageManager } from "@chakra-ui/react";
+import { useConfirmUI } from "./hooks/useConfirmUI";
 
 function App() {
+  useConfirmUI();
   const routes = useRoutes(routesConfig);
 
-  const language = usePopupSelector(state => state.setting.language);
+  const language = usePopupSelector((state) => state.setting.language);
   useEffect(() => {
     if (language) {
       void changeLanguage(language);

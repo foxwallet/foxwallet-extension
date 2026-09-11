@@ -1,10 +1,10 @@
+import { isEqual } from "lodash";
 import { actions } from "@/store/actions";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { useChainMode } from "@/hooks/useChainMode";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { dedupeUserTokens } from "@/common/utils/userTokens";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
-import { isEqual } from "lodash";
 import { useCallback, useMemo } from "react";
 import { useGroupInteractiveTokens } from "@/hooks/useToken";
 import { coinServiceEntry } from "core/coins/CoinServiceEntry";

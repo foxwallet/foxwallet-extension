@@ -32,14 +32,23 @@ function MainScreen() {
   const { borderColor, backgroundColor } = useThemeStyle();
 
   return (
-    <Flex flexDirection={"column"} flex={1} alignItems={"stretch"}>
+    <Flex flexDirection={"column"} flex={1} minH={0} alignItems={"stretch"}>
       <Tabs
         variant={"unstyled"}
         flex={1}
+        minH={0}
+        display={"flex"}
+        flexDirection={"column"}
         defaultIndex={tabIndex}
         onChange={handleTabsChange}
       >
-        <TabPanels h={"100vh"}>
+        <TabPanels
+          flex={1}
+          minH={0}
+          display={"flex"}
+          flexDirection={"column"}
+          overflowY={"auto"}
+        >
           <WalletTab />
           <MeTab />
         </TabPanels>
@@ -49,6 +58,7 @@ function MainScreen() {
           left={0}
           right={0}
           height={"60px"}
+          flexShrink={0}
           borderTopWidth={1}
           borderColor={borderColor}
           backgroundColor={backgroundColor}

@@ -1,3 +1,4 @@
+import { isEqual } from "lodash";
 import { Button, Flex, InputRightElement, Text } from "@chakra-ui/react";
 import type React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -19,7 +20,6 @@ import { showPasswordWarningDialog } from "../PasswordWarningDialog";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { defaultWalletNameSelector } from "@/store/selectors/account";
-import { isEqual } from "lodash";
 
 export const CreatePasswordStep = (props: {
   onConfirm: (walletName: string, password: string) => void;

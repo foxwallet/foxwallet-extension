@@ -1,3 +1,4 @@
+import { isEqual } from "lodash";
 import {
   type ChainUniqueId,
   InnerChainUniqueId,
@@ -13,7 +14,6 @@ import {
 import { ALEO_NATIVE_TOKEN } from "core/coins/ALEO/config/chains";
 import { type InnerProgramId } from "core/coins/ALEO/types/ProgramId";
 import { coinServiceEntry } from "core/coins/CoinServiceEntry";
-import { isEqual } from "lodash";
 import { tokenService } from "@/services/TokenService";
 import {
   NON_TOKEN_POLL_ALL_TOKEN_INTERVAL,

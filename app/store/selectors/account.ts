@@ -1,3 +1,4 @@
+import { uniq } from "lodash";
 import { createSelector } from "reselect";
 import { type RootState } from "../store";
 import { DEFAULT_CHAIN_DISPLAY_MODE } from "../wallet";
@@ -12,7 +13,6 @@ import {
   ChainAssembleMode,
   type ChainUniqueId,
 } from "core/types/ChainUniqueId";
-import { uniq } from "lodash";
 import { matchAccountsWithUniqueId } from "../accountV2";
 import { fallbackToEmptyArray } from "@/store/selectors/utils";
 import i18n from "i18next";

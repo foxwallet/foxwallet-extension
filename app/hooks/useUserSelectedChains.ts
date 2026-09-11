@@ -1,9 +1,9 @@
+import { isEqual } from "lodash";
 import { ChainAssembleMode } from "core/types/ChainUniqueId";
 import { useMemo } from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
 import { currSelectedChainsSelector } from "@/store/selectors/account";
-import { isEqual } from "lodash";
 import {
   type ChainDisplayData,
   type SingleChainDisplayData,

@@ -1,6 +1,7 @@
 import type { Store, UnknownAction } from "@reduxjs/toolkit";
 import type { RootState } from "./index";
 import { STORE_PORT, serializeState, deserializeState } from "./serialization";
+import { isWalletDocument } from "@/common/utils/walletUI";
 
 export function connectStoreServer(
   runtime: Pick<typeof chrome.runtime, "id" | "getURL" | "onConnect">,
@@ -39,11 +40,7 @@ export function connectStoreServer(
   const onConnect = (port: chrome.runtime.Port) => {
     if (port.name !== STORE_PORT) return;
     // Content scripts share the extension ID. Check the document URL as well.
-    const documentUrl = port.sender?.url?.split(/[?#]/)[0];
-    if (
-      port.sender?.id !== runtime.id ||
-      documentUrl !== runtime.getURL("index.html")
-    ) {
+    if (!isWalletDocument(runtime, port.sender)) {
       port.disconnect();
       return;
     }

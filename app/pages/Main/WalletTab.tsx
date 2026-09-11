@@ -17,7 +17,7 @@ export const WalletTab = () => {
   // console.log("      WalletTab assets", assets);
 
   return (
-    <TabPanel h={"100vh"} display={"flex"} flexDir={"column"}>
+    <TabPanel flex={1} minH={0} display={"flex"} flexDir={"column"}>
       <AccountInfoHeader totalUsdValue={totalUsdValue} />
       <BackupReminderView />
       <HomeTabList assets={assets} />

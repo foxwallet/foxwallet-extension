@@ -38,7 +38,7 @@ function DeploymentScreen() {
         borderStyle={"solid"}
         borderWidth={"1px"}
         borderColor={"gray.50"}
-        flex={1}
+        flex="0 0 auto"
         maxH={200}
         overflowY={"auto"}
         p={2}

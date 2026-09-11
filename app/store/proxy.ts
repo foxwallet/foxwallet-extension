@@ -79,7 +79,19 @@ export function createProxyStore(
   };
   const connect = () => {
     if (disposed) return;
-    const activePort = runtime.connect({ name: STORE_PORT });
+    let activePort: chrome.runtime.Port;
+    try {
+      activePort = runtime.connect({ name: STORE_PORT });
+    } catch (error) {
+      // WXT evaluates entrypoints with a fake browser while preparing types
+      // and the dev server. Its runtime.connect intentionally throws because
+      // no background port exists in that environment.
+      if (error instanceof Error && /not implemented/i.test(error.message)) {
+        resolveReady();
+        return;
+      }
+      throw error;
+    }
     port = activePort;
     activePort.onMessage.addListener((message) => {
       if (disposed || port !== activePort) return;

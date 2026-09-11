@@ -1,3 +1,4 @@
+import { isEqual } from "lodash";
 import { Button, Flex } from "@chakra-ui/react";
 import type React from "react";
 import { useCallback, useMemo, useState } from "react";
@@ -6,7 +7,6 @@ import { BaseInputGroup } from "../../Custom/Input";
 import { WarningArea } from "../../Custom/WarningArea";
 import { useWallets } from "@/hooks/useWallets";
 import { useTranslation } from "react-i18next";
-import { isEqual } from "lodash";
 import { defaultWalletNameSelector } from "@/store/selectors/account";
 import { useSelector } from "react-redux";
 

@@ -8,12 +8,18 @@ export enum ColorMode {
   System = "system",
 }
 
+export enum WalletUIMode {
+  SidePanel = "sidepanel",
+  Popup = "popup",
+}
+
 type SettingModel = {
   currency: SupportCurrency;
   initCurrencyByLocation: boolean;
   currencyFiat: SupportCurrency;
   language: SupportLanguages;
   colorMode: ColorMode;
+  uiMode: WalletUIMode;
 };
 
 export const setting = createSlice({
@@ -24,6 +30,7 @@ export const setting = createSlice({
     currencyFiat: SupportCurrency.USD,
     language: SupportLanguages.EN,
     colorMode: ColorMode.Light,
+    uiMode: WalletUIMode.SidePanel,
   } as SettingModel,
   reducers: {
     updateCurrency(
@@ -64,6 +71,12 @@ export const setting = createSlice({
       return {
         ...state,
         colorMode: payload.colorMode,
+      };
+    },
+    updateUIMode(state, action: PayloadAction<{ uiMode: WalletUIMode }>) {
+      return {
+        ...state,
+        uiMode: action.payload.uiMode,
       };
     },
   },

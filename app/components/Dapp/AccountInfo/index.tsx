@@ -19,7 +19,7 @@ export const AccountInfo = (props: AccountInfoProps) => {
       borderStyle={"solid"}
       borderWidth={"1px"}
       borderColor={"gray.50"}
-      flex={1}
+      flex="0 0 auto"
       p={2}
     >
       <Text>{t("Dapp:account")}</Text>

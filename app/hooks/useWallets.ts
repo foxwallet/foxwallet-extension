@@ -1,8 +1,8 @@
+import { isEqual } from "lodash";
 import { actions } from "@/store/actions";
 import { useClient } from "./useClient";
 import { useCallback, useEffect, useMemo } from "react";
 import { usePopupDispatch, usePopupSelector } from "./useStore";
-import { isEqual } from "lodash";
 import { showPasswordVerifyDrawer } from "@/components/Custom/PasswordVerifyDrawer";
 import { showDeleteWalletWarningDialog } from "@/components/Wallet/DeleteWalletWarningDialog";
 import { useGroupAccount } from "./useGroupAccount";
@@ -57,7 +57,9 @@ export const useWallets = () => {
         return Promise.reject(new Error("Cancel deleting!"));
       }
 
-      const newWallets = await dispatch(actions.accountV2.deleteWallet(walletId));
+      const newWallets = await dispatch(
+        actions.accountV2.deleteWallet(walletId),
+      );
       return newWallets;
     },
     [dispatch],
@@ -68,7 +70,9 @@ export const useWallets = () => {
     let resWallet = walletList;
     while (resWallet.length > 0) {
       console.log("      resWallet.length", resWallet.length);
-      resWallet = await dispatch(actions.accountV2.deleteWallet(resWallet[0].walletId));
+      resWallet = await dispatch(
+        actions.accountV2.deleteWallet(resWallet[0].walletId),
+      );
       await sleep(100);
     }
   }, [dispatch, walletList]);

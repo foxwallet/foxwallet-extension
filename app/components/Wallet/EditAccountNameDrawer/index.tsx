@@ -1,3 +1,4 @@
+import { isEqual } from "lodash";
 import { actions } from "@/store/actions";
 import { Box, Button, Flex, Text } from "@chakra-ui/react";
 import { promisifyChooseDialogWrapper } from "../../../common/utils/dialog";
@@ -8,7 +9,6 @@ import { BaseInput } from "@/components/Custom/Input";
 import { useTranslation } from "react-i18next";
 import { WarningArea } from "@/components/Custom/WarningArea";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
-import { isEqual } from "lodash";
 import { type OneMatchGroupAccount } from "@/scripts/background/store/vault/types/keyring";
 import { dupGroupNameSelector } from "@/store/selectors/account";
 
@@ -42,11 +42,13 @@ const EditAccountNameDrawer = (props: Props) => {
 
   const handleConfirmName = useCallback(async () => {
     if (!accountName) return;
-    dispatch(actions.accountV2.changeAccountName({
-      walletId: walletOfAccount.walletId,
-      groupId: account.group.groupId,
-      accountName,
-    }));
+    dispatch(
+      actions.accountV2.changeAccountName({
+        walletId: walletOfAccount.walletId,
+        groupId: account.group.groupId,
+        accountName,
+      }),
+    );
     onConfirm?.();
   }, [onConfirm, accountName, dispatch, account, walletOfAccount]);
 

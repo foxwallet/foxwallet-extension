@@ -1,10 +1,10 @@
+import { isEqual } from "lodash";
 import { type WalletType } from "@/scripts/background/store/vault/types/keyring";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import {
   ChainAssembleMode,
   type ChainDisplayMode,
 } from "core/types/ChainUniqueId";
-import { isEqual } from "lodash";
 
 export type AccountMatchingMeta = {
   walletType: WalletType;

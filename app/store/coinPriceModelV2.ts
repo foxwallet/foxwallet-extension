@@ -1,5 +1,5 @@
-import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { isEqual } from "lodash";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import { type SupportCurrency } from "core/constants/currency";
 import {

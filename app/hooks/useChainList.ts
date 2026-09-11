@@ -1,5 +1,5 @@
-import { useSelector } from "react-redux";
 import { isEqual } from "lodash";
+import { useSelector } from "react-redux";
 import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
 import { type RootState } from "@/store/store";
 import {
