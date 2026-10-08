@@ -9,12 +9,53 @@ import {
 import { logger } from "../../../common/utils/logger";
 import { type PopupWalletServer } from "../servers/PopupServer";
 import { PortName } from "../../../common/types/port";
-import { executeServerMethod } from "../servers/IWalletServer";
+import {
+  executeServerMethod,
+  type PopupServerMethod,
+} from "../servers/IWalletServer";
 import { Mutex } from "async-mutex";
 import browser from "webextension-polyfill";
 import { isWalletDocument } from "@/common/utils/walletUI";
 
 const mutex = new Mutex();
+const popupMethods = {
+  initPassword: true,
+  hasAuth: true,
+  login: true,
+  lock: true,
+  timeoutLock: true,
+  createWallet: true,
+  regenerateWallet: true,
+  importHDWallet: true,
+  addAccount: true,
+  importPrivateKey: true,
+  getHDWallet: true,
+  getSimpleWallet: true,
+  getAllWallet: true,
+  rescanAleo: true,
+  resetChain: true,
+  scannerRegister: true,
+  scannerGetDecryptedOwnedRecords: true,
+  scannerGetSyncStatus: true,
+  scannerDeactivateViewConsumer: true,
+  getAleoComplianceProof: true,
+  sendAleoTransaction: true,
+  isSendingAleoTransaction: true,
+  signMessage: true,
+  onRequestFinish: true,
+  getHDMnemonic: true,
+  resetWallet: true,
+  deleteWallet: true,
+  getPrivateKey: true,
+  checkPassword: true,
+  getSelectedGroupAccount: true,
+  setSelectedGroupAccount: true,
+} satisfies Record<PopupServerMethod, true>;
+
+function isPopupMethod(method: unknown): method is PopupServerMethod {
+  return typeof method === "string" && Object.hasOwn(popupMethods, method);
+}
+
 export class PopupServerHandler implements IHandler {
   private readonly popupPorts = new Set<Runtime.Port>();
 
@@ -47,6 +88,17 @@ export class PopupServerHandler implements IHandler {
         const { id, method, payload, origin } = msg;
         if (origin !== PortName.POPUP_TO_BACKGROUND) {
           logger.error("PopupServerHandler Invalid origin ", msg.origin);
+          return;
+        }
+        if (!isPopupMethod(method)) {
+          port.postMessage(
+            this.wrapPopupResp(
+              await executeServerMethod(
+                Promise.reject(new Error("Unsupported popup method")),
+              ),
+              id,
+            ),
+          );
           return;
         }
         const result =
