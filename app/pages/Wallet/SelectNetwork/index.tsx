@@ -22,6 +22,7 @@ import { getCurrLanguage, SupportLanguages } from "@/locales/i18";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSearchNetworks } from "@/hooks/useSearchNetworks";
 import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
+import { isSidePanel } from "@/common/utils/walletUI";
 
 export enum NextAction {
   Receive = "receive",
@@ -112,7 +113,13 @@ const SelectNetworkScreen = () => {
 
   const renderNetworks = useMemo(() => {
     return (
-      <Box overflowY="auto" maxH={450} sx={HIDE_SCROLL_BAR_CSS}>
+      <Box
+        flex={1}
+        minH={0}
+        overflowY="auto"
+        maxH={isSidePanel() ? undefined : 450}
+        sx={HIDE_SCROLL_BAR_CSS}
+      >
         <VStack spacing={"10px"}>
           {displayList.map((i, index) => {
             const key = i.uniqueId;
@@ -124,7 +131,7 @@ const SelectNetworkScreen = () => {
   }, [displayList, onSelect]);
 
   return (
-    <PageWithHeader title={t("Networks:selectNetwork")}>
+    <PageWithHeader fillSidePanel title={t("Networks:selectNetwork")}>
       <InputGroup flexDir={"column"} px={5} position={"relative"}>
         <InputLeftElement position={"absolute"} top={"calc(50% - 13px)"} ml={8}>
           <IconSearch w={"26px"} h={"26px"} />
@@ -139,7 +146,7 @@ const SelectNetworkScreen = () => {
           py={2}
         />
       </InputGroup>
-      <Content>{renderNetworks}</Content>
+      <Content minH={0}>{renderNetworks}</Content>
     </PageWithHeader>
   );
 };

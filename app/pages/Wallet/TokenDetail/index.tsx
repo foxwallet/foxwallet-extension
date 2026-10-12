@@ -62,6 +62,7 @@ import {
 } from "core/coins/ALEO/utils/utils";
 import { AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
 import { TokenImage } from "@/components/Wallet/TokenItem";
+import { isSidePanel } from "@/common/utils/walletUI";
 
 interface AleoTokenTxHistoryItemProps {
   item: AleoHistoryItem;
@@ -604,8 +605,12 @@ const TokenDetailScreen = () => {
   }, [showToast, tokenInfo.contractAddress]);
 
   return (
-    <PageWithHeader title={t("TokenDetail:title")}>
-      <Flex direction={"column"} px={5} py={2.5}>
+    <PageWithHeader fillSidePanel title={t("TokenDetail:title")}>
+      <Flex
+        direction={"column"}
+        px={5}
+        py={2.5}
+      >
         <Flex alignItems={"center"}>
           <TokenImage
             token={tokenInfo}
@@ -780,7 +785,13 @@ const TokenDetailScreen = () => {
       </Flex>
       {/* Transaction Records */}
       <Divider orientation="horizontal" h={"1px"} />
-      <Flex direction={"column"} px={5} py={2.5}>
+      <Flex
+        direction={"column"}
+        px={5}
+        py={2.5}
+        flex={isSidePanel() ? 1 : undefined}
+        minH={0}
+      >
         <Text fontWeight={"bold"}>{t("TokenDetail:tx_records")}</Text>
         {loading ? (
           <Spinner w={6} h={6} alignSelf={"center"} mt={10} />
@@ -788,7 +799,9 @@ const TokenDetailScreen = () => {
           <Flex
             ref={listRef}
             direction={"column"}
-            maxH={isAleo ? 270 : 330}
+            flex={isSidePanel() ? 1 : undefined}
+            minH={0}
+            maxH={isSidePanel() ? undefined : isAleo ? 270 : 330}
             overflowY="auto"
             sx={HIDE_SCROLL_BAR_CSS}
           >

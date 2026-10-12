@@ -30,6 +30,7 @@ import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
 import { showContactMoreDrawer } from "@/components/Me/ContactMoreDrawer";
 import { serializeData } from "@/common/utils/string";
 import { showContactDeleteDialog } from "@/components/Me/ContactDeleteDialog";
+import { isSidePanel } from "@/common/utils/walletUI";
 import { useLocationParams } from "@/hooks/useLocationParams";
 import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 
@@ -208,7 +209,7 @@ const ContactsScreen = () => {
   );
 
   return (
-    <PageWithHeader title={t("Setting:contacts")}>
+    <PageWithHeader fillSidePanel title={t("Setting:contacts")}>
       <InputGroup flexDir={"column"} px={5} position={"relative"}>
         <InputLeftElement position={"absolute"} top={"calc(50% - 13px)"} ml={8}>
           <IconSearch w={"26px"} h={"26px"} />
@@ -223,12 +224,14 @@ const ContactsScreen = () => {
           py={2}
         />
       </InputGroup>
-      <Content>
+      <Content minH={0}>
         {addressList.length > 0 ? (
           <VStack
             spacing={2}
             justify={"start"}
-            h={"420px"}
+            h={isSidePanel() ? "auto" : "420px"}
+            flex={isSidePanel() ? 1 : undefined}
+            minH={0}
             overflowY={"auto"}
             sx={HIDE_SCROLL_BAR_CSS}
           >

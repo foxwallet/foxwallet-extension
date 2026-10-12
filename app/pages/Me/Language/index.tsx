@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
 import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
+import { isSidePanel } from "@/common/utils/walletUI";
 
 function LanguageScreen() {
   const { t } = useTranslation();
@@ -27,11 +28,13 @@ function LanguageScreen() {
   const { borderColor } = useThemeStyle();
 
   return (
-    <PageWithHeader enableBack title={t("Language:title")}>
-      <Content>
+    <PageWithHeader fillSidePanel enableBack title={t("Language:title")}>
+      <Content minH={0}>
         <Flex
           flexDir={"column"}
-          maxH={500}
+          flex={isSidePanel() ? 1 : undefined}
+          minH={0}
+          maxH={isSidePanel() ? undefined : 500}
           overflowY={"auto"}
           sx={HIDE_SCROLL_BAR_CSS}
         >

@@ -20,6 +20,7 @@ import { type TokenV2 } from "core/types/Token";
 import { useSafeTokenInfo } from "@/hooks/useSafeTokenInfo";
 import { useSafeParams } from "@/hooks/useSafeParams";
 import { useGroupAccountAssets } from "@/hooks/useGroupAccountAssets";
+import { isSidePanel } from "@/common/utils/walletUI";
 
 const SelectTokenScreen = () => {
   const { t } = useTranslation();
@@ -72,6 +73,7 @@ const SelectTokenScreen = () => {
 
   return (
     <PageWithHeader
+      fillSidePanel
       title={t("SelectToken:title")}
       enableBack
       onBack={() => {
@@ -98,7 +100,13 @@ const SelectTokenScreen = () => {
           py={2}
         />
       </InputGroup>
-      <Flex maxH={"400px"} overflowY={"auto"} flexDir={"column"}>
+      <Flex
+        flex={1}
+        minH={0}
+        maxH={isSidePanel() ? undefined : "400px"}
+        overflowY={"auto"}
+        flexDir={"column"}
+      >
         {listData.length === 0
           ? delaySearchStr && (
               <Content align={"center"} justifyContent={"center"} mt={10}>

@@ -26,6 +26,7 @@ import { useAssetList } from "@/hooks/useAssetList";
 import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 import { useSearchTokens } from "@/hooks/useSearchTokens";
 import { useGroupAccountAssets } from "@/hooks/useGroupAccountAssets";
+import { isSidePanel } from "@/common/utils/walletUI";
 
 const SelectTokenScreenV2 = () => {
   const { action = NextAction.Receive } = useParams<{
@@ -96,7 +97,13 @@ const SelectTokenScreenV2 = () => {
 
   const renderTokens = useMemo(() => {
     return (
-      <Box overflowY="auto" sx={HIDE_SCROLL_BAR_CSS} maxH={470}>
+      <Box
+        flex={1}
+        minH={0}
+        overflowY="auto"
+        sx={HIDE_SCROLL_BAR_CSS}
+        maxH={isSidePanel() ? undefined : 470}
+      >
         <VStack spacing={"10px"}>
           {displayList.map((item, index) => {
             const { symbol, name, contractAddress, tokenId } = item;
@@ -120,7 +127,7 @@ const SelectTokenScreenV2 = () => {
   }, [displayList, uniqueId, address, onSelect, action]);
 
   return (
-    <PageWithHeader title={t("Networks:selectToken")}>
+    <PageWithHeader fillSidePanel title={t("Networks:selectToken")}>
       <InputGroup flexDir={"column"} px={5} position={"relative"} mb={3}>
         <InputLeftElement position={"absolute"} top={"calc(50% - 13px)"} ml={8}>
           <IconSearch w={"26px"} h={"26px"} />

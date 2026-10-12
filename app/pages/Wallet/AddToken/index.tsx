@@ -32,6 +32,7 @@ import { useTranslation } from "react-i18next";
 import { useSafeParams } from "@/hooks/useSafeParams";
 import { type TokenV2 } from "core/types/Token";
 import { LoadingView } from "@/components/Custom/Loading";
+import { isSidePanel } from "@/common/utils/walletUI";
 import { useSearchTokens, useSearchTokensByRpc } from "@/hooks/useSearchTokens";
 import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
@@ -157,7 +158,7 @@ function AddToken() {
   );
 
   return (
-    <PageWithHeader title={t("ManageToken:title")}>
+    <PageWithHeader fillSidePanel title={t("ManageToken:title")}>
       <InputGroup flexDir={"column"} px={5} position={"relative"}>
         <InputLeftElement position={"absolute"} top={"calc(50% - 13px)"} ml={8}>
           <IconSearch w={"26px"} h={"26px"} />
@@ -187,7 +188,9 @@ function AddToken() {
       {}
       <Flex
         flexDir={"column"}
-        maxH={"500px"}
+        flex={isSidePanel() ? 1 : undefined}
+        minH={0}
+        maxH={isSidePanel() ? undefined : "500px"}
         overflowY={"auto"}
         mt={"6px"}
         sx={HIDE_SCROLL_BAR_CSS}

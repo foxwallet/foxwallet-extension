@@ -23,6 +23,7 @@ import { useGroupAccountAssets } from "@/hooks/useGroupAccountAssets";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { showBlockContinuousSendAleoDialog } from "@/components/Wallet/BlockContinuousSendAleoDialog";
 import { useIsSendingAleoTx } from "@/hooks/useSendingTxStatus";
+import { isSidePanel } from "@/common/utils/walletUI";
 
 const SelectGroupTokenScreen = () => {
   const { action = NextAction.Receive } = useParams<{
@@ -76,7 +77,13 @@ const SelectGroupTokenScreen = () => {
 
   const renderTokens = useMemo(() => {
     return (
-      <Box overflowY="auto" sx={HIDE_SCROLL_BAR_CSS} maxH={480}>
+      <Box
+        flex={1}
+        minH={0}
+        overflowY="auto"
+        sx={HIDE_SCROLL_BAR_CSS}
+        maxH={isSidePanel() ? undefined : 480}
+      >
         <VStack spacing={"10px"}>
           {displayList.map((item, index) => {
             const { symbol, name, contractAddress, tokenId, uniqueId } = item;
@@ -101,7 +108,7 @@ const SelectGroupTokenScreen = () => {
   }, [displayList, getMatchAccountsWithUniqueId, onSelect]);
 
   return (
-    <PageWithHeader title={t("Networks:selectToken")}>
+    <PageWithHeader fillSidePanel title={t("Networks:selectToken")}>
       <InputGroup flexDir={"column"} px={5} position={"relative"} mb={3}>
         <InputLeftElement position={"absolute"} top={"calc(50% - 13px)"} ml={8}>
           <IconSearch w={"26px"} h={"26px"} />
