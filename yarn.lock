@@ -2976,12 +2976,12 @@
   resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.11.8.tgz#6b79032e760a0899cd4204710beede972a3a185f"
   integrity sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==
 
-"@provablehq/sdk@0.11.3":
-  version "0.11.3"
-  resolved "https://registry.yarnpkg.com/@provablehq/sdk/-/sdk-0.11.3.tgz#f5428b215bed3eab8b882a486e6b50e491301fac"
-  integrity sha512-3vxTFXqiQHm9PHlceANvrAcoS1NhyJEe/RRREgdW+6zVmMg5+i5AA2q4XzgUVDJ8Pdhu7VpdUtunKzEejQ/BcQ==
+"@provablehq/sdk@0.12.0":
+  version "0.12.0"
+  resolved "https://registry.yarnpkg.com/@provablehq/sdk/-/sdk-0.12.0.tgz#f985bad0390f5748076d6b11e2d208de8d373bbd"
+  integrity sha512-xGOteR7nRF2Vx/6HUG8oB7tQ9myWLdINGC7dPfHgl/U1MQA4/eZTA+2+42700pxBo8UdFq5K1EdLoUpKlh9VIQ==
   dependencies:
-    "@provablehq/wasm" "^0.11.3"
+    "@provablehq/wasm" "^0.12.0"
     "@scure/base" "^2.0.0"
     "@serenity-kit/noble-sodium" "0.2.3"
     comlink "^4.4.2"
@@ -2989,10 +2989,10 @@
     mime "^4.0.6"
     xmlhttprequest-ssl "^4.0.0"
 
-"@provablehq/wasm@0.11.3", "@provablehq/wasm@^0.11.3":
-  version "0.11.3"
-  resolved "https://registry.yarnpkg.com/@provablehq/wasm/-/wasm-0.11.3.tgz#709b700bd19100cf87fc63fe21291db337a2f764"
-  integrity sha512-/ZJZXHK7Rvsv4AsgFgqKe6/6EYvenpJ38UlxigwtAwyhNwtx5wzQMMrkJkf2+WpcCoo3VlWeLWFW3Nw1hfjrog==
+"@provablehq/wasm@0.12.0", "@provablehq/wasm@^0.12.0":
+  version "0.12.0"
+  resolved "https://registry.yarnpkg.com/@provablehq/wasm/-/wasm-0.12.0.tgz#ebf35b4c18d9cbbe133e959aa40d2bcac914b376"
+  integrity sha512-Hk1lFmwkUWFBh/IgSxT/MiJCCyy2Bo4EeBHhDhBEqH7HvK2MkQ3eTDHoxto6svwGF9G/bnPxGaieC/Uqqd3Ahw==
 
 "@reduxjs/toolkit@^2.8.2":
   version "2.12.0"
@@ -8592,10 +8592,10 @@ proto-list@~1.2.1:
   resolved "https://registry.yarnpkg.com/proto-list/-/proto-list-1.2.4.tgz#212d5bfe1318306a420f6402b8e26ff39647a849"
   integrity sha512-vtK/94akxsTMhe0/cbfpR+syPuszcuwhqVjJq26CuNDgFGj682oRBXOP5MJpv2r7JtE8MsiepGIqvvOTBwn2vA==
 
-"provable-wasm-no-tla@npm:@provablehq/wasm@0.11.3":
-  version "0.11.3"
-  resolved "https://registry.yarnpkg.com/@provablehq/wasm/-/wasm-0.11.3.tgz#709b700bd19100cf87fc63fe21291db337a2f764"
-  integrity sha512-/ZJZXHK7Rvsv4AsgFgqKe6/6EYvenpJ38UlxigwtAwyhNwtx5wzQMMrkJkf2+WpcCoo3VlWeLWFW3Nw1hfjrog==
+"provable-wasm-no-tla@npm:@provablehq/wasm@0.12.0":
+  version "0.12.0"
+  resolved "https://registry.yarnpkg.com/@provablehq/wasm/-/wasm-0.12.0.tgz#ebf35b4c18d9cbbe133e959aa40d2bcac914b376"
+  integrity sha512-Hk1lFmwkUWFBh/IgSxT/MiJCCyy2Bo4EeBHhDhBEqH7HvK2MkQ3eTDHoxto6svwGF9G/bnPxGaieC/Uqqd3Ahw==
 
 proxy-from-env@^1.1.0:
   version "1.1.0"

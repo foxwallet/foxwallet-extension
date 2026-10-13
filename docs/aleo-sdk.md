@@ -1,6 +1,6 @@
 # Aleo SDK integration
 
-`@provablehq/sdk` and `@provablehq/wasm` are pinned to `0.11.3`. The manually initialized copy uses exactly `"provable-wasm-no-tla": "npm:@provablehq/wasm@0.11.3"`. A Yarn resolution also pins the SDK's transitive WASM dependency.
+`@provablehq/sdk` and `@provablehq/wasm` are pinned to `0.12.0`. The manually initialized copy uses exactly `"provable-wasm-no-tla": "npm:@provablehq/wasm@0.12.0"`. A Yarn resolution also pins the SDK's transitive WASM dependency.
 
 Popup and background code import `provable-wasm-no-tla/mainnet.js` and await `initAleoWasm()` before using bindings. Concurrent initialization shares one promise; failed initialization can be retried. SDK imports remain in offscreen workers, where top-level await and the thread pool are supported. ESLint restricts imports to preserve that separation.
 
