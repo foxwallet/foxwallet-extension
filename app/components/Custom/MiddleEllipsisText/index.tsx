@@ -60,10 +60,10 @@ function MiddleEllipsisText(props: TruncateProps) {
 
     const style = window.getComputedStyle(containerRef.current);
     const font = [
-      style["font-weight"],
-      style["font-style"],
-      style["font-size"],
-      style["font-family"],
+      style.fontWeight,
+      style.fontStyle,
+      style.fontSize,
+      style.fontFamily,
     ].join(" ");
     canvas.font = font;
   }, [canvas]);

@@ -1140,7 +1140,7 @@ export class PopupWalletServer implements IPopupServer {
       case CoinType.ALEO: {
         const messageArray = hexToUint8Array(message);
         const privateKey = PrivateKey.from_string(pk);
-        const signature = privateKey.sign(messageArray).to_hex();
+        const signature = privateKey.sign(messageArray).toString();
         return signature;
       }
       default: {

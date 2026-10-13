@@ -5,6 +5,7 @@ export const DEFAULT_UNIQUE_ID_MAP: { [key in CoinType]: InnerChainUniqueId } =
   {
     [CoinType.ALEO]: InnerChainUniqueId.ALEO_MAINNET,
     [CoinType.ETH]: InnerChainUniqueId.ETHEREUM,
+    [CoinType.QTUM]: InnerChainUniqueId.QTUM,
   };
 
 export enum SupportCurrency {

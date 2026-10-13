@@ -24,6 +24,7 @@ import {
 import { AleoTxType } from "core/coins/ALEO/types/History";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
+import { AleoService } from "core/coins/ALEO/service/AleoService";
 
 function SplitScreen() {
   const { t } = useTranslation();
@@ -35,6 +36,7 @@ function SplitScreen() {
   const uniqueId = InnerChainUniqueId.ALEO_MAINNET;
 
   const { nativeCurrency, coinService, chainConfig } = useCoinService(uniqueId);
+  const aleoService = coinService as AleoService;
   const { popupServerClient } = useClient();
   const navigate = useNavigate();
   const { records } = useRecords({
@@ -65,10 +67,14 @@ function SplitScreen() {
           SPLIT_RECORD_FEE,
           nativeCurrency.decimals,
         ).toString();
+        const programId = nativeCurrency.address;
+        if (!programId) {
+          throw new Error("Native token program is unavailable");
+        }
         const pendingTx: AleoLocalTxInfo = {
           localId,
           address,
-          programId: nativeCurrency.address,
+          programId,
           functionName: "split",
           inputs,
           baseFee,
@@ -82,7 +88,7 @@ function SplitScreen() {
           notification: false,
           tokenId: NATIVE_TOKEN_TOKEN_ID,
         };
-        await coinService.setAddressLocalTx(address, pendingTx);
+        await aleoService.setAddressLocalTx(address, pendingTx);
         popupServerClient
           .sendAleoTransaction({
             uniqueId: chainConfig.uniqueId,
@@ -92,7 +98,7 @@ function SplitScreen() {
             address,
             localId,
             chainId: chainConfig.chainId,
-            programId: nativeCurrency.address,
+            programId,
             functionName: "split",
             inputs,
             feeRecord: null,
@@ -106,7 +112,7 @@ function SplitScreen() {
           .catch(async (err) => {
             pendingTx.error = (err as Error).message;
             pendingTx.status = AleoTxStatus.FAILED;
-            await coinService.setAddressLocalTx(address, pendingTx);
+            await aleoService.setAddressLocalTx(address, pendingTx);
           });
         navigate(-1);
       } catch (err) {
@@ -115,7 +121,7 @@ function SplitScreen() {
         setSubmitting(false);
       }
     },
-    [selectedAccount, nativeCurrency, chainConfig, coinService, navigate],
+    [selectedAccount, nativeCurrency, chainConfig, aleoService, navigate],
   );
 
   const content = useMemo(() => {

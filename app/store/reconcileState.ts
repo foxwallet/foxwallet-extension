@@ -16,13 +16,15 @@ export function reconcileState<T>(previous: T, incoming: T): T {
     ) as T;
   }
   if (isPlainObject(previous) && isPlainObject(incoming)) {
-    const keys = Object.keys(incoming);
-    let unchanged = keys.length === Object.keys(previous).length;
+    const previousObject = previous as Record<string, unknown>;
+    const incomingObject = incoming as Record<string, unknown>;
+    const keys = Object.keys(incomingObject);
+    let unchanged = keys.length === Object.keys(previousObject).length;
     const entries = keys.map((key) => {
-      const value = reconcileState(previous[key], incoming[key]);
+      const value = reconcileState(previousObject[key], incomingObject[key]);
       unchanged &&=
-        Object.prototype.hasOwnProperty.call(previous, key) &&
-        Object.is(value, previous[key]);
+        Object.prototype.hasOwnProperty.call(previousObject, key) &&
+        Object.is(value, previousObject[key]);
       return [key, value];
     });
     return (unchanged ? previous : Object.fromEntries(entries)) as T;

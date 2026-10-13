@@ -4,12 +4,8 @@
     "module": "esnext",
     "jsx": "react-jsx",
     "useDefineForClassFields": true,
-    "lib": [
-      "DOM",
-      "DOM.Iterable",
-      "esnext"
-    ],
-    "allowJs": true,
+    "lib": ["DOM", "DOM.Iterable", "esnext"],
+    "allowJs": false,
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -22,20 +18,11 @@
     "strictPropertyInitialization": false,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "types": [
-      "chrome",
-      "vite/client"
-    ],
+    "types": ["chrome", "vite/client"],
     "paths": {
-      "@/*": [
-        "./app/*"
-      ],
-      "core/*": [
-        "./core/*"
-      ],
-      "aleo/*": [
-        "./aleo/*"
-      ]
+      "@/*": ["./app/*"],
+      "core/*": ["./core/*"],
+      "aleo/*": ["./aleo/*"]
     }
   },
   "include": [
@@ -43,6 +30,7 @@
     "core",
     "entrypoints",
     "wxt.config.ts",
+    "web-ext.config.ts",
     "manifest.ts",
     "app/common/types/def.d.ts"
   ],

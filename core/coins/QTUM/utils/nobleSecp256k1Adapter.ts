@@ -17,8 +17,8 @@ function bytesToBigInt(bytes: Uint8Array): bigint {
   return secp.etc.bytesToNumberBE(bytes);
 }
 
-function bigIntToBytes(n: bigint, length: number): Uint8Array {
-  return secp.etc.numberToBytesBE(n, length);
+function bigIntToBytes(n: bigint): Uint8Array {
+  return secp.etc.numberToBytesBE(n);
 }
 
 // --- TinySecp256k1Interface implementation ---
@@ -41,10 +41,7 @@ function isPrivate(d: Uint8Array): boolean {
   return secp.utils.isValidPrivateKey(d);
 }
 
-function pointFromScalar(
-  d: Uint8Array,
-  compressed = true,
-): Uint8Array | null {
+function pointFromScalar(d: Uint8Array, compressed = true): Uint8Array | null {
   try {
     return secp.getPublicKey(d, compressed);
   } catch {
@@ -73,24 +70,21 @@ function xOnlyPointAddTweak(
 
     const Qaff = Q.toAffine();
     const parity = (Qaff.y & 1n) === 0n ? 0 : 1;
-    const xOnlyPubkey = bigIntToBytes(Qaff.x, 32);
+    const xOnlyPubkey = bigIntToBytes(Qaff.x);
     return { parity: parity as 0 | 1, xOnlyPubkey };
   } catch {
     return null;
   }
 }
 
-function privateAdd(
-  d: Uint8Array,
-  tweak: Uint8Array,
-): Uint8Array | null {
+function privateAdd(d: Uint8Array, tweak: Uint8Array): Uint8Array | null {
   try {
     const dBig = bytesToBigInt(d);
     const tBig = bytesToBigInt(tweak);
     const n = secp.CURVE.n;
     const sum = secp.etc.mod(dBig + tBig, n);
     if (sum === 0n) return null;
-    return bigIntToBytes(sum, 32);
+    return bigIntToBytes(sum);
   } catch {
     return null;
   }
@@ -99,14 +93,10 @@ function privateAdd(
 function privateNegate(d: Uint8Array): Uint8Array {
   const dBig = bytesToBigInt(d);
   const n = secp.CURVE.n;
-  return bigIntToBytes(secp.etc.mod(n - dBig, n), 32);
+  return bigIntToBytes(secp.etc.mod(n - dBig, n));
 }
 
-function sign(
-  h: Uint8Array,
-  d: Uint8Array,
-  e?: Uint8Array,
-): Uint8Array {
+function sign(h: Uint8Array, d: Uint8Array, e?: Uint8Array): Uint8Array {
   const sig = secp.sign(h, d, { extraEntropy: e, lowS: true });
   return sig.toCompactRawBytes();
 }

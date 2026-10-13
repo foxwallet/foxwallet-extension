@@ -247,7 +247,7 @@ const ContactsScreen = () => {
           </VStack>
         ) : (
           <IconEmptyTxPlaceholder
-            justify={"center"}
+            mx="auto"
             alignSelf={"center"}
             mb={4}
             mt={4}

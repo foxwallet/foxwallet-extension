@@ -3,7 +3,11 @@ import { encode as bs58Encode, decode as bs58Decode } from "bs58";
 import { CoinBasic } from "../../CoinBasic";
 import { CoinType } from "core/types";
 import { ALEO_PRIVATE_PREFIX } from "../constants";
-import { AleoExportPKType, AleoImportPKType } from "../types/AleoAccount";
+import {
+  AleoExportPKType,
+  AleoImportPKType,
+  type AleoAccountOption,
+} from "../types/AleoAccount";
 import { CoreError, CoreErrorCode } from "core/types/Error";
 import { logger } from "@/common/utils/logger";
 import { assertAleoWasmReady } from "../utils/wasmInit";
@@ -54,7 +58,7 @@ class AleoBasic extends CoinBasic<CoinType.ALEO> {
 
   public deriveAccount(
     privateKey: string,
-    pkType: AleoImportPKType,
+    pkType: AleoImportPKType | AleoAccountOption,
   ): {
     viewKey: string;
     address: string;

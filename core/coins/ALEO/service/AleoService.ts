@@ -471,7 +471,9 @@ export class AleoService extends CoinServiceBasic {
 
   private assertScannerRecordParsedContent(
     record: RecordDetailWithSpent,
-  ): void {
+  ): asserts record is RecordDetailWithSpent & {
+    parsedContent: Record<string, any>;
+  } {
     if (!record.parsedContent) {
       throw new Error(
         "Scanner record missing parsedContent for program " + record.programId,
@@ -745,7 +747,7 @@ export class AleoService extends CoinServiceBasic {
       if (!record) {
         return false;
       }
-      const newViewKey = viewKey.clone();
+      const newViewKey = ViewKey.from_string(viewKey.toString());
       const isOwner = record.isOwner(newViewKey);
       return isOwner;
     } catch (err) {
@@ -798,7 +800,11 @@ export class AleoService extends CoinServiceBasic {
               throw new Error("Can't get program " + programId);
             }
           }
-          const recordName = program.matchRecordPlaintext(record.plaintext);
+          const recordName = (
+            program as Program & {
+              matchRecordPlaintext(plaintext: string): string;
+            }
+          ).matchRecordPlaintext(record.plaintext);
           record.recordName = recordName;
           changed = true;
         }
@@ -2111,7 +2117,13 @@ export class AleoService extends CoinServiceBasic {
       throw new Error("Token not found");
     }
     return {
-      ...JSON.parse(Plaintext.fromString(tokenRawInfo).toJSON()),
+      ...JSON.parse(
+        (
+          Plaintext.fromString(tokenRawInfo) as Plaintext & {
+            toJSON(): string;
+          }
+        ).toJSON(),
+      ),
       programId: ALPHA_TOKEN_PROGRAM_ID,
     };
   }

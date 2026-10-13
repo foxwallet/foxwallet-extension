@@ -270,7 +270,11 @@ export class ALEOContentWalletServer implements IContentServer<CoinType.ALEO> {
       }
       return {
         ...record,
-        recordName: program.matchRecordPlaintext(record.plaintext),
+        recordName: (
+          program as Program & {
+            matchRecordPlaintext(plaintext: string): string;
+          }
+        ).matchRecordPlaintext(record.plaintext),
       };
     });
   };

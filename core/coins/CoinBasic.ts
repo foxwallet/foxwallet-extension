@@ -21,6 +21,6 @@ export abstract class CoinBasic<T extends CoinType> {
 
   public abstract deriveAccount(
     privateKey: string,
-    pkType: ImportPrivateKeyTypeMap[T],
+    pkType: ImportPrivateKeyTypeMap[T] | AccountOption[T],
   ): { address: string; publicKey: string; viewKey?: string };
 }

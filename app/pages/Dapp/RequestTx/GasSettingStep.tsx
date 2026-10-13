@@ -549,7 +549,7 @@ export const GasSettingStep = (props: GasSettingStepProps) => {
         });
       setCurrentData({
         ...currentData,
-        ...validPart,
+        ...(validPart as Partial<typeof currentData>),
       });
     },
     [currentData, editableField, setCurrentData],
@@ -692,6 +692,7 @@ export const GasSettingStep = (props: GasSettingStepProps) => {
   const maxFeeError = useMemo(() => {
     if (
       currentData.maxFeePerGas &&
+      currentData.maxPriorityFeePerGas != null &&
       currentData.maxPriorityFeePerGas > currentData.maxFeePerGas
     ) {
       return t("GasSetting:max_priority_fee_remind");
