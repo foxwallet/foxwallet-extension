@@ -1,3 +1,5 @@
+import { isEqual } from "lodash";
+import { actions } from "@/store/actions";
 import { BackupMnemonicStep } from "@/components/Onboard/BackupMnemonic";
 import { ConfirmMnemonicStep } from "@/components/Onboard/ConfirmMnemonic";
 // import { WalletNameStep } from "@/components/Setting/WalletName";
@@ -11,7 +13,6 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { defaultWalletNameSelector } from "@/store/selectors/account";
-import { isEqual } from "lodash";
 
 const CreateMnemonicScreen = () => {
   const [step, setStep] = useState(1);
@@ -35,9 +36,9 @@ const CreateMnemonicScreen = () => {
       walletId,
       revealMnemonic: true,
     });
-    await dispatch.accountV2.resyncAllWalletsToStore();
+    await dispatch(actions.accountV2.resyncAllWalletsToStore());
 
-    dispatch.multiChain.addHdWalletChainItem({ walletId });
+    dispatch(actions.multiChain.addHdWalletChainItem({ walletId }));
 
     setMnemonic(wallet.mnemonic ?? "");
   }, [dispatch, popupServerClient]);
@@ -80,10 +81,12 @@ const CreateMnemonicScreen = () => {
           <ConfirmMnemonicStep
             mnemonic={mnemonic}
             onConfirm={() => {
-              dispatch.accountV2.changeWalletBackupedMnemonic({
-                walletId: walletIdRef.current,
-                backupedMnemonic: true,
-              });
+              dispatch(
+                actions.accountV2.changeWalletBackupedMnemonic({
+                  walletId: walletIdRef.current,
+                  backupedMnemonic: true,
+                }),
+              );
               navigate("/main");
             }}
           />

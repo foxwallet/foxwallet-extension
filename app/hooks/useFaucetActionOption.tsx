@@ -21,7 +21,7 @@ import { useClient } from "@/hooks/useClient";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { useTranslation } from "react-i18next";
 import { IconFaucet } from "@/components/Custom/Icon";
-import { type ActionButtonProps } from "@/components/Wallet/AccountInfoHeader";
+import { type ActionButtonProps } from "@/components/Wallet/ActionPanel";
 
 export const useFaucetActionOption = (uniqueId: ChainUniqueId) => {
   const { getMatchAccountsWithUniqueId } = useGroupAccount();

@@ -1,16 +1,16 @@
-import { createModel } from "@rematch/core";
-import { type RootModel } from "./index";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
-export const user = createModel<RootModel>()({
+export const user = createSlice({
   name: "user",
-  state: {
+  initialState: {
     hasAuth: false,
   },
   reducers: {
     _reset() {
       return { hasAuth: false };
     },
-    setHasAuth(state, payload: { hasAuth: boolean }) {
+    setHasAuth(state, action: PayloadAction<{ hasAuth: boolean }>) {
+      const payload = action.payload;
       const { hasAuth } = payload;
       return {
         ...state,

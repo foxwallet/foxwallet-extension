@@ -1,3 +1,4 @@
+import { uniq } from "lodash";
 import { createSelector } from "reselect";
 import { type RootState } from "../store";
 import { DEFAULT_CHAIN_DISPLAY_MODE } from "../wallet";
@@ -12,7 +13,6 @@ import {
   ChainAssembleMode,
   type ChainUniqueId,
 } from "core/types/ChainUniqueId";
-import { uniq } from "lodash";
 import { matchAccountsWithUniqueId } from "../accountV2";
 import { fallbackToEmptyArray } from "@/store/selectors/utils";
 import i18n from "i18next";
@@ -44,7 +44,6 @@ export const chainModeSelector = createAppSelector(
   selectedGroupAccountSelector,
   selectChainSelector,
   (groupAccount, selectedChain) => {
-    console.log("===> selector chainModeSelector");
     if (groupAccount && selectedChain) {
       return (
         selectedChain[groupAccount.wallet.walletId] ??
@@ -112,7 +111,6 @@ export const groupAccountAvailableNetworksSelector = createAppSelector(
   selectedGroupAccountSelector,
   allChainConfigsSelector,
   (groupAccount, allChainConfigs) => {
-    console.log("===> selector allNetworksSelector");
     if (!groupAccount) {
       return [];
     }
@@ -153,7 +151,6 @@ export const currChainConfigsSelector = createAppSelector(
   currChainUniqueIdsSelector,
   chainConfigItemsSelector,
   (chainUniqueIds, chainConfigItems) => {
-    console.log("===> selector currChainConfigsSelector");
     return chainUniqueIds.map((uniqueId) => {
       const config = chainConfigItems?.filter(
         (item) => item.uniqueId === uniqueId,

@@ -9,7 +9,7 @@ lerna-debug.log*
 
 node_modules
 dist
-offscreen
+/offscreen
 dist-ssr
 *.local
 *.zip
@@ -32,3 +32,7 @@ coverage/
 upgradeTool/dist
 upgradeTool/dist_old
 upgradeTool/dist_new
+.wxt/
+/public/aleo_wasm_*.wasm
+/public/worker_mainnet_*.js
+/public/worker_testnet_*.js

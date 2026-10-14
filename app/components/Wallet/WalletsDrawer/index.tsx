@@ -1,3 +1,4 @@
+import { actions } from "@/store/actions";
 import { Button, Flex, Text } from "@chakra-ui/react";
 import { promisifyChooseDialogWrapper } from "@/common/utils/dialog";
 import { BasicDrawer } from "@/components/Custom/Drawer";
@@ -83,12 +84,12 @@ const WalletsDrawer = (props: Props) => {
     (account: OneMatchGroupAccount) => {
       if (!selectedWallet?.walletId) return;
 
-      void dispatch.accountV2.setSelectedGroupAccount({
+      void dispatch(actions.accountV2.setSelectedGroupAccount({
         selectedGroupAccount: account,
-      });
+      }));
       onConfirm?.();
     },
-    [dispatch.accountV2, selectedWallet?.walletId, onConfirm],
+    [dispatch, selectedWallet?.walletId, onConfirm],
   );
 
   const renderAccountItem = useCallback(

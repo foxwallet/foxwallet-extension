@@ -14,7 +14,8 @@ class TokenService {
 
   async getAllTokens(uniqueId: ChainUniqueId): Promise<TokenV2[]> {
     try {
-      return await tokenApi.queryTokens(uniqueId, {});
+      const tokens = await tokenApi.queryTokens(uniqueId, {});
+      return tokens.map((token) => ({ ...token, ownerAddress: "" }));
     } catch (err) {
       console.log("error getAllTokens:", err);
       return [];

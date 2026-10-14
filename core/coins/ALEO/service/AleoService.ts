@@ -1,3 +1,4 @@
+import { groupBy, uniqBy } from "lodash";
 import { type AleoConfig } from "../types/AleoConfig";
 import { type IAleoStorage } from "../types/IAleoStorage";
 import { type FutureJSON, type RecordDetailWithSpent } from "../types/SyncTask";
@@ -7,7 +8,6 @@ import {
   type InputItem,
   RecordFilter,
 } from "@/scripts/background/servers/IWalletServer";
-import { groupBy, uniqBy } from "lodash";
 import { type AleoRpcService, createAleoRpcService } from "./instances/rpc";
 import { type AleoCreditMethod } from "../types/TransferMethod";
 import {
@@ -93,10 +93,8 @@ import {
   createComplianceService,
 } from "core/coins/ALEO/service/instances/compliance";
 
-// Replacement for fox-aleo-sdk's `hashBHP256(struct: string)` helper, which
-// the upstream @provablehq/wasm 0.10.x does not expose. Mirrors the
-// reference project (provable-extension src/app/common/utils/tokenUtils.ts):
-// hash a struct literal via BHP256 over the Plaintext's little-endian bits.
+// Hash a struct literal via the official BHP256 binding over the Plaintext's
+// little-endian bits, preserving the legacy helper's output.
 const hashBHP256 = (struct: string): string => {
   const hasher = new BHP256();
   const plaintext = Plaintext.fromString(struct);
@@ -473,7 +471,9 @@ export class AleoService extends CoinServiceBasic {
 
   private assertScannerRecordParsedContent(
     record: RecordDetailWithSpent,
-  ): void {
+  ): asserts record is RecordDetailWithSpent & {
+    parsedContent: Record<string, any>;
+  } {
     if (!record.parsedContent) {
       throw new Error(
         "Scanner record missing parsedContent for program " + record.programId,
@@ -724,14 +724,11 @@ export class AleoService extends CoinServiceBasic {
   };
 
   private parseFuture = (_futureStr?: string): FutureJSON | undefined => {
-    // FoxFuture was a fox-aleo-sdk extension to wasm-pack output that the
-    // upstream @provablehq/wasm 0.10.x does not provide, and there is no
-    // drop-in replacement (Future is consumed inside the SDK's Transaction
-    // pipeline rather than exported as a standalone parser). History views
-    // that depended on this currently degrade to undefined; private balance
-    // and the scanner decrypt path do not depend on it.
-    // TODO: reimplement using either a hand-rolled future literal parser or
-    // a future helper added to fox-aleo-sdk.
+    // The official SDK consumes futures inside its Transaction pipeline but
+    // does not export a standalone parser. History views that depended on
+    // the legacy parser currently receive undefined; private balance and
+    // scanner decryption do not depend on it.
+    // TODO: implement a future literal parser for transaction history.
     return undefined;
   };
 
@@ -750,7 +747,7 @@ export class AleoService extends CoinServiceBasic {
       if (!record) {
         return false;
       }
-      const newViewKey = viewKey.clone();
+      const newViewKey = ViewKey.from_string(viewKey.toString());
       const isOwner = record.isOwner(newViewKey);
       return isOwner;
     } catch (err) {
@@ -803,7 +800,11 @@ export class AleoService extends CoinServiceBasic {
               throw new Error("Can't get program " + programId);
             }
           }
-          const recordName = program.matchRecordPlaintext(record.plaintext);
+          const recordName = (
+            program as Program & {
+              matchRecordPlaintext(plaintext: string): string;
+            }
+          ).matchRecordPlaintext(record.plaintext);
           record.recordName = recordName;
           changed = true;
         }
@@ -2116,7 +2117,13 @@ export class AleoService extends CoinServiceBasic {
       throw new Error("Token not found");
     }
     return {
-      ...JSON.parse(Plaintext.fromString(tokenRawInfo).toJSON()),
+      ...JSON.parse(
+        (
+          Plaintext.fromString(tokenRawInfo) as Plaintext & {
+            toJSON(): string;
+          }
+        ).toJSON(),
+      ),
       programId: ALPHA_TOKEN_PROGRAM_ID,
     };
   }

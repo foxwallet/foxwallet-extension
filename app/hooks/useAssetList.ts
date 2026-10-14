@@ -1,3 +1,5 @@
+import { isEqual } from "lodash";
+import { actions } from "@/store/actions";
 import {
   type ChainUniqueId,
   InnerChainUniqueId,
@@ -5,7 +7,6 @@ import {
 import { useCallback, useEffect, useMemo } from "react";
 import { usePopupDispatch, usePopupSelector } from "./useStore";
 import { useInteractiveTokens } from "./useToken";
-import { isEqual } from "lodash";
 import { ALEO_NATIVE_TOKEN } from "core/coins/ALEO/config/chains";
 import { AssetType, type TokenV2 } from "core/types/Token";
 import { useCoinService } from "@/hooks/useCoinService";
@@ -31,9 +32,9 @@ export const useAssetList = (uniqueId: ChainUniqueId, address: string) => {
 
   const handlePartialToken = useCallback(
     (token: TokenV2) => {
-      dispatch.tokens.upsertAddressToken({ uniqueId, address, token });
+      dispatch(actions.tokens.upsertAddressToken({ uniqueId, address, token }));
     },
-    [dispatch.tokens, uniqueId, address],
+    [dispatch, uniqueId, address],
   );
 
   const { getUserInteractiveTokens } = useInteractiveTokens(
@@ -48,27 +49,25 @@ export const useAssetList = (uniqueId: ChainUniqueId, address: string) => {
       const updateTokens = async () => {
         const res = await getUserInteractiveTokens();
         if (res?.tokens) {
-          dispatch.tokens.updateAddressTokens({
-            uniqueId,
-            address,
-            tokens: res.tokens,
-          });
-          dispatch.tokens.updateTimestamp({
-            uniqueId,
-            address,
-            newUpdateTimestamp: Date.now(),
-          });
+          dispatch(
+            actions.tokens.updateAddressTokens({
+              uniqueId,
+              address,
+              tokens: res.tokens,
+            }),
+          );
+          dispatch(
+            actions.tokens.updateTimestamp({
+              uniqueId,
+              address,
+              newUpdateTimestamp: Date.now(),
+            }),
+          );
         }
       };
       void updateTokens();
     }
-  }, [
-    getUserInteractiveTokens,
-    dispatch.tokens,
-    uniqueId,
-    address,
-    needUpdate,
-  ]);
+  }, [getUserInteractiveTokens, dispatch, uniqueId, address, needUpdate]);
 
   const nativeToken = useMemo(() => {
     const coin: TokenV2 = {

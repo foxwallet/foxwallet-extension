@@ -1,11 +1,10 @@
+import { isEqual } from "lodash";
 import { type WalletType } from "@/scripts/background/store/vault/types/keyring";
-import { createModel } from "@rematch/core";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import {
   ChainAssembleMode,
   type ChainDisplayMode,
 } from "core/types/ChainUniqueId";
-import { type RootModel } from ".";
-import { isEqual } from "lodash";
 
 export type AccountMatchingMeta = {
   walletType: WalletType;
@@ -37,17 +36,21 @@ const defaultWallet = {
   selectedChain: {},
 } as WalletModel;
 
-export const wallet = createModel<RootModel>()({
+export const wallet = createSlice({
   name: "wallet",
-  state: defaultWallet,
+  initialState: defaultWallet,
   reducers: {
     _reset() {
       return defaultWallet;
     },
     _updateSelectedChain(
       state,
-      payload: { walletId: string; chainDisplayMode: ChainDisplayMode },
+      action: PayloadAction<{
+        walletId: string;
+        chainDisplayMode: ChainDisplayMode;
+      }>,
     ): WalletModel {
+      const payload = action.payload;
       const { walletId, chainDisplayMode } = payload;
       const { selectedChain } = state;
       const existChainMode = selectedChain?.[walletId];
@@ -63,16 +66,4 @@ export const wallet = createModel<RootModel>()({
       };
     },
   },
-  effects: (dispatch) => ({
-    selectChain(payload: {
-      walletId: string;
-      selectedChain: ChainDisplayMode;
-    }) {
-      const { walletId, selectedChain: chainDisplayMode } = payload;
-      dispatch.wallet._updateSelectedChain({
-        walletId,
-        chainDisplayMode,
-      });
-    },
-  }),
 });

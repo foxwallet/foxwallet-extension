@@ -1,3 +1,5 @@
+import { isEqual } from "lodash";
+import { actions } from "@/store/actions";
 import { Content } from "@/layouts/Content";
 import { PageWithHeader } from "@/layouts/Page";
 import { useTranslation } from "react-i18next";
@@ -29,7 +31,6 @@ import {
   getChainConfigsByFilter,
   useGroupAccount,
 } from "@/hooks/useGroupAccount";
-import { isEqual } from "lodash";
 import { currSelectedChainsSelector } from "@/store/selectors/account";
 import { getCurrLanguage, SupportLanguages } from "@/locales/i18";
 import { useNavigate } from "react-router-dom";
@@ -238,26 +239,30 @@ const NetworksScreen = () => {
           await showErrorToast({ message: t("Networks:defaultChainRemind") });
           return;
         }
-        dispatch.multiChain.removeUserSelectedChain({
-          walletId: groupAccount.wallet.walletId,
-          uniqueId: item.uniqueId,
-        });
+        dispatch(
+          actions.multiChain.removeUserSelectedChain({
+            walletId: groupAccount.wallet.walletId,
+            uniqueId: item.uniqueId,
+          }),
+        );
       } else {
         if (groupAccount.wallet.walletType === WalletType.HD && wallet) {
           if (addingAccountRef.current) {
             return;
           }
         }
-        dispatch.multiChain.addUserSelectedChain({
-          walletId: groupAccount.wallet.walletId,
-          uniqueId: item.uniqueId,
-          select: true,
-        });
+        dispatch(
+          actions.multiChain.addUserSelectedChain({
+            walletId: groupAccount.wallet.walletId,
+            uniqueId: item.uniqueId,
+            select: true,
+          }),
+        );
       }
     },
     [
       disableSwitchNetworkWithOptionFilter,
-      dispatch.multiChain,
+      dispatch,
       groupAccount,
       navigate,
       reserveUniqueId,

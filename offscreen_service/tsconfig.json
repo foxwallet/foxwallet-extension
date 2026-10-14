@@ -5,20 +5,20 @@
     "jsx": "react-jsx",
     "useDefineForClassFields": true,
     "lib": ["DOM", "DOM.Iterable", "esnext"],
-    "allowJs": true,
+    "allowJs": false,
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "Node",
+    "moduleResolution": "Bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
     "strictPropertyInitialization": false,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "types": ["@types/chrome"]
+    "types": ["chrome", "vite/client"]
   },
-  "include": ["./src","rollup.config.js"]
+  "include": ["./src"]
 }

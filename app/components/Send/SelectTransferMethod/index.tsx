@@ -25,6 +25,7 @@ import {
   ALPHA_TOKEN_PROGRAM_ID,
   ARCANE_PROGRAM_ID,
   BETA_STAKING_PROGRAM_ID,
+  isComplianceProgram,
   NATIVE_TOKEN_PROGRAM_ID,
   NATIVE_TOKEN_TOKEN_ID,
 } from "core/coins/ALEO/constants";
@@ -37,6 +38,8 @@ interface Props {
   uniqueId: ChainUniqueId;
   address: string;
   token: TokenV2;
+  programId?: string;
+  tokenId?: string;
   onConfirm: (data: AleoTransferMethod) => void;
   onCancel: () => void;
 }
@@ -50,6 +53,8 @@ const SelectTransferMethodDrawer = (props: Props) => {
     address,
     selectedMethod,
     token,
+    programId,
+    tokenId,
   } = props;
 
   const { balance, loadingBalance } = useBalance({
@@ -63,18 +68,25 @@ const SelectTransferMethodDrawer = (props: Props) => {
     uniqueId,
     address,
     recordFilter: RecordFilter.UNSPENT,
-    programId: token.programId,
+    programId,
   });
 
   const tokenRecords = useMemo(() => {
-    switch (token.programId) {
+    if (programId && isComplianceProgram(programId)) {
+      return [...records].sort((record1, record2) => {
+        const amount1 = BigInt(record1.parsedContent?.amount ?? 0);
+        const amount2 = BigInt(record2.parsedContent?.amount ?? 0);
+        return amount1 === amount2 ? 0 : amount1 > amount2 ? -1 : 1;
+      });
+    }
+    switch (programId) {
       case NATIVE_TOKEN_PROGRAM_ID: {
         return records;
       }
       case ALPHA_TOKEN_PROGRAM_ID: {
         return records
           .filter((record) => {
-            return record.parsedContent?.token === token.tokenId;
+            return record.parsedContent?.token === tokenId;
           })
           .sort(
             (record1, record2) =>
@@ -87,7 +99,7 @@ const SelectTransferMethodDrawer = (props: Props) => {
       case ARCANE_PROGRAM_ID: {
         return records
           .filter((record) => {
-            return record.parsedContent?.token === token.tokenId;
+            return record.parsedContent?.token === tokenId;
           })
           .sort(
             (record1, record2) =>
@@ -96,11 +108,11 @@ const SelectTransferMethodDrawer = (props: Props) => {
       }
       default: {
         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        console.error(`Unsupport programId ${token.programId}`);
+        console.error(`Unsupport programId ${programId}`);
         return [];
       }
     }
-  }, [records, token]);
+  }, [records, programId, tokenId]);
 
   const { t } = useTranslation();
 
@@ -184,7 +196,7 @@ const SelectTransferMethodDrawer = (props: Props) => {
                     <TokenNum
                       amount={
                         token.tokenId !== NATIVE_TOKEN_TOKEN_ID
-                          ? BigInt(tokenRecords[0].parsedContent?.amount) || 0n
+                          ? BigInt(tokenRecords[0].parsedContent?.amount ?? 0)
                           : tokenRecords[0].parsedContent?.microcredits || 0n
                       }
                       decimals={token.decimals}

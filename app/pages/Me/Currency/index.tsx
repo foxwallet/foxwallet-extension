@@ -1,3 +1,4 @@
+import { actions } from "@/store/actions";
 import { PageWithHeader } from "@/layouts/Page";
 import { Flex, Text } from "@chakra-ui/react";
 import { useCallback } from "react";
@@ -8,6 +9,7 @@ import { IconCheckLineBlack } from "@/components/Custom/Icon";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { CURRENCY, SupportCurrency } from "core/constants/currency";
+import { isSidePanel } from "@/common/utils/walletUI";
 
 function CurrencyScreen() {
   const { t } = useTranslation();
@@ -16,16 +18,22 @@ function CurrencyScreen() {
   const dispatch = usePopupDispatch();
   const changeCurrency = useCallback(
     (newCurrency: SupportCurrency) => {
-      dispatch.setting.updateCurrency({ currency: newCurrency });
+      dispatch(actions.setting.updateCurrency({ currency: newCurrency }));
       navigate(-1);
     },
-    [dispatch.setting, navigate],
+    [dispatch, navigate],
   );
 
   return (
-    <PageWithHeader enableBack title={t("Currency:title")}>
-      <Content>
-        <Flex flexDir={"column"} maxH={500} overflowY={"auto"}>
+    <PageWithHeader fillSidePanel enableBack title={t("Currency:title")}>
+      <Content minH={0}>
+        <Flex
+          flexDir={"column"}
+          flex={isSidePanel() ? 1 : undefined}
+          minH={0}
+          maxH={isSidePanel() ? undefined : 500}
+          overflowY={"auto"}
+        >
           {Object.values(SupportCurrency).map((currency) => (
             <Flex
               key={currency}

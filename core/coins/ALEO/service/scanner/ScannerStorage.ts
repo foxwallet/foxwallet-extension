@@ -4,6 +4,7 @@ import {
   type ProvableApiKey,
   type ScannerUuidEntry,
 } from "./ScannerTypes";
+import { networkFromChainId } from "./network";
 
 const PROVABLE_API_KEY = "provable_api_key";
 const PROVABLE_JWT = "provable_jwt";
@@ -58,10 +59,21 @@ export class ScannerStorage {
     chainId: string,
     address: string,
   ): Promise<string | null> {
+    const network = networkFromChainId(chainId);
     const entry = await scannerStorage.getItem<ScannerUuidEntry>(
-      this.uuidKey(chainId, address),
+      this.uuidKey(network, address),
     );
-    return entry?.uuid ?? null;
+    if (entry?.uuid) return entry.uuid;
+
+    // Older prewarming stored the chain's uniqueId, while balance reads use
+    // its network ID. Reuse that registration instead of creating another.
+    const legacyEntry = await scannerStorage.getItem<ScannerUuidEntry>(
+      this.uuidKey(`aleo_${network}`, address),
+    );
+    // Keep reads side-effect free: a popup migration must not overwrite a
+    // newer registration or restore a UUID concurrently cleared by background.
+    // The next registration write removes this legacy key.
+    return legacyEntry?.uuid ?? null;
   }
 
   async setScannerUuid(
@@ -69,6 +81,7 @@ export class ScannerStorage {
     address: string,
     uuid: string,
   ): Promise<ScannerUuidEntry> {
+    chainId = networkFromChainId(chainId);
     const entry: ScannerUuidEntry = {
       chainId,
       address,
@@ -78,16 +91,16 @@ export class ScannerStorage {
       this.uuidKey(chainId, address),
       entry,
     );
+    await scannerStorage.removeItem(this.uuidKey(`aleo_${chainId}`, address));
     await this.updateUuidOwnerIndex(saved);
     return saved;
   }
 
   async clearScannerUuid(chainId: string, address: string): Promise<void> {
-    const entry = await scannerStorage.getItem<ScannerUuidEntry>(
-      this.uuidKey(chainId, address),
-    );
+    chainId = networkFromChainId(chainId);
     await scannerStorage.removeItem(this.uuidKey(chainId, address));
-    await this.removeUuidOwnerIndexEntry(chainId, address, entry?.uuid);
+    await scannerStorage.removeItem(this.uuidKey(`aleo_${chainId}`, address));
+    await this.removeUuidOwnerIndexEntry(chainId, address);
   }
 
   async findScannerUuidOwner(uuid: string): Promise<ScannerUuidEntry | null> {
@@ -148,7 +161,10 @@ export class ScannerStorage {
     const index = new Map<string, ScannerUuidEntry>();
     await scannerStorage.iterate<ScannerUuidEntry, undefined>((value, key) => {
       if (key.startsWith(`${SCANNER_UUID_PREFIX}:`) && value?.uuid) {
-        index.set(value.uuid, value);
+        index.set(value.uuid, {
+          ...value,
+          chainId: networkFromChainId(value.chainId),
+        });
       }
       return undefined;
     });

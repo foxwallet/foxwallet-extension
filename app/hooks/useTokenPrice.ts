@@ -1,5 +1,6 @@
-import { type Dispatch, type RootState } from "@/store/store";
 import { isEqual } from "lodash";
+import { actions } from "@/store/actions";
+import { type Dispatch, type RootState } from "@/store/store";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { type ChainUniqueId } from "core/types/ChainUniqueId";
@@ -64,15 +65,16 @@ export const useTokenPrice = (
 
   const getAllTokensPrice = useCallback(async () => {
     const priceArray = await priceService.getTokensPrice(uniqueId);
-    console.log("      priceArray", priceArray, uniqueId);
 
     if (priceArray && priceArray?.length > 0) {
-      dispatch.coinPriceV2.updateTokensPrice({
-        uniqueId,
-        exchangeItems: priceArray,
-      });
+      dispatch(
+        actions.coinPriceV2.updateTokensPrice({
+          uniqueId,
+          exchangeItems: priceArray,
+        }),
+      );
     }
-  }, [dispatch.coinPriceV2, uniqueId]);
+  }, [dispatch, uniqueId]);
 
   const { setTimer, clearTimer } = useInterval(
     getAllTokensPrice,
@@ -129,16 +131,17 @@ export const useMultiChainPrice = (uniqueIds: ChainUniqueId[]) => {
   const key = useMemo(() => uniqueIds.join("-"), [uniqueIds]);
 
   const fetchPrice = useCallback(async () => {
-    console.log("      fetchMultiChainPrice");
     try {
       const priceMap = await priceService.getChainsTokensPrice(uniqueIds);
-      dispatch.coinPriceV2.batchUpdateTokensPrice({
-        exchangeMap: priceMap,
-      });
+      dispatch(
+        actions.coinPriceV2.batchUpdateTokensPrice({
+          exchangeMap: priceMap,
+        }),
+      );
     } catch (err) {
       console.warn("useMultiChainPrice error: ", err);
     }
-  }, [dispatch.coinPriceV2, uniqueIds]);
+  }, [dispatch, uniqueIds]);
 
   const {
     error,

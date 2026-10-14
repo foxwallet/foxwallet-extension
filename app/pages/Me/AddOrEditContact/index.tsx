@@ -1,3 +1,5 @@
+import { isEqual } from "lodash";
+import { actions } from "@/store/actions";
 import { Content } from "@/layouts/Content";
 import { PageWithHeader } from "@/layouts/Page";
 import { useTranslation } from "react-i18next";
@@ -23,7 +25,6 @@ import { useLocationParams } from "@/hooks/useLocationParams";
 import { type AddressItemV2 } from "@/store/addressModel";
 import { usePopupDispatch } from "@/hooks/useStore";
 import { type ChainBaseConfig } from "core/types/ChainBaseConfig";
-import { isEqual } from "lodash";
 import { useChainConfigs } from "@/hooks/useGroupAccount";
 import { showContactDeleteDialog } from "@/components/Me/ContactDeleteDialog";
 
@@ -185,12 +186,14 @@ const AddOrEditContactScreen = () => {
     };
 
     if (isAdd) {
-      dispatch.address.addAddress({ addressItem: item });
+      dispatch(actions.address.addAddress({ addressItem: item }));
     } else {
-      dispatch.address.editAddress({
-        id: addressItemInfo!.id,
-        newAddressItem: item,
-      });
+      dispatch(
+        actions.address.editAddress({
+          id: addressItemInfo!.id,
+          newAddressItem: item,
+        }),
+      );
     }
     navigate(-1);
   }, [
@@ -198,7 +201,7 @@ const AddOrEditContactScreen = () => {
     addressItemInfo,
     addressUniqueIds,
     canSubmit,
-    dispatch.address,
+    dispatch,
     isAdd,
     name,
     navigate,
@@ -213,7 +216,7 @@ const AddOrEditContactScreen = () => {
     try {
       const { confirmed } = await showContactDeleteDialog();
       if (confirmed) {
-        dispatch.address.removeAddress({ id: addressItemInfo!.id });
+        dispatch(actions.address.removeAddress({ id: addressItemInfo!.id }));
         navigate(-1);
       }
     } catch (err) {

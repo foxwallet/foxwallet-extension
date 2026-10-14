@@ -1,3 +1,5 @@
+import { isEqual } from "lodash";
+import { actions } from "@/store/actions";
 import { logger } from "@/common/utils/logger";
 import { showErrorToast } from "@/components/Custom/ErrorToast";
 import { ImportPrivateKeyStep } from "@/components/Onboard/ImportPrivateKey";
@@ -14,7 +16,6 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { defaultWalletNameSelector } from "@/store/selectors/account";
-import { isEqual } from "lodash";
 import { AleoImportPKType } from "core/coins/ALEO/types/AleoAccount";
 import { ETHImportPKType } from "core/coins/ETH/types/ETHAccount";
 
@@ -64,21 +65,27 @@ const ImportPrivateKeyScreen = () => {
                   });
                   const { groupAccounts, ...restWallet } = wallet;
                   const groupAccount = wallet.groupAccounts[0];
-                  await dispatch.accountV2.setSelectedGroupAccount({
-                    selectedGroupAccount: {
-                      wallet: restWallet,
-                      group: groupAccount,
-                    },
-                  });
-                  dispatch.accountV2.changeWalletBackupedMnemonic({
-                    walletId: wallet.walletId,
-                    backupedMnemonic: true,
-                  });
-                  dispatch.multiChain.addSimpleWalletChainItem({
-                    walletId,
-                    coinType,
-                    option: {},
-                  });
+                  await dispatch(
+                    actions.accountV2.setSelectedGroupAccount({
+                      selectedGroupAccount: {
+                        wallet: restWallet,
+                        group: groupAccount,
+                      },
+                    }),
+                  );
+                  dispatch(
+                    actions.accountV2.changeWalletBackupedMnemonic({
+                      walletId: wallet.walletId,
+                      backupedMnemonic: true,
+                    }),
+                  );
+                  dispatch(
+                    actions.multiChain.addSimpleWalletChainItem({
+                      walletId,
+                      coinType,
+                      option: {},
+                    }),
+                  );
                   await sleep(500);
                   navigate("/");
                 } catch (err) {
@@ -95,13 +102,7 @@ const ImportPrivateKeyScreen = () => {
           />
         );
     }
-  }, [
-    step,
-    popupServerClient,
-    dispatch.accountV2,
-    dispatch.multiChain,
-    navigate,
-  ]);
+  }, [step, popupServerClient, dispatch, dispatch, navigate]);
 
   return (
     <PageWithHeader

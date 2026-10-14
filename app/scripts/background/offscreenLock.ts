@@ -3,6 +3,14 @@ import * as browser from "webextension-polyfill";
 
 export const OFFSCREEN_PATH = "/offscreen.html";
 
+// Keep these values independent from chrome.offscreen.Reason at module load
+// time. WXT's fake browser does not expose the runtime enum while preparing
+// entrypoints, but Chrome accepts these enum string values at runtime.
+export const OFFSCREEN_REASONS = {
+  WORKERS: "WORKERS" as chrome.offscreen.Reason,
+  LOCAL_STORAGE: "LOCAL_STORAGE" as chrome.offscreen.Reason,
+} as const;
+
 export type OffscreenPath = typeof OFFSCREEN_PATH;
 
 const KNOWN_PATHS: readonly OffscreenPath[] = [OFFSCREEN_PATH];

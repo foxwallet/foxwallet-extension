@@ -1,3 +1,4 @@
+import { isEqual, uniqBy } from "lodash";
 import {
   type ChainUniqueId,
   InnerChainUniqueId,
@@ -13,7 +14,6 @@ import {
   AleoTxAddressType,
   AleoTxType,
 } from "core/coins/ALEO/types/History";
-import { isEqual, uniqBy } from "lodash";
 import { AleoTxStatus } from "core/coins/ALEO/types/Transaction";
 import { useTransactionSettledToast } from "@/components/Wallet/TransactionSettledToast/useTransactionSettledToast";
 import { AssetType, type TokenV2 } from "core/types/Token";

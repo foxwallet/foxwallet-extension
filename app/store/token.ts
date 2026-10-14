@@ -1,5 +1,4 @@
-import { createModel } from "@rematch/core";
-import { type RootModel } from ".";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import {
   type ChainUniqueId,
   InnerChainUniqueId,
@@ -36,9 +35,7 @@ const isSameUserToken = (
       return true;
     }
   }
-  return (
-    a.contractAddress.toLowerCase() === b.contractAddress.toLowerCase()
-  );
+  return a.contractAddress.toLowerCase() === b.contractAddress.toLowerCase();
 };
 
 export type TokenMap = {
@@ -63,21 +60,22 @@ const defaultTokenMaps: TokenMaps = {
   lastUpdateTimestamp: {},
 };
 
-export const tokens = createModel<RootModel>()({
+export const tokens = createSlice({
   name: "tokens",
-  state: defaultTokenMaps,
+  initialState: defaultTokenMaps,
   reducers: {
     _reset() {
       return { ...defaultTokenMaps };
     },
     updateAddressTokens(
       state,
-      payload: {
+      action: PayloadAction<{
         uniqueId: ChainUniqueId;
         address: string;
         tokens: TokenV2[];
-      },
+      }>,
     ) {
+      const payload = action.payload;
       const { uniqueId, address, tokens: addressTokens } = payload;
       const allChainTokens = state.userTokens;
       const oldUniqueIdUserTokens = allChainTokens[uniqueId] ?? {};
@@ -95,12 +93,13 @@ export const tokens = createModel<RootModel>()({
 
     upsertAddressToken(
       state,
-      payload: {
+      action: PayloadAction<{
         uniqueId: ChainUniqueId;
         address: string;
         token: TokenV2;
-      },
+      }>,
     ) {
+      const payload = action.payload;
       const { uniqueId, address, token: paramToken } = payload;
       const token = { ...paramToken, ownerAddress: address };
       const allChainTokens = state.userTokens;
@@ -127,12 +126,13 @@ export const tokens = createModel<RootModel>()({
 
     selectToken(
       state,
-      payload: {
+      action: PayloadAction<{
         uniqueId: ChainUniqueId;
         address: string;
         token: TokenV2;
-      },
+      }>,
     ) {
+      const payload = action.payload;
       const { uniqueId, address, token: paramToken } = payload;
       const token = { ...paramToken, ownerAddress: address };
 
@@ -160,12 +160,13 @@ export const tokens = createModel<RootModel>()({
 
     unselectToken(
       state,
-      payload: {
+      action: PayloadAction<{
         uniqueId: ChainUniqueId;
         address: string;
         token: TokenV2;
-      },
+      }>,
     ) {
+      const payload = action.payload;
       const { uniqueId, address, token } = payload;
       const allChainTokens = state.userTokens;
       const oldUniqueIdUserTokens = allChainTokens[uniqueId] ?? {};
@@ -187,12 +188,13 @@ export const tokens = createModel<RootModel>()({
 
     updateTimestamp(
       state,
-      payload: {
+      action: PayloadAction<{
         uniqueId: ChainUniqueId;
         address: string;
         newUpdateTimestamp: number;
-      },
+      }>,
     ) {
+      const payload = action.payload;
       const { uniqueId, address, newUpdateTimestamp } = payload;
       const { lastUpdateTimestamp } = state;
       const oldAddressUpdateTimestamp = lastUpdateTimestamp?.[uniqueId] ?? {};
@@ -209,5 +211,4 @@ export const tokens = createModel<RootModel>()({
       };
     },
   },
-  effects: (dispatch) => ({}),
 });

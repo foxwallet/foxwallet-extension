@@ -22,6 +22,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 import { serializeData } from "@/common/utils/string";
+import { isSidePanel } from "@/common/utils/walletUI";
 
 interface AccountListItemProps {
   account: OneMatchGroupAccount;
@@ -172,6 +173,7 @@ const WalletDetailScreen = () => {
 
   return (
     <PageWithHeader
+      fillSidePanel
       title={walletInfo?.walletName}
       rightIcon={
         <Hover onClick={onWalletMoreAction}>
@@ -179,10 +181,12 @@ const WalletDetailScreen = () => {
         </Hover>
       }
     >
-      <Flex direction={"column"} flex={1} px={5} pb={4} pt={2.5}>
+      <Flex direction={"column"} flex={1} minH={0} px={5} pb={4} pt={2.5}>
         <Flex
           direction={"column"}
-          maxH={435}
+          flex={isSidePanel() ? 1 : undefined}
+          minH={0}
+          maxH={isSidePanel() ? undefined : 435}
           overflowY="auto"
           sx={HIDE_SCROLL_BAR_CSS}
         >
@@ -190,10 +194,11 @@ const WalletDetailScreen = () => {
         </Flex>
         {walletInfo?.walletType === WalletType.HD && (
           <Button
-            position={"absolute"}
+            position={isSidePanel() ? "static" : "absolute"}
             bottom={5}
             left={5}
             right={5}
+            mt={isSidePanel() ? 4 : undefined}
             onClick={onAddAccount}
           >
             {t("Wallet:Manage:addAccount")}

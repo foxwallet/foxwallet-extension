@@ -40,9 +40,9 @@ import {
 import { AccountSettingStorage } from "../store/account/AccountStorage";
 import { DappStorage } from "../store/dapp/DappStorage";
 import { CoinType } from "core/types";
-import browser from "webextension-polyfill";
+import type { Runtime } from "webextension-polyfill";
 import { nanoid } from "nanoid";
-import { createPopup } from "../helper/popup";
+import { confirmUI } from "../helper/confirmUI";
 import { SiteInfo } from "@/scripts/content/host";
 import { PrivateKey } from "provable-wasm-no-tla/mainnet.js";
 import { hexToUint8Array } from "@/common/utils/buffer";
@@ -107,19 +107,11 @@ function serializeRecordForPort(
   };
 }
 
-export type OnRequestFinishCallback = (
-  error: null | Error,
-  data: any,
-) => void | Promise<void>;
-
 export class PopupWalletServer implements IPopupServer {
   authManager: AuthManager;
   keyringManager: KeyringManager;
   accountSettingStorage: AccountSettingStorage;
   dappStorage: DappStorage;
-  popupRequestIdMap: Array<{ popupId: number; requestId: string }> = [];
-  requestIdCallbackMap: { [requestId in string]?: OnRequestFinishCallback } =
-    {};
   coinService: CoinServiceEntry;
   #aleoScannerPrewarmed = false;
 
@@ -135,69 +127,6 @@ export class PopupWalletServer implements IPopupServer {
     this.dappStorage = dappStorage;
     this.accountSettingStorage = accountSettingStorage;
     this.coinService = coinService;
-    browser.windows.onRemoved.addListener(this.onRemovePopup.bind(this));
-  }
-
-  findRequestIdByPopupId(popupId: number) {
-    const item = this.popupRequestIdMap.find(
-      (item) => item.popupId === popupId,
-    );
-    if (item) {
-      return item.requestId;
-    }
-    return null;
-  }
-
-  findPopupIdByRequestId(requestId: string) {
-    const item = this.popupRequestIdMap.find(
-      (item) => item.requestId === requestId,
-    );
-    if (item) {
-      return item.popupId;
-    }
-    return null;
-  }
-
-  removeItemByPopupId(popupId: number) {
-    const index = this.popupRequestIdMap.findIndex(
-      (item) => item.popupId === popupId,
-    );
-    if (index >= 0) {
-      this.popupRequestIdMap.splice(index, 1);
-    }
-  }
-
-  removeItemByRequestId(requestId: string) {
-    const index = this.popupRequestIdMap.findIndex(
-      (item) => item.requestId === requestId,
-    );
-    if (index >= 0) {
-      this.popupRequestIdMap.splice(index, 1);
-    }
-  }
-
-  addItem(popupId: number, requestId: string) {
-    const existIndex = this.popupRequestIdMap.findIndex(
-      (item) => item.popupId === popupId,
-    );
-    if (existIndex >= 0) {
-      this.popupRequestIdMap[existIndex] = { popupId, requestId };
-    } else {
-      this.popupRequestIdMap.push({ popupId, requestId });
-    }
-  }
-
-  async onRemovePopup(windowId: number) {
-    const requestId = this.findRequestIdByPopupId(windowId);
-    if (requestId) {
-      this.removeItemByPopupId(windowId);
-      await this.dappStorage.removeDappRequest(requestId);
-      const params = {
-        requestId,
-        error: "user cancel",
-      };
-      this.onRequestFinish(params);
-    }
   }
 
   async createALEOConnectPopup(params: ALEOConnectProps, siteInfo: SiteInfo) {
@@ -221,46 +150,26 @@ export class PopupWalletServer implements IPopupServer {
       address: selectedAccount.account.address,
       payload: params,
     };
-    await this.dappStorage.setDappRequest(request);
-    return new Promise<string | null>(async (resolve, reject) => {
-      const popup = await createPopup(`/connect_aleo/${requestId}`);
-      const popupId = popup.id;
-      if (popupId) {
-        this.addItem(popupId, requestId);
-        this.requestIdCallbackMap[requestId] = async (error, data: string) => {
-          try {
-            if (error) {
-              const popupId = this.findPopupIdByRequestId(requestId);
-              if (popupId) {
-                browser.windows.remove(popupId);
-              }
-              reject(error);
-              return;
-            }
-            const connectHistory: ConnectHistory = {
-              site: siteInfo,
-              coinType: CoinType.ALEO,
-              ...params,
-              address: data,
-              lastConnectTime: Date.now(),
-            };
-            await this.dappStorage.addConnectHistory(
-              CoinType.ALEO,
-              data,
-              connectHistory,
-            );
-            await browser.windows.remove(popupId);
-            resolve(data);
-            return;
-          } catch (err) {
-            console.error("createConnectPopup callback error: ", err);
-            reject(err);
-          }
+    return confirmUI.request(
+      `/connect_aleo/${requestId}`,
+      request,
+      this.dappStorage,
+      async (data) => {
+        const connectHistory: ConnectHistory = {
+          site: siteInfo,
+          coinType: CoinType.ALEO,
+          ...params,
+          address: data,
+          lastConnectTime: Date.now(),
         };
-      } else {
-        resolve(null);
-      }
-    });
+        await this.dappStorage.addConnectHistory(
+          CoinType.ALEO,
+          data,
+          connectHistory,
+        );
+        return data;
+      },
+    );
   }
 
   async createConnectPopup(params: ConnectProps, siteInfo: SiteInfo) {
@@ -297,46 +206,26 @@ export class PopupWalletServer implements IPopupServer {
       address: selectedAccount.account.address,
       payload: params,
     };
-    await this.dappStorage.setDappRequest(request);
-    return new Promise<string | null>(async (resolve, reject) => {
-      const popup = await createPopup(`/connect/${requestId}`);
-      const popupId = popup.id;
-      if (popupId) {
-        this.addItem(popupId, requestId);
-        this.requestIdCallbackMap[requestId] = async (error, data: string) => {
-          try {
-            if (error) {
-              const popupId = this.findPopupIdByRequestId(requestId);
-              if (popupId) {
-                browser.windows.remove(popupId);
-              }
-              reject(error);
-              return;
-            }
-            const connectHistory = {
-              site: siteInfo,
-              ...params,
-              address: data,
-              lastConnectTime: Date.now(),
-              network: "",
-            };
-            await this.dappStorage.addConnectHistory(
-              coinType,
-              data,
-              connectHistory,
-            );
-            await browser.windows.remove(popupId);
-            resolve(data);
-            return;
-          } catch (err) {
-            console.error("createConnectPopup callback error: ", err);
-            reject(err);
-          }
+    return confirmUI.request(
+      `/connect/${requestId}`,
+      request,
+      this.dappStorage,
+      async (data) => {
+        const connectHistory = {
+          site: siteInfo,
+          ...params,
+          address: data,
+          lastConnectTime: Date.now(),
+          network: "",
         };
-      } else {
-        resolve(null);
-      }
-    });
+        await this.dappStorage.addConnectHistory(
+          coinType,
+          data,
+          connectHistory,
+        );
+        return data;
+      },
+    );
   }
 
   async createRequestTxPopup(params: any, siteInfo: SiteInfo) {
@@ -397,72 +286,51 @@ export class PopupWalletServer implements IPopupServer {
       address: params.from,
       payload: params,
     };
-    await this.dappStorage.setDappRequest(request);
-    return new Promise<string | null>(async (resolve, reject) => {
-      const popup = await createPopup(`/request_tx/${requestId}`);
-      const popupId = popup.id;
-      if (popupId) {
-        this.addItem(popupId, requestId);
-        this.requestIdCallbackMap[requestId] = async (error, data: string) => {
-          try {
-            if (error) {
-              const popupId = this.findPopupIdByRequestId(requestId);
-              if (popupId) {
-                browser.windows.remove(popupId);
-              }
-              reject(error);
-              return;
-            }
-            const { gasFee, from } = JSONParseWithBigInt(data);
+    return confirmUI.request(
+      `/request_tx/${requestId}`,
+      request,
+      this.dappStorage,
+      async (data) => {
+        const { gasFee, from } = JSONParseWithBigInt(data);
 
-            const pk = await this.keyringManager.getPrivateKeyByAddress({
-              coinType,
-              address: from,
-            });
-            if (!pk) {
-              reject(new Error("Get private key failed"));
-              return;
-            }
-            // const gasFees = JSON.parse(JSONStringifyOmitBigInt(gasFee));
-            // resolve(gasFee);
-            const instance = this.coinService.getInstance(
-              params.uniqueId,
-            ) as EthService;
-            console.log(
-              ...wrapLoggerArgs("createRequestTxPopup" + params.uniqueId),
-            );
+        const pk = await this.keyringManager.getPrivateKeyByAddress({
+          coinType,
+          address: from,
+        });
+        if (!pk) {
+          throw new Error("Get private key failed");
+        }
+        // const gasFees = JSON.parse(JSONStringifyOmitBigInt(gasFee));
+        // return gasFee;
+        const instance = this.coinService.getInstance(
+          params.uniqueId,
+        ) as EthService;
+        console.log(
+          ...wrapLoggerArgs("createRequestTxPopup" + params.uniqueId),
+        );
 
-            const rawTxWrap = await instance.getNativeCoinRawTx({
-              tx: {
-                from,
-                to,
-                value,
-                gasFee: gasFee as GasFee<CoinType.ETH>,
-                data: paramsData,
-              },
-              signer: {
-                privateKey: pk,
-              },
-            });
-            const { id } = rawTxWrap;
-            await browser.windows.remove(popupId);
-            if (id) {
-              resolve(id);
-              void instance.sendSignedTxRaw(rawTxWrap);
-            } else {
-              reject(new Error("invalid result"));
-              return;
-            }
-            return;
-          } catch (err) {
-            console.error("createRequestTxPopup callback error: ", err);
-            reject(err);
-          }
-        };
-      } else {
-        resolve(null);
-      }
-    });
+        const rawTxWrap = await instance.getNativeCoinRawTx({
+          tx: {
+            from,
+            to,
+            value,
+            gasFee: gasFee as GasFee<CoinType.ETH>,
+            data: paramsData,
+          },
+          signer: {
+            privateKey: pk,
+          },
+        });
+        const { id } = rawTxWrap;
+        if (id) {
+          void instance.sendSignedTxRaw(rawTxWrap);
+          return id;
+        } else {
+          throw new Error("invalid result");
+        }
+        return;
+      },
+    );
   }
 
   async createRequestAleoTxPopup(
@@ -493,81 +361,60 @@ export class PopupWalletServer implements IPopupServer {
       address: params.address,
       payload: params,
     };
-    await this.dappStorage.setDappRequest(request);
-    return new Promise<string | null>(async (resolve, reject) => {
-      const popup = await createPopup(`/request_aleo_tx/${requestId}`);
-      const popupId = popup.id;
-      if (popupId) {
-        this.addItem(popupId, requestId);
-        this.requestIdCallbackMap[requestId] = async (error, data: string) => {
-          try {
-            if (error) {
-              const popupId = this.findPopupIdByRequestId(requestId);
-              if (popupId) {
-                browser.windows.remove(popupId);
-              }
-              reject(error);
-              return;
-            }
-            const pk = await this.keyringManager.getPrivateKeyByAddress({
-              coinType,
-              address,
-            });
-            if (!pk) {
-              reject(new Error("Get private key failed"));
-              return;
-            }
-            params.tokenId = NATIVE_TOKEN_TOKEN_ID;
-            const txInfo: AleoLocalTxInfo = {
-              ...params,
-              txType: AleoTxType.EXECUTION,
-              status: AleoTxStatus.QUEUED,
-              notification: false,
-            };
-            const instance = this.coinService.getInstance(
-              params.uniqueId,
-            ) as AleoService;
-            await instance.setAddressLocalTx(address, txInfo);
-            await browser.windows.remove(popupId);
-
-            sendAleoTransaction({
-              ...params,
-              privateKey: pk,
-            }).then(async (resp) => {
-              console.log(
-                "===> createRequestAleoTxPopup sendTransaction resp: ",
-                resp,
-              );
-              console.log(
-                "===> createRequestAleoTxPopup sendTransaction payload: ",
-                {
-                  error: resp?.payload?.error,
-                  data: resp?.payload?.data,
-                },
-              );
-              const error = resp?.payload?.error;
-              if (!resp || error) {
-                const finalTxInfo: AleoLocalTxInfo = {
-                  ...params,
-                  status: AleoTxStatus.FAILED,
-                  txType: AleoTxType.EXECUTION,
-                  notification: false,
-                  error: error ?? "sendTransaction failed",
-                };
-                await instance.setAddressLocalTx(address, finalTxInfo);
-              }
-            });
-            resolve(localId);
-            return;
-          } catch (err) {
-            console.error("createRequestAleoTxPopup callback error: ", err);
-            reject(err);
-          }
+    return confirmUI.request(
+      `/request_aleo_tx/${requestId}`,
+      request,
+      this.dappStorage,
+      async (data) => {
+        const pk = await this.keyringManager.getPrivateKeyByAddress({
+          coinType,
+          address,
+        });
+        if (!pk) {
+          throw new Error("Get private key failed");
+        }
+        params.tokenId = NATIVE_TOKEN_TOKEN_ID;
+        const txInfo: AleoLocalTxInfo = {
+          ...params,
+          txType: AleoTxType.EXECUTION,
+          status: AleoTxStatus.QUEUED,
+          notification: false,
         };
-      } else {
-        resolve(null);
-      }
-    });
+        const instance = this.coinService.getInstance(
+          params.uniqueId,
+        ) as AleoService;
+        await instance.setAddressLocalTx(address, txInfo);
+
+        sendAleoTransaction({
+          ...params,
+          privateKey: pk,
+        }).then(async (resp) => {
+          console.log(
+            "===> createRequestAleoTxPopup sendTransaction resp: ",
+            resp,
+          );
+          console.log(
+            "===> createRequestAleoTxPopup sendTransaction payload: ",
+            {
+              error: resp?.payload?.error,
+              data: resp?.payload?.data,
+            },
+          );
+          const error = resp?.payload?.error;
+          if (!resp || error) {
+            const finalTxInfo: AleoLocalTxInfo = {
+              ...params,
+              status: AleoTxStatus.FAILED,
+              txType: AleoTxType.EXECUTION,
+              notification: false,
+              error: error ?? "sendTransaction failed",
+            };
+            await instance.setAddressLocalTx(address, finalTxInfo);
+          }
+        });
+        return localId;
+      },
+    );
   }
 
   async createRequestDeployPopup(
@@ -601,76 +448,55 @@ export class PopupWalletServer implements IPopupServer {
       address: address,
       payload: params,
     };
-    await this.dappStorage.setDappRequest(request);
-    return new Promise<string | null>(async (resolve, reject) => {
-      const popup = await createPopup(`/request_deploy/${requestId}`);
-      const popupId = popup.id;
-      if (popupId) {
-        this.addItem(popupId, requestId);
-        this.requestIdCallbackMap[requestId] = async (error, data: string) => {
-          try {
-            if (error) {
-              const popupId = this.findPopupIdByRequestId(requestId);
-              if (popupId) {
-                browser.windows.remove(popupId);
-              }
-              reject(error);
-              return;
-            }
-            const pk = await this.keyringManager.getPrivateKeyByAddress({
-              coinType,
-              address,
-            });
-            if (!pk) {
-              reject(new Error("Get private key failed"));
-              return;
-            }
-            const txInfo: AleoLocalTxInfo = {
+    return confirmUI.request(
+      `/request_deploy/${requestId}`,
+      request,
+      this.dappStorage,
+      async (data) => {
+        const pk = await this.keyringManager.getPrivateKeyByAddress({
+          coinType,
+          address,
+        });
+        if (!pk) {
+          throw new Error("Get private key failed");
+        }
+        const txInfo: AleoLocalTxInfo = {
+          ...params,
+          functionName: "",
+          inputs: [],
+          status: AleoTxStatus.QUEUED,
+          txType: AleoTxType.DEPLOYMENT,
+          notification: false,
+          tokenId: NATIVE_TOKEN_TOKEN_ID,
+        };
+        const instance = this.coinService.getInstance(
+          params.uniqueId,
+        ) as AleoService;
+        await instance.setAddressLocalTx(address, txInfo);
+
+        sendDeployment({
+          ...params,
+          privateKey: pk,
+        }).then(async (resp) => {
+          console.log("===> createRequestDeployPopup resp: ", resp);
+          const error = resp?.payload?.error;
+          if (!resp || error) {
+            const finalTxInfo: AleoLocalTxInfo = {
               ...params,
               functionName: "",
               inputs: [],
-              status: AleoTxStatus.QUEUED,
+              status: AleoTxStatus.FAILED,
               txType: AleoTxType.DEPLOYMENT,
               notification: false,
+              error: error ?? "sendDeployment failed",
               tokenId: NATIVE_TOKEN_TOKEN_ID,
             };
-            const instance = this.coinService.getInstance(
-              params.uniqueId,
-            ) as AleoService;
-            await instance.setAddressLocalTx(address, txInfo);
-            await browser.windows.remove(popupId);
-
-            sendDeployment({
-              ...params,
-              privateKey: pk,
-            }).then(async (resp) => {
-              console.log("===> createRequestDeployPopup resp: ", resp);
-              const error = resp?.payload?.error;
-              if (!resp || error) {
-                const finalTxInfo: AleoLocalTxInfo = {
-                  ...params,
-                  functionName: "",
-                  inputs: [],
-                  status: AleoTxStatus.FAILED,
-                  txType: AleoTxType.DEPLOYMENT,
-                  notification: false,
-                  error: error ?? "sendDeployment failed",
-                  tokenId: NATIVE_TOKEN_PROGRAM_ID,
-                };
-                await instance.setAddressLocalTx(address, finalTxInfo);
-              }
-            });
-            resolve(localId);
-            return;
-          } catch (err) {
-            console.error("createRequestDeployPopup callback error: ", err);
-            reject(err);
+            await instance.setAddressLocalTx(address, finalTxInfo);
           }
-        };
-      } else {
-        resolve(null);
-      }
-    });
+        });
+        return localId;
+      },
+    );
   }
 
   async createAleoSignMessagePopup(
@@ -699,51 +525,24 @@ export class PopupWalletServer implements IPopupServer {
       address: selectedAccount.account.address,
       payload: params,
     };
-    await this.dappStorage.setDappRequest(request);
-    return new Promise<string | null>(async (resolve, reject) => {
-      try {
-        const popup = await createPopup(`/sign_aleo_message/${requestId}`);
-        const popupId = popup.id;
-        if (popupId) {
-          this.addItem(popupId, requestId);
-          this.requestIdCallbackMap[requestId] = async (
-            error,
-            data: string,
-          ) => {
-            try {
-              if (error) {
-                const popupId = this.findPopupIdByRequestId(requestId);
-                if (popupId) {
-                  browser.windows.remove(popupId);
-                }
-                reject(error);
-                return;
-              }
-              const messageArray = hexToUint8Array(message);
-              const pk = await this.keyringManager.getPrivateKeyByAddress({
-                coinType: CoinType.ALEO,
-                address,
-              });
-              if (!pk) {
-                reject(new Error("Get private key failed"));
-                return;
-              }
-              await browser.windows.remove(popupId);
-              const privateKey = PrivateKey.from_string(pk);
-              const signature = privateKey.sign(messageArray).to_string();
-              resolve(signature);
-            } catch (err) {
-              console.error("createAleoSignMessagePopup callback error: ", err);
-              reject(err);
-            }
-          };
-        } else {
-          resolve(null);
+    return confirmUI.request(
+      `/sign_aleo_message/${requestId}`,
+      request,
+      this.dappStorage,
+      async (data) => {
+        const messageArray = hexToUint8Array(message);
+        const pk = await this.keyringManager.getPrivateKeyByAddress({
+          coinType: CoinType.ALEO,
+          address,
+        });
+        if (!pk) {
+          throw new Error("Get private key failed");
         }
-      } catch (err) {
-        reject(err);
-      }
-    });
+        const privateKey = PrivateKey.from_string(pk);
+        const signature = privateKey.sign(messageArray).to_string();
+        return signature;
+      },
+    );
   }
 
   async createSignMessagePopup(
@@ -786,77 +585,44 @@ export class PopupWalletServer implements IPopupServer {
       address: address,
       payload: { ...params, network },
     };
-    await this.dappStorage.setDappRequest(request);
-    return new Promise<boolean | null>(async (resolve, reject) => {
-      try {
-        const popup = await createPopup(`/sign_message/${requestId}`);
-        const popupId = popup.id;
-        if (popupId) {
-          this.addItem(popupId, requestId);
-          this.requestIdCallbackMap[requestId] = async (
-            error,
-            data: string,
-          ) => {
-            try {
-              if (error) {
-                const popupId = this.findPopupIdByRequestId(requestId);
-                if (popupId) {
-                  browser.windows.remove(popupId);
-                }
-                reject(error);
-                return;
-              }
-              let realAddress: string = address;
-              if (coinType === CoinType.QTUM) {
-                let qNetwork = QTUMNetwork.qtum;
-                if (network) {
-                  switch (network) {
-                    case "0x51":
-                      qNetwork = QTUMNetwork.qtum;
-                      break;
-                    case "0x22B9":
-                      qNetwork = QTUMNetwork.qtumTestnet;
-                      break;
-                  }
-                }
-                realAddress = decodeEvmAddress(
-                  address,
-                  getQtumChainId(qNetwork),
-                );
-              }
-              const pk = await this.keyringManager.getPrivateKeyByAddress({
-                coinType: coinType,
-                address: realAddress,
-              });
-              if (!pk) {
-                reject(new Error("Get private key failed"));
-                return;
-              }
-              await browser.windows.remove(popupId);
-              resolve(true);
-            } catch (err) {
-              console.error("createSignMessagePopup callback error: ", err);
-              reject(err);
+    return confirmUI.request(
+      `/sign_message/${requestId}`,
+      request,
+      this.dappStorage,
+      async (data) => {
+        let realAddress: string = address;
+        if (coinType === CoinType.QTUM) {
+          let qNetwork = QTUMNetwork.qtum;
+          if (network) {
+            switch (network) {
+              case "0x51":
+                qNetwork = QTUMNetwork.qtum;
+                break;
+              case "0x22B9":
+                qNetwork = QTUMNetwork.qtumTestnet;
+                break;
             }
-          };
-        } else {
-          resolve(null);
+          }
+          realAddress = decodeEvmAddress(address, getQtumChainId(qNetwork));
         }
-      } catch (err) {
-        reject(err);
-      }
-    });
+        const pk = await this.keyringManager.getPrivateKeyByAddress({
+          coinType: coinType,
+          address: realAddress,
+        });
+        if (!pk) {
+          throw new Error("Get private key failed");
+        }
+        return true;
+      },
+    );
   }
 
-  async onRequestFinish(params: RequestFinfishProps): Promise<void> {
-    const { requestId, error, data } = params;
-    const callback = this.requestIdCallbackMap[requestId];
-    if (callback) {
-      delete this.requestIdCallbackMap[requestId];
-      callback(error ? new Error(error) : null, data);
-      await this.dappStorage.removeDappRequest(requestId);
-    }
-    this.removeItemByRequestId(requestId);
+  async onRequestFinish(
+    params: RequestFinfishProps,
+    sender?: Runtime.MessageSender,
+  ): Promise<void> {
+    if (!confirmUI.canFinish(params.requestId, sender)) return;
+    confirmUI.finish(params);
   }
 
   async initPassword(params: { password: string }): Promise<boolean> {
@@ -893,22 +659,28 @@ export class PopupWalletServer implements IPopupServer {
     this.#aleoScannerPrewarmed = true;
 
     try {
-      const chainId = InnerChainUniqueId.ALEO_MAINNET;
+      const chainId = networkFromChainId(InnerChainUniqueId.ALEO_MAINNET);
       const addresses = await AleoStorage.getInstance().getAccountsAddress();
-      if (addresses.length === 0) return;
+      if (addresses.length === 0) {
+        this.#aleoScannerPrewarmed = false;
+        return;
+      }
 
-      await Promise.allSettled(
-        addresses.map(async (address) => {
-          try {
-            await this.ensureScannerRegistration({ chainId, address });
-          } catch (error) {
-            console.warn("[RSS] prewarm scanner registration failed", {
-              address,
-              error,
-            });
-          }
-        }),
+      const results = await Promise.allSettled(
+        addresses.map(
+          async (address) =>
+            await this.ensureScannerRegistration({ chainId, address }),
+        ),
       );
+      results.forEach((result, index) => {
+        if (result.status === "rejected") {
+          this.#aleoScannerPrewarmed = false;
+          console.warn("[RSS] prewarm scanner registration failed", {
+            address: addresses[index],
+            error: result.reason,
+          });
+        }
+      });
     } catch (error) {
       this.#aleoScannerPrewarmed = false;
       console.warn("[RSS] prewarm scanner registrations aborted", error);
@@ -1116,6 +888,7 @@ export class PopupWalletServer implements IPopupServer {
     { chainId, address }: ScannerRegisterProps,
     viewKey?: string,
   ): Promise<ScannerRegisterResp> {
+    chainId = networkFromChainId(chainId);
     const scannerStorage = ScannerStorage.getInstance();
     const existingUuid = await scannerStorage.getScannerUuid(chainId, address);
     if (existingUuid) {
@@ -1367,7 +1140,7 @@ export class PopupWalletServer implements IPopupServer {
       case CoinType.ALEO: {
         const messageArray = hexToUint8Array(message);
         const privateKey = PrivateKey.from_string(pk);
-        const signature = privateKey.sign(messageArray).to_hex();
+        const signature = privateKey.sign(messageArray).toString();
         return signature;
       }
       default: {
@@ -1413,40 +1186,14 @@ export class PopupWalletServer implements IPopupServer {
       address: selectedAccount.account.address,
       payload: params,
     };
-    await this.dappStorage.setDappRequest(request);
-    return new Promise<any | null>(async (resolve, reject) => {
-      try {
-        const popup = await createPopup(`/add_ethereum_chain/${requestId}`);
-        const popupId = popup.id;
-        if (popupId) {
-          this.addItem(popupId, requestId);
-          this.requestIdCallbackMap[requestId] = async (error, data: any) => {
-            try {
-              if (error) {
-                const popupId = this.findPopupIdByRequestId(requestId);
-                if (popupId) {
-                  browser.windows.remove(popupId);
-                }
-                reject(error);
-                return;
-              }
-              await browser.windows.remove(popupId);
-              resolve(data);
-            } catch (err) {
-              console.error(
-                "createRequestETHAddChainPopup callback error: ",
-                err,
-              );
-              reject(err);
-            }
-          };
-        } else {
-          resolve(null);
-        }
-      } catch (err) {
-        reject(err);
-      }
-    });
+    return confirmUI.request(
+      `/add_ethereum_chain/${requestId}`,
+      request,
+      this.dappStorage,
+      async (data) => {
+        return data;
+      },
+    );
   }
 
   async createRequestETHAddTokenPopup(params: any, siteMetadata: SiteMetadata) {
@@ -1471,39 +1218,13 @@ export class PopupWalletServer implements IPopupServer {
       address: selectedAccount.account.address,
       payload: params,
     };
-    await this.dappStorage.setDappRequest(request);
-    return new Promise<any | null>(async (resolve, reject) => {
-      try {
-        const popup = await createPopup(`/add_ethereum_token/${requestId}`);
-        const popupId = popup.id;
-        if (popupId) {
-          this.addItem(popupId, requestId);
-          this.requestIdCallbackMap[requestId] = async (error, data: any) => {
-            try {
-              if (error) {
-                const popupId = this.findPopupIdByRequestId(requestId);
-                if (popupId) {
-                  browser.windows.remove(popupId);
-                }
-                reject(error);
-                return;
-              }
-              await browser.windows.remove(popupId);
-              resolve(data);
-            } catch (err) {
-              console.error(
-                "createRequestETHAddTokenPopup callback error: ",
-                err,
-              );
-              reject(err);
-            }
-          };
-        } else {
-          resolve(null);
-        }
-      } catch (err) {
-        reject(err);
-      }
-    });
+    return confirmUI.request(
+      `/add_ethereum_token/${requestId}`,
+      request,
+      this.dappStorage,
+      async (data) => {
+        return data;
+      },
+    );
   }
 }

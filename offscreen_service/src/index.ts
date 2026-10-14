@@ -1,3 +1,5 @@
+import TransactionWorker from "./worker?worker";
+import RegistrationWorker from "./scannerWorker?worker";
 import type {
   ScannerEncryptRegistrationPayload,
   ScannerEncryptRegistrationResult,
@@ -50,19 +52,34 @@ interface BackgroundMessage<T = unknown> {
 let isSendingTx = false;
 let txWorkerInited = false;
 
-function getOffscreenAssetUrl(fileName: string): string {
-  return chrome.runtime.getURL(`offscreen/${fileName}`);
-}
-
 let txWorker: Worker | null = null;
 const getTxWorker = () => {
   if (!txWorker) {
-    txWorker = new Worker(getOffscreenAssetUrl("worker.js"), {
-      type: "module",
-    });
+    txWorker = new TransactionWorker();
   }
   return txWorker;
 };
+
+function createScannerWorker(): Worker {
+  // In development Vite's ?worker URL points at the dev server. Chrome can
+  // terminate a remote-origin WASM worker inside an extension offscreen page
+  // before it ever answers a task. A same-origin blob bootstrap keeps the
+  // worker in the extension origin while still importing the Vite module.
+  if (import.meta.env.DEV) {
+    const workerUrl = new URL(
+      "./scannerWorker.ts?worker_file&type=module",
+      import.meta.url,
+    ).href;
+    const bootstrap = `import ${JSON.stringify(workerUrl)};`;
+    const blobUrl = URL.createObjectURL(
+      new Blob([bootstrap], { type: "text/javascript" }),
+    );
+    const worker = new Worker(blobUrl, { type: "module" });
+    scannerWorkerBootstrapUrl = blobUrl;
+    return worker;
+  }
+  return new RegistrationWorker();
+}
 
 type ScannerWorkerTask = {
   id: number;
@@ -81,6 +98,7 @@ type ScannerOffscreenMessage =
 type ScannerTaskResolver = (message: ScannerOffscreenMessage) => void;
 
 let scannerWorker: Worker | null = null;
+let scannerWorkerBootstrapUrl: string | null = null;
 let scannerWorkerReady: Promise<void> | null = null;
 let scannerTaskId = 0;
 const scannerPendingTasks = new Map<number, ScannerTaskResolver>();
@@ -116,6 +134,7 @@ function resolveAllScannerTasks(error: string): void {
 }
 
 function resetScannerWorker(): void {
+  releaseScannerWorkerBootstrap();
   if (!scannerWorker) return;
   scannerWorker.removeEventListener("message", onScannerWorkerMessage);
   scannerWorker.removeEventListener("error", onScannerWorkerError);
@@ -126,10 +145,19 @@ function resetScannerWorker(): void {
   scannerWorker.terminate();
   scannerWorker = null;
   scannerWorkerReady = null;
+  markScannerWorkerReady = null;
+  rejectScannerWorkerReady = null;
 }
 
-// Resolves scannerWorkerReady's promise; assigned when the worker is created.
+function releaseScannerWorkerBootstrap(): void {
+  if (!scannerWorkerBootstrapUrl) return;
+  URL.revokeObjectURL(scannerWorkerBootstrapUrl);
+  scannerWorkerBootstrapUrl = null;
+}
+
+// Settles scannerWorkerReady's promise; assigned when the worker is created.
 let markScannerWorkerReady: (() => void) | null = null;
+let rejectScannerWorkerReady: ((error: Error) => void) | null = null;
 
 function onScannerWorkerMessage(
   event: MessageEvent<ScannerWorkerResponse | { type?: string }>,
@@ -144,6 +172,8 @@ function onScannerWorkerMessage(
   ) {
     markScannerWorkerReady();
     markScannerWorkerReady = null;
+    rejectScannerWorkerReady = null;
+    releaseScannerWorkerBootstrap();
     return;
   }
 
@@ -156,35 +186,29 @@ function onScannerWorkerMessage(
   );
 }
 
-// Unblock `ready` waiters if the worker dies before signaling readiness, so
-// they error out instead of hitting the full readiness timeout.
-function releaseScannerWorkerReady(): void {
-  if (markScannerWorkerReady) {
-    markScannerWorkerReady();
-    markScannerWorkerReady = null;
-  }
-}
-
-function onScannerWorkerError(event: ErrorEvent): void {
-  const message = event.message || "scanner worker failed";
-  releaseScannerWorkerReady();
+function failScannerWorker(message: string): void {
+  // Never resolve readiness on an error: that would post the task to a dead
+  // worker and hide the actual initialization failure behind a 30s timeout.
+  rejectScannerWorkerReady?.(new Error(message));
   resolveAllScannerTasks(message);
   resetScannerWorker();
 }
 
+function onScannerWorkerError(event: ErrorEvent): void {
+  const message = event.message || "scanner worker failed";
+  failScannerWorker(message);
+}
+
 function onScannerWorkerMessageError(): void {
-  releaseScannerWorkerReady();
-  resolveAllScannerTasks("scanner worker message serialization failed");
-  resetScannerWorker();
+  failScannerWorker("scanner worker message serialization failed");
 }
 
 function getScannerWorker(): { worker: Worker; ready: Promise<void> } {
   if (!scannerWorker) {
-    const worker = new Worker(getOffscreenAssetUrl("scannerWorker.js"), {
-      type: "module",
-    });
-    scannerWorkerReady = new Promise<void>((resolve) => {
+    const worker = createScannerWorker();
+    scannerWorkerReady = new Promise<void>((resolve, reject) => {
       markScannerWorkerReady = resolve;
+      rejectScannerWorkerReady = reject;
     });
     worker.addEventListener("message", onScannerWorkerMessage);
     worker.addEventListener("error", onScannerWorkerError);
@@ -277,7 +301,9 @@ const handleScannerEncrypt = async (
     let readyTimer: ReturnType<typeof setTimeout> | undefined;
     const readyTimeout = new Promise<never>((_, reject) => {
       readyTimer = setTimeout(() => {
-        reject(new Error("scanner worker did not become ready in time"));
+        const message = "scanner worker did not become ready in time";
+        failScannerWorker(message);
+        reject(new Error(message));
       }, SCANNER_WORKER_READY_TIMEOUT_MS);
     });
     try {
@@ -289,8 +315,7 @@ const handleScannerEncrypt = async (
     const id = ++scannerTaskId;
     return await new Promise<ScannerOffscreenMessage>((resolve) => {
       const timeoutId = setTimeout(() => {
-        scannerPendingTasks.delete(id);
-        resolve(scannerResponse("scanner worker timed out", null));
+        failScannerWorker("scanner worker timed out");
       }, SCANNER_TASK_TIMEOUT_MS);
       scannerPendingTasks.set(id, (message) => {
         clearTimeout(timeoutId);
@@ -348,7 +373,7 @@ async function handleMessage(
   message: BackgroundMessage,
   sender: chrome.runtime.MessageSender,
 ): Promise<OffscreenMessage> {
-  console.log("===> handleMessages: ", message, sender);
+  console.debug("[offscreen] request", message.type);
 
   switch (message.type) {
     case OffscreenMethod.IS_SENDING_TX: {

@@ -1,11 +1,14 @@
+import { isEqual } from "lodash";
 import { ChainUniqueId } from "core/types/ChainUniqueId";
 import {
   GroupAccount,
   OneMatchAccount,
   OneMatchGroupAccount,
 } from "../store/vault/types/keyring";
-import { chainUniqueIdToAccountOptions, chainUniqueIdToCoinType } from "core/helper/CoinType";
-import { isEqual } from "lodash";
+import {
+  chainUniqueIdToAccountOptions,
+  chainUniqueIdToCoinType,
+} from "core/helper/CoinType";
 
 export const matchAccountFromGroupAccount = (
   groupAccount: OneMatchGroupAccount,
@@ -16,7 +19,7 @@ export const matchAccountFromGroupAccount = (
   const coinType = chainUniqueIdToCoinType(uniqueId);
   const options = chainUniqueIdToAccountOptions(
     uniqueId,
-    groupAccount.wallet.walletType
+    groupAccount.wallet.walletType,
   );
   const account = accounts.find(
     (account) =>

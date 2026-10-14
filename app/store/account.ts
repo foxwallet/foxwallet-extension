@@ -1,5 +1,4 @@
-import { createModel } from "@rematch/core";
-import { type RootModel } from "./index";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import {
   type DisplayWalletV1,
   type DisplayAccountV1,
@@ -11,7 +10,6 @@ import {
   OneMatchGroupAccount,
   WalletType,
 } from "@/scripts/background/store/vault/types/keyring";
-import { getClients } from "@/hooks/useClient";
 
 type SelectedAccount = DisplayAccountV1 & {
   walletId: string;
@@ -48,9 +46,9 @@ export const DEFAULT_ACCOUNT_MODEL_V1: AccountModel = {
 /**
  * @deprecated
  */
-export const account = createModel<RootModel>()({
+export const account = createSlice({
   name: "account",
-  state: {
+  initialState: {
     ...DEFAULT_ACCOUNT_MODEL_V1,
   },
   reducers: {

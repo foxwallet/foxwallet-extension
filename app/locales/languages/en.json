@@ -236,7 +236,10 @@
     "networks": "Networks",
     "contacts": "Contacts",
     "connectedSites": "Connected Sites",
-    "resetApplication": "Reset Application"
+    "resetApplication": "Reset Application",
+    "uiMode": "Wallet window",
+    "sidePanel": "Side panel",
+    "popup": "Popup"
   },
   "Networks": {
     "title": "Networks",

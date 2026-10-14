@@ -166,7 +166,7 @@ function SendScreen() {
             }
             console.log("[SendAleo] transfer_private selected record:", {
               commitment: finalTransferRecord.commitment,
-              serialNumber: finalTransferRecord.serialNumber,
+              serialNumber: finalTransferRecord.tag,
               amount:
                 finalTransferRecord.parsedContent?.microcredits ??
                 finalTransferRecord.parsedContent?.amount,
@@ -181,7 +181,7 @@ function SendScreen() {
               feeRecord
                 ? {
                     commitment: feeRecord.commitment,
-                    serialNumber: feeRecord.serialNumber,
+                    serialNumber: feeRecord.tag,
                     amount:
                       feeRecord.parsedContent?.microcredits ??
                       feeRecord.parsedContent?.amount,

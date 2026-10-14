@@ -1,3 +1,4 @@
+import { actions } from "@/store/actions";
 import { useParams } from "react-router-dom";
 import { useClient } from "@/hooks/useClient";
 import { useDappRequest } from "@/hooks/useDappRequest";
@@ -64,17 +65,17 @@ function RequestParsedPart({
   });
 
   const onConfirm = useCallback(async () => {
-    dispatch.tokens.selectToken({
+    dispatch(actions.tokens.selectToken({
       uniqueId,
       address,
       token: token as TokenV2,
-    });
+    }));
     await timeout(300);
     await popupServerClient.onRequestFinish({
       requestId,
       data: token,
     });
-  }, [dispatch.tokens, uniqueId, address, token, popupServerClient, requestId]);
+  }, [dispatch, uniqueId, address, token, popupServerClient, requestId]);
 
   return (
     <ResponsiveFlex

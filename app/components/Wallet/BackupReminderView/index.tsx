@@ -1,3 +1,4 @@
+import { isEqual } from "lodash";
 import Hover from "@/components/Custom/Hover";
 import {
   IconArrowBackup,
@@ -8,7 +9,6 @@ import { showPasswordVerifyDrawer } from "@/components/Custom/PasswordVerifyDraw
 import { usePopupSelector } from "@/hooks/useStore";
 import { useThemeStyle } from "@/hooks/useThemeStyle";
 import { Flex, Text } from "@chakra-ui/react";
-import { isEqual } from "lodash";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";

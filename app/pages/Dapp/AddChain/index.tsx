@@ -1,3 +1,4 @@
+import { actions } from "@/store/actions";
 import { useParams } from "react-router-dom";
 import { useClient } from "@/hooks/useClient";
 import { useDappRequest } from "@/hooks/useDappRequest";
@@ -84,16 +85,16 @@ function RequestParsedPart({
         void showErrorToast({ message: t("Networks:invalidRpc") });
         return;
       }
-      dispatch.multiChain.addChainConfig({
+      dispatch(actions.multiChain.addChainConfig({
         chainConfig: newChainConfig,
-      });
+      }));
       await timeout(300);
       await popupServerClient.onRequestFinish({
         requestId,
         data: confirm,
       });
     },
-    [dispatch.multiChain, popupServerClient, requestId, t],
+    [dispatch, popupServerClient, requestId, t],
   );
 
   return (

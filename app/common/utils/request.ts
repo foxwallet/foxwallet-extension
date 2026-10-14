@@ -6,7 +6,6 @@ import axios, {
   type InternalAxiosRequestConfig,
   type AxiosAdapter,
 } from "axios";
-// @ts-expect-error not documented
 import buildFullPath from "axios/lib/core/buildFullPath";
 // @ts-expect-error not documented
 import settle from "axios/lib/core/settle";
@@ -33,6 +32,9 @@ export async function post(url: URL | string, options: RequestInit) {
 
 // Custom fetch adapter for axios to work in service worker environment
 const fetchAdapter: AxiosAdapter = async (config) => {
+  if (!config.url) {
+    throw new Error("Request URL is required");
+  }
   const url = buildFullPath(config.baseURL, config.url);
   const headers = new Headers(config.headers as any);
 

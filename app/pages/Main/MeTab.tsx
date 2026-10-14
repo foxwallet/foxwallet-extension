@@ -78,7 +78,7 @@ export const MeTab = () => {
   const { borderColor } = useThemeStyle();
 
   return (
-    <TabPanel>
+    <TabPanel flex={1} minH={0}>
       <Flex
         p={5}
         pb={2.5}

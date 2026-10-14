@@ -14,6 +14,7 @@ const inject = () => {
   container.removeChild(script);
 };
 
+export function startContent() {
 const keepAliveClient = new KeepAliveClient(PortName.CONTENT_TO_BACKGROUND);
 logger.log("===> Content script init success");
 
@@ -21,3 +22,5 @@ const contentClient = new ContentClient((data) => bridge.emit(data));
 const bridge = new ContentBridge(contentClient);
 
 inject();
+
+}

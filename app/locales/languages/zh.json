@@ -185,7 +185,10 @@
     "networks": "管理网络",
     "contacts": "地址簿",
     "connectedSites": "已连接网站",
-    "resetApplication": "重置应用"
+    "resetApplication": "重置应用",
+    "uiMode": "钱包窗口",
+    "sidePanel": "侧边栏",
+    "popup": "弹出窗口"
   },
   "Error": {
     "invalidPassword": "无效的密码",

@@ -1,8 +1,8 @@
+import { isEqual } from "lodash";
 import { useTranslation } from "react-i18next";
 import { useGroupAccount } from "./useGroupAccount";
 import { useSelector } from "react-redux";
 import { type RootState } from "@/store/store";
-import { isEqual } from "lodash";
 import {
   chainModeSelector,
   currChainConfigsSelector,

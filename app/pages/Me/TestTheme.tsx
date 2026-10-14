@@ -1,3 +1,5 @@
+import { isEqual } from "lodash";
+import { actions } from "@/store/actions";
 import { popupEvents } from "@/common/utils/event";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
 import { ColorMode } from "@/store/setting";
@@ -11,7 +13,6 @@ import {
   localStorageManager,
   useColorMode,
 } from "@chakra-ui/react";
-import { isEqual } from "lodash";
 import { useEffect, useMemo } from "react";
 
 const TestTheme = () => {
@@ -39,7 +40,11 @@ const TestTheme = () => {
             onClick={() => {
               setColorMode("light");
               popupEvents.emit("changeColorMode", "light");
-              dispatch.setting.changeColorModel({ colorMode: ColorMode.Light });
+              dispatch(
+                actions.setting.changeColorModel({
+                  colorMode: ColorMode.Light,
+                }),
+              );
             }}
           >
             Light
@@ -48,7 +53,9 @@ const TestTheme = () => {
             onClick={() => {
               setColorMode("dark");
               popupEvents.emit("changeColorMode", "dark");
-              dispatch.setting.changeColorModel({ colorMode: ColorMode.Dark });
+              dispatch(
+                actions.setting.changeColorModel({ colorMode: ColorMode.Dark }),
+              );
             }}
           >
             Dark
@@ -57,9 +64,11 @@ const TestTheme = () => {
             onClick={() => {
               setColorMode("system");
               popupEvents.emit("changeColorMode", "system");
-              dispatch.setting.changeColorModel({
-                colorMode: ColorMode.System,
-              });
+              dispatch(
+                actions.setting.changeColorModel({
+                  colorMode: ColorMode.System,
+                }),
+              );
             }}
           >
             System

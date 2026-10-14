@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import browser from "webextension-polyfill";
 import { useDataRef } from "./useDataRef";
 import { logger } from "@/common/utils/logger";
+import { isSidePanel } from "@/common/utils/walletUI";
 
 export const openInTab = async () => {
   const url = browser.runtime.getURL("index.html");
@@ -32,6 +33,7 @@ export const useBrowserTab = () => {
   const isInTab = useIsInTab();
 
   const openTabIfNeed = useCallback(async () => {
+    if (isSidePanel()) return;
     const isInTab = await getIsInTab();
     if (!isInTab) {
       await openInTab();

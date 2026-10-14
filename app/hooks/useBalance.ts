@@ -1,3 +1,4 @@
+import { actions } from "@/store/actions";
 import {
   type ChainUniqueId,
   InnerChainUniqueId,
@@ -7,6 +8,7 @@ import { useCoinService } from "@/hooks/useCoinService";
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { usePopupDispatch } from "@/hooks/useStore";
+import { useClient } from "@/hooks/useClient";
 import { type BalanceResp } from "core/types/Balance";
 
 export type BalanceReq = {
@@ -18,7 +20,8 @@ export type BalanceReq = {
 
 export const useBalance = (params: BalanceReq) => {
   const { uniqueId, address, token, refreshInterval = 4000 } = params;
-  const { coinService } = useCoinService(uniqueId);
+  const { coinService, chainConfig } = useCoinService(uniqueId);
+  const { popupServerClient } = useClient();
   const dispatch = usePopupDispatch();
   const hasContractAddress = !!token?.contractAddress;
   const isAleoToken =
@@ -50,6 +53,19 @@ export const useBalance = (params: BalanceReq) => {
       return undefined;
     }
     let balance: BalanceResp | undefined;
+    // Private Aleo balances are backed by the scanner. Registration is a
+    // background operation, so explicitly await it before the first balance
+    // read instead of racing getPrivateBalance against scanner setup.
+    if (uniqueId === InnerChainUniqueId.ALEO_MAINNET) {
+      try {
+        await popupServerClient.scannerRegister({
+          chainId: chainConfig.chainId,
+          address,
+        });
+      } catch (error) {
+        console.warn("Aleo scanner registration failed", error);
+      }
+    }
     if (hasContractAddress || isAleoToken) {
       if (hasContractAddress) {
         balance = await coinService.getTokenBalance({
@@ -67,22 +83,26 @@ export const useBalance = (params: BalanceReq) => {
     }
     if (balance) {
       const { total, privateBalance, publicBalance } = balance;
-      dispatch.coinBalanceV2.updateCoinBalance({
-        uniqueId,
-        address,
-        contractAddress: token?.contractAddress ?? "",
-        balanceItem: { total, privateBalance, publicBalance },
-      });
+      dispatch(
+        actions.coinBalanceV2.updateCoinBalance({
+          uniqueId,
+          address,
+          contractAddress: token?.contractAddress ?? "",
+          balanceItem: { total, privateBalance, publicBalance },
+        }),
+      );
     }
 
     return balance;
   }, [
     address,
     coinService,
-    dispatch.coinBalanceV2,
+    dispatch,
     hasContractAddress,
     isAddressValid,
     isAleoToken,
+    chainConfig.chainId,
+    popupServerClient,
     token,
     uniqueId,
   ]);

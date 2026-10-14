@@ -1,5 +1,5 @@
-import { usePopupSelector } from "./useStore";
 import { isEqual } from "lodash";
+import { usePopupSelector } from "./useStore";
 
 /**
  * @deprecated

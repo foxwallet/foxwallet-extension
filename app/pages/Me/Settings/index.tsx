@@ -1,3 +1,4 @@
+import { isEqual } from "lodash";
 import {
   IconChevronDown,
   IconCurrency,
@@ -5,6 +6,7 @@ import {
   IconAbout,
   IconLanguage,
   IconReset,
+  IconSwitch,
 } from "@/components/Custom/Icon";
 import { showConfirmResyncDialog } from "@/components/Setting/ConfirmResyncDialog";
 import SettingItem from "@/components/Setting/SettingItem";
@@ -13,21 +15,22 @@ import { usePopupSelector } from "@/hooks/useStore";
 import { Content } from "@/layouts/Content";
 import { PageWithHeader } from "@/layouts/Page";
 import { LanguageLabels } from "@/locales/i18";
-import { isEqual } from "lodash";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Button, Flex, Text } from "@chakra-ui/react";
 import { showResetApplicationDialog } from "@/components/Wallet/ResetApplicationDialog";
 import { useWallets } from "@/hooks/useWallets";
+import { WalletUIMode } from "@/store/setting";
 
 const SettingsScreen = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { currLanguage } = usePopupSelector(
+  const { currLanguage, uiMode } = usePopupSelector(
     (state) => ({
       currLanguage: state.setting.language,
       currCurrency: state.setting.currency,
+      uiMode: state.setting.uiMode,
     }),
     isEqual,
   );
@@ -44,6 +47,10 @@ const SettingsScreen = () => {
 
   const onCurrency = useCallback(() => {
     navigate("/manage_currency");
+  }, [navigate]);
+
+  const onUIMode = useCallback(() => {
+    navigate("/manage_ui_mode");
   }, [navigate]);
 
   const onResetAleoStatus = useCallback(async () => {
@@ -89,6 +96,16 @@ const SettingsScreen = () => {
           subtitle={LanguageLabels[currLanguage]}
           icon={<IconLanguage w={4} h={4} />}
           onPress={onLanguage}
+        />
+        <SettingItem
+          title={t("Setting:uiMode")}
+          subtitle={
+            uiMode === WalletUIMode.Popup
+              ? t("Setting:popup")
+              : t("Setting:sidePanel")
+          }
+          icon={<IconSwitch w={4} h={4} />}
+          onPress={onUIMode}
         />
         {/* <SettingItem
           title={t("Currency:title")}

@@ -1,12 +1,16 @@
 import { SupportCurrency } from "core/constants/currency";
-import { createModel } from "@rematch/core";
-import { type RootModel } from ".";
-import { SupportLanguages, changeLanguage } from "@/locales/i18";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { SupportLanguages } from "@/locales/languages";
 
 export enum ColorMode {
   Light = "light",
   Dark = "dark",
   System = "system",
+}
+
+export enum WalletUIMode {
+  SidePanel = "sidepanel",
+  Popup = "popup",
 }
 
 type SettingModel = {
@@ -15,50 +19,65 @@ type SettingModel = {
   currencyFiat: SupportCurrency;
   language: SupportLanguages;
   colorMode: ColorMode;
+  uiMode: WalletUIMode;
 };
 
-export const setting = createModel<RootModel>()({
+export const setting = createSlice({
   name: "setting",
-  state: {
+  initialState: {
     currency: SupportCurrency.USD,
     initCurrencyByLocation: false,
     currencyFiat: SupportCurrency.USD,
     language: SupportLanguages.EN,
     colorMode: ColorMode.Light,
+    uiMode: WalletUIMode.SidePanel,
   } as SettingModel,
   reducers: {
-    updateCurrency(state, payload: { currency: SupportCurrency }) {
+    updateCurrency(
+      state,
+      action: PayloadAction<{ currency: SupportCurrency }>,
+    ) {
+      const payload = action.payload;
       const { currency } = payload;
       return {
         ...state,
         currency,
       };
     },
-    updateCurrencyFiat(state, payload: { currencyFiat: SupportCurrency }) {
+    updateCurrencyFiat(
+      state,
+      action: PayloadAction<{ currencyFiat: SupportCurrency }>,
+    ) {
+      const payload = action.payload;
       const { currencyFiat } = payload;
       return {
         ...state,
         currencyFiat,
       };
     },
-    updateLanguage(state, payload: { language: SupportLanguages }) {
+    updateLanguage(
+      state,
+      action: PayloadAction<{ language: SupportLanguages }>,
+    ) {
+      const payload = action.payload;
       const { language } = payload;
       return {
         ...state,
         language,
       };
     },
-    changeColorModel(state, payload: { colorMode: ColorMode }) {
+    changeColorModel(state, action: PayloadAction<{ colorMode: ColorMode }>) {
+      const payload = action.payload;
       return {
         ...state,
         colorMode: payload.colorMode,
       };
     },
-  },
-  effects: (dispatch) => ({
-    async changeLanguage({ language }: { language: SupportLanguages }) {
-      await changeLanguage(language);
-      dispatch.setting.updateLanguage({ language });
+    updateUIMode(state, action: PayloadAction<{ uiMode: WalletUIMode }>) {
+      return {
+        ...state,
+        uiMode: action.payload.uiMode,
+      };
     },
-  }),
+  },
 });

@@ -10,13 +10,14 @@ import {
 } from "../../../offscreen_service/src/types";
 import {
   OFFSCREEN_PATH,
+  OFFSCREEN_REASONS,
   recreateOffscreen,
   withOffscreen,
 } from "./offscreenLock";
 
 const SCANNER_REASONS: chrome.offscreen.Reason[] = [
-  chrome.offscreen.Reason.WORKERS,
-  chrome.offscreen.Reason.LOCAL_STORAGE,
+  OFFSCREEN_REASONS.WORKERS,
+  OFFSCREEN_REASONS.LOCAL_STORAGE,
 ];
 const SCANNER_JUSTIFICATION =
   "Encrypt ViewKey registration request for Provable Record Scanner";

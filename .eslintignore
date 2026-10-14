@@ -1,11 +1,8 @@
 **/dist/
 **/coverage/
 **/node_modules/
-**/@aleohq/
 **/scripts/
-**/@provablehq/
 manifest.ts
-vite.config.ts
 public/injector.js
 app/common/types/vite.ts
 public/injector.js

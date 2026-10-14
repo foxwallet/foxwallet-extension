@@ -13,7 +13,7 @@ export function coinBasicFactory<T extends CoinType>(
     case CoinType.ALEO:
       return aleoBasic as CoinBasic<T>;
     case CoinType.QTUM:
-      return qtumBasic as CoinBasic<T>;
+      return qtumBasic as unknown as CoinBasic<T>;
     default:
       throw new Error("Invalid coin type");
   }

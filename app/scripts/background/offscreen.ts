@@ -10,6 +10,7 @@ import { AleoSendTxParams } from "core/coins/ALEO/types/Transaction";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import {
   OFFSCREEN_PATH,
+  OFFSCREEN_REASONS,
   closeOffscreen,
   hasDocument,
   recreateOffscreen,
@@ -17,8 +18,8 @@ import {
 } from "./offscreenLock";
 
 const TX_REASONS: chrome.offscreen.Reason[] = [
-  chrome.offscreen.Reason.WORKERS,
-  chrome.offscreen.Reason.LOCAL_STORAGE,
+  OFFSCREEN_REASONS.WORKERS,
+  OFFSCREEN_REASONS.LOCAL_STORAGE,
 ];
 const TX_JUSTIFICATION = "Sending aleo transaction";
 const TX_READY_TIMEOUT_MS = 30 * 1000;

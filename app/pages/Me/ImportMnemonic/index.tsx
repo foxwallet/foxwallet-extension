@@ -1,3 +1,5 @@
+import { isEqual } from "lodash";
+import { actions } from "@/store/actions";
 import { logger } from "@/common/utils/logger";
 import { showErrorToast } from "@/components/Custom/ErrorToast";
 import { ImportMnemonicStep } from "@/components/Onboard/ImportMnemonic";
@@ -14,7 +16,6 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { defaultWalletNameSelector } from "@/store/selectors/account";
-import { isEqual } from "lodash";
 
 const ImportMnemonicScreen = () => {
   const [step, setStep] = useState(1);
@@ -51,12 +52,16 @@ const ImportMnemonicScreen = () => {
                     walletName,
                     mnemonic: mnemonic.trim(),
                   });
-                  await dispatch.accountV2.resyncAllWalletsToStore();
-                  dispatch.accountV2.changeWalletBackupedMnemonic({
-                    walletId: wallet.walletId,
-                    backupedMnemonic: true,
-                  });
-                  dispatch.multiChain.addHdWalletChainItem({ walletId });
+                  await dispatch(actions.accountV2.resyncAllWalletsToStore());
+                  dispatch(
+                    actions.accountV2.changeWalletBackupedMnemonic({
+                      walletId: wallet.walletId,
+                      backupedMnemonic: true,
+                    }),
+                  );
+                  dispatch(
+                    actions.multiChain.addHdWalletChainItem({ walletId }),
+                  );
                   // await sleep(50);
                   navigate("/");
                 } catch (err) {

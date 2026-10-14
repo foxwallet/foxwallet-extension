@@ -4,6 +4,7 @@ import { VStack, Text, Flex, Image } from "@chakra-ui/react";
 import { useMemo, useState } from "react";
 import { useAllChainList } from "@/hooks/useChainList";
 import { type CoinType } from "core/types";
+import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import { DEFAULT_CHAIN_UNIQUE_ID } from "core/constants/chain";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -24,7 +25,9 @@ const ChangeCoinTypeScreen = () => {
         coinTypes.push(item.coinType);
       }
     });
-    const uniqueIds = coinTypes.map((item) => DEFAULT_CHAIN_UNIQUE_ID[item]);
+    const uniqueIds: ChainUniqueId[] = coinTypes.map(
+      (item) => DEFAULT_CHAIN_UNIQUE_ID[item],
+    );
     return allChains.filter((item) => uniqueIds.includes(item.uniqueId));
   }, [allChains]);
 

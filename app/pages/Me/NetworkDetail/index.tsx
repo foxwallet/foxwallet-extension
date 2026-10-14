@@ -1,3 +1,4 @@
+import { actions } from "@/store/actions";
 import type React from "react";
 import { useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -28,24 +29,24 @@ const NetworkDetailScreen = () => {
         void showErrorToast({ message: t("Networks:invalidRpc") });
         return;
       }
-      dispatch.multiChain.changeChainConfig({
+      dispatch(actions.multiChain.changeChainConfig({
         chainConfig: { ...chainConfig, ...newChainConfig },
-      });
+      }));
       coinServiceEntry.rmCachedInstance(newChainConfig.uniqueId);
       navigate(-1);
     },
-    [chainConfig, dispatch.multiChain, navigate, t],
+    [chainConfig, dispatch, navigate, t],
   );
 
   const onDelete = useCallback(() => {
     if (isEthCustomRPC(chainConfig.uniqueId)) {
-      dispatch.multiChain.removeChainConfig({
+      dispatch(actions.multiChain.removeChainConfig({
         chainConfig,
-      });
+      }));
       coinServiceEntry.rmCachedInstance(chainConfig.uniqueId);
       navigate(-1);
     }
-  }, [chainConfig, dispatch.multiChain, navigate]);
+  }, [chainConfig, dispatch, navigate]);
 
   return (
     <RPCConfigTemplate

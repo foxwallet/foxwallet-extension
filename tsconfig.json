@@ -5,20 +5,20 @@
     "jsx": "react-jsx",
     "useDefineForClassFields": true,
     "lib": ["DOM", "DOM.Iterable", "esnext"],
-    "allowJs": true,
+    "allowJs": false,
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "Node",
+    "moduleResolution": "Bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
     "strictPropertyInitialization": false,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "types": ["@types/chrome"],
+    "types": ["chrome", "vite/client"],
     "paths": {
       "@/*": ["./app/*"],
       "core/*": ["./core/*"],
@@ -26,9 +26,13 @@
     }
   },
   "include": [
-    "./app",
-    "./core",
-    "vite-injector.config.ts",
+    "app",
+    "core",
+    "entrypoints",
+    "wxt.config.ts",
+    "web-ext.config.ts",
+    "manifest.ts",
     "app/common/types/def.d.ts"
-  ]
+  ],
+  "extends": "./.wxt/tsconfig.json"
 }

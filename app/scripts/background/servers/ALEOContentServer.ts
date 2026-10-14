@@ -1,5 +1,5 @@
 import { ERROR_CODE } from "@/common/types/error";
-import { createPopup, openPopup } from "../helper/popup";
+import { openPopup } from "../helper/popup";
 import { AuthManager } from "../store/vault/managers/auth/AuthManager";
 import { KeyringManager } from "../store/vault/managers/keyring/KeyringManager";
 import {
@@ -270,7 +270,11 @@ export class ALEOContentWalletServer implements IContentServer<CoinType.ALEO> {
       }
       return {
         ...record,
-        recordName: program.matchRecordPlaintext(record.plaintext),
+        recordName: (
+          program as Program & {
+            matchRecordPlaintext(plaintext: string): string;
+          }
+        ).matchRecordPlaintext(record.plaintext),
       };
     });
   };

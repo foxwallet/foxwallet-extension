@@ -4,6 +4,7 @@ import { useCallback, useMemo } from "react";
 import { type AleoTransferMethod } from "core/coins/ALEO/types/TransferMethod";
 import useSWR from "swr";
 import { type InnerProgramId } from "core/coins/ALEO/types/ProgramId";
+import type { AleoService } from "core/coins/ALEO/service/AleoService";
 
 export const useAleoGasFee = (
   uniqueId: ChainUniqueId,
@@ -11,11 +12,12 @@ export const useAleoGasFee = (
   method: AleoTransferMethod,
 ) => {
   const { coinService } = useCoinService(uniqueId);
+  const aleoService = coinService as AleoService;
 
   const key = `/gasFee/${uniqueId}`;
   const fetchBalance = useCallback(async () => {
-    return coinService.getGasFee(programId, method);
-  }, [coinService, uniqueId, programId, method]);
+    return aleoService.getGasFee(programId, method);
+  }, [aleoService, uniqueId, programId, method]);
 
   const {
     data: gasFee,

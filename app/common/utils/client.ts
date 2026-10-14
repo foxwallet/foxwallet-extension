@@ -42,6 +42,7 @@ import { nanoid } from "nanoid";
 import { type CoinType } from "core/types";
 import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 import { type SyncStatusResp } from "core/coins/ALEO/service/scanner";
+import { networkFromChainId } from "core/coins/ALEO/service/scanner/network";
 
 // Mirror PopupServer.BIGINT_PORT_TAG. Encoded form is the marker followed
 // by the decimal digits of the bigint. Anything else passes through.
@@ -117,6 +118,10 @@ export class KeepAliveClient implements IClient {
 export class PopupServerClient implements IClient, IPopupServer {
   private port: IPort;
   private callbackMap: Map<string, (error: Error | null, data: any) => void>;
+  private readonly scannerRegistrations = new Map<
+    string,
+    Promise<ScannerRegisterResp>
+  >();
 
   constructor() {
     this.callbackMap = new Map();
@@ -132,8 +137,8 @@ export class PopupServerClient implements IClient, IPopupServer {
         " args: ",
         args,
       );
-      Object.values(this.callbackMap).forEach((callback) => {
-        callback(new Error("PopupServerClient disconncected"));
+      this.callbackMap.forEach((callback) => {
+        callback(new Error("PopupServerClient disconnected"), null);
       });
       this.callbackMap = new Map();
       this._connect();
@@ -233,7 +238,23 @@ export class PopupServerClient implements IClient, IPopupServer {
   async scannerRegister(
     params: ScannerRegisterProps,
   ): Promise<ScannerRegisterResp> {
-    return await this.#send("scannerRegister", params);
+    const chainId = networkFromChainId(params.chainId);
+    const key = `${chainId}:${params.address}`;
+    const existing = this.scannerRegistrations.get(key);
+    if (existing) return await existing;
+
+    // Balance and sync-status hooks may request the same registration at once.
+    // Share only the pending call; successful UUIDs can later be invalidated.
+    const pending = this.#send<ScannerRegisterProps, ScannerRegisterResp>(
+      "scannerRegister",
+      { ...params, chainId },
+    );
+    this.scannerRegistrations.set(key, pending);
+    try {
+      return await pending;
+    } finally {
+      this.scannerRegistrations.delete(key);
+    }
   }
 
   async scannerGetDecryptedOwnedRecords(

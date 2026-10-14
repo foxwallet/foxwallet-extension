@@ -1,6 +1,5 @@
-import { createModel } from "@rematch/core";
-import { type RootModel } from "./index";
 import { isEqual } from "lodash";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { type ChainUniqueId } from "core/types/ChainUniqueId";
 import { type SupportCurrency } from "core/constants/currency";
 import {
@@ -39,9 +38,9 @@ export type ChainPriceModel = {
   fiatRateMap: { [uniqueId in ChainUniqueId]: CurrencyItems[] };
 };
 
-export const coinPriceV2 = createModel<RootModel>()({
+export const coinPriceV2 = createSlice({
   name: "coinPriceV2",
-  state: {
+  initialState: {
     prices: {} as ChainPriceMap,
     exchangeRate: [] as CurrencyItems[],
     fiatRate: [] as CurrencyItems[],
@@ -50,10 +49,11 @@ export const coinPriceV2 = createModel<RootModel>()({
   reducers: {
     batchUpdateTokensPrice(
       state,
-      payload: {
+      action: PayloadAction<{
         exchangeMap: ChainTokenPriceMap;
-      },
+      }>,
     ) {
+      const payload = action.payload;
       const { exchangeMap } = payload;
       if (!exchangeMap) {
         return state;
@@ -123,11 +123,12 @@ export const coinPriceV2 = createModel<RootModel>()({
     },
     updateTokensPrice(
       state,
-      payload: {
+      action: PayloadAction<{
         uniqueId: ChainUniqueId;
         exchangeItems: TokenPrice[];
-      },
+      }>,
     ) {
+      const payload = action.payload;
       const { uniqueId, exchangeItems } = payload;
       if (!exchangeItems) {
         return state;
@@ -184,10 +185,11 @@ export const coinPriceV2 = createModel<RootModel>()({
     },
     updateExchangeRate(
       state,
-      payload: {
+      action: PayloadAction<{
         exchangeRateArray: CurrencyItems[];
-      },
+      }>,
     ) {
+      const payload = action.payload;
       const { exchangeRateArray } = payload;
       return {
         ...state,
@@ -196,10 +198,11 @@ export const coinPriceV2 = createModel<RootModel>()({
     },
     updateFiatRate(
       state,
-      payload: {
+      action: PayloadAction<{
         fiatRate: CurrencyItems[];
-      },
+      }>,
     ) {
+      const payload = action.payload;
       const { fiatRate } = payload;
       return {
         ...state,
@@ -208,11 +211,12 @@ export const coinPriceV2 = createModel<RootModel>()({
     },
     updateFiatRateMap(
       state,
-      payload: {
+      action: PayloadAction<{
         uniqueId: ChainUniqueId;
         fiatRate: CurrencyItems[];
-      },
+      }>,
     ) {
+      const payload = action.payload;
       const { uniqueId, fiatRate } = payload;
       return {
         ...state,

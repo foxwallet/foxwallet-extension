@@ -1,3 +1,5 @@
+import { isEqual } from "lodash";
+import { actions } from "@/store/actions";
 import { Content } from "@/layouts/Content";
 import { PageWithHeader } from "@/layouts/Page";
 import { useTranslation } from "react-i18next";
@@ -19,7 +21,6 @@ import {
 import type React from "react";
 import { useMemo, useCallback, useState } from "react";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
-import { isEqual } from "lodash";
 import { getChainAddressBooksSelector } from "@/store/selectors/address";
 import type { ChainUniqueId } from "core/types/ChainUniqueId";
 import { type AddressItemV2 } from "@/store/addressModel";
@@ -29,6 +30,7 @@ import { useCopyToast } from "@/components/Custom/CopyToast/useCopyToast";
 import { showContactMoreDrawer } from "@/components/Me/ContactMoreDrawer";
 import { serializeData } from "@/common/utils/string";
 import { showContactDeleteDialog } from "@/components/Me/ContactDeleteDialog";
+import { isSidePanel } from "@/common/utils/walletUI";
 import { useLocationParams } from "@/hooks/useLocationParams";
 import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 
@@ -57,13 +59,13 @@ const ContactItem = ({
       try {
         const { confirmed } = await showContactDeleteDialog();
         if (confirmed) {
-          dispatch.address.removeAddress({ id: item.id });
+          dispatch(actions.address.removeAddress({ id: item.id }));
         }
       } catch (err) {
         console.error(err);
       }
     },
-    [dispatch.address],
+    [dispatch],
   );
 
   const onMore = useCallback(async () => {
@@ -207,7 +209,7 @@ const ContactsScreen = () => {
   );
 
   return (
-    <PageWithHeader title={t("Setting:contacts")}>
+    <PageWithHeader fillSidePanel title={t("Setting:contacts")}>
       <InputGroup flexDir={"column"} px={5} position={"relative"}>
         <InputLeftElement position={"absolute"} top={"calc(50% - 13px)"} ml={8}>
           <IconSearch w={"26px"} h={"26px"} />
@@ -222,12 +224,14 @@ const ContactsScreen = () => {
           py={2}
         />
       </InputGroup>
-      <Content>
+      <Content minH={0}>
         {addressList.length > 0 ? (
           <VStack
             spacing={2}
             justify={"start"}
-            h={"420px"}
+            h={isSidePanel() ? "auto" : "420px"}
+            flex={isSidePanel() ? 1 : undefined}
+            minH={0}
             overflowY={"auto"}
             sx={HIDE_SCROLL_BAR_CSS}
           >
@@ -243,7 +247,7 @@ const ContactsScreen = () => {
           </VStack>
         ) : (
           <IconEmptyTxPlaceholder
-            justify={"center"}
+            mx="auto"
             alignSelf={"center"}
             mb={4}
             mt={4}

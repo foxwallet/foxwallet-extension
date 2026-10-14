@@ -1,3 +1,4 @@
+import { getBackgroundState } from "../store/redux";
 import { AuthManager } from "@/scripts/background/store/vault/managers/auth/AuthManager";
 import { KeyringManager } from "@/scripts/background/store/vault/managers/keyring/KeyringManager";
 import { DappStorage } from "@/scripts/background/store/dapp/DappStorage";
@@ -38,12 +39,9 @@ import { GasFeeEIP1559, GasFeeLegacy, GasFeeType } from "core/types/GasFee";
 import { contentServerHandler } from "@/scripts/background";
 import { v4 as uuidv4 } from "uuid";
 import { ETHConfig } from "core/coins/ETH/types/ETHConfig";
-import { FullModel } from "@/store/store";
 import { getStorageData, setStorageData } from "@/common/utils/storage";
 import { ChainBaseConfig } from "core/types/ChainBaseConfig";
 import { getChainConfigsByFilter } from "@/hooks/useGroupAccount";
-import { RematchRootState } from "@rematch/core";
-import { RootModel } from "@/store";
 import { appStorageInstance } from "@/common/utils/indexeddb";
 import { getEthBalance } from "../helper/ethGetBalance";
 
@@ -755,9 +753,7 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
       const network = siteMetadata.network;
       const chainIdRequest = parseEthChainId(network || "0x1");
 
-      const state = (await appStorageInstance.getItem(
-        "persist:root",
-      )) as RematchRootState<RootModel, FullModel>;
+      const state = await getBackgroundState();
 
       const existChainConfigs = getChainConfigsByFilter({
         state,
@@ -848,9 +844,7 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
         );
       }
 
-      const state = (await appStorageInstance.getItem(
-        "persist:root",
-      )) as RematchRootState<RootModel, FullModel>;
+      const state = await getBackgroundState();
 
       const existChainConfigs = getChainConfigsByFilter({
         state,
@@ -910,9 +904,7 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
         );
       }
 
-      const state = (await appStorageInstance.getItem(
-        "persist:root",
-      )) as RematchRootState<RootModel, FullModel>;
+      const state = await getBackgroundState();
 
       // check the chainId is in config
       const existChainConfigs = getChainConfigsByFilter({
@@ -998,9 +990,7 @@ export class ETHContentWalletServer implements IContentServer<CoinType.ETH> {
     if (!valid) {
       throw new ProviderError(errorCodes.rpc.invalidParams, "Invalid network");
     }
-    const state = (await appStorageInstance.getItem(
-      "persist:root",
-    )) as RematchRootState<RootModel, FullModel>;
+    const state = await getBackgroundState();
     const existChainConfigs = getChainConfigsByFilter({
       state,
       filter: (item: ChainBaseConfig) =>

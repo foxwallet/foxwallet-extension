@@ -1,3 +1,5 @@
+import { isEqual } from "lodash";
+import { actions } from "@/store/actions";
 import {
   IconAddCircle,
   IconRemoveCircle,
@@ -24,13 +26,13 @@ import {
   BETA_STAKING_ALEO_TOKEN_ID,
   BETA_STAKING_PROGRAM_ID,
 } from "core/coins/ALEO/constants";
-import { isEqual } from "lodash";
 import type React from "react";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSafeParams } from "@/hooks/useSafeParams";
 import { type TokenV2 } from "core/types/Token";
 import { LoadingView } from "@/components/Custom/Loading";
+import { isSidePanel } from "@/common/utils/walletUI";
 import { useSearchTokens, useSearchTokensByRpc } from "@/hooks/useSearchTokens";
 import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
@@ -55,7 +57,8 @@ function AddToken() {
     isEqual,
   );
   const userTokens = useMemo(
-    () => (rawUserTokens ? dedupeUserTokens(uniqueId, rawUserTokens) : rawUserTokens),
+    () =>
+      rawUserTokens ? dedupeUserTokens(uniqueId, rawUserTokens) : rawUserTokens,
     [rawUserTokens, uniqueId],
   );
 
@@ -130,28 +133,32 @@ function AddToken() {
         }
       }
 
-      dispatch.tokens.selectToken({
-        uniqueId,
-        address: selectedAccount.account.address,
-        token,
-      });
+      dispatch(
+        actions.tokens.selectToken({
+          uniqueId,
+          address: selectedAccount.account.address,
+          token,
+        }),
+      );
     },
-    [uniqueId, dispatch.tokens, selectedAccount.account.address, coinService],
+    [uniqueId, dispatch, selectedAccount.account.address, coinService],
   );
 
   const unselectToken = useCallback(
     (token: TokenV2) => {
-      dispatch.tokens.unselectToken({
-        uniqueId,
-        address: selectedAccount.account.address,
-        token,
-      });
+      dispatch(
+        actions.tokens.unselectToken({
+          uniqueId,
+          address: selectedAccount.account.address,
+          token,
+        }),
+      );
     },
-    [dispatch.tokens, uniqueId, selectedAccount],
+    [dispatch, uniqueId, selectedAccount],
   );
 
   return (
-    <PageWithHeader title={t("ManageToken:title")}>
+    <PageWithHeader fillSidePanel title={t("ManageToken:title")}>
       <InputGroup flexDir={"column"} px={5} position={"relative"}>
         <InputLeftElement position={"absolute"} top={"calc(50% - 13px)"} ml={8}>
           <IconSearch w={"26px"} h={"26px"} />
@@ -181,7 +188,9 @@ function AddToken() {
       {}
       <Flex
         flexDir={"column"}
-        maxH={"500px"}
+        flex={isSidePanel() ? 1 : undefined}
+        minH={0}
+        maxH={isSidePanel() ? undefined : "500px"}
         overflowY={"auto"}
         mt={"6px"}
         sx={HIDE_SCROLL_BAR_CSS}

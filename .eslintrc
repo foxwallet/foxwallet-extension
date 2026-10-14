@@ -17,6 +17,17 @@
   },
   "plugins": ["react"],
   "rules": {
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": [
+          {
+            "group": ["@provablehq/wasm", "@provablehq/wasm/*"],
+            "message": "Use provable-wasm-no-tla with explicit initialization. @provablehq/wasm is reserved for SDK workers in the offscreen document."
+          }
+        ]
+      }
+    ],
     "@typescript-eslint/consistent-type-definitions": 0,
     "@typescript-eslint/method-signature-style": 0,
     "@typescript-eslint/consistent-indexed-object-style": 0,
@@ -35,9 +46,12 @@
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "error",
     "@typescript-eslint/no-floating-promises": "off",
-    "@typescript-eslint/no-confusing-void-expression": ["error", {
-      "ignoreArrowShorthand": true
-    }],
+    "@typescript-eslint/no-confusing-void-expression": [
+      "error",
+      {
+        "ignoreArrowShorthand": true
+      }
+    ],
     "@typescript-eslint/ban-types": [
       "error",
       {
@@ -47,12 +61,18 @@
         }
       }
     ],
-    "@typescript-eslint/prefer-nullish-coalescing": ["error",{
-      "ignorePrimitives": true
-    }],
-    "@typescript-eslint/restrict-template-expressions": ["error",{
-      "allowNever": true
-    }],
+    "@typescript-eslint/prefer-nullish-coalescing": [
+      "error",
+      {
+        "ignorePrimitives": true
+      }
+    ],
+    "@typescript-eslint/restrict-template-expressions": [
+      "error",
+      {
+        "allowNever": true
+      }
+    ],
     "@typescript-eslint/no-misused-promises": [
       "error",
       {
@@ -63,6 +83,33 @@
       }
     ]
   },
+  "overrides": [
+    {
+      "files": [
+        "app/**/*.{ts,tsx}",
+        "core/**/*.{ts,tsx}",
+        "entrypoints/*.{ts,tsx}"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@provablehq/wasm",
+                  "@provablehq/wasm/*",
+                  "@provablehq/sdk",
+                  "@provablehq/sdk/*"
+                ],
+                "message": "Use provable-wasm-no-tla with explicit initialization here. The SDK and its top-level WASM initialization belong in offscreen workers."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
   "settings": {
     "react": {
       "version": "detect"

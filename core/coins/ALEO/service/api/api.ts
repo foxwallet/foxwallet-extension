@@ -211,7 +211,10 @@ export class AleoWalletApi {
     };
   }
 
-  async getBaseFee(params: { txType: AleoCreditMethod; programId: string }) {
+  async getBaseFee(params: {
+    txType: AleoCreditMethod;
+    programId: string;
+  }): Promise<bigint> {
     const { txType, programId } = params;
     const res: AleoBaseFeeResp = await this.fetchData(
       `/gas?function=${txType}&program=${programId}`,

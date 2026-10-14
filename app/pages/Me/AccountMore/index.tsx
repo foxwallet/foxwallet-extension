@@ -31,6 +31,7 @@ import { useCurrWallet } from "@/hooks/useWallets";
 import { HIDE_SCROLL_BAR_CSS } from "@/common/constants/style";
 import { matchAccountsWithUniqueId } from "@/store/accountV2";
 import { showErrorToast } from "@/components/Custom/ErrorToast";
+import { isSidePanel } from "@/common/utils/walletUI";
 
 const AccountMoreScreen = () => {
   const { t } = useTranslation();
@@ -117,8 +118,8 @@ const AccountMoreScreen = () => {
   );
 
   return (
-    <PageWithHeader title={account?.group.groupName ?? ""}>
-      <Content>
+    <PageWithHeader fillSidePanel title={account?.group.groupName ?? ""}>
+      <Content minH={0}>
         <InputGroup flexDir={"column"} position={"relative"} pb={4}>
           <InputLeftElement
             position={"absolute"}
@@ -137,7 +138,13 @@ const AccountMoreScreen = () => {
             py={2}
           />
         </InputGroup>
-        <Box overflowY="auto" maxH={450} sx={HIDE_SCROLL_BAR_CSS}>
+        <Box
+          flex={1}
+          minH={0}
+          overflowY="auto"
+          maxH={isSidePanel() ? undefined : 450}
+          sx={HIDE_SCROLL_BAR_CSS}
+        >
           <VStack spacing={"10px"}>
             {displayChains.map((item) => {
               return (

@@ -1,8 +1,6 @@
 import { type ChainUniqueId } from "core/types/ChainUniqueId";
-import { createModel } from "@rematch/core";
-import { type RootModel } from "@/store/index";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { isSameAddress } from "core/utils/address";
-import { addressApi } from "@/services/api/address";
 import { nanoid } from "nanoid";
 
 export type AddressItemV2 = {
@@ -25,9 +23,9 @@ type NameTags = {
   [address: string]: NameTagItem;
 };
 
-export const address = createModel<RootModel>()({
+export const address = createSlice({
   name: "address",
-  state: {
+  initialState: {
     addressBookV2: [] as AddressBookV2 | undefined,
     nameTags: {} as NameTags,
   },
@@ -35,7 +33,8 @@ export const address = createModel<RootModel>()({
     _resetNameTags(state) {
       return { ...state, nameTags: {} };
     },
-    setNameTag(state, payload: { item: NameTagItem }) {
+    setNameTag(state, action: PayloadAction<{ item: NameTagItem }>) {
+      const payload = action.payload;
       const { item } = payload;
       return {
         ...state,
@@ -51,43 +50,57 @@ export const address = createModel<RootModel>()({
         nameTags: {} as NameTags,
       };
     },
-    addAddress(state, payload: { addressItem: Omit<AddressItemV2, "id"> }) {
-      const { addressItem } = payload;
-      const addressBook = state.addressBookV2 ?? [];
-      if (
-        !addressItem.addressName ||
-        !addressItem.address ||
-        addressItem.uniqueIds.length === 0
+    addAddress: {
+      prepare(payload: { addressItem: Omit<AddressItemV2, "id"> }) {
+        return { payload, meta: { id: nanoid() } };
+      },
+      reducer(
+        state,
+        action: PayloadAction<
+          { addressItem: Omit<AddressItemV2, "id"> },
+          string,
+          { id: string }
+        >,
       ) {
-        console.error("Wrong addressItem ", addressItem);
-        return state;
-      }
-      const exist = addressBook.some((item) =>
-        isSameAddress(item.address, addressItem.address),
-      );
-      if (exist) {
-        console.error("addressItem exist ", addressItem);
-        return state;
-      }
-      const id = nanoid();
-      return {
-        ...state,
-        addressBookV2: [
-          ...addressBook,
-          {
-            ...addressItem,
-            id,
-          },
-        ],
-      };
+        const payload = action.payload;
+        const { addressItem } = payload;
+        const addressBook = state.addressBookV2 ?? [];
+        if (
+          !addressItem.addressName ||
+          !addressItem.address ||
+          addressItem.uniqueIds.length === 0
+        ) {
+          console.error("Wrong addressItem ", addressItem);
+          return state;
+        }
+        const exist = addressBook.some((item) =>
+          isSameAddress(item.address, addressItem.address),
+        );
+        if (exist) {
+          console.error("addressItem exist ", addressItem);
+          return state;
+        }
+        const id = action.meta.id;
+        return {
+          ...state,
+          addressBookV2: [
+            ...addressBook,
+            {
+              ...addressItem,
+              id,
+            },
+          ],
+        };
+      },
     },
     editAddress(
       state,
-      payload: {
+      action: PayloadAction<{
         id: string;
         newAddressItem: Omit<AddressItemV2, "id">;
-      },
+      }>,
     ) {
+      const payload = action.payload;
       const addressBook = state.addressBookV2 ?? [];
       const { id, newAddressItem } = payload;
 
@@ -104,7 +117,8 @@ export const address = createModel<RootModel>()({
         addressBookV2: [...list],
       };
     },
-    removeAddress(state, payload: { id: string }) {
+    removeAddress(state, action: PayloadAction<{ id: string }>) {
+      const payload = action.payload;
       const { id } = payload;
       const addressBook = state.addressBookV2 ?? [];
       const list = addressBook.filter((item: AddressItemV2) => {
@@ -117,10 +131,4 @@ export const address = createModel<RootModel>()({
       };
     },
   },
-  effects: (dispatch) => ({
-    async fetchNameTag(queryAddress: string) {
-      const nameTagItem = await addressApi.getNameTag(queryAddress);
-      dispatch.address.setNameTag({ item: nameTagItem });
-    },
-  }),
 });

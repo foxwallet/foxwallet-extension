@@ -197,12 +197,14 @@ export class ScannerAuthManager {
     // unwrapped to `data` by createRequestInstance's interceptor) into
     // camelCase. Runs BEFORE the 401 handler below (axios runs response
     // interceptors in registration order for the success path).
-    instance.interceptors.response.use((data: unknown) => {
+    instance.interceptors.response.use(((data: unknown) => {
       if (isPlainJsonObject(data) || Array.isArray(data)) {
         return camelcaseKeys(data as Record<string, unknown>, { deep: true });
       }
       return data;
-    });
+    }) as (
+      response: import("axios").AxiosResponse,
+    ) => import("axios").AxiosResponse);
 
     instance.interceptors.response.use(undefined, async (err: AxiosError) => {
       const { config, response } = err;

@@ -1,7 +1,8 @@
+import { isEqual } from "lodash";
+import { actions } from "@/store/actions";
 import { useClient } from "./useClient";
 import { useCallback, useEffect, useMemo } from "react";
 import { usePopupDispatch, usePopupSelector } from "./useStore";
-import { isEqual } from "lodash";
 import { showPasswordVerifyDrawer } from "@/components/Custom/PasswordVerifyDrawer";
 import { showDeleteWalletWarningDialog } from "@/components/Wallet/DeleteWalletWarningDialog";
 import { useGroupAccount } from "./useGroupAccount";
@@ -26,7 +27,7 @@ export const useWallets = () => {
 
   useEffect(() => {
     if (!hasAuth) return;
-    void dispatch.accountV2.resyncAllWalletsToStore();
+    void dispatch(actions.accountV2.resyncAllWalletsToStore());
   }, [dispatch, hasAuth]);
 
   const addAccount = useCallback(
@@ -36,12 +37,12 @@ export const useWallets = () => {
           walletId,
           accountId,
         });
-        await dispatch.accountV2.resyncAllWalletsToStore();
+        await dispatch(actions.accountV2.resyncAllWalletsToStore());
       } catch (e) {
         console.warn("add account error ", e);
       }
     },
-    [popupServerClient, dispatch.accountV2],
+    [popupServerClient, dispatch],
   );
 
   const deleteWallet = useCallback(
@@ -56,10 +57,12 @@ export const useWallets = () => {
         return Promise.reject(new Error("Cancel deleting!"));
       }
 
-      const newWallets = await dispatch.accountV2.deleteWallet(walletId);
+      const newWallets = await dispatch(
+        actions.accountV2.deleteWallet(walletId),
+      );
       return newWallets;
     },
-    [dispatch.accountV2],
+    [dispatch],
   );
 
   // use resetWallet instead
@@ -67,14 +70,16 @@ export const useWallets = () => {
     let resWallet = walletList;
     while (resWallet.length > 0) {
       console.log("      resWallet.length", resWallet.length);
-      resWallet = await dispatch.accountV2.deleteWallet(resWallet[0].walletId);
+      resWallet = await dispatch(
+        actions.accountV2.deleteWallet(resWallet[0].walletId),
+      );
       await sleep(100);
     }
-  }, [dispatch.accountV2, walletList]);
+  }, [dispatch, walletList]);
 
   const resetWallet = useCallback(async () => {
-    return await dispatch.accountV2.resetWallet();
-  }, [dispatch.accountV2]);
+    return await dispatch(actions.accountV2.resetWallet());
+  }, [dispatch]);
 
   return {
     walletList,
@@ -111,9 +116,9 @@ export const useCurrWallet = () => {
 
   const changeWalletName = useCallback(
     async (walletId: string, walletName: string) => {
-      dispatch.accountV2.changeWalletName({ walletId, walletName });
+      dispatch(actions.accountV2.changeWalletName({ walletId, walletName }));
     },
-    [dispatch.accountV2],
+    [dispatch],
   );
 
   return {

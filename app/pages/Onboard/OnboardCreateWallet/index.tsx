@@ -1,3 +1,4 @@
+import { actions } from "@/store/actions";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { PageWithHeader } from "../../../layouts/Page";
 import { Body } from "../../../layouts/Body";
@@ -32,9 +33,9 @@ function OnboardCreateWalletScreen() {
       walletId,
       revealMnemonic: true,
     });
-    await dispatch.accountV2.resyncAllWalletsToStore();
+    await dispatch(actions.accountV2.resyncAllWalletsToStore());
 
-    dispatch.multiChain.addHdWalletChainItem({ walletId });
+    dispatch(actions.multiChain.addHdWalletChainItem({ walletId }));
 
     setMnemonic(wallet.mnemonic ?? "");
   }, [dispatch, popupServerClient]);
@@ -78,10 +79,10 @@ function OnboardCreateWalletScreen() {
           <ConfirmMnemonicStep
             mnemonic={mnemonic}
             onConfirm={() => {
-              dispatch.accountV2.changeWalletBackupedMnemonic({
+              dispatch(actions.accountV2.changeWalletBackupedMnemonic({
                 walletId: walletIdRef.current,
                 backupedMnemonic: true,
-              });
+              }));
               navigate("/main");
             }}
           />
@@ -92,7 +93,7 @@ function OnboardCreateWalletScreen() {
     mnemonic,
     createWallet,
     popupServerClient,
-    dispatch.accountV2,
+    dispatch,
     navigate,
   ]);
 

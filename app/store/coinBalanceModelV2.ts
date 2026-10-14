@@ -1,6 +1,5 @@
-import { createModel } from "@rematch/core";
-import { type RootModel } from "./index";
 import { groupBy, isEqual } from "lodash";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { type TokenV2 } from "core/types/Token";
 import { type ChainUniqueId } from "core/types/ChainUniqueId";
 
@@ -35,24 +34,31 @@ export type ChainBalanceModel = {
   [uniqueId in ChainUniqueId]?: ChainItems | undefined;
 };
 
-export const coinBalanceV2 = createModel<RootModel>()({
+export const coinBalanceV2 = createSlice({
   name: "coinBalanceV2",
-  state: {} as ChainBalanceModel,
+  initialState: {} as ChainBalanceModel,
   reducers: {
     updateCoinBalance(
       state,
-      payload: {
+      action: PayloadAction<{
         uniqueId: ChainUniqueId;
         address: string;
         contractAddress?: string;
         balanceItem: BalanceItem;
-      },
+      }>,
     ) {
-      const { uniqueId, contractAddress, balanceItem, address } = payload;
+      const payload = action.payload;
+      const {
+        uniqueId,
+        contractAddress,
+        balanceItem: inputBalance,
+        address,
+      } = payload;
+      const balanceItem = inputBalance && { ...inputBalance };
       if (!balanceItem) {
         return state;
       }
-      balanceItem.total = balanceItem.total ?? "0";
+      balanceItem.total = balanceItem.total ?? 0n;
       balanceItem.availableBalance = balanceItem.availableBalance ?? 0n;
       balanceItem.privateBalance = balanceItem.privateBalance ?? 0n;
       balanceItem.publicBalance = balanceItem.publicBalance ?? 0n;
@@ -101,10 +107,11 @@ export const coinBalanceV2 = createModel<RootModel>()({
     },
     batchUpdateBalance(
       state,
-      payload: {
+      action: PayloadAction<{
         items: BatchBalanceItem[];
-      },
+      }>,
     ) {
+      const payload = action.payload;
       try {
         const { items } = payload;
         const newState: ChainBalanceModel = { ...state };
@@ -138,7 +145,7 @@ export const coinBalanceV2 = createModel<RootModel>()({
               chainState.baseCurrency = chainBaseCurrency;
             } else {
               const lowerTokenAddr = contractAddress.toLowerCase();
-              const chainTokens = chainState.tokens?.[lowerTokenAddr] ?? {};
+              const chainTokens = { ...chainState.tokens?.[lowerTokenAddr] };
               const sameContractItems =
                 itemsByContractAddress[contractAddress] ?? [];
               for (const sameContractItem of sameContractItems) {

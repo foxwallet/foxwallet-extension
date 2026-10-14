@@ -1,3 +1,4 @@
+import { actions } from "@/store/actions";
 import { TabPanel } from "@chakra-ui/react";
 import { AccountInfoHeader } from "@/components/Wallet/AccountInfoHeader";
 import { BackupReminderView } from "@/components/Wallet/BackupReminderView";
@@ -9,14 +10,14 @@ import { useGroupAccountAssets } from "@/hooks/useGroupAccountAssets";
 export const WalletTab = () => {
   const dispatch = usePopupDispatch();
   useEffect(() => {
-    void dispatch.accountV2.resyncAllWalletsToStore();
-  }, [dispatch.accountV2]);
+    void dispatch(actions.accountV2.resyncAllWalletsToStore());
+  }, [dispatch]);
 
   const { assets, totalUsdValue } = useGroupAccountAssets();
   // console.log("      WalletTab assets", assets);
 
   return (
-    <TabPanel h={"100vh"} display={"flex"} flexDir={"column"}>
+    <TabPanel flex={1} minH={0} display={"flex"} flexDir={"column"}>
       <AccountInfoHeader totalUsdValue={totalUsdValue} />
       <BackupReminderView />
       <HomeTabList assets={assets} />

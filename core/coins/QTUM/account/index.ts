@@ -91,10 +91,12 @@ class QTUMBasic extends CoinBasic<CoinType.QTUM> {
 
   public deriveAccount(
     privateKey: string,
-    option: QTUMAccountOption,
+    option: QTUMImportPKType | QTUMAccountOption,
   ): { address: string; publicKey: string } {
-    const payment = option?.payment ?? "p2pkh";
-    const networkType = option?.network ?? "mainnet";
+    const accountOption =
+      typeof option === "object" ? option : DEFAULT_QTUM_ACCOUNT_OPTION;
+    const payment = accountOption.payment ?? "p2pkh";
+    const networkType = accountOption.network ?? "mainnet";
     const network =
       networkType === "mainnet" ? qtumNetwork : qtumTestnetNetwork;
 
@@ -151,7 +153,7 @@ class QTUMBasic extends CoinBasic<CoinType.QTUM> {
 
     return {
       address,
-      publicKey: keyPair.publicKey.toString("hex"),
+      publicKey: Buffer.from(keyPair.publicKey).toString("hex"),
     };
   }
 }
