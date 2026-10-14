@@ -51,9 +51,11 @@ jobs:
           version=$(node -p 'JSON.parse(require("fs").readFileSync("package.json", "utf8")).version')
           build_date=$(TZ=Asia/Shanghai date +%Y-%m-%d)
           if [ "$DAILY" = "true" ]; then
-            tag="v${version}-daily.${build_date//-/}.${GITHUB_RUN_ID}.${GITHUB_RUN_ATTEMPT}"
+            release_name="v${version}-daily.${build_date//-/}"
+            tag="${release_name}.${GITHUB_RUN_ID}.${GITHUB_RUN_ATTEMPT}"
           else
             tag="${RELEASE_TAG:-v$version}"
+            release_name="$tag"
             case "$tag" in
               *[dD][aA][iI][lL][yY]*)
                 echo "::error::Manual release tags must not contain daily."
@@ -66,6 +68,7 @@ jobs:
             exit 1
           fi
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "name=$release_name" >> "$GITHUB_OUTPUT"
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           echo "date=$build_date" >> "$GITHUB_OUTPUT"
 
@@ -174,7 +177,7 @@ jobs:
       - name: Name release archive
         if: steps.changes.outputs.publish == 'true'
         env:
-          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          RELEASE_NAME: ${{ steps.release.outputs.name }}
         shell: bash
         run: |
           set -euo pipefail
@@ -185,12 +188,12 @@ jobs:
             exit 1
           fi
           mkdir -p release-assets
-          cp "${archives[0]}" "release-assets/foxwallet-extension-${RELEASE_TAG}-chrome.zip"
+          cp "${archives[0]}" "release-assets/foxwallet-extension-${RELEASE_NAME}-chrome.zip"
       - name: Upload extension archive
         if: steps.changes.outputs.publish == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: foxwallet-extension-${{ steps.release.outputs.tag }}-chrome
+          name: foxwallet-extension-${{ steps.release.outputs.name }}-chrome
           path: release-assets/*.zip
           if-no-files-found: error
           retention-days: 14
@@ -201,6 +204,7 @@ jobs:
           GH_REPO: ${{ github.repository }}
           DAILY: ${{ inputs.daily }}
           RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          RELEASE_NAME: ${{ steps.release.outputs.name }}
           BUILD_SHA: ${{ steps.release.outputs.sha }}
           BUILD_DATE: ${{ steps.release.outputs.date }}
           BUILD_FINGERPRINT: ${{ steps.changes.outputs.fingerprint }}
@@ -213,8 +217,7 @@ jobs:
             echo "Chrome extension built from main."
             echo
             echo "Commit: $BUILD_SHA"
-            echo "Build date: $BUILD_DATE (Asia/Shanghai)"
-            echo "Workflow: https://github.com/$GH_REPO/actions/runs/$GITHUB_RUN_ID"
+            echo "Build date: $BUILD_DATE"
             echo
             echo "<!-- foxwallet-channel:$RELEASE_CHANNEL -->"
             echo "<!-- foxwallet-build:$BUILD_FINGERPRINT -->"
@@ -225,7 +228,7 @@ jobs:
           fi
           gh release create "$RELEASE_TAG" release-assets/*.zip \
             --repo "$GH_REPO" --target "$BUILD_SHA" \
-            --title "FoxWallet $RELEASE_TAG" --notes-file "$notes" "${options[@]}"
+            --title "FoxWallet $RELEASE_NAME" --notes-file "$notes" "${options[@]}"
           echo "Release: https://github.com/$GH_REPO/releases/tag/$RELEASE_TAG" >> "$GITHUB_STEP_SUMMARY"
       - name: Remove environment file
         if: always()
