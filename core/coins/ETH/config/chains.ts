@@ -562,7 +562,6 @@ export const ETH_CHAIN_CONFIGS: { [key in string]: ETHConfig } = {
   CAGA: {
     coinType: CoinType.ETH,
     uniqueId: InnerChainUniqueId.CAGA,
-    autoAdd: true,
     logo: CagaLogo,
     chainId: "72888",
     chainName: "CAGA",
@@ -685,7 +684,6 @@ export const ETH_CHAIN_CONFIGS: { [key in string]: ETHConfig } = {
   EOS_EVM: {
     coinType: CoinType.ETH,
     uniqueId: InnerChainUniqueId.EOS_EVM,
-    autoAdd: true,
     logo: EOSLogo,
     chainId: "17777",
     chainName: "EOS EVM",
@@ -834,7 +832,6 @@ export const ETH_CHAIN_CONFIGS: { [key in string]: ETHConfig } = {
   INEVM: {
     coinType: CoinType.ETH,
     uniqueId: InnerChainUniqueId.INEVM,
-    autoAdd: true,
     logo: InevmLogo,
     chainId: "2525",
     chainName: "inEVM",
@@ -1441,7 +1438,6 @@ export const ETH_CHAIN_CONFIGS: { [key in string]: ETHConfig } = {
   ZCHAINS: {
     coinType: CoinType.ETH,
     uniqueId: InnerChainUniqueId.ZCHAINS,
-    autoAdd: true,
     logo: ZchainsLogo,
     chainId: "168168",
     chainName: "ZChains",
