@@ -5,7 +5,7 @@ import { useChainMode } from "@/hooks/useChainMode";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { dedupeUserTokens } from "@/common/utils/userTokens";
 import { usePopupDispatch, usePopupSelector } from "@/hooks/useStore";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useGroupInteractiveTokens } from "@/hooks/useToken";
 import { coinServiceEntry } from "core/coins/CoinServiceEntry";
 import { AssetType, type TokenV2 } from "core/types/Token";
@@ -19,6 +19,18 @@ import { utils } from "ethers";
 import { commaInteger } from "@/common/utils/comma";
 import { formatPrice } from "@/common/utils/num";
 import { useClient } from "@/hooks/useClient";
+
+const getAssetBalanceKey = (asset: TokenV2) =>
+  JSON.stringify([
+    asset.uniqueId,
+    asset.ownerAddress,
+    asset.contractAddress,
+    asset.programId,
+    asset.tokenId,
+    asset.type,
+  ]);
+
+const ASSET_BALANCE_CACHE_MS = 4500;
 
 export const useUserAssets = () => {
   const { getMatchAccountsWithUniqueId } = useGroupAccount();
@@ -140,48 +152,88 @@ export const useUserAssetsWithPrice = () => {
 export const useUserAssetsWithPriceBalanceAndValue = () => {
   const { assetsWithPrice: assets } = useUserAssetsWithPrice();
   const { popupServerClient } = useClient();
+  const [balanceByAsset, setBalanceByAsset] = useState<
+    Record<string, BalanceResp>
+  >({});
+  const balanceCache = useRef(
+    new Map<string, { balance: BalanceResp; updatedAt: number }>(),
+  );
+  const balanceRequests = useRef(
+    new Map<string, Promise<BalanceResp | undefined>>(),
+  );
 
   const fetchData = useCallback(async () => {
     const promises = assets.map(async (item) => {
-      const {
-        uniqueId,
-        contractAddress,
-        programId,
-        tokenId,
-        ownerAddress: address,
-        type,
-      } = item;
-      const coinService = coinServiceEntry.getInstance(uniqueId);
-      const hasContractAddress = !!contractAddress;
-      const isAleoToken =
-        uniqueId === InnerChainUniqueId.ALEO_MAINNET &&
-        type === AssetType.TOKEN &&
-        !!programId &&
-        !!tokenId;
+      const balanceKey = getAssetBalanceKey(item);
+      const cached = balanceCache.current.get(balanceKey);
+      if (cached && Date.now() - cached.updatedAt < ASSET_BALANCE_CACHE_MS) {
+        return { ...item, ...cached.balance };
+      }
+
+      let balanceRequest = balanceRequests.current.get(balanceKey);
+      if (!balanceRequest) {
+        balanceRequest = (async () => {
+          const {
+            uniqueId,
+            contractAddress,
+            programId,
+            tokenId,
+            ownerAddress: address,
+            type,
+          } = item;
+          const coinService = coinServiceEntry.getInstance(uniqueId);
+          const hasContractAddress = !!contractAddress;
+          const isAleoToken =
+            uniqueId === InnerChainUniqueId.ALEO_MAINNET &&
+            type === AssetType.TOKEN &&
+            !!programId &&
+            !!tokenId;
+
+          let balance: BalanceResp | undefined;
+          if (uniqueId === InnerChainUniqueId.ALEO_MAINNET) {
+            await popupServerClient.scannerRegister({
+              chainId: coinService.config.chainId,
+              address,
+            });
+          }
+          if (hasContractAddress || isAleoToken) {
+            if (hasContractAddress) {
+              balance = await coinService.getTokenBalance({
+                address,
+                token: { contractAddress },
+              });
+            } else if (programId && tokenId) {
+              balance = await coinService.getTokenBalance({
+                address,
+                token: { contractAddress: `${programId}-${tokenId}` },
+              });
+            }
+          } else {
+            balance = await coinService.getBalance(address);
+          }
+          return balance;
+        })();
+        balanceRequests.current.set(balanceKey, balanceRequest);
+      }
 
       let balance: BalanceResp | undefined;
-      if (uniqueId === InnerChainUniqueId.ALEO_MAINNET) {
-        await popupServerClient.scannerRegister({
-          chainId: coinService.config.chainId,
-          address,
-        });
-      }
-      if (hasContractAddress || isAleoToken) {
-        if (hasContractAddress) {
-          balance = await coinService.getTokenBalance({
-            address,
-            token: { contractAddress },
-          });
-        } else if (programId && tokenId) {
-          balance = await coinService.getTokenBalance({
-            address,
-            token: { contractAddress: `${programId}-${tokenId}` },
-          });
+      try {
+        balance = await balanceRequest;
+      } finally {
+        if (balanceRequests.current.get(balanceKey) === balanceRequest) {
+          balanceRequests.current.delete(balanceKey);
         }
-      } else {
-        balance = await coinService.getBalance(address);
       }
-      // console.log("      balance", balance);
+      if (balance) {
+        balanceCache.current.set(balanceKey, {
+          balance,
+          updatedAt: Date.now(),
+        });
+        setBalanceByAsset((current) => ({
+          ...current,
+          [balanceKey]: balance,
+        }));
+      }
       return balance ? { ...item, ...balance } : item;
     });
     const results = await Promise.allSettled(promises);
@@ -203,13 +255,15 @@ export const useUserAssetsWithPriceBalanceAndValue = () => {
         a.uniqueId.localeCompare(b.uniqueId) ||
         a.contractAddress?.localeCompare(b.contractAddress),
     );
-    const temp = sortedAssets
-      .map(
-        (asset) =>
-          `${asset.uniqueId}-${asset.contractAddress}-${asset.ownerAddress}`,
-      )
-      .join("-");
-    return `/useUserAssetsWithPriceBalance/${temp}`;
+    const assetKeys = sortedAssets.map((asset) => [
+      asset.uniqueId,
+      asset.contractAddress,
+      asset.programId,
+      asset.tokenId,
+      asset.ownerAddress,
+      asset.type,
+    ]);
+    return `/useUserAssetsWithPriceBalance/${JSON.stringify(assetKeys)}`;
   }, [assets]);
 
   const {
@@ -222,19 +276,25 @@ export const useUserAssetsWithPriceBalanceAndValue = () => {
   });
 
   const assetsWithValue = useMemo(() => {
-    if (!data || data.length === 0) {
-      return [];
-    }
-    return data.map((item) => {
+    const cachedBalances = new Map(
+      (data ?? [])
+        .filter((item) => item.total !== undefined)
+        .map((item) => [getAssetBalanceKey(item), item]),
+    );
+    return assets.map((asset) => {
+      const balance =
+        balanceByAsset[getAssetBalanceKey(asset)] ??
+        cachedBalances.get(getAssetBalanceKey(asset));
+      const item = balance ? { ...asset, ...balance } : asset;
       const { decimals, price, total } = item;
-      if (!!price && total !== undefined) {
+      if (price !== undefined && total !== undefined) {
         const num = Number(utils.formatUnits(total, decimals));
         const value = num * price;
         return { ...item, value };
       }
       return item;
     });
-  }, [data]);
+  }, [assets, balanceByAsset, data]);
 
   const sortedAssets = useMemo(() => {
     return [...assetsWithValue].sort((a, b) => {
@@ -288,9 +348,21 @@ export const useGroupAccountAssets = () => {
     isEqual,
   );
 
+  const updatePartialTokens = useCallback(
+    (result: {
+      uniqueId: TokenV2["uniqueId"];
+      address: string;
+      tokens: TokenV2[];
+    }) => {
+      dispatch(actions.tokens.updateAddressTokens(result));
+    },
+    [dispatch],
+  );
+
   const { getGroupInteractiveTokens } = useGroupInteractiveTokens(
     needUpdateMap,
     true,
+    updatePartialTokens,
   );
 
   const key = useMemo(() => {
@@ -306,14 +378,7 @@ export const useGroupAccountAssets = () => {
     try {
       const res = await getGroupInteractiveTokens();
       if (res && res.length > 0) {
-        res.forEach(({ uniqueId, address, tokens }) => {
-          dispatch(
-            actions.tokens.updateAddressTokens({
-              uniqueId,
-              address,
-              tokens,
-            }),
-          );
+        res.forEach(({ uniqueId, address }) => {
           dispatch(
             actions.tokens.updateTimestamp({
               uniqueId,
@@ -341,7 +406,12 @@ export const useGroupAccountAssets = () => {
 
   const totalUsdValue = useMemo(() => {
     const temp = assets
-      .filter((item) => !!item.price && !!item.total && !!item.decimals)
+      .filter(
+        (item) =>
+          item.price !== undefined &&
+          item.total !== undefined &&
+          item.decimals !== undefined,
+      )
       .reduce((total: number, currentValue: TokenV2) => {
         return Number(total) + Number(currentValue?.value?.toString() ?? 0);
       }, 0);
