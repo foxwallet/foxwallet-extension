@@ -36,3 +36,5 @@ upgradeTool/dist_new
 /public/aleo_wasm_*.wasm
 /public/worker_mainnet_*.js
 /public/worker_testnet_*.js
+
+ai-rules/personal.md

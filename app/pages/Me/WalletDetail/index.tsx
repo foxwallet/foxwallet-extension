@@ -49,8 +49,8 @@ const AccountListItem: React.FC<AccountListItemProps> = ({ account }) => {
       borderColor={borderColor}
       borderRadius={8}
       px={2.5}
-      flex={1}
-      minH={"60px"}
+      h={"60px"}
+      flexShrink={0}
       align={"center"}
       justifyContent={"space-between"}
       onClick={handleShowMore}

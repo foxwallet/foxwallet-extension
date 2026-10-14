@@ -183,7 +183,7 @@ export const matchedAndUnMatchedTokens = (
 
   if (standardTokens && standardTokens.length > 0) {
     let contractAddressSet: Set<string>;
-    let complianceProgramIdSet: Set<string> = new Set();
+    let complianceProgramIdSet = new Set<string>();
     if (uniqueId === InnerChainUniqueId.ALEO_MAINNET) {
       contractAddressSet = new Set(
         standardTokens.map((token) => {
@@ -238,6 +238,11 @@ export const matchedAndUnMatchedTokens = (
 export const useGroupInteractiveTokens = (
   data: AssetIdentifier[],
   autoRequest: boolean = true,
+  onPartialResult?: (result: {
+    address: string;
+    uniqueId: ChainUniqueId;
+    tokens: TokenV2[];
+  }) => void,
 ) => {
   const fetchTokens = useCallback(async () => {
     const itemsToUpdate = data.filter((item) => item.needUpdate !== false);
@@ -266,8 +271,9 @@ export const useGroupInteractiveTokens = (
         [...matchedTokens, ...trustedUnmatched],
         whiteTokens,
       );
-      // console.log("      selectedTokens", selectedTokens);
-      return { address, uniqueId, tokens };
+      const result = { address, uniqueId, tokens };
+      onPartialResult?.(result);
+      return result;
     });
     const results = await Promise.allSettled(promises);
     const validResults = results
@@ -279,7 +285,7 @@ export const useGroupInteractiveTokens = (
     // console.log("      validResults", validResults);
 
     return validResults;
-  }, [data]);
+  }, [data, onPartialResult]);
 
   const key = useMemo(() => {
     const sortedData = [...data].sort(
