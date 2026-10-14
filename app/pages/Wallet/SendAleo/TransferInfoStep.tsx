@@ -189,6 +189,8 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
       address: selectedAccount.account.address,
       selectedMethod: transferMethod,
       token: tokenInfo,
+      programId: resolvedProgramId,
+      tokenId: resolvedTokenId,
     });
     if (data) {
       setTransferMethod(data);
@@ -198,6 +200,8 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
     selectedAccount.account.address,
     transferMethod,
     tokenInfo,
+    resolvedProgramId,
+    resolvedTokenId,
     setTransferMethod,
   ]);
 
