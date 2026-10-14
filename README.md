@@ -100,7 +100,7 @@ yarn translate -p [your port]
 
 ## Aleo SDK
 
-Aleo functionality uses the npm packages `@provablehq/sdk` and `@provablehq/wasm`, pinned to `0.11.3`. Popup and background code use `"provable-wasm-no-tla": "npm:@provablehq/wasm@0.11.3"` with explicit initialization; offscreen workers use the SDK for transactions, scanner encryption, and thread pools.
+Aleo functionality uses the npm packages `@provablehq/sdk` and `@provablehq/wasm`, pinned to `0.12.0`. Popup and background code use `"provable-wasm-no-tla": "npm:@provablehq/wasm@0.12.0"` with explicit initialization; offscreen workers use the SDK for transactions, scanner encryption, and thread pools.
 
 Run `yarn sdk:patch` when regenerating dependency patches. See [Aleo SDK integration](docs/aleo-sdk.md) for the upgrade procedure and verification commands.
 
