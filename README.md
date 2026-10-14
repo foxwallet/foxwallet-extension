@@ -57,10 +57,10 @@ yarn zip       # release archive under dist/
 
 Both release workflows compile `main`, download `.env` from the private `foxwallet/foxwallet-extension-env` repository, run `yarn zip`, and publish the Chrome ZIP to GitHub Releases through the shared `build.yml` workflow.
 
-| Workflow                              | Trigger                                                                                   | Release                                                                                                                                                |
-| ------------------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `Daily release` (`daily-release.yml`) | Every day at **17:30 Beijing time (UTC+8)**, cron `30 9 * * *`; also supports manual runs | Prerelease with a unique `v<version>-daily.<YYYYMMDD>.<run ID>.<attempt>` tag. The title and ZIP filename contain `daily`; it does not replace Latest. |
-| `Release` (`release.yml`)             | Manual only                                                                               | Regular release marked Latest. Optional `release_tag` defaults to `v<package.json version>` and must not contain `daily` or reuse an existing tag.     |
+| Workflow                              | Trigger                                                                                   | Release                                                                                                                                                                                                |
+| ------------------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `Daily release` (`daily-release.yml`) | Every day at **17:30 Beijing time (UTC+8)**, cron `30 9 * * *`; also supports manual runs | Prerelease with a unique `v<version>-daily.<YYYYMMDD>.<run ID>.<attempt>` tag. The title and ZIP filename use `v<version>-daily.<YYYYMMDD>` without the run ID or attempt; it does not replace Latest. |
+| `Release` (`release.yml`)             | Manual only, with no input options                                                        | Regular release marked Latest, using `v<package.json version>`. Update the package version before publishing changed content if that tag already exists.                                               |
 
 Run either workflow from **Actions → workflow name → Run workflow**. They always check out `main`, including when another branch is selected in the UI. Release tags point to the exact commit that was built. Scheduled workflows must exist on the default branch (`main`); GitHub may delay scheduled starts.
 
@@ -74,7 +74,7 @@ Configure the following under **Settings → Secrets and variables → Actions**
 | Variable (optional) | `ENV_REPO`       | `owner/repository`; defaults to `foxwallet/foxwallet-extension-env`.                                                                 |
 | Variable (optional) | `ENV_REF`        | Environment branch; defaults to `main`.                                                                                              |
 
-The private environment repository generates the `dotenv` artifact on pushes, manual runs, and daily at **17:00 Beijing time**, keeping it available before the scheduled release. Manual `Release` runs can override `env_ref` and select an exact successful `env_run_id`. Artifacts expire after 30 days; the latest successful unexpired configuration is used. Environment changes do not immediately trigger extension releases. Pushes and pull requests do not trigger extension releases.
+The private environment repository generates the `dotenv` artifact on pushes, manual runs, and daily at **17:00 Beijing time**, keeping it available before the scheduled release. Both release workflows automatically use the latest successful configuration for `ENV_REF`. Artifacts expire after 30 days. Environment changes do not immediately trigger extension releases. Pushes and pull requests do not trigger extension releases.
 
 ## Locale
 

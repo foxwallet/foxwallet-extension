@@ -7,18 +7,6 @@ on:
         description: "Publish a daily prerelease"
         type: boolean
         default: false
-      release_tag:
-        description: "Release tag (empty uses the package version)"
-        type: string
-        default: ""
-      env_ref:
-        description: "Environment repository branch (empty uses ENV_REF or main)"
-        type: string
-        default: ""
-      env_run_id:
-        description: "Successful Generate environment run ID (empty uses latest)"
-        type: string
-        default: ""
     secrets:
       ENV_REPO_TOKEN:
         required: true
@@ -44,7 +32,6 @@ jobs:
         id: release
         env:
           DAILY: ${{ inputs.daily }}
-          RELEASE_TAG: ${{ inputs.release_tag }}
         shell: bash
         run: |
           set -euo pipefail
@@ -54,7 +41,7 @@ jobs:
             release_name="v${version}-daily.${build_date//-/}"
             tag="${release_name}.${GITHUB_RUN_ID}.${GITHUB_RUN_ATTEMPT}"
           else
-            tag="${RELEASE_TAG:-v$version}"
+            tag="v$version"
             release_name="$tag"
             case "$tag" in
               *[dD][aA][iI][lL][yY]*)
@@ -76,8 +63,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.ENV_REPO_TOKEN }}
           ENV_REPOSITORY: ${{ vars.ENV_REPO || 'foxwallet/foxwallet-extension-env' }}
-          ENV_REF: ${{ inputs.env_ref || vars.ENV_REF || 'main' }}
-          ENV_RUN_ID: ${{ inputs.env_run_id }}
+          ENV_REF: ${{ vars.ENV_REF || 'main' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -86,13 +72,10 @@ jobs:
             exit 1
           fi
 
-          run_id="$ENV_RUN_ID"
-          if [ -z "$run_id" ]; then
-            run_id=$(gh api --method GET \
-              "repos/$ENV_REPOSITORY/actions/workflows/generate-env.yml/runs" \
-              -f branch="$ENV_REF" -f status=success -f per_page=100 \
-              --jq '[.workflow_runs[] | select(.event == "push" or .event == "workflow_dispatch" or .event == "schedule")] | .[0].id // empty')
-          fi
+          run_id=$(gh api --method GET \
+            "repos/$ENV_REPOSITORY/actions/workflows/generate-env.yml/runs" \
+            -f branch="$ENV_REF" -f status=success -f per_page=100 \
+            --jq '[.workflow_runs[] | select(.event == "push" or .event == "workflow_dispatch" or .event == "schedule")] | .[0].id // empty')
           if [[ ! "$run_id" =~ ^[0-9]+$ ]]; then
             echo "::error::No successful environment run found. Run generate-env.yml in the private repository first."
             exit 1
@@ -143,7 +126,7 @@ jobs:
             exit 0
           fi
           if gh api "repos/$GH_REPO/git/ref/tags/$RELEASE_TAG" > /dev/null 2>&1; then
-            echo "::error::Tag $RELEASE_TAG already exists. Choose a new release tag."
+            echo "::error::Tag $RELEASE_TAG already exists. Update the package version before publishing changed content."
             exit 1
           fi
           echo "publish=true" >> "$GITHUB_OUTPUT"
