@@ -1,0 +1,232 @@
+name: Build and publish extension
+
+on:
+  workflow_call:
+    inputs:
+      daily:
+        description: "Publish a daily prerelease"
+        type: boolean
+        default: false
+      release_tag:
+        description: "Release tag (empty uses the package version)"
+        type: string
+        default: ""
+      env_ref:
+        description: "Environment repository branch (empty uses ENV_REF or main)"
+        type: string
+        default: ""
+      env_run_id:
+        description: "Successful Generate environment run ID (empty uses latest)"
+        type: string
+        default: ""
+    secrets:
+      ENV_REPO_TOKEN:
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: extension-release-${{ inputs.daily && 'daily' || 'manual' }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Prepare release metadata
+        id: release
+        env:
+          DAILY: ${{ inputs.daily }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(node -p 'JSON.parse(require("fs").readFileSync("package.json", "utf8")).version')
+          build_date=$(TZ=Asia/Shanghai date +%Y-%m-%d)
+          if [ "$DAILY" = "true" ]; then
+            tag="v${version}-daily.${build_date//-/}.${GITHUB_RUN_ID}.${GITHUB_RUN_ATTEMPT}"
+          else
+            tag="${RELEASE_TAG:-v$version}"
+            case "$tag" in
+              *[dD][aA][iI][lL][yY]*)
+                echo "::error::Manual release tags must not contain daily."
+                exit 1
+                ;;
+            esac
+          fi
+          if [[ ! "$tag" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]] || ! git check-ref-format "refs/tags/$tag"; then
+            echo "::error::Invalid release tag. Use letters, numbers, dots, underscores or hyphens."
+            exit 1
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "date=$build_date" >> "$GITHUB_OUTPUT"
+
+      - name: Download environment from private repository
+        env:
+          GH_TOKEN: ${{ secrets.ENV_REPO_TOKEN }}
+          ENV_REPOSITORY: ${{ vars.ENV_REPO || 'foxwallet/foxwallet-extension-env' }}
+          ENV_REF: ${{ inputs.env_ref || vars.ENV_REF || 'main' }}
+          ENV_RUN_ID: ${{ inputs.env_run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::Set ENV_REPO_TOKEN with Actions: read access to the private environment repository."
+            exit 1
+          fi
+
+          run_id="$ENV_RUN_ID"
+          if [ -z "$run_id" ]; then
+            run_id=$(gh api --method GET \
+              "repos/$ENV_REPOSITORY/actions/workflows/generate-env.yml/runs" \
+              -f branch="$ENV_REF" -f status=success -f per_page=100 \
+              --jq '[.workflow_runs[] | select(.event == "push" or .event == "workflow_dispatch" or .event == "schedule")] | .[0].id // empty')
+          fi
+          if [[ ! "$run_id" =~ ^[0-9]+$ ]]; then
+            echo "::error::No successful environment run found. Run generate-env.yml in the private repository first."
+            exit 1
+          fi
+
+          gh api "repos/$ENV_REPOSITORY/actions/runs/$run_id" \
+            > "$RUNNER_TEMP/environment-run.json"
+          jq -e --arg ref "$ENV_REF" \
+            '.status == "completed" and .conclusion == "success" and
+             .head_branch == $ref and .path == ".github/workflows/generate-env.yml" and
+             (.event == "push" or .event == "workflow_dispatch" or .event == "schedule")' \
+            "$RUNNER_TEMP/environment-run.json" > /dev/null
+
+          env_dir=$(mktemp -d "$RUNNER_TEMP/extension-env.XXXXXX")
+          gh run download "$run_id" --repo "$ENV_REPOSITORY" \
+            --name dotenv --dir "$env_dir"
+          if [ ! -s "$env_dir/.env" ]; then
+            echo "::error::The dotenv artifact does not contain a nonempty .env file."
+            exit 1
+          fi
+          install -m 600 "$env_dir/.env" .env
+          rm -rf "$env_dir"
+          echo "Environment run: $ENV_REPOSITORY/actions/runs/$run_id" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Check for changes since the last release
+        id: changes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          DAILY: ${{ inputs.daily }}
+          BUILD_SHA: ${{ steps.release.outputs.sha }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          channel=release
+          if [ "$DAILY" = "true" ]; then channel=daily; fi
+          env_hash=$(sha256sum .env | cut -d ' ' -f 1)
+          fingerprint=$(printf '%s\n%s\n' "$BUILD_SHA" "$env_hash" | sha256sum | cut -d ' ' -f 1)
+          previous_notes=$(gh api --paginate "repos/$GH_REPO/releases?per_page=100" \
+            --jq '.[] | {draft, body}' | \
+            jq -s --arg channel "<!-- foxwallet-channel:$channel -->" \
+              '[.[] | select(.draft == false and ((.body // "") | contains($channel)))] | .[0].body // ""')
+          if [[ "$previous_notes" == *"<!-- foxwallet-build:$fingerprint -->"* ]]; then
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+            echo "main and environment are unchanged since the last $channel release; skipping build and publish."
+            echo "Skipped: main and environment are unchanged since the last $channel release." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          if gh api "repos/$GH_REPO/git/ref/tags/$RELEASE_TAG" > /dev/null 2>&1; then
+            echo "::error::Tag $RELEASE_TAG already exists. Choose a new release tag."
+            exit 1
+          fi
+          echo "publish=true" >> "$GITHUB_OUTPUT"
+          echo "fingerprint=$fingerprint" >> "$GITHUB_OUTPUT"
+          echo "channel=$channel" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@v4
+        if: steps.changes.outputs.publish == 'true'
+        with:
+          node-version: "22"
+      - name: Enable Yarn
+        if: steps.changes.outputs.publish == 'true'
+        run: |
+          corepack enable
+          corepack prepare yarn@1.22.22 --activate
+      - name: Locate Yarn cache
+        if: steps.changes.outputs.publish == 'true'
+        id: yarn-cache
+        run: echo "dir=$(yarn cache dir)" >> "$GITHUB_OUTPUT"
+      - name: Cache Yarn downloads
+        if: steps.changes.outputs.publish == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.yarn-cache.outputs.dir }}
+          key: yarn-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+          restore-keys: yarn-${{ runner.os }}-
+      - run: yarn install --frozen-lockfile --non-interactive
+        if: steps.changes.outputs.publish == 'true'
+      - run: yarn zip
+        if: steps.changes.outputs.publish == 'true'
+      - name: Name release archive
+        if: steps.changes.outputs.publish == 'true'
+        env:
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          archives=(dist/*.zip)
+          if [ "${#archives[@]}" -ne 1 ]; then
+            echo "::error::Expected exactly one Chrome extension ZIP."
+            exit 1
+          fi
+          mkdir -p release-assets
+          cp "${archives[0]}" "release-assets/foxwallet-extension-${RELEASE_TAG}-chrome.zip"
+      - name: Upload extension archive
+        if: steps.changes.outputs.publish == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: foxwallet-extension-${{ steps.release.outputs.tag }}-chrome
+          path: release-assets/*.zip
+          if-no-files-found: error
+          retention-days: 14
+      - name: Publish GitHub Release
+        if: steps.changes.outputs.publish == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          DAILY: ${{ inputs.daily }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          BUILD_SHA: ${{ steps.release.outputs.sha }}
+          BUILD_DATE: ${{ steps.release.outputs.date }}
+          BUILD_FINGERPRINT: ${{ steps.changes.outputs.fingerprint }}
+          RELEASE_CHANNEL: ${{ steps.changes.outputs.channel }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          notes="$RUNNER_TEMP/release-notes.md"
+          {
+            echo "Chrome extension built from main."
+            echo
+            echo "Commit: $BUILD_SHA"
+            echo "Build date: $BUILD_DATE (Asia/Shanghai)"
+            echo "Workflow: https://github.com/$GH_REPO/actions/runs/$GITHUB_RUN_ID"
+            echo
+            echo "<!-- foxwallet-channel:$RELEASE_CHANNEL -->"
+            echo "<!-- foxwallet-build:$BUILD_FINGERPRINT -->"
+          } > "$notes"
+          options=(--latest)
+          if [ "$DAILY" = "true" ]; then
+            options=(--prerelease --latest=false)
+          fi
+          gh release create "$RELEASE_TAG" release-assets/*.zip \
+            --repo "$GH_REPO" --target "$BUILD_SHA" \
+            --title "FoxWallet $RELEASE_TAG" --notes-file "$notes" "${options[@]}"
+          echo "Release: https://github.com/$GH_REPO/releases/tag/$RELEASE_TAG" >> "$GITHUB_STEP_SUMMARY"
+      - name: Remove environment file
+        if: always()
+        run: rm -f .env
