@@ -1,0 +1,30 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Release tag without daily (empty uses v<package.json version>)"
+        type: string
+        required: false
+      env_ref:
+        description: "Environment branch (empty uses ENV_REF or main)"
+        type: string
+        required: false
+      env_run_id:
+        description: "Successful environment run ID (empty uses latest)"
+        type: string
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    uses: ./.github/workflows/build.yml
+    with:
+      release_tag: ${{ inputs.release_tag }}
+      env_ref: ${{ inputs.env_ref }}
+      env_run_id: ${{ inputs.env_run_id }}
+    secrets:
+      ENV_REPO_TOKEN: ${{ secrets.ENV_REPO_TOKEN }}
