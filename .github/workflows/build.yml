@@ -1,0 +1,109 @@
+name: Build extension
+
+on:
+  push:
+    branches:
+      - main
+      - "release/**"
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      env_ref:
+        description: "Environment repository branch (empty uses ENV_REF or main)"
+        type: string
+        required: false
+      env_run_id:
+        description: "Successful Generate environment run ID (empty uses latest)"
+        type: string
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: extension-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Download environment from private repository
+        env:
+          GH_TOKEN: ${{ secrets.ENV_REPO_TOKEN }}
+          ENV_REPOSITORY: ${{ vars.ENV_REPO || 'foxwallet/foxwallet-extension-env' }}
+          ENV_REF: ${{ inputs.env_ref || vars.ENV_REF || 'main' }}
+          ENV_RUN_ID: ${{ inputs.env_run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::Set ENV_REPO_TOKEN with Actions: read access to the private environment repository."
+            exit 1
+          fi
+
+          run_id="$ENV_RUN_ID"
+          if [ -z "$run_id" ]; then
+            run_id=$(gh api --method GET \
+              "repos/$ENV_REPOSITORY/actions/workflows/generate-env.yml/runs" \
+              -f branch="$ENV_REF" -f status=success -f per_page=100 \
+              --jq '[.workflow_runs[] | select(.event == "push" or .event == "workflow_dispatch")] | .[0].id // empty')
+          fi
+          if [[ ! "$run_id" =~ ^[0-9]+$ ]]; then
+            echo "::error::No successful environment run found. Run generate-env.yml in the private repository first."
+            exit 1
+          fi
+
+          gh api "repos/$ENV_REPOSITORY/actions/runs/$run_id" \
+            > "$RUNNER_TEMP/environment-run.json"
+          jq -e --arg ref "$ENV_REF" \
+            '.status == "completed" and .conclusion == "success" and
+             .head_branch == $ref and .path == ".github/workflows/generate-env.yml" and
+             (.event == "push" or .event == "workflow_dispatch")' \
+            "$RUNNER_TEMP/environment-run.json" > /dev/null
+
+          env_dir=$(mktemp -d "$RUNNER_TEMP/extension-env.XXXXXX")
+          gh run download "$run_id" --repo "$ENV_REPOSITORY" \
+            --name dotenv --dir "$env_dir"
+          if [ ! -s "$env_dir/.env" ]; then
+            echo "::error::The dotenv artifact does not contain a nonempty .env file."
+            exit 1
+          fi
+          install -m 600 "$env_dir/.env" .env
+          rm -rf "$env_dir"
+          echo "Environment run: $ENV_REPOSITORY/actions/runs/$run_id" >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Enable Yarn
+        run: |
+          corepack enable
+          corepack prepare yarn@1.22.22 --activate
+      - name: Locate Yarn cache
+        id: yarn-cache
+        run: echo "dir=$(yarn cache dir)" >> "$GITHUB_OUTPUT"
+      - name: Cache Yarn downloads
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.yarn-cache.outputs.dir }}
+          key: yarn-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+          restore-keys: yarn-${{ runner.os }}-
+      - run: yarn install --frozen-lockfile --non-interactive
+      - run: yarn zip
+      - name: Upload extension archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: foxwallet-extension-chrome-${{ github.sha }}
+          path: dist/*.zip
+          if-no-files-found: error
+          retention-days: 14
+      - name: Remove environment file
+        if: always()
+        run: rm -f .env

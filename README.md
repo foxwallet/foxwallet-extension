@@ -53,6 +53,20 @@ yarn build:dev  # dist/chrome-mv3-dev/
 yarn zip       # release archive under dist/
 ```
 
+## GitHub Actions
+
+`.github/workflows/build.yml` builds and uploads a Chrome extension ZIP on pushes to `main`, `release/**`, tags matching `v*`, or a manual run. It downloads `.env` from the private `foxwallet/foxwallet-extension-env` repository's latest successful `generate-env.yml` run before installing dependencies and running `yarn zip`.
+
+Configure the following under **Settings → Secrets and variables → Actions**:
+
+| Type                | Name             | Value                                                                                                                                |
+| ------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Secret              | `ENV_REPO_TOKEN` | Fine-grained PAT with **Actions: Read-only** access to the private environment repository; obtain organization approval if required. |
+| Variable (optional) | `ENV_REPO`       | `owner/repository`; defaults to `foxwallet/foxwallet-extension-env`.                                                                 |
+| Variable (optional) | `ENV_REF`        | Environment branch; defaults to `main`.                                                                                              |
+
+First push the environment project to a **private** repository and run its `Generate environment` workflow to create the `dotenv` artifact. Manual extension builds can override `env_ref` and select an exact successful `env_run_id`. Artifacts expire after 30 days; rerun the environment workflow if needed. Environment changes do not automatically trigger extension builds. Pull requests do not run this workflow.
+
 ## Locale
 
 ```
