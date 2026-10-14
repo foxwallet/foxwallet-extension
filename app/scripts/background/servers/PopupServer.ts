@@ -489,7 +489,7 @@ export class PopupWalletServer implements IPopupServer {
               txType: AleoTxType.DEPLOYMENT,
               notification: false,
               error: error ?? "sendDeployment failed",
-              tokenId: NATIVE_TOKEN_PROGRAM_ID,
+              tokenId: NATIVE_TOKEN_TOKEN_ID,
             };
             await instance.setAddressLocalTx(address, finalTxInfo);
           }

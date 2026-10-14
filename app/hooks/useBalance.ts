@@ -57,10 +57,14 @@ export const useBalance = (params: BalanceReq) => {
     // background operation, so explicitly await it before the first balance
     // read instead of racing getPrivateBalance against scanner setup.
     if (uniqueId === InnerChainUniqueId.ALEO_MAINNET) {
-      await popupServerClient.scannerRegister({
-        chainId: chainConfig.chainId,
-        address,
-      });
+      try {
+        await popupServerClient.scannerRegister({
+          chainId: chainConfig.chainId,
+          address,
+        });
+      } catch (error) {
+        console.warn("Aleo scanner registration failed", error);
+      }
     }
     if (hasContractAddress || isAleoToken) {
       if (hasContractAddress) {

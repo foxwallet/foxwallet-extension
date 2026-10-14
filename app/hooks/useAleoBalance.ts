@@ -38,10 +38,14 @@ export const useAleoBalance = ({
 
   const key = `/balance/${uniqueId}/${programId}/${address}/${tokenId}`;
   const fetchBalance = useCallback(async () => {
-    await popupServerClient.scannerRegister({
-      chainId: chainConfig.chainId,
-      address,
-    });
+    try {
+      await popupServerClient.scannerRegister({
+        chainId: chainConfig.chainId,
+        address,
+      });
+    } catch (error) {
+      console.warn("Aleo scanner registration failed", error);
+    }
     if (programId !== NATIVE_TOKEN_PROGRAM_ID && tokenId) {
       return await (coinService as AleoService).getTokenBalanceOld(
         address,

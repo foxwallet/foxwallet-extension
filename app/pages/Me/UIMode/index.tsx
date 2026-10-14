@@ -16,11 +16,13 @@ function UIModeScreen() {
   );
   const dispatch = usePopupDispatch();
   const changeMode = useCallback(
-    (uiMode: WalletUIMode) => {
-      void dispatch(actions.setting.updateUIMode({ uiMode }));
-      void closeWalletUI().catch((error) => {
-        console.error("Could not close wallet UI", error);
-      });
+    async (uiMode: WalletUIMode) => {
+      try {
+        await dispatch(actions.setting.updateUIMode({ uiMode }));
+        await closeWalletUI();
+      } catch (error) {
+        console.error("Could not change wallet UI mode", error);
+      }
     },
     [dispatch],
   );
@@ -38,7 +40,7 @@ function UIModeScreen() {
             <Flex
               key={mode.value}
               onClick={() => {
-                changeMode(mode.value);
+                void changeMode(mode.value);
               }}
               justify={"space-between"}
               align={"center"}
