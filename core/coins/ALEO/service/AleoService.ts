@@ -88,6 +88,7 @@ import {
   createArcaneService,
 } from "core/coins/ALEO/service/instances/arcane";
 import { ProvableApi } from "core/coins/ALEO/service/api/provable";
+import { AleoFeeService } from "./fee/AleoFeeService";
 import {
   type ComplianceService,
   createComplianceService,
@@ -155,6 +156,7 @@ export class AleoService extends CoinServiceBasic {
   private provableApi: ProvableApi;
   private arcaneService: ArcaneService;
   private walletService: AleoWalletService;
+  private feeService: AleoFeeService;
   private tokenService: AlphaSwapTokenService;
   private complianceService: ComplianceService;
   private scannerAccountCache = new Map<string, ScannerAccountCache>();
@@ -176,6 +178,7 @@ export class AleoService extends CoinServiceBasic {
       })),
     );
     this.provableApi = new ProvableApi();
+    this.feeService = new AleoFeeService(this.rpcService, this.chainId);
     this.complianceService = createComplianceService(this.chainId);
     this.walletService = createAleoWalletService(
       config.walletApiList.map((item) => ({
@@ -419,7 +422,7 @@ export class AleoService extends CoinServiceBasic {
     }
     try {
       const item = await this.walletService.getTransaction(txId);
-      const body = item.origin_data;
+      const body = item?.status === "accepted" ? item.origin_data : undefined;
       if (!body) return undefined;
       // Best-effort: persist for next time. Don't fail the call if write fails.
       this.aleoStorage
@@ -642,52 +645,11 @@ export class AleoService extends CoinServiceBasic {
     programId: InnerProgramId,
     method: AleoCreditMethod,
   ): Promise<bigint> {
-    const baseFee = await this.walletService.getBaseFee({
-      txType: method,
-      programId,
-    });
-    return baseFee;
-  }
-
-  private getPriorityFeeInTx(tx: AleoTransaction) {
-    const fee = tx.fee;
-    if (fee) {
-      const inputs = fee?.transition?.inputs;
-      if (inputs) {
-        const value = inputs[1].value;
-        if (value) {
-          return parseU64(value);
-        }
-      }
-    }
-    return undefined;
+    return await this.feeService.getBaseFee(programId, method);
   }
 
   async getPriorityFee(): Promise<bigint> {
-    try {
-      const priorityFee = await this.walletService.getPriorityFee();
-      if (priorityFee) {
-        return BigInt(priorityFee);
-      }
-      const [latestBlock] = await Promise.all([
-        this.rpcService.getLatestBlock(),
-      ]);
-      const feeList: bigint[] = [];
-      latestBlock.transactions?.forEach((tx) => {
-        const fee = this.getPriorityFeeInTx(tx.transaction);
-        if (fee) {
-          feeList.push(fee);
-        }
-      });
-      if (feeList.length === 0) {
-        return 100000n;
-      }
-      feeList.sort((fee1, fee2) => Number(fee1 - fee2));
-      return feeList[Math.floor(feeList.length / 2)];
-    } catch (err) {
-      console.error("===> getPriorityFee error: ", err);
-      return 100000n;
-    }
+    return await this.feeService.getPriorityFee();
   }
 
   async getGasFee(
@@ -1092,7 +1054,7 @@ export class AleoService extends CoinServiceBasic {
         );
       }),
     );
-    return txs.filter((item) => !!item) as AleoLocalHistoryItem[];
+    return txs.filter((item) => !!item);
   }
 
   async getLocalTxInfo(
@@ -1121,27 +1083,6 @@ export class AleoService extends CoinServiceBasic {
   }): Promise<AleoOnChainHistoryItem[]> {
     // TODO: wait for public history api ready
     return [];
-
-    // const { cursor } = pagination;
-    // const publicHistory = await this.walletService
-    //
-    //   .getPublicHistory(address, cursor);
-    // return publicHistory.map((item) => {
-    //   return {
-    //     type: AleoHistoryType.ON_CHAIN,
-    //     txId: item.transactionId,
-    //     programId: item.executionProgram,
-    //     functionName: item.executionFunction,
-    //     height: item.blockHeight,
-    //     timestamp: item.blockTime,
-    //     addressType: AleoTxAddressType.SEND,
-    //     amount: !!item.executionValue
-    //       ? parseU64(item.executionValue).toString()
-    //       : undefined,
-    //     txType: AleoTxType.EXECUTION, // TODO: split EXECUTION and DEPLOYMENT
-    //     status: AleoTxStatus.FINALIZD,
-    //   };
-    // });
   }
 
   private async getTxInfoOnChain(txId: string): Promise<AleoTransaction> {
@@ -1165,6 +1106,7 @@ export class AleoService extends CoinServiceBasic {
       return cachedTx;
     }
     const item = await this.walletService.getTransaction(txId);
+    if (!item || item.status === -1) return undefined;
     let txType = AleoTxType.EXECUTION;
     if (item.origin_data.deployment) {
       txType = AleoTxType.DEPLOYMENT;
@@ -1178,7 +1120,7 @@ export class AleoService extends CoinServiceBasic {
       const lastTransition = transitions[transitions.length - 1];
       programId = lastTransition.program;
       funcName = lastTransition.function;
-    } else if (item.origin_data.deployment.program) {
+    } else if (item.origin_data.deployment?.program) {
       const program = item.origin_data.deployment.program;
       const programObj = this.parseProgram(program);
       programId = programObj.id();
@@ -1236,7 +1178,10 @@ export class AleoService extends CoinServiceBasic {
       addressType: isSender
         ? AleoTxAddressType.SEND
         : AleoTxAddressType.RECEIVE,
-      status: AleoTxStatus.FINALIZD,
+      status:
+        item.status === "rejected"
+          ? AleoTxStatus.REJECTED
+          : AleoTxStatus.FINALIZD,
       txType,
     };
     await this.aleoStorage.cacheTransaction(this.chainId, history);
@@ -1581,46 +1526,20 @@ export class AleoService extends CoinServiceBasic {
     recordSyncService.resetChain(this.chainId);
   }
 
-  async faucetMessage(address: string): Promise<FaucetMessage> {
-    const content = await this.walletService.getFaucetContent({ address });
-    const message = {
-      ...content,
-      address,
-      timestamp: Date.now().toString(),
-    };
-    const messageDisplay = Object.values(message).reduce((res, value) => {
-      if (!res) {
-        return value;
-      }
-      return `${res}\n${value}`;
-    }, "");
-
-    return {
-      rawMessage: JSON.stringify(message),
-      displayMessage: messageDisplay,
-    };
+  async faucetMessage(_address: string): Promise<FaucetMessage> {
+    throw new Error("An official Aleo mainnet faucet is not available");
   }
 
-  async faucetStatus(address: string): Promise<FaucetResp> {
-    const status = await this.walletService.getFaucetStatus({ address });
-    return status;
+  async faucetStatus(_address: string): Promise<FaucetResp> {
+    throw new Error("An official Aleo mainnet faucet is not available");
   }
 
-  async requestFaucet({
-    address,
-    message,
-    signature,
-  }: {
+  async requestFaucet(_params: {
     address: string;
     message: string;
     signature: string;
   }): Promise<boolean> {
-    const res = await this.walletService.requestFaucet({
-      address,
-      message,
-      signature,
-    });
-    return !!res;
+    throw new Error("An official Aleo mainnet faucet is not available");
   }
 
   getTxDetailUrl(txId: string, lang?: ExplorerLanguages): string | undefined {
@@ -2164,6 +2083,7 @@ export class AleoService extends CoinServiceBasic {
       return cachedTx;
     }
     const item = await this.walletService.getTransaction(txId);
+    if (!item || item.status === -1) return undefined;
     let txType = AleoTxType.EXECUTION;
     if (item.origin_data.deployment) {
       txType = AleoTxType.DEPLOYMENT;
@@ -2177,7 +2097,7 @@ export class AleoService extends CoinServiceBasic {
       const lastTransition = transitions[transitions.length - 1];
       programId = lastTransition.program;
       funcName = lastTransition.function;
-    } else if (item.origin_data.deployment.program) {
+    } else if (item.origin_data.deployment?.program) {
       const program = item.origin_data.deployment.program;
       const programObj = this.parseProgram(program);
       programId = programObj.id();
@@ -2235,7 +2155,10 @@ export class AleoService extends CoinServiceBasic {
       addressType: isSender
         ? AleoTxAddressType.SEND
         : AleoTxAddressType.RECEIVE,
-      status: AleoTxStatus.FINALIZD,
+      status:
+        item.status === "rejected"
+          ? AleoTxStatus.REJECTED
+          : AleoTxStatus.FINALIZD,
       txType,
     };
     await this.aleoStorage.cacheTransaction(this.chainId, history);
@@ -2280,9 +2203,7 @@ export class AleoService extends CoinServiceBasic {
         return tx;
       }),
     );
-    privateHistory = privateTxs.filter(
-      (item) => !!item,
-    ) as AleoOnChainHistoryItem[];
+    privateHistory = privateTxs.filter((item) => !!item);
     const historyList = [...privateHistory];
     historyList.sort((item1, item2) => {
       if (item1.height && item2.height) {

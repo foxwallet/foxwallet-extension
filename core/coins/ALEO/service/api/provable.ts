@@ -1,7 +1,7 @@
 import { get } from "@/common/utils/request";
 
 export const PROVABLE_EXPLORER_API = "https://api.provable.com";
-const PROVABLE_API = `${PROVABLE_EXPLORER_API}/v2`;
+export const PROVABLE_API = `${PROVABLE_EXPLORER_API}/v2`;
 
 // Wire shape of one row returned by /{network}/transactions/address/{addr}.
 // Fields are snake_case on the wire — we camelCase them in the
@@ -92,7 +92,9 @@ export class ProvableApi {
       search.set("offset", String(offset));
     }
 
-    const url = `${this.baseURL}/${network}/transactions/address/${address}?${search.toString()}`;
+    const url = `${
+      this.baseURL
+    }/${network}/transactions/address/${address}?${search.toString()}`;
     const response = await get(url);
     if (!response.ok) {
       throw new Error(
