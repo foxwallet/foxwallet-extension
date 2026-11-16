@@ -1,6 +1,8 @@
 import { get, post } from "@/common/utils/request";
 import { type Block } from "../../types/AleoBlock";
 import { type AleoTransaction } from "../../types/Transaction";
+export type AleoFeeProgram = { id: string; source: string; edition: number };
+
 export class AleoRpc {
   host: string;
   chainId: string;
@@ -116,6 +118,29 @@ export class AleoRpc {
    */
   async getProgram(programId: string): Promise<string> {
     return await this.fetchData<string>("/program/" + programId);
+  }
+
+  async getFeeProgram(programId: string): Promise<AleoFeeProgram> {
+    if (!/^[a-z][a-z0-9_]*\.aleo$/.test(programId)) {
+      throw new Error("Invalid Aleo program ID");
+    }
+    const result = await this.fetchData<{
+      program?: unknown;
+      edition?: unknown;
+    }>(`/program/${programId}?metadata=true`);
+    if (
+      typeof result?.program !== "string" ||
+      !Number.isInteger(result.edition) ||
+      (result.edition as number) < 0 ||
+      (result.edition as number) > 65535
+    ) {
+      throw new Error("Aleo RPC did not return program source and edition");
+    }
+    return {
+      id: programId,
+      source: result.program,
+      edition: result.edition as number,
+    };
   }
 
   /**
