@@ -42,6 +42,11 @@ export class AleoRpc {
     this.chainId = chainId;
   }
 
+  // Official v2 nodes replaced the legacy /latest/* aliases.
+  private get isV2(): boolean {
+    return /\/v2\/?$/.test(this.host);
+  }
+
   async fetchData<Type>(url = "/"): Promise<Type> {
     const response = await get(`${this.host}/${this.chainId}${url}`);
     if (!response.ok) {
@@ -87,7 +92,9 @@ export class AleoRpc {
    * const latestHeight = networkClient.getLatestBlock();
    */
   async getLatestBlock(): Promise<Block> {
-    return await this.fetchData<Block>("/latest/block");
+    return await this.fetchData<Block>(
+      this.isV2 ? "/block/latest" : "/latest/block",
+    );
   }
 
   /**
@@ -97,7 +104,9 @@ export class AleoRpc {
    * const latestHash = networkClient.getLatestHash();
    */
   async getLatestHash(): Promise<string> {
-    return await this.fetchData<string>("/latest/hash");
+    return await this.fetchData<string>(
+      this.isV2 ? "/block/hash/latest" : "/latest/hash",
+    );
   }
 
   /**
@@ -107,7 +116,9 @@ export class AleoRpc {
    * const latestHeight = networkClient.getLatestHeight();
    */
   async getLatestHeight(): Promise<number> {
-    return await this.fetchData<number>("/latest/height");
+    return await this.fetchData<number>(
+      this.isV2 ? "/block/height/latest" : "/latest/height",
+    );
   }
 
   /**
@@ -171,7 +182,9 @@ export class AleoRpc {
    * const stateRoot = networkClient.getStateRoot();
    */
   async getStateRoot(): Promise<string> {
-    return await this.fetchData<string>("/latest/stateRoot");
+    return await this.fetchData<string>(
+      this.isV2 ? "/stateRoot/latest" : "/latest/stateRoot",
+    );
   }
 
   /**
