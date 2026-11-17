@@ -26,8 +26,12 @@ export class AleoWalletApi {
   async getTransaction(
     id: string,
   ): Promise<AleoTransactionWithHeight | undefined> {
+    const transactionId = id.trim();
+    if (!transactionId) throw new Error("Missing Aleo transaction ID");
     const response = await get(
-      `${this.host}/${this.chainId}/transactions/${encodeURIComponent(id)}`,
+      `${this.host}/${this.chainId}/transactions/${encodeURIComponent(
+        transactionId,
+      )}`,
     );
     // Indexing may lag behind broadcast. A missing transaction is still unconfirmed.
     if (response.status === 404) return undefined;
@@ -36,6 +40,6 @@ export class AleoWalletApi {
         `Official Aleo transaction request failed: statusCode ${response.status}`,
       );
     }
-    return normalizeTransaction(await response.json(), id);
+    return normalizeTransaction(await response.json(), transactionId);
   }
 }

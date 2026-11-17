@@ -60,8 +60,11 @@ try {
       );
       source = replaceRequired(
         source,
-        'new URL("worker.js", import.meta.url)',
-        `new URL("/worker_${network}_${version}.js", import.meta.url)`,
+        'await initThreadPool$1(new URL("worker.js", import.meta.url), threads);',
+        // In Vite dev mode import.meta.url belongs to localhost, even when
+        // the module runs in an extension-origin blob worker. Nested pool
+        // workers must use the creator's origin too, or Chrome kills it.
+        `const workerBase = typeof location === "undefined" ? import.meta.url : location.href.replace(/^blob:/, "");\n    await initThreadPool$1(new URL("/worker_${network}_${version}.js", workerBase), threads);`,
       );
       if (noTla) {
         const initialization =

@@ -1,0 +1,72 @@
+diff --git a/node_modules/@provablehq/wasm/dist/mainnet/index.js b/node_modules/@provablehq/wasm/dist/mainnet/index.js
+index 7a26040..66dc489 100644
+--- a/node_modules/@provablehq/wasm/dist/mainnet/index.js
++++ b/node_modules/@provablehq/wasm/dist/mainnet/index.js
+@@ -19539,7 +19539,7 @@ async function __wbg_init(module_or_path, memory) {
+     return __wbg_finalize_init(instance, module, thread_stack_size);
+ }
+ 
+-const module$1 = new URL("aleo_wasm.wasm", import.meta.url);
++const module$1 = new URL("/aleo_wasm_mainnet_0.13.0.wasm", import.meta.url);
+                 
+                     await __wbg_init({ module_or_path: module$1 });
+ 
+@@ -19550,7 +19550,8 @@ async function initThreadPool(threads) {
+ 
+     console.info(`Spawning ${threads} threads`);
+ 
+-    await initThreadPool$1(new URL("worker.js", import.meta.url), threads);
++    const workerBase = typeof location === "undefined" ? import.meta.url : location.href.replace(/^blob:/, "");
++    await initThreadPool$1(new URL("/worker_mainnet_0.13.0.js", workerBase), threads);
+ }
+ 
+ export { Address, Authorization, BHP1024, BHP256, BHP512, BHP768, Boolean, CallbackQuery, Ciphertext, ComputeKey, DynamicRecord, EncryptionToolkit, Execution, ExecutionRequest, ExecutionResponse, Field, GraphKey, Group, I128, I16, I32, I64, I8, KeyPair, Metadata, OfflineQuery, Pedersen128, Pedersen64, Plaintext, Poseidon2, Poseidon4, Poseidon8, PrivateKey, PrivateKeyCiphertext, Program, ProgramImports, ProgramManager, Proof, ProvingKey, ProvingRequest, QueryOption, RecordCiphertext, RecordPlaintext, Scalar, Signature, Transaction, Transition, U128, U16, U32, U64, U8, Value, VerifyingKey, ViewKey, getMaxProgramImports, getOrInitConsensusVersionTestHeights, initSync, initThreadPool, install_panic_hook, runRayonThread, setWasmLogLevel, snarkVerify, snarkVerifyBatch, stringToField, verifyFunctionExecution };
+diff --git a/node_modules/@provablehq/wasm/dist/mainnet/worker.js b/node_modules/@provablehq/wasm/dist/mainnet/worker.js
+index 6e376d9..5960216 100644
+--- a/node_modules/@provablehq/wasm/dist/mainnet/worker.js
++++ b/node_modules/@provablehq/wasm/dist/mainnet/worker.js
+@@ -19610,7 +19610,7 @@ var exports$1 = /*#__PURE__*/Object.freeze({
+     verifyFunctionExecution: verifyFunctionExecution
+ });
+ 
+-new URL("aleo_wasm.wasm", import.meta.url);
++new URL("/aleo_wasm_mainnet_0.13.0.wasm", import.meta.url);
+ 
+                 async function init(options) {
+                     await __wbg_init({
+diff --git a/node_modules/@provablehq/wasm/dist/testnet/index.js b/node_modules/@provablehq/wasm/dist/testnet/index.js
+index 435e77e..5c07c83 100644
+--- a/node_modules/@provablehq/wasm/dist/testnet/index.js
++++ b/node_modules/@provablehq/wasm/dist/testnet/index.js
+@@ -19539,7 +19539,7 @@ async function __wbg_init(module_or_path, memory) {
+     return __wbg_finalize_init(instance, module, thread_stack_size);
+ }
+ 
+-const module$1 = new URL("aleo_wasm.wasm", import.meta.url);
++const module$1 = new URL("/aleo_wasm_testnet_0.13.0.wasm", import.meta.url);
+                 
+                     await __wbg_init({ module_or_path: module$1 });
+ 
+@@ -19550,7 +19550,8 @@ async function initThreadPool(threads) {
+ 
+     console.info(`Spawning ${threads} threads`);
+ 
+-    await initThreadPool$1(new URL("worker.js", import.meta.url), threads);
++    const workerBase = typeof location === "undefined" ? import.meta.url : location.href.replace(/^blob:/, "");
++    await initThreadPool$1(new URL("/worker_testnet_0.13.0.js", workerBase), threads);
+ }
+ 
+ export { Address, Authorization, BHP1024, BHP256, BHP512, BHP768, Boolean, CallbackQuery, Ciphertext, ComputeKey, DynamicRecord, EncryptionToolkit, Execution, ExecutionRequest, ExecutionResponse, Field, GraphKey, Group, I128, I16, I32, I64, I8, KeyPair, Metadata, OfflineQuery, Pedersen128, Pedersen64, Plaintext, Poseidon2, Poseidon4, Poseidon8, PrivateKey, PrivateKeyCiphertext, Program, ProgramImports, ProgramManager, Proof, ProvingKey, ProvingRequest, QueryOption, RecordCiphertext, RecordPlaintext, Scalar, Signature, Transaction, Transition, U128, U16, U32, U64, U8, Value, VerifyingKey, ViewKey, getMaxProgramImports, getOrInitConsensusVersionTestHeights, initSync, initThreadPool, install_panic_hook, runRayonThread, setWasmLogLevel, snarkVerify, snarkVerifyBatch, stringToField, verifyFunctionExecution };
+diff --git a/node_modules/@provablehq/wasm/dist/testnet/worker.js b/node_modules/@provablehq/wasm/dist/testnet/worker.js
+index 1110230..78c74b5 100644
+--- a/node_modules/@provablehq/wasm/dist/testnet/worker.js
++++ b/node_modules/@provablehq/wasm/dist/testnet/worker.js
+@@ -19610,7 +19610,7 @@ var exports$1 = /*#__PURE__*/Object.freeze({
+     verifyFunctionExecution: verifyFunctionExecution
+ });
+ 
+-new URL("aleo_wasm.wasm", import.meta.url);
++new URL("/aleo_wasm_testnet_0.13.0.wasm", import.meta.url);
+ 
+                 async function init(options) {
+                     await __wbg_init({

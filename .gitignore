@@ -38,3 +38,5 @@ upgradeTool/dist_new
 /public/worker_testnet_*.js
 
 ai-rules/personal.md
+.agents/
+skills-lock.json

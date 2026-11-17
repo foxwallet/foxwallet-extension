@@ -1,29 +1,30 @@
-import type { AleoProgramImportsMap } from "./aleo.di";
 import {
   PrivateKey,
   Program,
   ProgramManager,
-  ProgramManagerBase,
   RecordPlaintext,
   type Transaction,
   ProvingKey,
-  VerifyingKey,
+  CREDITS_PROGRAM_KEYS,
 } from "@provablehq/sdk/mainnet.js";
 import { AleoStorage } from "./AleoStorage";
+import {
+  AleoKeyStore,
+  CachedAleoKeyProvider,
+  pinProgramVersions,
+} from "./keyStore";
 import {
   AleoTxStatus,
   type AleoSendTxParams,
   type AleoTransaction,
   type AleoLocalTxInfo,
   type AleoRequestDeploymentParams,
-  NATIVE_TOKEN_PROGRAM_ID,
   NATIVE_TOKEN_TOKEN_ID,
 } from "./types";
 import { type AleoRpcService, createAleoRpcService } from "./instances/rpc";
 
 const NATIVE_TOKEN_DECIMALS = 6;
-const INCLUSION_PROVER_URL =
-  "https://keys.provable.com/wallet_v2/inclusion.prover.9fe710f";
+const INCLUSION_PROVER_URL = CREDITS_PROGRAM_KEYS.inclusion.prover;
 
 export class AleoTxWorker {
   rpcService: AleoRpcService;
@@ -72,146 +73,6 @@ export class AleoTxWorker {
       throw new Error("Invalid record " + recordStr);
     }
   };
-
-  async getProgramContent(chainId: string, programId: string) {
-    const cache = await this.storage.getProgramContent(chainId, programId);
-    console.log("===> getProgramContent cache: ", cache?.length);
-    if (cache) {
-      return cache;
-    }
-    const program = await this.rpcService.getProgram(programId);
-    console.log("===> getProgramContent: ", program.length);
-    if (program) {
-      await this.storage.setProgramContent(chainId, programId, program);
-    }
-    return program;
-  }
-
-  async getProgram(
-    chainId: string,
-    programId: string,
-  ): Promise<Program | null> {
-    const programStr = await this.getProgramContent(chainId, programId);
-    if (programStr) {
-      return this.parseProgram(programStr);
-    }
-    return null;
-  }
-
-  async getProgramImports(chainId: string, program: Program | string) {
-    const imports: AleoProgramImportsMap = {};
-    const programObj =
-      program instanceof Program
-        ? program
-        : await this.getProgram(chainId, program);
-    if (!programObj) {
-      throw new Error(
-        "getProgramImports get program " + program.toString() + " failed",
-      );
-    }
-    const importList = programObj.getImports() as string[];
-    console.log("===> getProgramImports: ", importList);
-    for (let i = 0; i < importList.length; i++) {
-      const importId = importList[i];
-      if (!imports[importId]) {
-        const programSource = await this.getProgramContent(chainId, importId);
-        if (!programSource) {
-          throw new Error(
-            "getProgramImports get program " + importId + " failed",
-          );
-        }
-        const nestedImports = await this.getProgramImports(chainId, importId);
-        for (const key in nestedImports) {
-          if (!imports[key]) {
-            imports[key] = nestedImports[key];
-          }
-        }
-        imports[importId] = programSource;
-      }
-    }
-    return imports;
-  }
-
-  async synthesizeKeyPair(
-    privateKey: PrivateKey,
-    chainId: string,
-    programId: string,
-    functionName: string,
-    inputs: string[],
-  ) {
-    const programStr = await this.getProgramContent(chainId, programId);
-    if (!programStr) {
-      throw new Error("Fetch program " + programId + " failed");
-    }
-    const program = this.parseProgram(programStr);
-    console.log(
-      "===> synthesizeKeyPair parsed program",
-      program.toString().length,
-    );
-    const hasFunction = program.hasFunction(functionName);
-    if (!hasFunction) {
-      throw new Error(
-        `Program ${programId} does not contain function ${functionName}`,
-      );
-    }
-    const imports = await this.getProgramImports(chainId, program);
-    console.log(
-      "===> before inner synthesizeKeypair: ",
-      programId,
-      functionName,
-    );
-    const startTime = performance.now();
-    const keyPair = await ProgramManagerBase.synthesizeKeyPair(
-      privateKey,
-      programStr,
-      functionName,
-      inputs,
-      imports,
-    );
-    console.log(
-      "===> after inner synthesizeKeypair: ",
-      performance.now() - startTime,
-      programId,
-      functionName,
-    );
-    return {
-      proverFile: keyPair.provingKey(),
-      verifierFile: keyPair.verifyingKey(),
-    };
-  }
-
-  async getProverKeyPair(
-    privateKey: PrivateKey,
-    chainId: string,
-    programId: string,
-    functionName: string,
-    inputs: string[],
-  ) {
-    const cachedKey = await this.storage.getProgramKeyPair(
-      chainId,
-      programId,
-      functionName,
-    );
-    console.log("===> getProverKeyPair cacheKey: ", !!cachedKey);
-    if (cachedKey) {
-      return {
-        proverFile: ProvingKey.fromBytes(cachedKey.proverFile),
-        verifierFile: VerifyingKey.fromBytes(cachedKey.verifierFile),
-      };
-    }
-    const keyPair = await this.synthesizeKeyPair(
-      privateKey,
-      chainId,
-      programId,
-      functionName,
-      inputs,
-    );
-    await this.storage.setProgramKeyPair(chainId, programId, functionName, {
-      proverFile: keyPair.proverFile.copy().toBytes(),
-      verifierFile: keyPair.verifierFile.copy().toBytes(),
-    });
-    return keyPair;
-  }
 
   async submitTransaction(tx: Transaction) {
     return await this.rpcService.submitTransaction(tx);
@@ -332,16 +193,55 @@ export class AleoTxWorker {
         (performance.now() - start).toFixed(0),
         "ms",
       );
-      await this.storage.setInclusionProver(
-        chainId,
-        bytes,
-        INCLUSION_PROVER_URL,
-      );
+      try {
+        await this.storage.setInclusionProver(
+          chainId,
+          bytes,
+          INCLUSION_PROVER_URL,
+        );
+      } catch (err) {
+        // Cache persistence is optional; the downloaded key is still usable.
+        console.warn("[InclusionProver] cache write failed:", err);
+      }
       return bytes;
     } catch (err) {
       console.warn("[InclusionProver] preload failed:", err);
       return null;
     }
+  }
+
+  private async createProgramManager(
+    chainId: string,
+    rpcUrl: string,
+    inclusionProverBytes: Uint8Array | null,
+  ) {
+    const manager = new ProgramManager(
+      rpcUrl,
+      new CachedAleoKeyProvider(chainId, this.storage),
+      undefined,
+      undefined,
+      new AleoKeyStore(chainId, this.storage),
+    );
+    pinProgramVersions(manager.networkClient);
+    if (inclusionProverBytes) {
+      try {
+        await manager.setInclusionProver(
+          ProvingKey.fromBytes(inclusionProverBytes),
+        );
+      } catch (err) {
+        console.warn(
+          "[InclusionProver] invalid key, SDK will auto-fetch:",
+          err,
+        );
+        const checksum = await this.storage.keyChecksum(inclusionProverBytes);
+        await this.storage
+          .deleteInclusionProver(chainId, checksum)
+          .catch((error) => {
+            console.warn("[InclusionProver] cache cleanup failed:", error);
+          });
+      }
+    }
+    return manager;
   }
 
   async sendTransaction({
@@ -379,35 +279,9 @@ export class AleoTxWorker {
     try {
       const startTime = performance.now();
       const privateKeyObj = this.parsePrivateKey(privateKey);
-      const programStr = await this.getProgramContent(chainId, programId);
-      if (!programStr) {
-        throw new Error("Get program content failed " + programId);
-      }
-      console.log(
-        "===> before getProverKeyPair ",
-        programId,
-        functionName,
-        normalizedInputs,
-      );
-
-      pendingTxInfo.status = AleoTxStatus.GENERATING_PROVER_FILES;
-      await this.storage.setAddressLocalTx(chainId, address, pendingTxInfo);
-
-      const startProverTime = performance.now();
-      const { proverFile, verifierFile } = await this.getProverKeyPair(
-        privateKeyObj,
-        chainId,
-        programId,
-        functionName,
-        normalizedInputs,
-      );
-      const totalProverTiime = performance.now() - startProverTime;
-      console.log("===> after getProverKeyPair ", totalProverTiime);
-
       pendingTxInfo.status = AleoTxStatus.GENERATING_TRANSACTION;
       await this.storage.setAddressLocalTx(chainId, address, pendingTxInfo);
 
-      const imports = await this.getProgramImports(chainId, programId);
       console.log("===> before buildExecutionTransaction ");
       const priorityFeeCredits =
         Number(BigInt(baseFee) + BigInt(priorityFee)) /
@@ -419,19 +293,11 @@ export class AleoTxWorker {
       const tx: Transaction = await this.buildWithRpcFallback(
         "buildExecutionTransaction",
         async (rpcUrl) => {
-          const programManager = new ProgramManager(rpcUrl);
-          if (inclusionProverBytes) {
-            try {
-              await programManager.setInclusionProver(
-                ProvingKey.fromBytes(inclusionProverBytes),
-              );
-            } catch (err) {
-              console.warn(
-                "[InclusionProver] setInclusionProver failed, SDK will auto-fetch:",
-                err,
-              );
-            }
-          }
+          const programManager = await this.createProgramManager(
+            chainId,
+            rpcUrl,
+            inclusionProverBytes,
+          );
           return await programManager.buildExecutionTransaction({
             privateKey: privateKeyObj,
             programName: programId,
@@ -440,10 +306,6 @@ export class AleoTxWorker {
             priorityFee: priorityFeeCredits,
             privateFee,
             feeRecord: normalizedFeeRecordStr ?? undefined,
-            program: programStr,
-            imports,
-            provingKey: proverFile.copy(),
-            verifyingKey: verifierFile.copy(),
           });
         },
       );
@@ -506,26 +368,28 @@ export class AleoTxWorker {
     try {
       const startTime = performance.now();
       const privateKeyObj = this.parsePrivateKey(privateKey);
-      const programObj = this.parseProgram(program);
-
-      // SDK 0.10.x handles fee circuit keys internally; no local
-      // fee_private/fee_public prover synthesis here. See sendTransaction
-      // for the same reason.
+      this.parseProgram(program);
 
       pendingTxInfo.status = AleoTxStatus.GENERATING_TRANSACTION;
       await this.storage.setAddressLocalTx(chainId, address, pendingTxInfo);
 
-      const imports = await this.getProgramImports(chainId, programObj);
       console.log("===> before buildExecutionTransaction ");
       // TODO: regenerate tx when encounter inclusion error
       const deployPriorityFeeCredits =
         Number(BigInt(baseFee) + BigInt(priorityFee)) /
         10 ** NATIVE_TOKEN_DECIMALS;
       const deployPrivateFee = !!normalizedFeeRecordStr;
+      const inclusionProverBytes = deployPrivateFee
+        ? await this.loadInclusionProverBytes(chainId)
+        : null;
       const tx = await this.buildWithRpcFallback(
         "buildDeploymentTransaction",
         async (rpcUrl) => {
-          const programManager = new ProgramManager(rpcUrl);
+          const programManager = await this.createProgramManager(
+            chainId,
+            rpcUrl,
+            inclusionProverBytes,
+          );
           return await programManager.buildDeploymentTransaction(
             program,
             deployPriorityFeeCredits,

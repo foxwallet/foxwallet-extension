@@ -53,12 +53,40 @@ let isSendingTx = false;
 let txWorkerInited = false;
 
 let txWorker: Worker | null = null;
+let txWorkerBootstrapUrl: string | null = null;
 const getTxWorker = () => {
   if (!txWorker) {
-    txWorker = new TransactionWorker();
+    // Vite's dev worker URL is HTTP, but Chrome requires the worker's entry
+    // script to share the extension origin (WXT issue #2599).
+    if (import.meta.env.DEV) {
+      const workerUrl = new URL(
+        "./worker.ts?worker_file&type=module",
+        import.meta.url,
+      ).href;
+      const blobUrl = URL.createObjectURL(
+        new Blob([`import ${JSON.stringify(workerUrl)};`], {
+          type: "text/javascript",
+        }),
+      );
+      try {
+        txWorker = new Worker(blobUrl, { type: "module" });
+        txWorkerBootstrapUrl = blobUrl;
+      } catch (error) {
+        URL.revokeObjectURL(blobUrl);
+        throw error;
+      }
+    } else {
+      txWorker = new TransactionWorker();
+    }
   }
   return txWorker;
 };
+
+function releaseTxWorkerBootstrap(): void {
+  if (!txWorkerBootstrapUrl) return;
+  URL.revokeObjectURL(txWorkerBootstrapUrl);
+  txWorkerBootstrapUrl = null;
+}
 
 function createScannerWorker(): Worker {
   // In development Vite's ?worker URL points at the dev server. Chrome can
@@ -236,6 +264,7 @@ const runWorkerTask = async (
       });
     };
     const cleanup = () => {
+      releaseTxWorkerBootstrap();
       taskWorker.removeEventListener("error", onError);
       taskWorker.removeEventListener("message", onMessage);
       if (txWorker === taskWorker) {
@@ -261,6 +290,7 @@ const runWorkerTask = async (
     const onMessage = (event: MessageEvent) => {
       console.log("===> worker message: ", event);
       if (event.data?.type === "inited") {
+        releaseTxWorkerBootstrap();
         txWorkerInited = true;
         postTask();
       } else if (event.data?.type === "finished") {

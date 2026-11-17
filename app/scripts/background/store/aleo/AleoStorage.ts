@@ -6,6 +6,11 @@ import {
 import { AleoSyncAccount } from "core/coins/ALEO/types/AleoSyncAccount";
 import { ProverKeyPair } from "core/coins/ALEO/types/ProverKeyPair";
 import {
+  deleteKeyBytes,
+  readKeyBytes,
+  writeKeyBytes,
+} from "core/coins/ALEO/utils/keyChunks";
+import {
   type AleoLocalTxInfo,
   type AleoTransaction,
 } from "core/coins/ALEO/types/Transaction";
@@ -289,7 +294,12 @@ export class AleoStorage implements IAleoStorage {
     if (!keypair) {
       return null;
     }
-    const { proverFile, verifierFile, proverSha1, verifierSha1 } = keypair;
+    const { proverSha1, verifierSha1 } = keypair;
+    const [proverFile, verifierFile] = await Promise.all([
+      readKeyBytes(instance.keyChunks, keypair.proverFile),
+      readKeyBytes(instance.keyChunks, keypair.verifierFile),
+    ]);
+    if (!proverFile || !verifierFile) return null;
     const [existProverSha1, existVerifierSha1] = await Promise.all([
       this.calculateSHA1(proverFile),
       this.calculateSHA1(verifierFile),
@@ -319,26 +329,29 @@ export class AleoStorage implements IAleoStorage {
     if (!proverSha1 || !verifierSha1) {
       throw new Error("calculate keypair sha1 failed");
     }
-    const value: ProverKeyPair = {
-      proverFile,
-      proverSha1,
-      verifierFile,
-      verifierSha1,
-    };
     const instance = await this.getBlockDBInstance(chainId);
-    const count = await instance.programs.where({ programId }).count();
-    if (count) {
-      await instance.programs.where({ programId }).modify((data) => {
+    await instance.transaction(
+      "rw",
+      instance.programs,
+      instance.keyChunks,
+      async () => {
+        const data = (await instance.programs.get(programId)) ?? {
+          programId,
+          content: "",
+          keypairs: {},
+        };
+        const previous = data.keypairs[functionName];
+        const value: ProverKeyPair = {
+          proverFile: await writeKeyBytes(instance.keyChunks, proverFile),
+          verifierFile: await writeKeyBytes(instance.keyChunks, verifierFile),
+          proverSha1,
+          verifierSha1,
+        };
         data.keypairs[functionName] = value;
-      });
-    } else {
-      await instance.programs.add({
-        programId,
-        content: "",
-        keypairs: {
-          [functionName]: value,
-        },
-      });
-    }
+        await instance.programs.put(data);
+        await deleteKeyBytes(instance.keyChunks, previous?.proverFile);
+        await deleteKeyBytes(instance.keyChunks, previous?.verifierFile);
+      },
+    );
   }
 }

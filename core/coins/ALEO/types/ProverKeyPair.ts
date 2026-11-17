@@ -1,6 +1,8 @@
+import type { StoredKeyBytes } from "./KeyBytes";
+
 export interface ProverKeyPair {
-  proverFile: Uint8Array;
+  proverFile: StoredKeyBytes;
   proverSha1: string;
-  verifierFile: Uint8Array;
+  verifierFile: StoredKeyBytes;
   verifierSha1: string;
 }

@@ -45,6 +45,7 @@ test("Aleo bindings initialize from extension-root assets and preserve keys", as
   const saved = {
     fetch: globalThis.fetch,
     self: globalThis.self,
+    location: globalThis.location,
     Worker: globalThis.Worker,
   };
   const workers = [];
@@ -80,6 +81,8 @@ test("Aleo bindings initialize from extension-root assets and preserve keys", as
     constructor(input, options) {
       const url = new URL(input);
       workerUrls.push(url.pathname);
+      assert.equal(url.protocol, "chrome-extension:");
+      assert.equal(url.hostname, "test-wallet");
       assert.equal(options.type, "module");
       assert.match(
         url.pathname,
@@ -176,27 +179,45 @@ test("Aleo bindings initialize from extension-root assets and preserve keys", as
       fixture.address,
     );
 
-    for (const network of ["mainnet", "testnet"]) {
-      await t.test(
-        `${network} SDK loads its official WASM and starts the packaged pool worker`,
-        { timeout: 30000 },
-        async () => {
-          const sdk = await bundle(
-            dir,
-            `sdk-${network}`,
-            `export { PrivateKey, initThreadPool, encryptRegistrationRequest } from '@provablehq/sdk/${network}.js';`,
-          );
-          assert.equal(
-            sdk.PrivateKey.from_string(fixture.privateKey)
-              .to_address()
-              .to_string(),
-            fixture.address,
-          );
-          assert.equal(typeof sdk.encryptRegistrationRequest, "function");
-          await sdk.initThreadPool(2);
-          assert.equal(workerUrls.at(-1), `/worker_${network}_${version}.js`);
-        },
-      );
+    for (const runtime of ["extension", "vite-blob"]) {
+      for (const network of ["mainnet", "testnet"]) {
+        await t.test(
+          `${network} SDK starts same-origin pool workers in ${runtime}`,
+          { timeout: 30000 },
+          async () => {
+            const sdk = await bundle(
+              dir,
+              `sdk-${network}-${runtime}`,
+              `export { PrivateKey, initThreadPool, encryptRegistrationRequest } from '@provablehq/sdk/${network}.js';`,
+            );
+            assert.equal(
+              sdk.PrivateKey.from_string(fixture.privateKey)
+                .to_address()
+                .to_string(),
+              fixture.address,
+            );
+            assert.equal(typeof sdk.encryptRegistrationRequest, "function");
+            // In development the module metadata belongs to Vite, while the
+            // worker runs in an extension-origin blob. Enforce Chrome's actual
+            // same-origin rule in the Worker adapter above.
+            if (runtime === "vite-blob") {
+              globalThis.self.location.href =
+                "http://localhost:3000/node_modules/@provablehq/wasm/index.js";
+              globalThis.location = {
+                href: "blob:chrome-extension://test-wallet/synthetic-worker",
+              };
+            }
+            try {
+              await sdk.initThreadPool(2);
+            } finally {
+              globalThis.self.location.href =
+                "chrome-extension://test-wallet/assets/background.js";
+              globalThis.location = saved.location;
+            }
+            assert.equal(workerUrls.at(-1), `/worker_${network}_${version}.js`);
+          },
+        );
+      }
     }
   } finally {
     await Promise.all(workers.map((worker) => worker.terminate()));
