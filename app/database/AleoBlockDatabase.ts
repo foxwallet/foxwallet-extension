@@ -4,12 +4,16 @@ import { type AleoProgram } from "./types/program";
 import { type AleoTxDetailCacheRow } from "./types/txDetailCache";
 import { type AleoOnChainHistoryItem } from "core/coins/ALEO/types/History";
 import { NATIVE_TOKEN_TOKEN_ID } from "core/coins/ALEO/constants";
+import type { AleoKeyChunk } from "core/coins/ALEO/types/KeyBytes";
+import type { CachedKey } from "core/coins/ALEO/types/CachedKey";
 
 export class AleoBlockDatabase extends Dexie {
   txs: Dexie.Table<AleoLocalTx, string>;
   programs: Dexie.Table<AleoProgram, string>;
   cacheTxs: Dexie.Table<AleoOnChainHistoryItem>;
   txDetailCache: Dexie.Table<AleoTxDetailCacheRow, string>;
+  keyChunks: Dexie.Table<AleoKeyChunk, [string, number]>;
+  sdkKeys: Dexie.Table<CachedKey, string>;
 
   constructor(chainId: string) {
     super(chainId);
@@ -84,10 +88,20 @@ export class AleoBlockDatabase extends Dexie {
       txDetailCache: "txId",
     });
 
+    // Keep in sync with the offscreen schema. Large proof files live in
+    // bounded chunks; program and inclusion rows contain only references.
+    this.version(9).stores({
+      keyChunks: "[keyId+index], keyId",
+    });
+
+    this.version(10).stores({ sdkKeys: "id" });
+
     this.txs = this.table("txs");
     this.programs = this.table("programs");
     this.cacheTxs = this.table("cacheTxs");
     this.txDetailCache = this.table("txDetailCache");
+    this.keyChunks = this.table("keyChunks");
+    this.sdkKeys = this.table("sdkKeys");
   }
 
   async deleteAddressData(address: string): Promise<void> {
@@ -101,15 +115,23 @@ export class AleoBlockDatabase extends Dexie {
     try {
       await this.transaction(
         "rw",
-        this.txs,
-        this.cacheTxs,
-        this.programs,
-        this.txDetailCache,
+        [
+          this.txs,
+          this.cacheTxs,
+          this.programs,
+          this.txDetailCache,
+          this.keyChunks,
+          this.sdkKeys,
+          this.table("inclusionKeys"),
+        ],
         async () => {
           await this.txs.clear();
           await this.cacheTxs.clear();
           await this.programs.clear();
           await this.txDetailCache.clear();
+          await this.keyChunks.clear();
+          await this.sdkKeys.clear();
+          await this.table("inclusionKeys").clear();
         },
       );
     } catch (e) {

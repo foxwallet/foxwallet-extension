@@ -10,7 +10,7 @@ index b80b73b..ed75e3e 100644
  export * from "./aleo_wasm.js";
 \ No newline at end of file
 diff --git a/node_modules/provable-wasm-no-tla/dist/mainnet/index.js b/node_modules/provable-wasm-no-tla/dist/mainnet/index.js
-index bb95119..7aeb381 100644
+index bb95119..01716b1 100644
 --- a/node_modules/provable-wasm-no-tla/dist/mainnet/index.js
 +++ b/node_modules/provable-wasm-no-tla/dist/mainnet/index.js
 @@ -19722,9 +19722,11 @@ async function __wbg_init(module_or_path, memory) {
@@ -28,12 +28,13 @@ index bb95119..7aeb381 100644
  
  async function initThreadPool(threads) {
      if (threads == null) {
-@@ -19733,8 +19735,9 @@ async function initThreadPool(threads) {
+@@ -19733,8 +19735,10 @@ async function initThreadPool(threads) {
  
      console.info(`Spawning ${threads} threads`);
  
 -    await initThreadPool$1(new URL("worker.js", import.meta.url), threads);
-+    await initThreadPool$1(new URL("/worker_mainnet_0.12.0.js", import.meta.url), threads);
++    const workerBase = typeof location === "undefined" ? import.meta.url : location.href.replace(/^blob:/, "");
++    await initThreadPool$1(new URL("/worker_mainnet_0.12.0.js", workerBase), threads);
  }
  
 +export default initWasm;
@@ -64,7 +65,7 @@ index b80b73b..ed75e3e 100644
  export * from "./aleo_wasm.js";
 \ No newline at end of file
 diff --git a/node_modules/provable-wasm-no-tla/dist/testnet/index.js b/node_modules/provable-wasm-no-tla/dist/testnet/index.js
-index d31da60..cd84295 100644
+index d31da60..60b899a 100644
 --- a/node_modules/provable-wasm-no-tla/dist/testnet/index.js
 +++ b/node_modules/provable-wasm-no-tla/dist/testnet/index.js
 @@ -19722,9 +19722,11 @@ async function __wbg_init(module_or_path, memory) {
@@ -82,12 +83,13 @@ index d31da60..cd84295 100644
  
  async function initThreadPool(threads) {
      if (threads == null) {
-@@ -19733,8 +19735,9 @@ async function initThreadPool(threads) {
+@@ -19733,8 +19735,10 @@ async function initThreadPool(threads) {
  
      console.info(`Spawning ${threads} threads`);
  
 -    await initThreadPool$1(new URL("worker.js", import.meta.url), threads);
-+    await initThreadPool$1(new URL("/worker_testnet_0.12.0.js", import.meta.url), threads);
++    const workerBase = typeof location === "undefined" ? import.meta.url : location.href.replace(/^blob:/, "");
++    await initThreadPool$1(new URL("/worker_testnet_0.12.0.js", workerBase), threads);
  }
  
 +export default initWasm;

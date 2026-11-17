@@ -1,6 +1,8 @@
+import type { StoredKeyBytes } from "core/coins/ALEO/types/KeyBytes";
+
 export interface KeyPair {
-  proverFile: Uint8Array;
-  verifierFile: Uint8Array;
+  proverFile: StoredKeyBytes;
+  verifierFile: StoredKeyBytes;
   proverSha1: string;
   verifierSha1: string;
 }

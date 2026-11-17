@@ -217,16 +217,41 @@ const offscreenBundle = await bundle(
   },
   { "import.meta.env.DEV": "false" },
 );
-function offscreenHarness() {
+const devOffscreenBundle = await bundle(
+  "offscreen_service/src/index.ts",
+  {
+    "./worker?worker": "export default globalThis.Worker;",
+    "./scannerWorker?worker": "export default globalThis.Worker;",
+  },
+  { "import.meta.env.DEV": "true" },
+);
+function offscreenHarness(dev = false) {
   const workers = [],
     timers = new Map();
+  const blobs = new Map();
+  let blobId = 0;
+  class WorkerURL extends URL {
+    static createObjectURL(blob) {
+      const url = `blob:chrome-extension://test-wallet/${++blobId}`;
+      blobs.set(url, blob);
+      return url;
+    }
+    static revokeObjectURL(url) {
+      blobs.delete(url);
+    }
+  }
   let listener,
     nextTimer = 0;
   class Worker {
     listeners = new Map();
     tasks = [];
     terminated = false;
-    constructor() {
+    constructor(url, options) {
+      if (dev) {
+        assert.match(url, /^blob:chrome-extension:\/\/test-wallet\//);
+        assert.equal(options.type, "module");
+      }
+      this.url = url;
       workers.push(this);
     }
     addEventListener(type, fn) {
@@ -247,7 +272,8 @@ function offscreenHarness() {
   }
   const context = createContext({
     Worker,
-    URL,
+    URL: WorkerURL,
+    Blob,
     console: { log() {}, warn() {}, debug() {} },
     setTimeout(fn, ms) {
       const id = ++nextTimer;
@@ -267,7 +293,7 @@ function offscreenHarness() {
       },
     },
   });
-  runInContext(offscreenBundle, context);
+  runInContext(dev ? devOffscreenBundle : offscreenBundle, context);
   const request = () =>
     new Promise((resolve) =>
       listener(
@@ -280,8 +306,47 @@ function offscreenHarness() {
         resolve,
       ),
     );
-  return { workers, timers, request };
+  const requestTx = () =>
+    new Promise((resolve) =>
+      listener(
+        {
+          type: "send_tx",
+          origin: "background_to_offscreen_tx",
+          payload: { programId: "credits.aleo", functionName: "join" },
+        },
+        {},
+        resolve,
+      ),
+    );
+  return { workers, timers, blobs, request, requestTx };
 }
+
+test("dev transactions use a same-origin worker, wait for readiness, and release bootstrap URLs on success or failure", async () => {
+  const h = offscreenHarness(true);
+  const failed = h.requestTx();
+  const first = h.workers[0];
+  assert.equal(first.tasks.length, 0);
+  assert.equal(h.blobs.size, 1);
+  first.emit("error", { message: "pool startup failed" });
+  assert.equal((await failed).payload.error, "pool startup failed");
+  assert.equal(first.terminated, true);
+  assert.equal(h.blobs.size, 0);
+
+  const pending = h.requestTx();
+  const worker = h.workers[1];
+  assert.match(
+    await h.blobs.get(worker.url).text(),
+    /worker\.ts\?worker_file&type=module/,
+  );
+  assert.equal(worker.tasks.length, 0);
+  worker.emit("message", { data: { type: "inited" } });
+  assert.equal(h.blobs.size, 0);
+  assert.equal(worker.tasks[0].type, "sendTx");
+  assert.equal(worker.tasks[0].payload.functionName, "join");
+  worker.emit("message", { data: { error: null, data: "synthetic-tx-id" } });
+  assert.equal((await pending).payload.data, "synthetic-tx-id");
+  assert.equal(worker.terminated, true);
+});
 
 test("worker startup failure is returned immediately, and retry waits for a fresh worker", async () => {
   const h = offscreenHarness();

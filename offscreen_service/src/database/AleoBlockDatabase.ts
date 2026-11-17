@@ -2,6 +2,8 @@ import Dexie from "dexie";
 import { type AleoLocalTx } from "./types/tx";
 import { type AleoProgram } from "./types/program";
 import { type InclusionKey } from "./types/inclusionKey";
+import type { AleoKeyChunk } from "../../../core/coins/ALEO/types/KeyBytes";
+import type { CachedKey } from "../../../core/coins/ALEO/types/CachedKey";
 import {
   type AleoOnChainHistoryItem,
   NATIVE_TOKEN_PROGRAM_ID,
@@ -13,6 +15,8 @@ export class AleoBlockDatabase extends Dexie {
   programs: Dexie.Table<AleoProgram, string>;
   cacheTxs: Dexie.Table<AleoOnChainHistoryItem>;
   inclusionKeys: Dexie.Table<InclusionKey, string>;
+  keyChunks: Dexie.Table<AleoKeyChunk, [string, number]>;
+  sdkKeys: Dexie.Table<CachedKey, string>;
 
   constructor(chainId: string) {
     super(chainId);
@@ -93,10 +97,19 @@ export class AleoBlockDatabase extends Dexie {
       txDetailCache: "txId",
     });
 
+    // Mirrors app/database/AleoBlockDatabase.ts.
+    this.version(9).stores({
+      keyChunks: "[keyId+index], keyId",
+    });
+
+    this.version(10).stores({ sdkKeys: "id" });
+
     this.txs = this.table("txs");
     this.programs = this.table("programs");
     this.cacheTxs = this.table("cacheTxs");
     this.inclusionKeys = this.table("inclusionKeys");
+    this.keyChunks = this.table("keyChunks");
+    this.sdkKeys = this.table("sdkKeys");
   }
 
   async deleteAddressData(address: string): Promise<void> {

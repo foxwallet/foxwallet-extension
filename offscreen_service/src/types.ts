@@ -173,12 +173,7 @@ export enum AleoTxStatus {
   UNACCEPTED = "Unaccepted",
 }
 
-export interface ProverKeyPair {
-  proverFile: Uint8Array;
-  proverSha1: string;
-  verifierFile: Uint8Array;
-  verifierSha1: string;
-}
+export type { ProverKeyPair } from "../../core/coins/ALEO/types/ProverKeyPair";
 
 export type Block = {
   block_hash: string;

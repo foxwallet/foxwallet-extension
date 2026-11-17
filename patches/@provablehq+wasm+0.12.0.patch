@@ -1,5 +1,5 @@
 diff --git a/node_modules/@provablehq/wasm/dist/mainnet/index.js b/node_modules/@provablehq/wasm/dist/mainnet/index.js
-index bb95119..f5b9ea1 100644
+index bb95119..ea64a53 100644
 --- a/node_modules/@provablehq/wasm/dist/mainnet/index.js
 +++ b/node_modules/@provablehq/wasm/dist/mainnet/index.js
 @@ -19722,7 +19722,7 @@ async function __wbg_init(module_or_path, memory) {
@@ -11,12 +11,13 @@ index bb95119..f5b9ea1 100644
                  
                      await __wbg_init({ module_or_path: module$1 });
  
-@@ -19733,7 +19733,7 @@ async function initThreadPool(threads) {
+@@ -19733,7 +19733,8 @@ async function initThreadPool(threads) {
  
      console.info(`Spawning ${threads} threads`);
  
 -    await initThreadPool$1(new URL("worker.js", import.meta.url), threads);
-+    await initThreadPool$1(new URL("/worker_mainnet_0.12.0.js", import.meta.url), threads);
++    const workerBase = typeof location === "undefined" ? import.meta.url : location.href.replace(/^blob:/, "");
++    await initThreadPool$1(new URL("/worker_mainnet_0.12.0.js", workerBase), threads);
  }
  
  export { Address, Authorization, BHP1024, BHP256, BHP512, BHP768, Boolean, CallbackQuery, Ciphertext, ComputeKey, DynamicRecord, EncryptionToolkit, Execution, ExecutionRequest, ExecutionResponse, Field, GraphKey, Group, I128, I16, I32, I64, I8, KeyPair, Metadata, OfflineQuery, Pedersen128, Pedersen64, Plaintext, Poseidon2, Poseidon4, Poseidon8, PrivateKey, PrivateKeyCiphertext, Program, ProgramImports, ProgramManager, Proof, ProvingKey, ProvingRequest, QueryOption, RecordCiphertext, RecordPlaintext, Scalar, Signature, Transaction, Transition, U128, U16, U32, U64, U8, Value, VerifyingKey, ViewKey, getMaxProgramImports, getOrInitConsensusVersionTestHeights, initSync, initThreadPool, runRayonThread, setWasmLogLevel, snarkVerify, snarkVerifyBatch, stringToField, verifyFunctionExecution };
@@ -34,7 +35,7 @@ index fddca1e..cb438d5 100644
                  async function init(options) {
                      await __wbg_init({
 diff --git a/node_modules/@provablehq/wasm/dist/testnet/index.js b/node_modules/@provablehq/wasm/dist/testnet/index.js
-index d31da60..09409c2 100644
+index d31da60..09f665e 100644
 --- a/node_modules/@provablehq/wasm/dist/testnet/index.js
 +++ b/node_modules/@provablehq/wasm/dist/testnet/index.js
 @@ -19722,7 +19722,7 @@ async function __wbg_init(module_or_path, memory) {
@@ -46,12 +47,13 @@ index d31da60..09409c2 100644
                  
                      await __wbg_init({ module_or_path: module$1 });
  
-@@ -19733,7 +19733,7 @@ async function initThreadPool(threads) {
+@@ -19733,7 +19733,8 @@ async function initThreadPool(threads) {
  
      console.info(`Spawning ${threads} threads`);
  
 -    await initThreadPool$1(new URL("worker.js", import.meta.url), threads);
-+    await initThreadPool$1(new URL("/worker_testnet_0.12.0.js", import.meta.url), threads);
++    const workerBase = typeof location === "undefined" ? import.meta.url : location.href.replace(/^blob:/, "");
++    await initThreadPool$1(new URL("/worker_testnet_0.12.0.js", workerBase), threads);
  }
  
  export { Address, Authorization, BHP1024, BHP256, BHP512, BHP768, Boolean, CallbackQuery, Ciphertext, ComputeKey, DynamicRecord, EncryptionToolkit, Execution, ExecutionRequest, ExecutionResponse, Field, GraphKey, Group, I128, I16, I32, I64, I8, KeyPair, Metadata, OfflineQuery, Pedersen128, Pedersen64, Plaintext, Poseidon2, Poseidon4, Poseidon8, PrivateKey, PrivateKeyCiphertext, Program, ProgramImports, ProgramManager, Proof, ProvingKey, ProvingRequest, QueryOption, RecordCiphertext, RecordPlaintext, Scalar, Signature, Transaction, Transition, U128, U16, U32, U64, U8, Value, VerifyingKey, ViewKey, getMaxProgramImports, getOrInitConsensusVersionTestHeights, initSync, initThreadPool, runRayonThread, setWasmLogLevel, snarkVerify, snarkVerifyBatch, stringToField, verifyFunctionExecution };
