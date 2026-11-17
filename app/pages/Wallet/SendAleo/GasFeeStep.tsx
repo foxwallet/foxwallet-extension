@@ -7,6 +7,7 @@ import { TokenNum } from "@/components/Wallet/TokenNum";
 import { useCoinService } from "@/hooks/useCoinService";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { useRecords } from "@/hooks/useRecord";
+import { needsCreditsRecordUpgrade } from "core/coins/ALEO/utils/recordUpgrade";
 import { Content } from "@/layouts/Content";
 import { Button, Divider, Flex, Text } from "@chakra-ui/react";
 import {
@@ -93,10 +94,14 @@ export const GasFeeStep = (props: GasFeeProps) => {
       token,
     });
 
-  const { records, loading: loadingRecords } = useRecords({
+  const { records: allRecords, loading: loadingRecords } = useRecords({
     uniqueId,
     address: selectedAccount.account.address,
   });
+  const records = useMemo(
+    () => allRecords.filter((record) => !needsCreditsRecordUpgrade(record)),
+    [allRecords],
+  );
   const { t } = useTranslation();
 
   const [feeInfo, setFeeInfo] = useState<AleoGasFee | null>(null);

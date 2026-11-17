@@ -18,6 +18,7 @@ import { useTranslation } from "react-i18next";
 import { useBalance } from "@/hooks/useBalance";
 import { type AleoService } from "core/coins/ALEO/service/AleoService";
 import { LoadingView } from "@/components/Custom/Loading";
+import { needsCreditsRecordUpgrade } from "core/coins/ALEO/utils/recordUpgrade";
 
 export interface JoinStepProps {
   selectedRecords: RecordDetailWithSpent[];
@@ -80,6 +81,7 @@ export const JoinStep = (props: JoinStepProps) => {
   const defaultFeeRecord: RecordDetailWithSpent | undefined = useMemo(() => {
     return records.filter(
       (item) =>
+        !needsCreditsRecordUpgrade(item) &&
         !selectedRecords.some(
           (record) => record.commitment === item.commitment,
         ),
@@ -123,6 +125,7 @@ export const JoinStep = (props: JoinStepProps) => {
     let recordList = [...records];
     recordList = recordList.filter(
       (item) =>
+        !needsCreditsRecordUpgrade(item) &&
         !selectedRecords.some(
           (record) => record.commitment === item.commitment,
         ),

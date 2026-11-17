@@ -13,6 +13,7 @@ import {
   AleoRequestDeploymentProps,
   AleoRequestTxProps,
   AleoSendTxProps,
+  type AleoUpgradeRecordsProps,
   ConnectProps,
   CreateWalletProps,
   GetPrivateKeyProps,
@@ -81,6 +82,14 @@ import {
 } from "core/coins/ALEO/service/scanner";
 import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 import { AleoStorage } from "../store/aleo/AleoStorage";
+import { initAleoWasm } from "core/coins/ALEO/utils/wasmInit";
+import {
+  getLegacyCreditsRecords,
+  getRecordUpgradeTransaction,
+  isRecordUpgradeInProgress,
+  validateCreditsRecordUpgrade,
+} from "core/coins/ALEO/utils/recordUpgrade";
+import { runRecordUpgrades } from "../helper/recordUpgrades";
 
 // Tag value that hydrateRecordParsedContent uses to recognize a BigInt that
 // was flattened to string for chrome.runtime port serialization. Keeping it
@@ -1066,6 +1075,99 @@ export class PopupWalletServer implements IPopupServer {
 
   async isSendingAleoTransaction(): Promise<boolean> {
     return await isSendingAleoTransaction();
+  }
+
+  async upgradeAleoRecords(params: AleoUpgradeRecordsProps): Promise<string[]> {
+    const { uniqueId, chainId, address, commitments } = params;
+    const service = this.coinService.getInstance(uniqueId) as AleoService;
+    if (
+      uniqueId !== InnerChainUniqueId.ALEO_MAINNET ||
+      params.coinType !== CoinType.ALEO ||
+      chainId !== service.chainId ||
+      !commitments.length
+    ) {
+      throw new Error("Invalid Aleo record upgrade request");
+    }
+    const privateKey = await this.keyringManager.getPrivateKey(params);
+    await initAleoWasm();
+    const key = PrivateKey.from_string(privateKey);
+    const owner = key.to_address();
+    try {
+      if (owner.to_string() !== address)
+        throw new Error("Aleo account mismatch");
+    } finally {
+      owner.free();
+      key.free();
+    }
+    const records = await this.scannerGetDecryptedOwnedRecords({
+      chainId,
+      address,
+      programs: [NATIVE_TOKEN_PROGRAM_ID],
+      unspent: true,
+      refreshMode: "hard",
+    });
+    const storage = AleoStorage.getInstance();
+    const eligible = new Map(
+      getLegacyCreditsRecords(records).map((record) => [
+        record.commitment,
+        record,
+      ]),
+    );
+    const db = await storage.getBlockDBInstance(chainId);
+    const transactions = await db.transaction("rw", db.txs, async () => {
+      const existing = await db.txs
+        .where({ address })
+        .filter(
+          (tx) =>
+            tx.programId === NATIVE_TOKEN_PROGRAM_ID &&
+            tx.functionName === "upgrade",
+        )
+        .toArray();
+      const transactions = [...new Set(commitments)].map((commitment) => {
+        const record = eligible.get(commitment);
+        if (!record)
+          throw new Error(
+            "Legacy record is no longer available; refresh and try again",
+          );
+        if (
+          isRecordUpgradeInProgress(
+            getRecordUpgradeTransaction(record, existing),
+          )
+        ) {
+          throw new Error(
+            "This Aleo record already has an upgrade transaction",
+          );
+        }
+        const amount = validateCreditsRecordUpgrade(record.plaintext);
+        const tx: AleoLocalTxInfo = {
+          localId: nanoid(),
+          address,
+          programId: NATIVE_TOKEN_PROGRAM_ID,
+          functionName: "upgrade",
+          inputs: [record.plaintext],
+          baseFee: "0",
+          priorityFee: "0",
+          feeRecord: null,
+          timestamp: Date.now(),
+          amount,
+          tokenId: NATIVE_TOKEN_TOKEN_ID,
+          status: AleoTxStatus.QUEUED,
+          txType: AleoTxType.EXECUTION,
+          notification: false,
+        };
+        return tx;
+      });
+      await db.txs.bulkPut(transactions);
+      return transactions;
+    });
+    void runRecordUpgrades(
+      transactions,
+      async (tx) => await sendAleoTransaction({ ...tx, chainId, privateKey }),
+      async (tx) => await storage.setAddressLocalTx(chainId, address, tx),
+    ).catch(() =>
+      console.error("[RecordUpgrade] Failed to persist upgrade status"),
+    );
+    return transactions.map((tx) => tx.localId);
   }
 
   async getHDMnemonic(walletId: string): Promise<string> {

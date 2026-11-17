@@ -270,6 +270,24 @@
     "warningContent2": "你只能使用助记词还原这个钱包，FoxWallet 不存储有你的助记词和私钥信息。",
     "warningStrong": "此操作无法撤销。"
   },
+  "RecordUpgrade": {
+    "title": "升级记录",
+    "notice": "发现 {{count}} 条旧版 Aleo 记录，升级后才能使用。",
+    "hint": "旧版 ALEO 隐私记录升级后，可用于转账、合并和拆分。每条记录单独提交一笔升级交易，免手续费，金额保持不变。",
+    "waitHint": "生成证明可能需要一些时间。提交后可离开本页，等待链上确认并刷新记录后再使用。",
+    "fee": "网络手续费",
+    "empty": "没有需要升级的记录。",
+    "progress": "已处理 {{done}} / {{total}} 条记录",
+    "upgradeCount": "升级 {{count}} 条记录",
+    "refresh": "刷新记录",
+    "ready": "待升级",
+    "queued": "排队中",
+    "proving": "正在生成证明",
+    "broadcasting": "正在提交交易",
+    "submitted": "已提交，等待链上确认",
+    "confirmed": "已确认",
+    "failed": "升级失败，请刷新后重试"
+  },
   "JoinSplit": {
     "title": "合并&拆分",
     "join": "合并",

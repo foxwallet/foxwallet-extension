@@ -10,6 +10,12 @@ import { type RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
 import { type NativeToken } from "core/types/Token";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import {
+  getLegacyCreditsRecords,
+  needsCreditsRecordUpgrade,
+} from "core/coins/ALEO/utils/recordUpgrade";
+import { AleoRecordUpgradeNotice } from "@/components/Wallet/AleoRecordUpgradeNotice";
+import { useDataRef } from "@/hooks/useDataRef";
 
 export type SelectRecordsStepProps = {
   limit: number;
@@ -21,6 +27,7 @@ export type SelectRecordsStepProps = {
 export const SelectRecordsStep = (props: SelectRecordsStepProps) => {
   const { t } = useTranslation();
   const { limit, onConfirm, records, nativeCurrency } = props;
+  const onConfirmRef = useDataRef(onConfirm);
   const [selectedRecords, setSelectedRecords] = useState<
     RecordDetailWithSpent[]
   >([]);
@@ -36,12 +43,15 @@ export const SelectRecordsStep = (props: SelectRecordsStepProps) => {
 
   useEffect(() => {
     if (selectedRecords.length >= limit) {
-      onConfirm(selectedRecords);
+      onConfirmRef.current(selectedRecords);
     }
-  }, [selectedRecords]);
+  }, [selectedRecords, limit, onConfirmRef]);
 
   return (
     <Content>
+      <AleoRecordUpgradeNotice
+        count={getLegacyCreditsRecords(records).length}
+      />
       <Flex bgColor={"green.50"} color={"green.600"} borderRadius={"lg"} p={2}>
         {t("JoinSplit:selectRecords", { COUNT: limit })}
       </Flex>
@@ -52,6 +62,10 @@ export const SelectRecordsStep = (props: SelectRecordsStepProps) => {
       <Flex direction={"column"} maxH={"400px"} overflowY={"auto"} pb={8}>
         {records.map((record, i) => (
           <Flex
+            as="button"
+            type="button"
+            disabled={needsCreditsRecordUpgrade(record)}
+            opacity={needsCreditsRecordUpgrade(record) ? 0.5 : 1}
             key={record.commitment}
             cursor={"pointer"}
             flex={1}
@@ -62,7 +76,7 @@ export const SelectRecordsStep = (props: SelectRecordsStepProps) => {
             borderColor={"gray.100"}
             justifyContent={"space-between"}
             onClick={() => {
-              onSelectedRecords(record);
+              if (!needsCreditsRecordUpgrade(record)) onSelectedRecords(record);
             }}
           >
             <Flex align={"center"}>

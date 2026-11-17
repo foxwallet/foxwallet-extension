@@ -33,6 +33,9 @@ const TransactionDetail = lazy(
 );
 const Join = lazy(async () => await import("../pages/Wallet/Join"));
 const Split = lazy(async () => await import("../pages/Wallet/Split"));
+const AleoRecordUpgrade = lazy(
+  async () => await import("../pages/Wallet/AleoRecordUpgrade"),
+);
 const AddToken = lazy(async () => await import("../pages/Wallet/AddToken"));
 const SelectToken = lazy(
   async () => await import("../pages/Wallet/SelectToken"),
@@ -139,6 +142,10 @@ export const routesConfig: RouteObject[] = [
       {
         path: "split",
         element: <Split />,
+      },
+      {
+        path: "aleo_record_upgrade",
+        element: <AleoRecordUpgrade />,
       },
       {
         path: "receive/:uniqueId/:address",

@@ -3,8 +3,8 @@ import {
   ARCANE_PROGRAM_ID,
   BETA_STAKING_PROGRAM_ID,
   NATIVE_TOKEN_PROGRAM_ID,
-} from "core/coins/ALEO/constants";
-import type { RecordDetailWithSpent } from "core/coins/ALEO/types/SyncTask";
+} from "../../constants";
+import type { RecordDetailWithSpent } from "../../types/SyncTask";
 import type { OwnedRecord } from "./ScannerTypes";
 
 type AleoRecordContent = Record<string, string>;

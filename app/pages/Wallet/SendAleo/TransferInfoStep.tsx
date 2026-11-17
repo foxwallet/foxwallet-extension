@@ -10,6 +10,11 @@ import { TokenNum } from "@/components/Wallet/TokenNum";
 import { useCoinService } from "@/hooks/useCoinService";
 import { useGroupAccount } from "@/hooks/useGroupAccount";
 import { useRecords } from "@/hooks/useRecord";
+import {
+  getLegacyCreditsRecords,
+  needsCreditsRecordUpgrade,
+} from "core/coins/ALEO/utils/recordUpgrade";
+import { AleoRecordUpgradeNotice } from "@/components/Wallet/AleoRecordUpgradeNotice";
 import { Content } from "@/layouts/Content";
 import { RecordFilter } from "@/scripts/background/servers/IWalletServer";
 import {
@@ -104,12 +109,17 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
     return { resolvedProgramId: undefined, resolvedTokenId: tokenInfo.tokenId };
   }, [tokenInfo.programId, tokenInfo.tokenId, tokenInfo.contractAddress]);
 
-  const { records, loading: loadingRecords } = useRecords({
+  const { records: allRecords, loading: loadingRecords } = useRecords({
     uniqueId,
     address: selectedAccount.account.address,
     recordFilter: RecordFilter.UNSPENT,
     programId: resolvedProgramId,
   });
+
+  const records = useMemo(
+    () => allRecords.filter((record) => !needsCreditsRecordUpgrade(record)),
+    [allRecords],
+  );
 
   const tokenRecords = useMemo(() => {
     if (resolvedProgramId && isComplianceProgram(resolvedProgramId)) {
@@ -399,6 +409,9 @@ export const TransferInfoStep = (props: TransferInfoStepProps) => {
 
   return (
     <Content>
+      <AleoRecordUpgradeNotice
+        count={getLegacyCreditsRecords(allRecords).length}
+      />
       <Flex flexDir={"column"} fontSize={"small"}>
         <Flex justifyContent={"space-between"} align={"center"}>
           <Text>{t("Send:from")}</Text>
