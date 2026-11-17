@@ -10,10 +10,10 @@ Record Scanning Service at `https://api.provable.com/scanner/{network}`, with
 encrypted View Key registration and local record decryption.
 
 Base fees are estimated locally in a dedicated worker using the pinned official
-SDK/WASM 0.12.0 `estimateExecutionFee` implementation. Program sources and editions
+SDK/WASM 0.13.0 `estimateExecutionFee` implementation. Program sources and editions
 are fetched together using `/program/{id}?metadata=true`, and dependencies are
 loaded in order with their editions. The SDK estimates with sampled inputs and
-its latest supported consensus rules (V21); update the SDK when the network's
+its latest supported consensus rules (V22); update the SDK when the network's
 fee rules change. This function estimate does not replace estimation of a DApp's
 actual dynamic authorization. Estimation failures propagate rather than using a
 different program's fee. Credits `split` retains the protocol's internal burn

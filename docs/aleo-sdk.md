@@ -1,6 +1,6 @@
 # Aleo SDK integration
 
-`@provablehq/sdk` and `@provablehq/wasm` are pinned to `0.12.0`. The manually initialized copy uses exactly `"provable-wasm-no-tla": "npm:@provablehq/wasm@0.12.0"`. A Yarn resolution also pins the SDK's transitive WASM dependency.
+`@provablehq/sdk` and `@provablehq/wasm` are pinned to `0.13.0`. The manually initialized copy uses exactly `"provable-wasm-no-tla": "npm:@provablehq/wasm@0.13.0"`. A Yarn resolution also pins the SDK's transitive WASM dependency.
 
 Popup and background code import `provable-wasm-no-tla/mainnet.js` and await `initAleoWasm()` before using bindings. Concurrent initialization shares one promise; failed initialization can be retried. SDK imports remain in offscreen workers, where top-level await and the thread pool are supported. ESLint restricts imports to preserve that separation.
 
@@ -15,6 +15,8 @@ This avoids Chrome's serialized-value limit (133,169,152 bytes in Chrome 156) fo
 `node --test tests/aleo-key-cache.test.mjs` checks chunk boundaries, old formats, concurrent function writes, integrity checks, replacement cleanup, failure rollback, reset and cache-failure execution fallback. Chrome 156 validation also covers full-size inclusion keys and two 80 MiB function keys, which exceed the browser limit for inline values; the in-memory IndexedDB test implementation does not enforce that limit.
 
 Transaction construction uses the SDK `KeyStore` interface backed by `sdkKeys` and the shared 64 MiB chunks. The SDK loads and persists both the executed function and functions called through imports; the previous separate top-level synthesis pass is no longer needed. Key identities include SDK version, network, program, function, edition, amendment and key type. Unversioned legacy program keys remain readable by legacy storage consumers, but transaction construction does not reuse them.
+
+SDK 0.13.0 also loads cached keys for dynamic call targets and persists synthesized keys when a build fails after synthesis, unless WASM traps. The custom chunked store remains necessary: the SDK's own IndexedDB store still writes each key as a single value. Updating the SDK version automatically separates new key entries from earlier caches.
 
 Each build resolves program metadata once and fetches sources at that exact edition, including imports. A later build refreshes this metadata so upgraded programs cannot reuse the previous edition's keys. Missing metadata fails source resolution instead of pairing an unversioned source with a default key version. Downloaded proving keys (including `fee_public` and `fee_private`) are cached by SDK version and the official URL. Cache persistence failures leave usable downloaded or synthesized keys available to the current build.
 
