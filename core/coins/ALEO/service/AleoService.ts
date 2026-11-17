@@ -3,6 +3,7 @@ import { type AleoConfig } from "../types/AleoConfig";
 import { type IAleoStorage } from "../types/IAleoStorage";
 import { type FutureJSON, type RecordDetailWithSpent } from "../types/SyncTask";
 import { parseU128, parseU64 } from "../utils/num";
+import { needsCreditsRecordUpgrade } from "../utils/recordUpgrade";
 import { logger } from "@/common/utils/logger";
 import {
   type InputItem,
@@ -1588,7 +1589,7 @@ export class AleoService extends CoinServiceBasic {
       if (!item) {
         return false;
       }
-      return !item.spent;
+      return !item.spent && !needsCreditsRecordUpgrade(item);
     }) as RecordDetailWithSpent[];
     const formatCreditsRecords = creditsRecords
       .map((record) => {

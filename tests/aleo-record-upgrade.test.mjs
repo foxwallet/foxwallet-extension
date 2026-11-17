@@ -7,31 +7,44 @@ import { readFile } from "node:fs/promises";
 import ts from "typescript";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
-// Exercise the production history method without loading signing/scanner dependencies.
+// Exercise production history and fee selection without loading signing/scanner dependencies.
 const serviceSource = ts.createSourceFile(
   "AleoService.ts",
   await readFile(root + "core/coins/ALEO/service/AleoService.ts", "utf8"),
   ts.ScriptTarget.Latest,
   true,
 );
-const historyMethod = serviceSource.statements
-  .find(
-    (node) => ts.isClassDeclaration(node) && node.name?.text === "AleoService",
-  )
-  ?.members.find(
-    (node) =>
-      ts.isMethodDeclaration(node) &&
-      node.name.getText(serviceSource) === "processLocalTxInfo",
-  );
+const serviceClass = serviceSource.statements.find(
+  (node) => ts.isClassDeclaration(node) && node.name?.text === "AleoService",
+);
+const historyMethod = serviceClass?.members.find(
+  (node) =>
+    ts.isMethodDeclaration(node) &&
+    node.name.getText(serviceSource) === "processLocalTxInfo",
+);
 assert.ok(historyMethod, "AleoService.processLocalTxInfo must exist");
+const feeSelection = serviceClass?.members.find(
+  (node) =>
+    ts.isPropertyDeclaration(node) &&
+    node.name.getText(serviceSource) === "formatRequestTransactionInputsAndFee",
+);
+assert.ok(
+  feeSelection,
+  "AleoService.formatRequestTransactionInputsAndFee must exist",
+);
 const result = await build({
   stdin: {
     contents: `export * from './core/coins/ALEO/utils/recordUpgrade';
       export * from './app/scripts/background/helper/recordUpgrades';
       import { AleoTxStatus } from './core/coins/ALEO/types/Transaction';
       import { AleoHistoryType, AleoTxAddressType, AleoTxType } from './core/coins/ALEO/types/History';
-      import { LOCAL_TX_EXPIRE_TIME } from './core/coins/ALEO/constants';
+      import { LOCAL_TX_EXPIRE_TIME, NATIVE_TOKEN_PROGRAM_ID } from './core/coins/ALEO/constants';
+      import { needsCreditsRecordUpgrade } from './core/coins/ALEO/utils/recordUpgrade';
+      const RecordFilter = { ALL: 'all' };
       export class LocalHistoryFixture { ${historyMethod.getText(
+        serviceSource,
+      )} }
+      export class FeeSelectionFixture { ${feeSelection.getText(
         serviceSource,
       )} }`,
     resolveDir: root,
@@ -237,6 +250,63 @@ test("pending and broadcast upgrades cannot be resubmitted; failed records can r
       tx({ inputs: [plaintext("0u8.public", "10", "2group.public")] }),
     ]),
     undefined,
+  );
+});
+
+test("DApp private fees select a current record while excluding legacy, spent, used and insufficient records", async () => {
+  const makeRecord = (
+    commitment,
+    amount,
+    version = "1u8.public",
+    spent = false,
+  ) =>
+    record({
+      commitment,
+      plaintext: plaintext(version, amount, `${commitment}group.public`),
+      parsedContent: { microcredits: BigInt(amount) },
+      spent,
+    });
+  const candidates = [
+    makeRecord("legacy", "1000", "0u8.public"),
+    makeRecord("omitted-version", "900", null),
+    makeRecord("spent", "800", "1u8.public", true),
+    makeRecord("used-input", "700"),
+    makeRecord("available", "100"),
+    makeRecord("insufficient", "49"),
+  ];
+  const service = new api.FeeSelectionFixture();
+  service.getRecordMicrocredits = (row) => row.parsedContent.microcredits;
+  service.getScannerRecordsMap = async () => ({
+    "credits.aleo": {
+      missing: undefined,
+      ...Object.fromEntries(candidates.map((row) => [row.commitment, row])),
+    },
+  });
+  const inputs = [
+    "aleo1synthetic",
+    { id: "used-input", owner: "aleo1synthetic", program_id: "credits.aleo" },
+  ];
+  const result = await service.formatRequestTransactionInputsAndFee(
+    "aleo1synthetic",
+    inputs,
+    50n,
+  );
+  assert.equal(result.feeRecord?.commitment, "available");
+  assert.deepEqual(Array.from(result.formatInputs), [
+    inputs[0],
+    candidates[3].plaintext,
+  ]);
+
+  candidates.splice(4, 1);
+  const noFee = await service.formatRequestTransactionInputsAndFee(
+    "aleo1synthetic",
+    inputs,
+    50n,
+  );
+  assert.equal(
+    noFee.feeRecord,
+    null,
+    "legacy records cannot pay fees even if they cover the fee",
   );
 });
 
