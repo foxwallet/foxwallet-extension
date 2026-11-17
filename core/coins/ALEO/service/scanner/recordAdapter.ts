@@ -63,7 +63,7 @@ export function ownedToRecordDetail(
     content,
     nonce,
     tag: record.tag,
-    transactionId: record.transactionId ?? "",
+    transactionId: record.transactionId?.trim() ?? "",
     transitionId: record.transitionId ?? "",
     height: record.blockHeight ? Number(record.blockHeight) : 0,
     timestamp: record.blockTimestamp ? Number(record.blockTimestamp) : 0,

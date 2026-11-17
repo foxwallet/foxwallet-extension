@@ -108,7 +108,7 @@ export class ProvableApi {
     return {
       address: raw.address,
       transactions: rows.map<ProvableTransferHistoryRow>((row) => ({
-        transactionId: row.transaction_id,
+        transactionId: row.transaction_id.trim(),
         transitionId: row.transition_id,
         transactionStatus: row.transaction_status,
         blockNumber: row.block_number,

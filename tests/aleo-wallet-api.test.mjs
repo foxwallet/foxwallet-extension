@@ -31,6 +31,13 @@ async function bundle(entry, mocks) {
 const walletBundle = await bundle("core/coins/ALEO/service/api/api.ts", {
   "@/common/utils/request": "export const get = (...args) => fetch(...args)",
 });
+const historyBundle = await bundle("core/coins/ALEO/service/api/provable.ts", {
+  "@/common/utils/request": "export const get = (...args) => fetch(...args)",
+});
+const recordBundle = await bundle(
+  "core/coins/ALEO/service/scanner/recordAdapter.ts",
+  {},
+);
 const feeBundle = await bundle(
   "core/coins/ALEO/service/fee/AleoFeeService.ts",
   {
@@ -93,6 +100,79 @@ test("old environment artifacts use official Explorer without contacting Fox", a
       "https://api.provable.com/v2/mainnet/transactions/at1test",
     );
   }
+});
+test("transaction requests trim whitespace before encoding and validating the response ID", async () => {
+  const transactionId =
+    "at1dnanzfe20p6sasx0nu3x5fal5277vw2rf99ef3j9pkdhg9jhnqrsq8gzwu";
+  for (const id of [transactionId + "    ", " \t" + transactionId + "\r\n"]) {
+    const { Api, urls } = walletHarness(200, { ...tx(), id: transactionId });
+    const api = new Api({
+      host: "https://api.provable.com/v2",
+      chainId: "mainnet",
+    });
+    const result = await api.getTransaction(id);
+    assert.equal(
+      urls[0],
+      `https://api.provable.com/v2/mainnet/transactions/${transactionId}`,
+    );
+    assert.equal(result.origin_data.id, transactionId);
+    assert.equal(result.status, "accepted");
+  }
+});
+test("blank transaction IDs fail before making a request", async () => {
+  const { Api, urls } = walletHarness(200, tx());
+  const api = new Api({
+    host: "https://api.provable.com/v2",
+    chainId: "mainnet",
+  });
+  for (const id of ["", " \t\r\n "]) {
+    await assert.rejects(api.getTransaction(id), /Missing Aleo transaction ID/);
+  }
+  assert.equal(urls.length, 0);
+});
+test("scanner records and public history expose transaction IDs without padding", async () => {
+  const context = createContext({});
+  runInContext(recordBundle, context);
+  const record = context.api.ownedToRecordDetail({
+    commitment: "1field",
+    programName: "credits.aleo",
+    tag: "2field",
+    recordPlaintext: "{ microcredits: 1u64.private }",
+    transactionId: " at1test    ",
+  });
+  assert.equal(record.transactionId, "at1test");
+  const legacy = context.api.ownedToRecordDetail({
+    commitment: "1field",
+    programName: "credits.aleo",
+    tag: "2field",
+    recordPlaintext: "{}",
+  });
+  assert.equal(legacy.transactionId, "");
+  const historyContext = createContext({
+    URLSearchParams,
+    fetch: async () =>
+      new Response(
+        JSON.stringify({
+          address: "aleo1test",
+          transactions: [
+            {
+              transaction_id: "\tat1test    ",
+              transition_id: "au1test",
+              transaction_status: "Accepted",
+              block_number: 123,
+              block_timestamp: "1794800000",
+              function_id: "transfer_public",
+              program_id: "credits.aleo",
+            },
+          ],
+        }),
+      ),
+  });
+  runInContext(historyBundle, historyContext);
+  const history = await new historyContext.api.ProvableApi().getTransferHistory(
+    { network: "mainnet", address: "aleo1test" },
+  );
+  assert.equal(history.transactions[0].transactionId, "at1test");
 });
 test("missing transactions stay unconfirmed; HTTP failures and invalid metadata propagate", async () => {
   const { Api } = walletHarness(404, {});
