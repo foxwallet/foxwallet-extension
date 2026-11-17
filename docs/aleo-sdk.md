@@ -24,6 +24,12 @@ Execution and deployment share inclusion preloading, and the URL comes from the 
 
 `tests/aleo-prover-store.test.mjs` covers version isolation, corruption eviction, pair rollback, cache reuse across provider instances, URL rotation, optional persistence and source-version pinning. Transaction tests cover inclusion preloading and SDK cache configuration for execution and deployment.
 
+Legacy private credits records (omitted `_version` or `0u8.public`) require `credits.aleo/upgrade` before Join, Split, transfers or use as a fee record. The wallet shows a reminder for the selected account with a link to the Upgrade records page. The background validates the account and current unspent scanner records, saves the complete queue, and builds one fee-free upgrade per record. Closing the UI does not stop this queue; restarting the browser is not supported mid-batch. Pending and broadcast upgrades cannot be submitted again. Failed records can be retried, and submitted records become usable after confirmation and a scanner refresh. Amounts are preserved, with the protocol's per-record limit of 1,000,000 ALEO.
+
+Upgrade progress observes local transaction writes through Dexie live queries. Unsupported records, including those above the per-record limit, display their own validation errors and do not block supported records or count toward batch progress. Failed-status writes retry twice with bounded backoff before processing the next record. Local transactions retain their queue timestamp and separately record successful broadcast time; expiry uses broadcast time, with the queue timestamp as a fallback for older entries.
+
+`tests/aleo-record-upgrade.test.mjs` covers legacy versions, eligible record selection, amount limits, execution guards, duplicate protection, serial batch error handling, status-write retries and history expiry after long queues. The transaction tests also check that upgrade builds receive one record, zero priority fee and no private fee record, and that execution and deployment both preserve queue time while recording broadcast time.
+
 To upgrade:
 
 1. Change SDK, WASM, the npm alias and the Yarn resolution together to the same exact version.

@@ -145,6 +145,11 @@ export type AleoSendTxProps = Omit<AleoSendTxParams, "privateKey"> & {
   accountId: string;
 };
 
+export type AleoUpgradeRecordsProps = Pick<
+  AleoSendTxProps,
+  "walletId" | "accountId" | "coinType" | "uniqueId" | "chainId" | "address"
+> & { commitments: string[] };
+
 export type AleoRequestTxProps = Omit<AleoSendTxParams, "privateKey"> & {
   coinType: CoinType;
   uniqueId: ChainUniqueId;
@@ -224,6 +229,8 @@ export interface IPopupServer {
   getAleoComplianceProof(params: AleoComplianceProofProps): Promise<string>;
 
   sendAleoTransaction(params: AleoSendTxProps): Promise<void>;
+
+  upgradeAleoRecords(params: AleoUpgradeRecordsProps): Promise<string[]>;
 
   isSendingAleoTransaction(): Promise<boolean>;
 

@@ -394,7 +394,7 @@ const transactionBundle = await build({
             export class ProgramManager {
               constructor(...args) { globalThis.managerArgs = args; this.networkClient = {}; }
               async setInclusionProver(key) { globalThis.loadedInclusion = key; }
-              async buildExecutionTransaction() { globalThis.built = "execution"; return globalThis.syntheticTx; }
+              async buildExecutionTransaction(options) { globalThis.built = "execution"; globalThis.buildOptions = options; return globalThis.syntheticTx; }
               async buildDeploymentTransaction() { globalThis.built = "deployment"; return globalThis.syntheticTx; }
             } export class ProgramManagerBase {}
             export class RecordPlaintext {} export class ProvingKey { static fromBytes(bytes) { return { bytes }; } }
@@ -449,16 +449,30 @@ test("a cache write failure preserves the downloaded inclusion key for execution
   assert.match(warnings[0][0], /cache write failed/);
 });
 
-for (const operation of ["execution", "deployment", "public-deployment"]) {
+for (const operation of [
+  "execution",
+  "deployment",
+  "public-deployment",
+  "record-upgrade",
+]) {
   test(`${operation} configures persistent SDK keys and preloads inclusion before building`, async () => {
     const bytes = new Uint8Array([1, 2, 3]);
+    const saved = [];
+    const broadcastTime = 2_000_000;
     const syntheticTx = { toString: () => JSON.stringify({ id: "synthetic" }) };
     const context = createContext({
       Uint8Array,
       performance,
+      Date: class extends Date {
+        static now() {
+          return broadcastTime;
+        }
+      },
       syntheticTx,
       console: { log() {}, warn() {}, error() {} },
-      storage: { setAddressLocalTx: async () => {} },
+      storage: {
+        setAddressLocalTx: async (_, __, tx) => saved.push(structuredClone(tx)),
+      },
     });
     runInContext(transactionBundle.outputFiles[0].text, context);
     const worker = new context.api.AleoTxWorker(0, [], false);
@@ -485,14 +499,28 @@ for (const operation of ["execution", "deployment", "public-deployment"]) {
       inputs: [],
       baseFee: "0",
       priorityFee: "0",
-      feeRecord:
-        operation === "deployment" ? "synthetic fee record" : undefined,
+      timestamp: 1,
+      feeRecord: operation === "deployment" ? "synthetic fee record" : null,
     };
-    if (operation === "execution") await worker.sendTransaction(params);
+    if (operation === "record-upgrade") {
+      params.programId = "credits.aleo";
+      params.functionName = "upgrade";
+      params.inputs = [
+        "{ owner: aleo1synthetic.private, microcredits: 123u64.private, _nonce: 1group.public, _version: 0u8.public }",
+      ];
+    }
+    if (operation === "execution" || operation === "record-upgrade")
+      await worker.sendTransaction(params);
     else await worker.deploy(params);
+    assert.equal(saved.at(-1).timestamp, 1, "queue time is preserved");
+    assert.equal(saved.at(-1).broadcastAt, broadcastTime);
     assert.equal(
       context.built,
-      operation === "public-deployment" ? "deployment" : operation,
+      operation === "public-deployment"
+        ? "deployment"
+        : operation === "record-upgrade"
+        ? "execution"
+        : operation,
     );
     if (operation === "public-deployment")
       assert.equal(context.loadedInclusion, undefined);
@@ -503,5 +531,40 @@ for (const operation of ["execution", "deployment", "public-deployment"]) {
       "CachedAleoKeyProvider",
     );
     assert.equal(context.managerArgs[4].constructor.name, "AleoKeyStore");
+    if (operation === "record-upgrade") {
+      assert.equal(context.buildOptions.functionName, "upgrade");
+      assert.deepEqual(Array.from(context.buildOptions.inputs), params.inputs);
+      assert.equal(context.buildOptions.priorityFee, 0);
+      assert.equal(context.buildOptions.privateFee, false);
+      assert.equal(context.buildOptions.feeRecord, undefined);
+    }
+  });
+}
+
+for (const method of ["sendTransaction", "deploy"]) {
+  test(`${method} rejects legacy private fees before loading keys or proving`, async () => {
+    const saved = [];
+    const context = createContext({
+      console: { error() {} },
+      storage: { setAddressLocalTx: async (_, __, tx) => saved.push(tx) },
+    });
+    runInContext(transactionBundle.outputFiles[0].text, context);
+    const worker = new context.api.AleoTxWorker(0, [], false);
+    worker.parsePrivateKey = () => assert.fail("must reject before proving");
+    await assert.rejects(
+      worker[method]({
+        chainId: "mainnet",
+        localId: "legacy-fee",
+        programId: "test.aleo",
+        functionName: "run",
+        inputs: [],
+        feeRecord:
+          "{ owner: aleo1synthetic.private, microcredits: 123u64.private, _nonce: 1group.public, _version: 0u8.public }",
+      }),
+      /must be upgraded first/,
+    );
+    assert.equal(saved.length, 1);
+    assert.equal(saved[0].status, "Failed");
+    assert.match(saved[0].error, /must be upgraded first/);
   });
 }

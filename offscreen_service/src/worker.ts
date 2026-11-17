@@ -55,12 +55,12 @@ async function executeTask() {
   let flagExit = false;
   while (!flagExit) {
     const task = taskQuene.shift();
-    console.log("===> execute task: ", task);
     if (!task) {
       await new Promise((resolve) => setTimeout(resolve, 200));
       continue;
     }
     const { taskType, payload } = task;
+    console.log("===> execute task:", taskType);
     try {
       switch (taskType) {
         case "sendTx": {

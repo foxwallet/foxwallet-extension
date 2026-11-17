@@ -8,6 +8,7 @@ import {
   type AddAccountProps,
   type AleoComplianceProofProps,
   type AleoSendTxProps,
+  type AleoUpgradeRecordsProps,
   type GetSelectedAccountProps,
   type SetSelectedAccountProps,
   type RequestFinfishProps,
@@ -290,6 +291,10 @@ export class PopupServerClient implements IClient, IPopupServer {
 
   async sendAleoTransaction(params: AleoSendTxProps): Promise<void> {
     await this.#send("sendAleoTransaction", params);
+  }
+
+  async upgradeAleoRecords(params: AleoUpgradeRecordsProps): Promise<string[]> {
+    return await this.#send("upgradeAleoRecords", params);
   }
 
   async isSendingAleoTransaction(): Promise<boolean> {

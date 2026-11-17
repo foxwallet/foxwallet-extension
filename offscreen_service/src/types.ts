@@ -152,6 +152,7 @@ export type AleoLocalTxInfo = Omit<
   error?: string;
   status: AleoTxStatus;
   timestamp: number;
+  broadcastAt?: number;
   transaction?: AleoTransaction;
   notification: boolean;
 };

@@ -6,6 +6,7 @@ import { HomeTabList } from "@/components/Wallet/HomeTabList";
 import { useEffect } from "react";
 import { usePopupDispatch } from "@/hooks/useStore";
 import { useGroupAccountAssets } from "@/hooks/useGroupAccountAssets";
+import { AleoRecordUpgradeReminder } from "@/components/Wallet/AleoRecordUpgradeNotice";
 
 export const WalletTab = () => {
   const dispatch = usePopupDispatch();
@@ -20,6 +21,7 @@ export const WalletTab = () => {
     <TabPanel flex={1} minH={0} display={"flex"} flexDir={"column"}>
       <AccountInfoHeader totalUsdValue={totalUsdValue} />
       <BackupReminderView />
+      <AleoRecordUpgradeReminder />
       <HomeTabList assets={assets} />
     </TabPanel>
   );

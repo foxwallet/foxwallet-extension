@@ -22,6 +22,10 @@ import {
   NATIVE_TOKEN_TOKEN_ID,
 } from "./types";
 import { type AleoRpcService, createAleoRpcService } from "./instances/rpc";
+import {
+  assertCreditsRecordsUpgraded,
+  validateCreditsRecordUpgrade,
+} from "../../core/coins/ALEO/utils/recordUpgrade";
 
 const NATIVE_TOKEN_DECIMALS = 6;
 const INCLUSION_PROVER_URL = CREDITS_PROGRAM_KEYS.inclusion.prover;
@@ -277,6 +281,19 @@ export class AleoTxWorker {
       tokenId,
     };
     try {
+      assertCreditsRecordsUpgraded(
+        programId,
+        functionName,
+        normalizedInputs,
+        normalizedFeeRecordStr,
+      );
+      if (programId === "credits.aleo" && functionName === "upgrade") {
+        if (normalizedInputs.length !== 1)
+          throw new Error(
+            "Aleo record upgrade requires one record per transaction",
+          );
+        validateCreditsRecordUpgrade(normalizedInputs[0]);
+      }
       const startTime = performance.now();
       const privateKeyObj = this.parsePrivateKey(privateKey);
       pendingTxInfo.status = AleoTxStatus.GENERATING_TRANSACTION;
@@ -320,6 +337,7 @@ export class AleoTxWorker {
       console.log("===> sendTransaction tx: ", result);
       if (result) {
         pendingTxInfo.status = AleoTxStatus.COMPLETED;
+        pendingTxInfo.broadcastAt = Date.now();
         const txObj: AleoTransaction = JSON.parse(tx.toString());
         // Use the network-assigned id from the broadcast response as the
         // canonical id so the local tx merges with the scanner/explorer entry.
@@ -366,6 +384,7 @@ export class AleoTxWorker {
       tokenId: NATIVE_TOKEN_TOKEN_ID,
     };
     try {
+      assertCreditsRecordsUpgraded(programId, "", [], normalizedFeeRecordStr);
       const startTime = performance.now();
       const privateKeyObj = this.parsePrivateKey(privateKey);
       this.parseProgram(program);
@@ -410,6 +429,7 @@ export class AleoTxWorker {
       console.log("===> sendTransaction totalTime", totalTime, result);
       if (result) {
         pendingTxInfo.status = AleoTxStatus.COMPLETED;
+        pendingTxInfo.broadcastAt = Date.now();
         const txObj: AleoTransaction = JSON.parse(tx.toString());
         // Use the network-assigned id from the broadcast response as the
         // canonical id so the local tx merges with the scanner/explorer entry.

@@ -40,6 +40,7 @@ const popupMethods = {
   scannerDeactivateViewConsumer: true,
   getAleoComplianceProof: true,
   sendAleoTransaction: true,
+  upgradeAleoRecords: true,
   isSendingAleoTransaction: true,
   signMessage: true,
   onRequestFinish: true,

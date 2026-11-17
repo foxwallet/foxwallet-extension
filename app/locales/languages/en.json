@@ -156,6 +156,24 @@
     "maxFeeLowRemind": "Max Fee too low",
     "gasLimitTitle": "Gas Limit"
   },
+  "RecordUpgrade": {
+    "title": "Upgrade records",
+    "notice": "{{count}} legacy Aleo records need upgrading before they can be used.",
+    "hint": "Upgrade your old private ALEO records to use them for transfers, Join and Split. Each record is upgraded in a separate transaction, with no fee and no change to its amount.",
+    "waitHint": "Proving may take some time. After submitting, you can leave this page. Wait for confirmation and refresh the records before using them.",
+    "fee": "Network fee",
+    "empty": "No records need upgrading.",
+    "progress": "Processed {{done}} / {{total}} records",
+    "upgradeCount": "Upgrade {{count}} records",
+    "refresh": "Refresh records",
+    "ready": "Ready to upgrade",
+    "queued": "Queued",
+    "proving": "Generating proof",
+    "broadcasting": "Submitting transaction",
+    "submitted": "Submitted, awaiting confirmation",
+    "confirmed": "Confirmed",
+    "failed": "Failed — refresh and retry"
+  },
   "JoinSplit": {
     "title": "Join&Split",
     "join": "Join",
@@ -281,7 +299,6 @@
     "deleteHint": "Confirm to remove this address?",
     "alreadyExist": "This address already in your contact list",
     "invalidAddress": "Invalid address"
-
   },
   "SelectToken": {
     "title": "Select Token",
@@ -370,7 +387,7 @@
     "success": "Success",
     "failed": "Failed",
     "pending": "Pending",
-    "loading":"Loading"
+    "loading": "Loading"
   },
   "Error": {
     "invalidPassword": "Invalid password",
