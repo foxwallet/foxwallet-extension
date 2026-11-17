@@ -76,6 +76,29 @@ export function validateCreditsRecordUpgrade(plaintext: string) {
   return BigInt(amount[1]).toString();
 }
 
+export function getCreditsRecordUpgradeCandidates(
+  records: RecordDetailWithSpent[],
+) {
+  const legacyRecords = getLegacyCreditsRecords(records);
+  const upgradeableRecords: RecordDetailWithSpent[] = [];
+  const unsupportedRecords: Array<{
+    record: RecordDetailWithSpent;
+    error: string;
+  }> = [];
+  for (const record of legacyRecords) {
+    try {
+      validateCreditsRecordUpgrade(record.plaintext);
+      upgradeableRecords.push(record);
+    } catch (error) {
+      unsupportedRecords.push({
+        record,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+  return { legacyRecords, upgradeableRecords, unsupportedRecords };
+}
+
 export function assertCreditsRecordsUpgraded(
   programId: string,
   functionName: string,

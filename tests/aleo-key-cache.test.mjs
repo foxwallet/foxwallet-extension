@@ -457,13 +457,22 @@ for (const operation of [
 ]) {
   test(`${operation} configures persistent SDK keys and preloads inclusion before building`, async () => {
     const bytes = new Uint8Array([1, 2, 3]);
+    const saved = [];
+    const broadcastTime = 2_000_000;
     const syntheticTx = { toString: () => JSON.stringify({ id: "synthetic" }) };
     const context = createContext({
       Uint8Array,
       performance,
+      Date: class extends Date {
+        static now() {
+          return broadcastTime;
+        }
+      },
       syntheticTx,
       console: { log() {}, warn() {}, error() {} },
-      storage: { setAddressLocalTx: async () => {} },
+      storage: {
+        setAddressLocalTx: async (_, __, tx) => saved.push(structuredClone(tx)),
+      },
     });
     runInContext(transactionBundle.outputFiles[0].text, context);
     const worker = new context.api.AleoTxWorker(0, [], false);
@@ -490,6 +499,7 @@ for (const operation of [
       inputs: [],
       baseFee: "0",
       priorityFee: "0",
+      timestamp: 1,
       feeRecord: operation === "deployment" ? "synthetic fee record" : null,
     };
     if (operation === "record-upgrade") {
@@ -502,6 +512,8 @@ for (const operation of [
     if (operation === "execution" || operation === "record-upgrade")
       await worker.sendTransaction(params);
     else await worker.deploy(params);
+    assert.equal(saved.at(-1).timestamp, 1, "queue time is preserved");
+    assert.equal(saved.at(-1).broadcastAt, broadcastTime);
     assert.equal(
       context.built,
       operation === "public-deployment"

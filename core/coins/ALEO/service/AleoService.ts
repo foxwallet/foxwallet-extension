@@ -947,7 +947,7 @@ export class AleoService extends CoinServiceBasic {
         } catch (err) {
           console.error("===> Completed tx error: ", err);
           const now = Date.now();
-          const timestamp = txInfo.timestamp;
+          const timestamp = txInfo.broadcastAt ?? txInfo.timestamp;
           if (now - timestamp >= LOCAL_TX_EXPIRE_TIME) {
             const errorMsg = "Transaction expired";
             await this.aleoStorage.setAddressLocalTx(this.chainId, address, {

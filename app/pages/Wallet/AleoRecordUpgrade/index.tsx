@@ -24,7 +24,8 @@ function UpgradeAccount({ account }: { account: OneMatchAccount }) {
   );
   const { popupServerClient } = useClient();
   const {
-    legacyRecords,
+    upgradeableRecords,
+    unsupportedRecords,
     readyRecords,
     transactions,
     loading,
@@ -39,11 +40,11 @@ function UpgradeAccount({ account }: { account: OneMatchAccount }) {
   const [submitError, setSubmitError] = useState("");
   const rows = useMemo(
     () =>
-      (batch ?? legacyRecords).map((record) => ({
+      (batch ?? upgradeableRecords).map((record) => ({
         record,
         tx: getRecordUpgradeTransaction(record, transactions),
       })),
-    [batch, legacyRecords, transactions],
+    [batch, upgradeableRecords, transactions],
   );
   const running = rows.some(
     ({ tx }) =>
@@ -91,7 +92,7 @@ function UpgradeAccount({ account }: { account: OneMatchAccount }) {
         address,
         commitments: readyRecords.map((record) => record.commitment),
       });
-      setBatch(legacyRecords);
+      setBatch(readyRecords);
       await refreshTransactions();
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : String(err));
@@ -127,7 +128,7 @@ function UpgradeAccount({ account }: { account: OneMatchAccount }) {
         <LoadingView />
       ) : (
         <>
-          {!rows.length && !error && (
+          {!rows.length && !unsupportedRecords.length && !error && (
             <Text role="status">{t("RecordUpgrade:empty")}</Text>
           )}
           {!!rows.length && (
@@ -177,6 +178,32 @@ function UpgradeAccount({ account }: { account: OneMatchAccount }) {
               ))}
             </>
           )}
+          {unsupportedRecords.map(({ record, error: recordError }) => (
+            <Box
+              key={record.commitment}
+              py={3}
+              borderBottom="1px solid"
+              borderColor="gray.100"
+            >
+              <Flex justify="space-between" gap={2}>
+                <MiddleEllipsisText text={record.commitment} width={150} />
+                <TokenNum
+                  amount={record.parsedContent?.microcredits ?? 0n}
+                  decimals={nativeCurrency.decimals}
+                  symbol={nativeCurrency.symbol}
+                />
+              </Flex>
+              <Text
+                role="status"
+                fontSize="sm"
+                color="red.500"
+                overflowWrap="anywhere"
+                mt={1}
+              >
+                {recordError}
+              </Text>
+            </Box>
+          ))}
         </>
       )}
       {(submitError || error) && (

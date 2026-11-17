@@ -337,6 +337,7 @@ export class AleoTxWorker {
       console.log("===> sendTransaction tx: ", result);
       if (result) {
         pendingTxInfo.status = AleoTxStatus.COMPLETED;
+        pendingTxInfo.broadcastAt = Date.now();
         const txObj: AleoTransaction = JSON.parse(tx.toString());
         // Use the network-assigned id from the broadcast response as the
         // canonical id so the local tx merges with the scanner/explorer entry.
@@ -428,6 +429,7 @@ export class AleoTxWorker {
       console.log("===> sendTransaction totalTime", totalTime, result);
       if (result) {
         pendingTxInfo.status = AleoTxStatus.COMPLETED;
+        pendingTxInfo.broadcastAt = Date.now();
         const txObj: AleoTransaction = JSON.parse(tx.toString());
         // Use the network-assigned id from the broadcast response as the
         // canonical id so the local tx merges with the scanner/explorer entry.

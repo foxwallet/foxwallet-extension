@@ -3,13 +3,39 @@ import { test } from "node:test";
 import { build } from "esbuild";
 import { createContext, runInContext } from "node:vm";
 import { fileURLToPath } from "node:url";
+import { readFile } from "node:fs/promises";
+import ts from "typescript";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
+// Exercise the production history method without loading signing/scanner dependencies.
+const serviceSource = ts.createSourceFile(
+  "AleoService.ts",
+  await readFile(root + "core/coins/ALEO/service/AleoService.ts", "utf8"),
+  ts.ScriptTarget.Latest,
+  true,
+);
+const historyMethod = serviceSource.statements
+  .find(
+    (node) => ts.isClassDeclaration(node) && node.name?.text === "AleoService",
+  )
+  ?.members.find(
+    (node) =>
+      ts.isMethodDeclaration(node) &&
+      node.name.getText(serviceSource) === "processLocalTxInfo",
+  );
+assert.ok(historyMethod, "AleoService.processLocalTxInfo must exist");
 const result = await build({
   stdin: {
     contents: `export * from './core/coins/ALEO/utils/recordUpgrade';
-      export * from './app/scripts/background/helper/recordUpgrades';`,
+      export * from './app/scripts/background/helper/recordUpgrades';
+      import { AleoTxStatus } from './core/coins/ALEO/types/Transaction';
+      import { AleoHistoryType, AleoTxAddressType, AleoTxType } from './core/coins/ALEO/types/History';
+      import { LOCAL_TX_EXPIRE_TIME } from './core/coins/ALEO/constants';
+      export class LocalHistoryFixture { ${historyMethod.getText(
+        serviceSource,
+      )} }`,
     resolveDir: root,
+    loader: "ts",
   },
   bundle: true,
   write: false,
@@ -18,8 +44,13 @@ const result = await build({
   platform: "node",
 });
 const persistenceErrors = [];
+const retryDelays = [];
 const context = createContext({
   Error,
+  setTimeout: (callback, milliseconds) => {
+    retryDelays.push(milliseconds);
+    callback();
+  },
   console: { error: (...args) => persistenceErrors.push(args) },
 });
 runInContext(result.outputFiles[0].text, context);
@@ -96,6 +127,37 @@ test("upgrade validation preserves amount and enforces the on-chain record limit
     /Only legacy/,
   );
   assert.throws(() => api.validateCreditsRecordUpgrade("{}"), /Only legacy/);
+});
+
+test("unsupported records stay visible without blocking supported upgrade candidates", () => {
+  const eligible = record({
+    plaintext: plaintext("0u8.public", "1000000000000"),
+  });
+  const oversized = record({
+    commitment: "too-large",
+    plaintext: plaintext("0u8.public", "1000000000001"),
+  });
+  const malformed = record({
+    commitment: "malformed",
+    plaintext: "{ microcredits: 1u64.private, _version: 0u8.public }",
+  });
+  const selection = api.getCreditsRecordUpgradeCandidates([
+    oversized,
+    eligible,
+    malformed,
+    record({ commitment: "current", plaintext: plaintext("1u8.public") }),
+    eligible,
+  ]);
+  assert.deepEqual(Array.from(selection.upgradeableRecords), [eligible]);
+  assert.deepEqual(Array.from(selection.legacyRecords), [
+    oversized,
+    eligible,
+    malformed,
+  ]);
+  assert.equal(selection.unsupportedRecords.length, 2);
+  assert.equal(selection.unsupportedRecords[0].record, oversized);
+  assert.match(selection.unsupportedRecords[0].error, /1,000,000 ALEO/);
+  assert.equal(selection.unsupportedRecords[1].record, malformed);
 });
 
 test("ordinary execution and private fees reject legacy credits before proving", () => {
@@ -213,9 +275,11 @@ test("background batch waits for each broadcast, continues past failures, and re
   assert.equal(failed[0].error, "proof failed");
 });
 
-test("a failed error-status write does not abandon the remaining upgrade queue", async () => {
+test("a failed error-status write retries with bounded backoff and continues the queue", async () => {
   const sent = [];
   const errorsBefore = persistenceErrors.length;
+  const delaysBefore = retryDelays.length;
+  let writes = 0;
   await api.runRecordUpgrades(
     [tx({ localId: "a" }), tx({ localId: "b" })],
     async (row) => {
@@ -224,9 +288,74 @@ test("a failed error-status write does not abandon the remaining upgrade queue",
       return { payload: { data: "at1synthetic" } };
     },
     async () => {
+      writes++;
       throw new Error("database unavailable");
     },
   );
   assert.deepEqual(sent, ["a", "b"]);
+  assert.equal(writes, 3);
+  assert.deepEqual(retryDelays.slice(delaysBefore), [250, 500]);
   assert.equal(persistenceErrors.length, errorsBefore + 1);
+});
+
+test("a transient failed-status write recovers before the next upgrade without resending", async () => {
+  const order = [];
+  const errorsBefore = persistenceErrors.length;
+  let writes = 0;
+  await api.runRecordUpgrades(
+    [tx({ localId: "a" }), tx({ localId: "b" })],
+    async (row) => {
+      order.push(`send:${row.localId}`);
+      if (row.localId === "a") throw new Error("proof failed");
+      return { payload: { data: "at1synthetic" } };
+    },
+    async (row) => {
+      order.push(`save:${row.localId}`);
+      assert.equal(row.status, "Failed");
+      assert.equal(row.error, "proof failed");
+      if (++writes === 1) throw new Error("database busy");
+    },
+  );
+  assert.deepEqual(order, ["send:a", "save:a", "save:a", "send:b"]);
+  assert.equal(persistenceErrors.length, errorsBefore);
+});
+
+test("history expiration starts at broadcast time and supports older local rows", async () => {
+  const now = Date.now();
+  for (const [timestamps, expectedStatus] of [
+    [{ timestamp: now - 1_200_000, broadcastAt: now }, "Completed"],
+    [{ timestamp: now - 1_200_000, broadcastAt: now - 600_001 }, "Unaccepted"],
+    [{ timestamp: now - 1_200_000 }, "Unaccepted"],
+    [{ timestamp: now }, "Completed"],
+  ]) {
+    const saved = [];
+    const service = new api.LocalHistoryFixture();
+    service.chainId = "mainnet";
+    service.getTxInfoOnChain = async () => {
+      throw new Error("not yet indexed");
+    };
+    service.aleoStorage = {
+      setAddressLocalTx: async (_, __, row) => saved.push(row),
+    };
+    const original = tx({
+      ...timestamps,
+      status: "Completed",
+      transaction: { id: "at1synthetic" },
+    });
+    const history = await service.processLocalTxInfo(
+      "aleo1synthetic",
+      original,
+    );
+    assert.equal(history.status, expectedStatus);
+    assert.equal(
+      history.timestamp,
+      original.timestamp,
+      "history preserves queue time",
+    );
+    assert.equal(saved.length, expectedStatus === "Unaccepted" ? 1 : 0);
+    if (saved.length) {
+      assert.equal(saved[0].status, "Unaccepted");
+      assert.equal(saved[0].broadcastAt, original.broadcastAt);
+    }
+  }
 });

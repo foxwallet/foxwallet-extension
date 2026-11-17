@@ -3,6 +3,8 @@ import {
   AleoTxStatus,
 } from "core/coins/ALEO/types/Transaction";
 
+const STATUS_SAVE_RETRY_DELAYS_MS = [250, 500];
+
 // Run in the background so closing the wallet page does not abandon the batch.
 // Each record is a separate fee-free transaction, as required by consensus.
 export async function runRecordUpgrades(
@@ -23,17 +25,31 @@ export async function runRecordUpgrades(
         );
       }
     } catch (error) {
-      try {
-        await save({
-          ...tx,
-          status: AleoTxStatus.FAILED,
-          error: (error instanceof Error ? error.message : String(error)).slice(
-            0,
-            1000,
-          ),
-        });
-      } catch {
-        console.error("[RecordUpgrade] Failed to persist upgrade status");
+      const failedTx = {
+        ...tx,
+        status: AleoTxStatus.FAILED,
+        error: (error instanceof Error ? error.message : String(error)).slice(
+          0,
+          1000,
+        ),
+      };
+      for (
+        let attempt = 0;
+        attempt <= STATUS_SAVE_RETRY_DELAYS_MS.length;
+        attempt++
+      ) {
+        try {
+          await save(failedTx);
+          break;
+        } catch {
+          if (attempt === STATUS_SAVE_RETRY_DELAYS_MS.length) {
+            console.error("[RecordUpgrade] Failed to persist upgrade status");
+          } else {
+            await new Promise<void>((resolve) =>
+              setTimeout(resolve, STATUS_SAVE_RETRY_DELAYS_MS[attempt]),
+            );
+          }
+        }
       }
     }
   }

@@ -5,7 +5,7 @@ import { AleoTxStatus } from "core/coins/ALEO/types/Transaction";
 import { InnerChainUniqueId } from "core/types/ChainUniqueId";
 import { AleoStorage } from "@/scripts/background/store/aleo/AleoStorage";
 import {
-  getLegacyCreditsRecords,
+  getCreditsRecordUpgradeCandidates,
   getRecordUpgradeTransaction,
   isRecordUpgradeInProgress,
 } from "core/coins/ALEO/utils/recordUpgrade";
@@ -54,19 +54,19 @@ export function useAleoRecordUpgrades(address: string) {
     });
     return () => subscription.unsubscribe();
   }, [address, fetchTransactions, refreshTransactions]);
-  const legacyRecords = useMemo(
-    () => getLegacyCreditsRecords(result.records),
+  const { legacyRecords, upgradeableRecords, unsupportedRecords } = useMemo(
+    () => getCreditsRecordUpgradeCandidates(result.records),
     [result.records],
   );
   const readyRecords = useMemo(
     () =>
-      legacyRecords.filter(
+      upgradeableRecords.filter(
         (record) =>
           !isRecordUpgradeInProgress(
             getRecordUpgradeTransaction(record, transactions),
           ),
       ),
-    [legacyRecords, transactions],
+    [upgradeableRecords, transactions],
   );
   const upgradeBusy = transactions.some((tx) =>
     [
@@ -81,6 +81,8 @@ export function useAleoRecordUpgrades(address: string) {
     loading: result.loading || loadingTransactions,
     error: result.error ?? transactionError,
     legacyRecords,
+    upgradeableRecords,
+    unsupportedRecords,
     readyRecords,
     transactions,
     refreshTransactions,
