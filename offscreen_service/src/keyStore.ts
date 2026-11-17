@@ -67,9 +67,9 @@ export class AleoKeyStore implements KeyStore {
     ]);
   }
 
-  async getKeyBytes(locator: KeyLocator) {
+  private async getKeyEntry(locator: KeyLocator) {
     try {
-      return await this.storage.getCachedKey(
+      return await this.storage.getCachedKeyEntry(
         this.chainId,
         this.id(locator),
         locator.checksum,
@@ -80,24 +80,37 @@ export class AleoKeyStore implements KeyStore {
     }
   }
 
+  async getKeyBytes(locator: KeyLocator) {
+    const entry = await this.getKeyEntry(locator);
+    return entry?.bytes ?? null;
+  }
+
   async getProvingKey(locator: ProvingKeyLocator) {
-    const bytes = await this.getKeyBytes(locator);
-    if (!bytes) return null;
+    const entry = await this.getKeyEntry(locator);
+    if (!entry) return null;
     try {
-      return ProvingKey.fromBytes(bytes);
+      return ProvingKey.fromBytes(entry.bytes);
     } catch {
-      await this.delete(locator);
+      await this.storage.deleteCachedKey(
+        this.chainId,
+        this.id(locator),
+        entry.keyId,
+      );
       return null;
     }
   }
 
   async getVerifyingKey(locator: VerifyingKeyLocator) {
-    const bytes = await this.getKeyBytes(locator);
-    if (!bytes) return null;
+    const entry = await this.getKeyEntry(locator);
+    if (!entry) return null;
     try {
-      return VerifyingKey.fromBytes(bytes);
+      return VerifyingKey.fromBytes(entry.bytes);
     } catch {
-      await this.delete(locator);
+      await this.storage.deleteCachedKey(
+        this.chainId,
+        this.id(locator),
+        entry.keyId,
+      );
       return null;
     }
   }
@@ -169,12 +182,12 @@ export class CachedAleoKeyProvider extends AleoKeyProvider {
   async fetchProvingKey(url: string): Promise<ProvingKey> {
     const id = JSON.stringify([KEY_CACHE_VERSION, "download", url]);
     try {
-      const bytes = await this.storage.getCachedKey(this.chainId, id);
-      if (bytes) {
+      const entry = await this.storage.getCachedKeyEntry(this.chainId, id);
+      if (entry) {
         try {
-          return ProvingKey.fromBytes(bytes);
+          return ProvingKey.fromBytes(entry.bytes);
         } catch {
-          await this.storage.deleteCachedKey(this.chainId, id);
+          await this.storage.deleteCachedKey(this.chainId, id, entry.keyId);
         }
       }
     } catch (err) {

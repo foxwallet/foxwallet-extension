@@ -255,7 +255,7 @@ test("downloaded fee keys survive new providers, corrupt caches, URL rotation an
     );
     assert.equal(downloads, 3);
     const brokenStorage = {
-      getCachedKey: async () => {
+      getCachedKeyEntry: async () => {
         throw new Error("read failed");
       },
       setCachedKeys: async () => {
@@ -284,6 +284,104 @@ test("downloaded fee keys survive new providers, corrupt caches, URL rotation an
     await db.delete();
   }
 });
+
+for (const [method, keyType] of [
+  ["getProvingKey", "prover"],
+  ["getVerifyingKey", "verifier"],
+]) {
+  test(`parse-failure cleanup for ${method} preserves a concurrent replacement`, async () => {
+    const storage = new api.AleoStorage(),
+      chain = `parse-race-${keyType}`;
+    const store = new api.AleoKeyStore(chain, storage);
+    const db = await storage.getBlockDBInstance(chain);
+    const key = locator({ keyType });
+    const invalid = new Uint8Array([255]);
+    const replacement = new Uint8Array([1, 2]);
+    try {
+      await store.setKeyBytes(invalid, key);
+      assert.equal(await store[method](key), null);
+      assert.equal(await db.sdkKeys.count(), 0);
+      assert.equal(await db.keyChunks.count(), 0);
+
+      await store.setKeyBytes(invalid, key);
+      const checksum = storage.keyChecksum.bind(storage);
+      let replaced = false;
+      storage.keyChecksum = async (bytes) => {
+        const value = await checksum(bytes);
+        if (!replaced && bytes[0] === 255) {
+          replaced = true;
+          await store.setKeyBytes(replacement, key);
+        }
+        return value;
+      };
+      assert.equal(await store[method](key), null);
+      assert.equal(replaced, true);
+      assert.equal(await db.sdkKeys.count(), 1);
+      assert.equal(await db.keyChunks.count(), 1);
+      assert.deepEqual((await store[method](key)).toBytes(), replacement);
+
+      await store.delete(key);
+      assert.equal(await db.sdkKeys.count(), 0);
+      assert.equal(await db.keyChunks.count(), 0);
+    } finally {
+      await db.delete();
+    }
+  });
+}
+
+for (const replace of [false, true]) {
+  test(`download parse-failure cleanup ${
+    replace ? "preserves a replacement" : "evicts the observed entry"
+  } before refetching`, async () => {
+    const storage = new api.AleoStorage(),
+      chain = `download-parse-race-${replace}`;
+    const db = await storage.getBlockDBInstance(chain);
+    const url = "https://synthetic.invalid/parse-race";
+    const id = JSON.stringify([api.KEY_CACHE_VERSION, "download", url]);
+    const replacement = new Uint8Array([1, 2]);
+    try {
+      await storage.setCachedKeys(chain, [
+        { id, bytes: new Uint8Array([255]) },
+      ]);
+      const checksum = storage.keyChecksum.bind(storage);
+      let replaced = false;
+      storage.keyChecksum = async (bytes) => {
+        const value = await checksum(bytes);
+        if (replace && !replaced && bytes[0] === 255) {
+          replaced = true;
+          await storage.setCachedKeys(chain, [{ id, bytes: replacement }]);
+        }
+        return value;
+      };
+      const provider = new api.CachedAleoKeyProvider(chain, storage);
+      let downloads = 0;
+      provider.fetchBytes = async () => {
+        downloads++;
+        assert.equal(await db.sdkKeys.count(), replace ? 1 : 0);
+        assert.equal(await db.keyChunks.count(), replace ? 1 : 0);
+        assert.deepEqual(
+          await storage.getCachedKey(chain, id),
+          replace ? replacement : null,
+        );
+        return new Uint8Array([3, 4]);
+      };
+      assert.deepEqual(
+        (await provider.fetchProvingKey(url)).toBytes(),
+        new Uint8Array([3, 4]),
+      );
+      assert.equal(downloads, 1);
+      assert.equal(replaced, replace);
+      assert.deepEqual(
+        await storage.getCachedKey(chain, id),
+        new Uint8Array([3, 4]),
+      );
+      assert.equal(await db.sdkKeys.count(), 1);
+      assert.equal(await db.keyChunks.count(), 1);
+    } finally {
+      await db.delete();
+    }
+  });
+}
 
 test("source and key metadata use one pinned version per build and reject failed metadata", async () => {
   let latest = 1,

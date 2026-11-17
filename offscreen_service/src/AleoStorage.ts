@@ -37,6 +37,17 @@ export class AleoStorage {
   }
 
   async getCachedKey(chainId: string, id: string, expectedChecksum?: string) {
+    const entry = await this.getCachedKeyEntry(chainId, id, expectedChecksum);
+    return entry?.bytes ?? null;
+  }
+
+  // Keep the observed manifest identity with the bytes so parse failures can
+  // evict that entry without deleting a newer worker's replacement.
+  async getCachedKeyEntry(
+    chainId: string,
+    id: string,
+    expectedChecksum?: string,
+  ) {
     const db = await this.getBlockDBInstance(chainId);
     const row = await db.sdkKeys.get(id);
     if (!row) return null;
@@ -46,7 +57,7 @@ export class AleoStorage {
       (!expectedChecksum || row.checksum === expectedChecksum) &&
       (await this.keyChecksum(bytes)) === row.checksum
     ) {
-      return bytes;
+      return { bytes, keyId: row.bytes.keyId };
     }
     // Compare the manifest under the lock: a concurrent replacement must survive.
     await this.deleteCachedKey(chainId, id, row.bytes.keyId);
